@@ -6,8 +6,9 @@ const produitSchema = new mongoose.Schema({
   prix: { type: Number, required: true },
   quantite: { type: Number, required: true },
   categorie: { type: String, required: true },
-  dateAjout: { type: Date, default: Date.now },
-  unite: { type: String, required: true }
+  unite: { type: String, required: true },
+  fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur', required: true },
+  dateAjout: { type: Date, default: Date.now }
 });
 
 const Produit = mongoose.model('Produit', produitSchema);
