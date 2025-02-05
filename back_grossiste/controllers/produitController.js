@@ -2,12 +2,13 @@ const Produit = require("../models/Produits");
 const Fournisseur = require("../models/Fournisseurs");
 
 // ✅ Ajouter un produit
+// ✅ Ajouter un produit
 exports.ajouterProduit = async (req, res) => {
     try {
-        const { nom, description, prixdevente, quantite, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, prixDachat, quantite, categorie, unite, fournisseur } = req.body;
 
         // Vérification des champs obligatoires
-        if (!nom || !prixdevente || !quantite || !categorie || !unite) {
+        if (!nom || !prixdevente || !prixDachat || !quantite || !categorie || !unite) {
             return res.status(400).json({ message: "❌ Veuillez remplir tous les champs obligatoires." });
         }
 
@@ -20,7 +21,7 @@ exports.ajouterProduit = async (req, res) => {
         }
 
         // Création du produit
-        const nouveauProduit = new Produit({ nom, description, prixdevente, quantite, categorie, unite, fournisseur });
+        const nouveauProduit = new Produit({ nom, description, prixdevente, prixDachat, quantite, categorie, unite, fournisseur });
         await nouveauProduit.save();
 
         res.status(201).json({ message: "✅ Produit ajouté avec succès", produit: nouveauProduit });
@@ -30,6 +31,7 @@ exports.ajouterProduit = async (req, res) => {
         res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
     }
 };
+
 
 // ✅ Récupérer tous les produits
 exports.afficherProduits = async (req, res) => {
@@ -41,11 +43,12 @@ exports.afficherProduits = async (req, res) => {
     }
 };
 
-// ✅ Modifier un produit 
+
+// ✅ Modifier un produit
 exports.modifierProduit = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nom, description, prix, quantite, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, prixDachat, quantite, categorie, unite, fournisseur } = req.body;
 
         // Vérifier si le produit existe
         const produitExistant = await Produit.findById(id);
@@ -61,10 +64,19 @@ exports.modifierProduit = async (req, res) => {
             }
         }
 
-        // Mettre à jour le produit
+        // Mettre à jour le produit uniquement avec les champs envoyés
         const produitModifie = await Produit.findByIdAndUpdate(
             id,
-            { nom, description, prix, quantite, categorie, unite, fournisseur },
+            { 
+                nom: nom || produitExistant.nom,
+                description: description || produitExistant.description,
+                prixdevente: prixdevente || produitExistant.prixdevente,
+                prixdachat: prixDachat || produitExistant.prixdachat,
+                quantite: quantite || produitExistant.quantite,
+                categorie: categorie || produitExistant.categorie,
+                unite: unite || produitExistant.unite,
+                fournisseur: fournisseur || produitExistant.fournisseur,
+            },
             { new: true }
         ).populate("fournisseur", "nom contact");
 
@@ -74,6 +86,7 @@ exports.modifierProduit = async (req, res) => {
         res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
     }
 };
+
 
 // ✅ Supprimer un produit
 exports.supprimerProduit = async (req, res) => {
