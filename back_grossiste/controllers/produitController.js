@@ -4,10 +4,10 @@ const Fournisseur = require("../models/Fournisseurs");
 // ✅ Ajouter un produit
 exports.ajouterProduit = async (req, res) => {
     try {
-        const { nom, description, prix, quantite, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, quantite, categorie, unite, fournisseur } = req.body;
 
         // Vérification des champs obligatoires
-        if (!nom || !prix || !quantite || !categorie || !unite) {
+        if (!nom || !prixdevente || !quantite || !categorie || !unite) {
             return res.status(400).json({ message: "❌ Veuillez remplir tous les champs obligatoires." });
         }
 
@@ -20,7 +20,7 @@ exports.ajouterProduit = async (req, res) => {
         }
 
         // Création du produit
-        const nouveauProduit = new Produit({ nom, description, prix, quantite, categorie, unite, fournisseur });
+        const nouveauProduit = new Produit({ nom, description, prixdevente, quantite, categorie, unite, fournisseur });
         await nouveauProduit.save();
 
         res.status(201).json({ message: "✅ Produit ajouté avec succès", produit: nouveauProduit });
