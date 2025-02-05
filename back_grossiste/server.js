@@ -18,24 +18,28 @@ const userRoutes = require("./routes/userRoute");
 const achatsRoutes = require("./routes/achatRoute");
 
 
+const entrepotRoutes = require("./routes/entrepotRoute");
+
+const stockRoutes = require('./routes/stockRoute');
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 
 // Connexion MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("✅ Connecté à MongoDB"))
-.catch(err => console.error("❌ Erreur de connexion MongoDB:", err));
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Connecté à MongoDB"))
+  .catch(err => console.error("❌ Erreur de connexion MongoDB:", err));
+
 
 // Middleware pour les routes des fournisseurs
 app.use("/api/fournisseurs", fournisseurRoutes);
 app.use("/api/produits", produitRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/achats", achatsRoutes);
+app.use("/api/entrepot", entrepotRoutes);
+app.use('/api/stocks', stockRoutes); 
+
 // Route de test
 app.get("/", (req, res) => {
   res.send("API Grossiste en cours d'exécution...");
