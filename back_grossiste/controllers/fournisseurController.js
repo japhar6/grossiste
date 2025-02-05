@@ -4,8 +4,11 @@ const Fournisseur = require("../models/Fournisseurs");
 exports.ajouterFournisseur = async (req, res) => {
   try {
     const { nom, type, contact, conditions } = req.body;
-    const nouveauFournisseur = new Fournisseur({ nom, type, contact, conditions });
+    const logo = req.file ? `/uploads/${req.file.filename}` : null; // URL locale de l'image
+
+    const nouveauFournisseur = new Fournisseur({ nom, type, contact, conditions, logo });
     await nouveauFournisseur.save();
+
     res.status(201).json({ message: "✅ Fournisseur ajouté avec succès", fournisseur: nouveauFournisseur });
   } catch (error) {
     res.status(500).json({ message: "❌ Erreur lors de l'ajout du fournisseur", error });

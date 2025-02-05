@@ -11,6 +11,7 @@ const fournisseurSchema = new mongoose.Schema({
   conditions: {
     ristourne: { type: Number, default: 0 },
   },
+  logo: { type: String }, 
   createdAt: { type: Date, default: Date.now }
 });
 
