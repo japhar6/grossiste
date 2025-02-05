@@ -19,6 +19,9 @@ const entrepotRoutes = require("./routes/entrepotRoute");
 
 const stockRoutes = require('./routes/stockRoute');
 
+const inventaireRoutes = require('./routes/inventaireRoute');
+const transfertRoute = require('./routes/transfertRoute');
+
 // Middleware
 app.use(express.json());
 app.use(cors());
@@ -35,6 +38,8 @@ app.use("/api/produits", produitRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/entrepot", entrepotRoutes);
 app.use('/api/stocks', stockRoutes); 
+app.use('/api/inventaire', inventaireRoutes);
+app.use('/api/transfert', transfertRoute);
 
 // Route de test
 app.get("/", (req, res) => {
