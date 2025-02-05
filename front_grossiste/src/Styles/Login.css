@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+
+
+.login{
+    height: 60vh;
+    width: 80%;
+
+}
+.mainLogin{
+    height: 100vh;
+    width: 100%;
+    background: rgb(247,247,247);
+background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 100%);
+}
+.description{
+    width: 60%;
+    margin-right: 5%;
+}
+.description h1{
+    font-size: 4rem;
+    font-family: 'Kanit', sans-serif !important;
+}
+.formulaire{
+    width: 35%;
+    height: 60vh;
+}
+.form{
+    height: 100%;
+    background-color: white;
+    width: 100%;
+    box-shadow: 0 0 5px rgba(128, 128, 128, 0.628);
+    border-radius: 10px;
+}
+.form button{
+    width: 100%;
+}
+.gradient-text {
+    background: linear-gradient(90deg, #19cd5e, #0d97d7); /* Couleurs du dégradé */
+    -webkit-background-clip: text; /* Applique le dégradé au texte */
+    -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
+    font-size: 2.5rem; /* Taille du texte */
+    font-weight: bold; /* Épaissir le texte */
+
+}
+.gradient{
+    background: linear-gradient(90deg, #19cd5e, #544adb); /* Couleurs du dégradé */
+    -webkit-background-clip: text; /* Applique le dégradé au texte */
+    -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
+    font-size: 4rem; /* Taille du texte */
+    font-weight: bold; /* Épaissir le texte */
+}
+  
