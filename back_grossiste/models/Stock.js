@@ -8,7 +8,7 @@ const stockSchema = new mongoose.Schema({
   },
   produit: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Produits',  
+    ref: 'Produit',  
     required: true,
   },
   quantité: {

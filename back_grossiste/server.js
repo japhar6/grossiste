@@ -15,6 +15,9 @@ const produitRoutes = require("./routes/produitRoute");
 
 const userRoutes = require("./routes/userRoute");
 
+const entrepotRoutes = require("./routes/entrepotRoute");
+
+const stockRoutes = require('./routes/stockRoute');
 
 // Middleware
 app.use(express.json());
@@ -30,6 +33,9 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/fournisseurs", fournisseurRoutes);
 app.use("/api/produits", produitRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/entrepot", entrepotRoutes);
+app.use('/api/stocks', stockRoutes); 
+
 // Route de test
 app.get("/", (req, res) => {
   res.send("API Grossiste en cours d'exécution...");

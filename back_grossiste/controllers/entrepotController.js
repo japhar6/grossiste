@@ -1,4 +1,4 @@
-const Entrepot = require("../models/entrepotModel");
+const Entrepot = require("../models/Entrepot");
 
 // 🔹 Ajouter un nouvel entrepôt
 exports.createEntrepot = async (req, res) => {
