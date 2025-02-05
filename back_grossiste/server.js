@@ -1,16 +1,26 @@
-require("dotenv").config(); // Charger les variables d'environnement
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const connectDB = require("./config/db"); // Importer la fonction de connexion
-
 const app = express();
+require("dotenv").config();
+
+// Importation des routes
+const fournisseurRoutes = require("./routes/fournisseurRoute"); 
 
 // Middleware
-app.use(express.json()); // Pour traiter les requêtes JSON
-app.use(cors()); // Pour gérer les accès entre domaines
+app.use(express.json());
+app.use(cors());
 
-// Connexion à MongoDB via le module de connexion
-connectDB();
+// Connexion MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("✅ Connecté à MongoDB"))
+.catch(err => console.error("❌ Erreur de connexion MongoDB:", err));
+
+// Middleware pour les routes des fournisseurs
+app.use("/api/fournisseurs", fournisseurRoutes);
 
 // Route de test
 app.get("/", (req, res) => {
