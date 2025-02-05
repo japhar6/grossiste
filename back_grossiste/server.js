@@ -10,7 +10,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Importation des routes
 const fournisseurRoutes = require("./routes/fournisseurRoute"); 
+
 const produitRoutes = require("./routes/produitRoute");
+
+const userRoutes = require("./routes/userRoute");
+
 
 // Middleware
 app.use(express.json());
@@ -27,7 +31,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // Middleware pour les routes des fournisseurs
 app.use("/api/fournisseurs", fournisseurRoutes);
 app.use("/api/produits", produitRoutes);
-
+app.use("/api/users", userRoutes);
 // Route de test
 app.get("/", (req, res) => {
   res.send("API Grossiste en cours d'exécution...");
