@@ -6,7 +6,8 @@ const achatSchema = new mongoose.Schema({
   quantite: { type: Number, required: true },
   prixAchat: { type: Number, required: true },
   dateAchat: { type: Date, default: Date.now },
-  total: { type: Number, required: true }
+  total: { type: Number, required: true },
+  panier: { type: mongoose.Schema.Types.ObjectId, ref: "Panier" } 
 });
 
 const Achat = mongoose.model('Achat', achatSchema);
