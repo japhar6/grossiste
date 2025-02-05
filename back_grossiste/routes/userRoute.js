@@ -19,7 +19,7 @@ router.get("/", authenticateJWT, authenticateAdmin, userController.getAllUsers);
 router.get("/:id", authenticateJWT, authenticateAdmin, userController.getUserById);
 
 // Route pour mettre à jour un utilisateur - accessible par admin uniquement
-router.put("/:id", authenticateJWT, authenticateAdmin, upload.single("photo"), userController.updateUser);
+router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);
 
 // Route pour supprimer un utilisateur - accessible par admin uniquement
 router.delete("/:id", authenticateJWT, authenticateAdmin, userController.deleteUser);

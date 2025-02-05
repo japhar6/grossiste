@@ -85,25 +85,50 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+
 exports.updateUser = async (req, res) => {
-    try {
-      const { nom, email, role } = req.body;
-      let updatedData = { nom, email, role };
-  
-      if (req.file) {
-        updatedData.photo = `/uploads/users/${req.file.filename}`;
-      }
-  
-      const updatedUser = await User.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-  
-      if (!updatedUser) return res.status(404).json({ message: "❌ Utilisateur non trouvé" });
-  
-      res.json({ message: "✅ Utilisateur mis à jour", user: updatedUser });
-    } catch (error) {
-      res.status(500).json({ message: "❌ Erreur lors de la mise à jour", error });
+  try {
+    const userId = req.params.id;
+    const { nom, email, photo, password } = req.body;  // On récupère également le mot de passe
+
+    // Vérification de l'existence de l'utilisateur
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: "❌ Utilisateur introuvable." });
     }
-  };
-  
+
+    // Vérification que l'utilisateur connecté modifie son propre profil (et non celui d'un autre utilisateur)
+    if (currentUser._id.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "❌ Vous ne pouvez pas modifier le profil d'un autre utilisateur." });
+    }
+
+    // Création d'un objet avec les données à mettre à jour
+    const updatedData = {
+      nom: nom || currentUser.nom,  // Met à jour le nom uniquement si fourni
+      email: email || currentUser.email,  // Met à jour l'email uniquement si fourni
+      photo: req.file ? `/uploads/users/${req.file.filename}` : currentUser.photo,  // Mise à jour de la photo si une nouvelle est envoyée
+    };
+
+    // Si un mot de passe est fourni, on le hache et on l'ajoute aux données à mettre à jour
+    if (password) {
+      const salt = await bcrypt.genSalt(10);  // Création du sel
+      updatedData.password = await bcrypt.hash(password, salt);  // Hachage du mot de passe
+    }
+
+    // Mise à jour de l'utilisateur
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
+
+    res.status(200).json({
+      message: "✅ Profil mis à jour avec succès.",
+      user: updatedUser
+    });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Erreur lors de la mise à jour du profil.", error });
+  }
+};
+
+
+
 
 exports.deleteUser = async (req, res) => {
   try {
