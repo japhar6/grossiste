@@ -6,7 +6,7 @@ function Login(){
         <main className='mainLogin center
         '>
             <section className='login'>
-                <div className="container-fluid center">
+                <div className="container-fluid center cont">
                     <div className='description p-5'>
                         <h1 className='mb-4'>
                             <b className='gradient-text'>DIGITALISATION GROSSISTE PPN</b> <br /> <b className='gradient'> by INNOV-T Madagascar</b>
@@ -18,7 +18,7 @@ function Login(){
                     </div>
                     <div className='formulaire p-5'>
                         <div className="form p-5">
-                            <h1 className='fw-bold gradient-text text-center '>Connexion</h1>
+                            <h1 className='fw-bold gradient-text text-center'>Connexion</h1>
                             <div className="hr"></div>
                             <form action="">
                                 <div className='mt-5'>

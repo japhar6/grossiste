@@ -1,0 +1,50 @@
+.contenue{
+    height: 100vh;
+    width: 80%;
+}
+
+.stats{
+    height: 30vh;
+    width: 100%;
+    background-color: white;
+    border-radius: 10px;
+}
+.content{
+    height: 93vh;
+    width: 100%;
+    overflow-y: scroll;
+}
+.one{
+    height: 12vh;
+    width: 28%;
+    margin: 1%;
+    color: white;
+    border-radius: 10px;
+    background: rgb(81,173,110);
+    background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
+}
+
+.chart{
+    width: 80%;
+    height: 50vh;
+    border-radius: 10px;
+    background-color: white;
+}
+.chart1{
+    height: 100%;
+    width: 50%;
+    
+
+}
+.chart2{
+    height: 100%;
+    width: 50%;
+  
+}
+.profil{
+    width: 19%;
+    margin-left: 1%;
+    height: 50vh;
+    background-color: white;
+    border-radius: 10px;
+}

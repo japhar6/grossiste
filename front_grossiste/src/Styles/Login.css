@@ -51,3 +51,50 @@ background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 1
     font-weight: bold; /* Épaissir le texte */
 }
   
+
+
+
+/* Resppnsive */
+
+@media (max-width:1180px) {
+    .cont{
+        display: block !important;
+    }
+    .description{
+        width: 100% !important;
+        margin-right: 0% !important;
+    }
+    .formulaire{
+        width: 100% !important;
+        padding: 7% !important;
+        padding-bottom: 12vh !important;
+    }
+    .form{
+        width: 100% !important;
+        height: auto !important;
+        padding: 7% !important;
+    }
+    .login{
+        width: 100%;
+        height: auto !important;
+        padding-top: 30vh !important;
+    }
+    .gradient{
+        font-size: 1rem;
+    }
+    .description h1{
+        font-size: 0.1rem !important;
+    }
+    .description p{
+        font-size: 0.8em;
+    }
+    .description button {
+        font-size: 0.8em;
+        width: 100%;
+        margin-top: 0% !important;
+    };
+    .mainLogin{
+        height: auto !important;
+    }
+    
+}
