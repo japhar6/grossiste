@@ -65,7 +65,7 @@ router.post('/transfert', async (req, res) => {
 
 router.put('/terminer/:id', async (req, res) => {
     try {
-      // Récupérer l'ID du transfert
+    
       const transfertId = req.params.id;
   
       // Trouver le transfert par son ID

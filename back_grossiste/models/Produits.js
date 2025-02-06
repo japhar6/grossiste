@@ -4,7 +4,7 @@ const slugify = require('slugify'); // Utilisation de slugify pour générer un 
 const produitSchema = new mongoose.Schema({
    nom: { type: String, required: true },
   description: { type: String },
-  prixdevente: { type: Number, required: false },
+  prixdevente: { type: Number, required: false,default :'0' },
   prixDachat: { type: Number, required: false },
   categorie: { type: String, required: true },
   unite: { type: String, required: true },
@@ -17,18 +17,19 @@ const produitSchema = new mongoose.Schema({
 // Avant de sauvegarder, générer un code produit unique
 produitSchema.pre('save', async function (next) {
   if (!this.codeProduit) {
-    const prefix = slugify(this.categorie, { lower: true, strict: true }).substring(0, 3).toUpperCase();  // 3 premières lettres de la catégorie
-    const lastProduct = await Produit.find({ categorie: this.categorie }).sort({ _id: -1 }).limit(1);  
+    const prefix = slugify(this.categorie, { lower: true, strict: true }).substring(0, 3).toUpperCase();
+    const lastProduct = await Produit.findOne({ categorie: this.categorie }).sort({ _id: -1 });
 
     let nextNumber = 1;
-    if (lastProduct && lastProduct.length > 0) {
-      const lastCode = lastProduct[0].codeProduit;
-      const lastNumber = parseInt(lastCode.split('-')[1], 10);
-      nextNumber = lastNumber + 1;
+    if (lastProduct && lastProduct.codeProduit) {
+      const parts = lastProduct.codeProduit.split('-');
+      if (parts.length === 2 && !isNaN(parts[1])) {
+        nextNumber = parseInt(parts[1], 10) + 1;
+      }
     }
 
-    const paddedNumber = String(nextNumber).padStart(3, '0');  
-    this.codeProduit = `${prefix}-${paddedNumber}`;  
+    const paddedNumber = String(nextNumber).padStart(3, '0');
+    this.codeProduit = `${prefix}-${paddedNumber}`;
   }
   next();
 });

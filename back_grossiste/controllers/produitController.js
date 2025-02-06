@@ -4,10 +4,10 @@ const Fournisseur = require("../models/Fournisseurs");
 // ✅ Ajouter un produit
 exports.ajouterProduit = async (req, res) => {
     try {
-        const { nom, description, prixdevente, prixDachat, quantite, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, prixDachat, categorie, unite, fournisseur } = req.body;
 
         // Vérification des champs obligatoires
-        if (!nom || !prixdevente || !prixDachat || !quantite || !categorie || !unite) {
+        if (!nom || !prixDachat  || !categorie || !unite) {
             return res.status(400).json({ message: "❌ Veuillez remplir tous les champs obligatoires." });
         }
 
@@ -20,7 +20,7 @@ exports.ajouterProduit = async (req, res) => {
         }
 
         // Création du produit
-        const nouveauProduit = new Produit({ nom, description, prixdevente, prixDachat, quantite, categorie, unite, fournisseur });
+        const nouveauProduit = new Produit({ nom, description, prixdevente, prixDachat, categorie, unite, fournisseur });
         await nouveauProduit.save();
 
         res.status(201).json({ message: "✅ Produit ajouté avec succès", produit: nouveauProduit });
@@ -47,7 +47,7 @@ exports.afficherProduits = async (req, res) => {
 exports.modifierProduit = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nom, description, prixdevente, prixDachat, quantite, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, prixDachat, categorie, unite, fournisseur } = req.body;
 
         // Vérifier si le produit existe
         const produitExistant = await Produit.findById(id);
@@ -71,7 +71,7 @@ exports.modifierProduit = async (req, res) => {
                 description: description || produitExistant.description,
                 prixdevente: prixdevente || produitExistant.prixdevente,
                 prixdachat: prixDachat || produitExistant.prixdachat,
-                quantite: quantite || produitExistant.quantite,
+             
                 categorie: categorie || produitExistant.categorie,
                 unite: unite || produitExistant.unite,
                 fournisseur: fournisseur || produitExistant.fournisseur,
