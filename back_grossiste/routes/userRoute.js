@@ -16,7 +16,7 @@ router.post("/login", userController.login);
 router.get("/", authenticateJWT, authenticateAdmin, userController.getAllUsers);
 
 // Route pour obtenir un utilisateur spécifique - accessible par admin uniquement
-router.get("/:id", authenticateJWT, authenticateAdmin, userController.getUserById);
+router.get("/:id", authenticateJWT, userController.getUserById);
 
 // Route pour mettre à jour un utilisateur - accessible par admin uniquement
 router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);

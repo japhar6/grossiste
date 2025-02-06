@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "vendeur", "magasinier", "caissier", "gestion_prix"],
     required: true
   },
-  photo: { type: String }, // URL de l'image stockée
+  photo: { type: String }, 
   createdAt: { type: Date, default: Date.now }
 });
 
