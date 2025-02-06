@@ -3,7 +3,7 @@ const router = express.Router();
 const stockController = require('../controllers/stockController');
 
 // Créer un stock
-router.post('/', stockController.createOrUpdateStock);
+router.post('/', stockController.ajouterOuMettreAJourStock);
 
 // Obtenir tous les stocks
 router.get('/', stockController.getAllStocks);

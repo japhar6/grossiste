@@ -2,7 +2,7 @@ const Achat = require("../models/Achats");
 const Produit = require("../models/Produits");
 const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
-
+const { ajouterOuMettreAJourStock } = require('./stockController'); 
 const Stock = require('../models/Stock');
 const Entrepot = require('../models/Entrepot');
 
@@ -65,52 +65,34 @@ exports.ajouterAchat = async (req, res) => {
   }
 };
 
+
 exports.validerAchat = async (req, res) => {
   try {
-      const { achatId } = req.params;
-      const { entrepotId } = req.body;
+    const { achatId } = req.params;
+    const { entrepotId } = req.body;
 
-      // 1️⃣ Vérifier si l'achat existe
-      const achat = await Achat.findById(achatId).populate('produit');
-      if (!achat) {
-          return res.status(404).json({ message: "Achat non trouvé" });
-      }
+    console.log("🔍 Validation de l'achat - ID:", achatId, "Entrepôt:", entrepotId);
 
-      // 2️⃣ Vérifier si l'entrepôt existe
-      const entrepot = await Entrepot.findById(entrepotId);
-      if (!entrepot) {
-          return res.status(404).json({ message: "Entrepôt non trouvé" });
-      }
+    const achat = await Achat.findById(achatId).populate('produit');
+    if (!achat) {
+      return res.status(404).json({ message: "Achat non trouvé" });
+    }
 
-      // 3️⃣ Vérifier si le produit est déjà en stock dans cet entrepôt
-      let stock = await Stock.findOne({ produit: achat.produit._id, entrepot: entrepotId });
+    const entrepot = await Entrepot.findById(entrepotId);
+    if (!entrepot) {
+      return res.status(404).json({ message: "Entrepôt non trouvé" });
+    }
 
-      if (stock) {
-          // ➕ Ajouter la quantité et recalculer la valeur totale
-          stock.quantité += achat.quantite;
-          stock.valeurTotale = stock.quantité * stock.prixUnitaire;
-      } else {
-          // 📌 Créer un nouveau stock
-          stock = new Stock({
-              entrepot: entrepotId,
-              produit: achat.produit._id,
-              quantité: achat.quantite,
-              prixUnitaire: achat.prixAchat,
-              valeurTotale: achat.quantite * achat.prixAchat
-          });
-      }
+    // 📌 Utilisation de la fonction sans res
+    const stock = await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, achat.quantite, achat.prixAchat);
 
-      // 4️⃣ Sauvegarder le stock mis à jour
-      await stock.save();
-
-      res.status(200).json({ message: "✅ Stock mis à jour après validation de l'achat", stock });
+    res.status(200).json({ message: "Stock mis à jour après validation de l'achat", stock });
 
   } catch (error) {
-      console.error("❌ Erreur lors de la validation de l'achat:", error);
-      res.status(500).json({ message: "Erreur lors de la validation de l'achat", error });
+    console.error("❌ Erreur lors de la validation de l'achat:", error);
+    res.status(500).json({ message: "Erreur lors de la validation de l'achat", error: error.message });
   }
 };
-
 
 
 // Afficher tous les achats
