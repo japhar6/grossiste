@@ -1,60 +1,83 @@
 const Transfert = require('../models/Transfert');
-const Stock = require('../models/Stock'); // Assurer que ce modèle existe
-const Entrepot = require('../models/Entrepot'); // Assurer que ce modèle existe
-const Produit = require('../models/Produits'); // Assurer que ce modèle existe
+const Stock = require('../models/Stock');
 
-exports.createTransfert = async (req, res) => {
+// Fonction pour transférer des produits entre entrepôts
+exports.transfertProduit = async (req, res) => {
   try {
-    const { entrepotSource, entrepotDestination, produit, quantité } = req.body;
+    const { entrepotSource, entrepotDestination, produit, quantité, prixUnitaire } = req.body;
 
-    // Validation des données d'entrée
+    // Validation des données
     if (quantité <= 0) {
       return res.status(400).json({ message: 'La quantité doit être supérieure à zéro.' });
     }
 
-    // Vérification des stocks dans les entrepôts
+    // Vérifier le stock dans l'entrepôt source
     const stockSource = await Stock.findOne({ entrepot: entrepotSource, produit });
     if (!stockSource || stockSource.quantité < quantité) {
-      return res.status(400).json({ message: 'Stock insuffisant dans l\'entrepôt source.' });
+      return res.status(400).json({ message: 'Quantité insuffisante dans l\'entrepôt source.' });
     }
 
-    // Effectuer le transfert
+    // Réduire la quantité dans l'entrepôt source
+    stockSource.quantité -= quantité;
+    await stockSource.save();
+
+    // Vérifier si le produit existe dans l'entrepôt destination
+    let stockDestination = await Stock.findOne({ entrepot: entrepotDestination, produit });
+
+    if (!stockDestination) {
+      // Si le produit n'existe pas, créer un nouveau stock
+      stockDestination = new Stock({
+        entrepot: entrepotDestination,
+        produit,
+        quantité,
+        prixUnitaire,
+        valeurTotale: quantité * prixUnitaire, // Calcul de la valeur totale
+      });
+    } else {
+      // Sinon, ajouter la quantité et recalculer la valeur totale
+      stockDestination.quantité += quantité;
+      stockDestination.valeurTotale += quantité * prixUnitaire;
+    }
+
+    await stockDestination.save();
+
+    // Créer un enregistrement de transfert
     const transfert = new Transfert({
       entrepotSource,
       entrepotDestination,
       produit,
       quantité,
-      statut: 'en cours',  // Statut initial
     });
 
     await transfert.save();
 
-    // Soustraction de la quantité dans l'entrepôt source
-    stockSource.quantité -= quantité;
-    await stockSource.save();
+    res.status(201).json({
+      message: 'Transfert effectué avec succès',
+      transfert,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors du transfert', error });
+  }
+};
 
-    // Trouver ou créer un stock dans l'entrepôt de destination
-    let stockDestination = await Stock.findOne({ entrepot: entrepotDestination, produit });
-    if (stockDestination) {
-      // Si le stock existe déjà dans l'entrepôt destination, on ajoute la quantité
-      stockDestination.quantité += quantité;
-      await stockDestination.save();
-    } else {
-      // Si le stock n'existe pas, on en crée un nouveau
-      stockDestination = new Stock({
-        entrepot: entrepotDestination,
-        produit,
-        quantité,
-      });
-      await stockDestination.save();
+// Fonction pour terminer un transfert
+exports.terminerTransfert = async (req, res) => {
+  try {
+    const transfertId = req.params.id;
+
+    // Trouver le transfert par ID
+    const transfert = await Transfert.findById(transfertId);
+    if (!transfert) {
+      return res.status(404).json({ message: 'Transfert non trouvé' });
     }
 
-    // Mettre à jour le statut du transfert
+    // Changer le statut du transfert en "terminé"
     transfert.statut = 'terminé';
     await transfert.save();
 
-    res.status(201).json({ message: 'Transfert effectué avec succès', transfert });
+    res.status(200).json({ message: 'Transfert terminé avec succès', transfert });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors du transfert', error });
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du statut', error });
   }
 };

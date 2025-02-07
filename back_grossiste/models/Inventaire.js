@@ -25,7 +25,7 @@ const inventaireSchema = new mongoose.Schema({
   },
   raisonAjustement: {
     type: String,
-    enum: ['perte', 'vol', 'erreur de comptage'],
+    enum: ['perte', 'vol', 'erreur de comptage','vendu'],
     required: true,
   },
 });
