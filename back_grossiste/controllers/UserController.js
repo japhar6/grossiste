@@ -21,6 +21,41 @@ exports.register = async (req, res) => {
     }
   };
   
+  exports.createAdmin = async (req, res) => {
+    try {
+      // Vérifier si un admin existe déjà
+      const adminExists = await User.findOne({ role: "admin" });
+      if (adminExists) {
+        return res.status(400).json({ message: "❌ Un admin existe déjà !" });
+      }
+  
+      // Extraire les informations du body
+      const { nom, email, password, role } = req.body;
+  
+      // Vérifier si l'email est déjà utilisé
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
+      }
+  
+  
+      // Gérer l'upload de la photo si nécessaire
+      const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
+  
+     
+      const newUser = new User({ nom, email,  password, role, photo });
+  
+      // Sauvegarder l'utilisateur dans la base de données
+      await newUser.save();
+  
+      // Retourner la réponse de succès
+      res.status(201).json({ message: "✅ Utilisateur créé avec succès", user: newUser });
+  
+    } catch (error) {
+      // Si une erreur se produit, renvoyer une erreur générique
+      res.status(500).json({ message: "❌ Erreur lors de l'enregistrement de l'utilisateur", error: error.message });
+    }
+  };
 
   exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -42,21 +77,21 @@ exports.register = async (req, res) => {
   
       // Créer un token JWT
       const token = jwt.sign(
-        { userId: user._id, role: user.role },  // Payload avec l'ID de l'utilisateur et son rôle
-        process.env.JWT_SECRET,                 // Clé secrète pour signer le token
-        { expiresIn: "1h" }                    // Durée de validité du token
+        { userId: user._id, role: user.role },  
+        process.env.JWT_SECRET,               
+        { expiresIn: "1h" }                  
       );
   
       // Retourner une réponse avec le token
       res.status(200).json({
         message: "✅ Connexion réussie !",
-        token,                                  // Inclure le token dans la réponse
+        token,                                  
         user: {
           _id: user._id,
           email: user.email,
           role: user.role,
           nom: user.nom,
-          photo: user.photo,                    // Si tu as un champ photo pour l'utilisateur
+          photo: user.photo,                  
         }
       });
     } catch (error) {

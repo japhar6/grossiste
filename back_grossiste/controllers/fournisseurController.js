@@ -6,7 +6,7 @@ const fs = require("fs");
 exports.ajouterFournisseur = async (req, res) => {
   try {
     const { nom, type, contact, conditions } = req.body;
-    const logo = req.file ? `/uploads/logo/${req.file.filename}` : null; // URL locale de l'image
+    const logo = req.file ? `/uploads/logo/${req.file.filename}` : null; 
 
     const nouveauFournisseur = new Fournisseur({ nom, type, contact, conditions, logo });
     await nouveauFournisseur.save();

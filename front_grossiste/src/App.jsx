@@ -1,25 +1,24 @@
-import './App.css'
+import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './Pages/Login';
 import Fournisseur from './Pages/Fournisseur';
 import Dashboard from './Pages/Dashboard';
-import Personnels from './Pages/Personnels';
+import PrivateRoute from './config/privateRoute.jsx';
 
 function App() {
-
   return (
     <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<Login/>}/>
-          <Route path='/fournisseur' element={<Fournisseur/>}/>
-          <Route path='/admin' element={<Dashboard/>}/>
-          <Route path='/personnels' element={<Personnels/>}/>
-        </Routes>
-    
+      <Routes>
+        <Route path='/' element={<Login />} />
+
+        <Route element={<PrivateRoute />}>
+          <Route path='/fournisseur' element={<Fournisseur />} />
+          <Route path='/admin' element={<Dashboard />} />
+        </Route>
+      </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
-
+export default App;

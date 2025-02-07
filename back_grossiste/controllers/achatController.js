@@ -10,10 +10,10 @@ const Entrepot = require('../models/Entrepot');
 // Ajouter un achat
 exports.ajouterAchat = async (req, res) => {
   try {
-      const { produit, fournisseur, quantite, prixAchat } = req.body;
+      const { produit, fournisseur, quantite, prixAchat, panierId } = req.body;
 
       // Vérification des champs obligatoires
-      if (!produit || !fournisseur || !quantite || !prixAchat) {
+      if (!produit || !fournisseur || !quantite || !prixAchat || !panierId) {
           return res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
       }
 
@@ -28,14 +28,10 @@ exports.ajouterAchat = async (req, res) => {
           return res.status(404).json({ message: "Fournisseur non trouvé" });
       }
 
-      // 🔹 Trouver ou créer un panier
-      let panierExistant = await Panier.findOne();
+      // 🔹 Trouver le panier correspondant à l'achat
+      let panierExistant = await Panier.findById(panierId);
       if (!panierExistant) {
-          panierExistant = new Panier({
-              achats: [],
-              totalGeneral: 0
-          });
-          await panierExistant.save();
+          return res.status(404).json({ message: "Panier non trouvé" });
       }
 
       // Calculer le total de l'achat
@@ -48,7 +44,7 @@ exports.ajouterAchat = async (req, res) => {
           quantite,
           prixAchat,
           total,
-          panier: panierExistant._id  // Lier l'achat au panier
+          panier: panierExistant._id  
       });
 
       await nouvelAchat.save();
@@ -64,6 +60,7 @@ exports.ajouterAchat = async (req, res) => {
       res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
   }
 };
+
 
 
 exports.validerAchat = async (req, res) => {

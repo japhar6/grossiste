@@ -1,22 +1,24 @@
 const express = require("express");
-const userController = require("../controllers/userController");
+const userController = require("../controllers/UserController");
 const upload = require("../config/multerUser");
 const authenticateJWT = require("../config/middleware/authenticateJWT");
 const authenticateAdmin = require("../config/middleware/authenticateAdmin");
 
 const router = express.Router();
 
-// Route pour enregistrer un utilisateur - accessible par admin uniquement
-router.post("/register", authenticateJWT, authenticateAdmin, upload.single("photo"), userController.register);
+    // Route pour enregistrer un utilisateur - accessible par admin uniquement
+    router.post("/register", authenticateJWT, authenticateAdmin, upload.single("photo"), userController.register);
 
 // Route pour la connexion de l'utilisateur - accessible par tous
 router.post("/login", userController.login);
+router.post("/create-admin", upload.single("photo"), userController.createAdmin);
+
 
 // Route pour obtenir tous les utilisateurs - accessible par admin uniquement
-router.get("/", authenticateJWT, authenticateAdmin, userController.getAllUsers);
+router.get("/tout", authenticateJWT, authenticateAdmin, userController.getAllUsers);
 
 // Route pour obtenir un utilisateur spécifique - accessible par admin uniquement
-router.get("/:id", authenticateJWT, userController.getUserById);
+router.get("/tout/:id", authenticateJWT, userController.getUserById);
 
 // Route pour mettre à jour un utilisateur - accessible par admin uniquement
 router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);
