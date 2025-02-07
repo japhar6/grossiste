@@ -11,9 +11,8 @@ const router = express.Router();
 
 // Route pour la connexion de l'utilisateur - accessible par tous
 router.post("/login", userController.login);
+router.post("/create-admin", upload.single("photo"), userController.createAdmin);
 
-
-router.post("/create-admin", userController.createAdmin);
 
 // Route pour obtenir tous les utilisateurs - accessible par admin uniquement
 router.get("/tout", authenticateJWT, authenticateAdmin, userController.getAllUsers);
