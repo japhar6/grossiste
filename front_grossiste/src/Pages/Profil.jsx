@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2"; 
 import "../Styles/Profile.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
@@ -11,11 +11,11 @@ function Profil() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null); // Stockage du fichier image
+  const [selectedFile, setSelectedFile] = useState(null); 
   const navigate = useNavigate();
   const usId = localStorage.getItem("userid");
 
-  // Récupérer le profil utilisateur
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -41,7 +41,6 @@ function Profil() {
     fetchUserProfile();
   }, []);
 
-  // Gérer les changements des champs texte
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUpdatedUser((prevState) => ({
@@ -50,13 +49,13 @@ function Profil() {
     }));
   };
 
-  // Gérer le changement de fichier (image)
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setSelectedFile(file);
   };
 
-  // Sauvegarde des modifications
+
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -65,12 +64,12 @@ function Profil() {
         return;
       }
 
-      // Création d'un objet FormData pour envoyer l'image et les données utilisateur
+
       const formData = new FormData();
       formData.append("nom", updatedUser.nom);
       formData.append("email", updatedUser.email);
       if (selectedFile) {
-        formData.append("photo", selectedFile); // Ajouter l'image si sélectionnée
+        formData.append("photo", selectedFile);
       }
 
       const response = await axios.put(`http://localhost:5000/api/users/${usId}`, formData, {
@@ -80,7 +79,7 @@ function Profil() {
       setUser(response.data);
       setIsEditing(false);
 
-      // Affichage SweetAlert2 - Succès
+    
       Swal.fire({
         title: "Succès!",
         text: "Votre profil a été mis à jour.",

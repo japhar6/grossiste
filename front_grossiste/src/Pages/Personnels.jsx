@@ -18,7 +18,7 @@ function Personnels() {
   const [photo, setPhoto] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false); // Modal pour la modification
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -33,11 +33,11 @@ function Personnels() {
           headers: { Authorization: `Bearer ${token}` },
         });
   
-        // Décodez le token pour obtenir l'ID de l'admin connecté
+ 
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        const currentUserId = decodedToken.userId;  // Assurez-vous que votre token contient l'ID de l'utilisateur
+        const currentUserId = decodedToken.userId; 
   
-        // Filtrer les utilisateurs pour exclure l'admin connecté
+
         const filteredUsers = response.data.filter(user => user._id !== currentUserId);
         setUsers(filteredUsers);
       } catch (error) {
@@ -105,7 +105,7 @@ function Personnels() {
     setShowModal(true);
   };
 
-  // Fonction pour "Licencier" un utilisateur
+
   const handleLicencier = async () => {
     const result = await Swal.fire({
       title: 'Êtes-vous sûr?',
@@ -119,19 +119,19 @@ function Personnels() {
     if (result.isConfirmed) {
       try {
         const token = localStorage.getItem("token");
-        // Appel de l'API pour supprimer l'utilisateur
+       
         await axios.delete(`http://localhost:5000/api/users/${selectedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        // Mettre à jour la liste des utilisateurs après la suppression
+     
         setUsers((prevUsers) => prevUsers.filter((user) => user._id !== selectedUser._id));
 
-        // Notification de succès
+      
         Swal.fire('Licencié!', 'L\'utilisateur a été mis dehors.', 'success');
-        setShowModal(false); // Ferme le modal après suppression
+        setShowModal(false);
       } catch (error) {
         console.error("Erreur de suppression", error);
         Swal.fire('Erreur', 'Une erreur s\'est produite lors de la suppression.', 'error');
@@ -140,7 +140,7 @@ function Personnels() {
   };
 
   const handleEdit = () => {
-    // Initialiser les champs avec les valeurs de l'utilisateur sélectionné
+
     setNom(selectedUser.nom);
     setEmail(selectedUser.email);
     setRole(selectedUser.role);
@@ -152,8 +152,7 @@ function Personnels() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-  
-    // Créer un nouvel objet FormData
+
     const formData = new FormData();
     formData.append('nom', nom);
     formData.append('email', email);
@@ -307,15 +306,15 @@ function Personnels() {
 
                <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
                            <i className="fa fa-edit"></i> Modifier
-                           </Button>
+                </Button>
 
                        {selectedUser.role !== "admin" && (
                 <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
                           <i className="fa fa-trash"></i> Licencier
-                </Button>
-                          )}
+                </Button>  )}
+                        
 
-                        </div>
+                </div>
 
               </div>
             </div>
