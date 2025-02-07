@@ -23,27 +23,38 @@ exports.register = async (req, res) => {
   
   exports.createAdmin = async (req, res) => {
     try {
+      // Vérifier si un admin existe déjà
       const adminExists = await User.findOne({ role: "admin" });
-  
       if (adminExists) {
         return res.status(400).json({ message: "❌ Un admin existe déjà !" });
       }
+
+  
+      // Extraire les informations du body
+      const { nom, email, password, role } = req.body;
+  
+      // Vérifier si l'email est déjà utilisé
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
+      }
+  
+  
+      // Gérer l'upload de la photo si nécessaire
       const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
-      const { nom, email, password } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
+     
+      const newUser = new User({ nom, email,  password, role, photo });
   
-      const newAdmin = new User({
-        nom,
-        email,
-        password: hashedPassword,
-        role: "admin",
-      });
+      // Sauvegarder l'utilisateur dans la base de données
+      await newUser.save();
   
-      await newAdmin.save();
-      res.status(201).json({ message: "✅ Admin créé avec succès !" });
+      // Retourner la réponse de succès
+      res.status(201).json({ message: "✅ Utilisateur créé avec succès", user: newUser });
+  
     } catch (error) {
-      res.status(500).json({ message: "❌ Erreur serveur", error });
+      // Si une erreur se produit, renvoyer une erreur générique
+      res.status(500).json({ message: "❌ Erreur lors de l'enregistrement de l'utilisateur", error: error.message });
     }
   };
 

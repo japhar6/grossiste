@@ -1,7 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 function Header() {
+    const [email, setEmail] = useState("");
+
+    // Utiliser useEffect pour récupérer l'email après le montage du composant
+    useEffect(() => {
+      const storedEmail = localStorage.getItem("email");
+      if (storedEmail) {
+        setEmail(storedEmail);
+      } else {
+
+        window.location.href = "/";
+      }
+    }, []);
+    
   const handleLogout = () => {
     Swal.fire({
       title: "Êtes-vous sûr ?",
@@ -36,7 +49,7 @@ function Header() {
                 </div>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">Mariusrandrianarison@example.com</a>
+                <a className="nav-link" href="#">{email}</a>
               </li>
               <li
                 className="nav-item"
