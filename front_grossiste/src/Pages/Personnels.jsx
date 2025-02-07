@@ -206,6 +206,31 @@ function Personnels() {
               <h6 className="alert alert-info">
                 <i className="fa fa-line-chart"></i> Mini-statistique de vos personnels
               </h6>
+              <div className="filtrage bg-light p-3 mt-3">
+                <h6 className="fw-bold">
+                  <i className="fa fa-search"></i> Filtrage générale
+                </h6>
+                <form className="center">
+                  <input
+                    type="text"
+                    className="form-control p-2 mt-3  m-2"
+                    placeholder="Recherche ..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <select
+                    className="form-control mt-3 m-2 p-2"
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                  >
+                    <option value="">Tout</option>
+                    <option value="magasinier">Magasinier</option>
+                    <option value="caissier">Caissier</option>
+                    <option value="vendeur">Vendeur (Réception)</option>
+                    <option value="gestion_prix">Contrôleur de produit</option>
+                  </select>
+                </form>
+              </div>
 
               <div className="consultation">
                 <table className="table table-striped table-hover">
