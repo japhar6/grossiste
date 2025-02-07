@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
       if (adminExists) {
         return res.status(400).json({ message: "❌ Un admin existe déjà !" });
       }
-  
+
       // Extraire les informations du body
       const { nom, email, password, role } = req.body;
   
@@ -37,8 +37,6 @@ exports.register = async (req, res) => {
       if (userExists) {
         return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
       }
-  
-  
       // Gérer l'upload de la photo si nécessaire
       const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
