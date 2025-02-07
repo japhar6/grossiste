@@ -49,7 +49,7 @@ function Header() {
                 </div>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#">{email}</a>
+                <a className="nav-link" href="/profil">{email}</a>
               </li>
               <li
                 className="nav-item"

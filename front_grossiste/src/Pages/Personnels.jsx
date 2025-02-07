@@ -28,19 +28,26 @@ function Personnels() {
           console.error("Aucun token trouvé !");
           return;
         }
-
+  
         const response = await axios.get("http://localhost:5000/api/users/tout/", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        setUsers(response.data);
+  
+        // Décodez le token pour obtenir l'ID de l'admin connecté
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        const currentUserId = decodedToken.userId;  // Assurez-vous que votre token contient l'ID de l'utilisateur
+  
+        // Filtrer les utilisateurs pour exclure l'admin connecté
+        const filteredUsers = response.data.filter(user => user._id !== currentUserId);
+        setUsers(filteredUsers);
       } catch (error) {
         console.error("Erreur de récupération des utilisateurs", error.response?.data || error.message);
       }
     };
-
+  
     fetchUsers();
   }, []);
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -298,14 +305,16 @@ function Personnels() {
                 
                  <div className="d-flex justify-content-between w-100">
 
-                        <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
-                            Modifier
-                        </Button>
-                        {selectedUser.role !== "admin" && (
-                            <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
-                            Licencier
-                            </Button>
-                        )}
+               <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
+                           <i className="fa fa-edit"></i> Modifier
+                           </Button>
+
+                       {selectedUser.role !== "admin" && (
+                <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
+                          <i className="fa fa-trash"></i> Licencier
+                </Button>
+                          )}
+
                         </div>
 
               </div>
