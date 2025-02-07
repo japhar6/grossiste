@@ -21,6 +21,30 @@ exports.register = async (req, res) => {
     }
   };
   
+  exports.createAdmin = async (req, res) => {
+    try {
+      const adminExists = await User.findOne({ role: "admin" });
+  
+      if (adminExists) {
+        return res.status(400).json({ message: "❌ Un admin existe déjà !" });
+      }
+  
+      const { nom, email, password } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const newAdmin = new User({
+        nom,
+        email,
+        password: hashedPassword,
+        role: "admin",
+      });
+  
+      await newAdmin.save();
+      res.status(201).json({ message: "✅ Admin créé avec succès !" });
+    } catch (error) {
+      res.status(500).json({ message: "❌ Erreur serveur", error });
+    }
+  };
 
   exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -42,21 +66,21 @@ exports.register = async (req, res) => {
   
       // Créer un token JWT
       const token = jwt.sign(
-        { userId: user._id, role: user.role },  // Payload avec l'ID de l'utilisateur et son rôle
-        process.env.JWT_SECRET,                 // Clé secrète pour signer le token
-        { expiresIn: "1h" }                    // Durée de validité du token
+        { userId: user._id, role: user.role },  
+        process.env.JWT_SECRET,               
+        { expiresIn: "1h" }                  
       );
   
       // Retourner une réponse avec le token
       res.status(200).json({
         message: "✅ Connexion réussie !",
-        token,                                  // Inclure le token dans la réponse
+        token,                                  
         user: {
           _id: user._id,
           email: user.email,
           role: user.role,
           nom: user.nom,
-          photo: user.photo,                    // Si tu as un champ photo pour l'utilisateur
+          photo: user.photo,                  
         }
       });
     } catch (error) {
