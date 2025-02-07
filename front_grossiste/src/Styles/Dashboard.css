@@ -1,7 +1,3 @@
-.contenue{
-    height: 100vh;
-    width: 80%;
-}
 
 .stats{
     height: 30vh;
@@ -9,11 +5,7 @@
     background-color: white;
     border-radius: 10px;
 }
-.content{
-    height: 93vh;
-    width: 100%;
-    overflow-y: scroll;
-}
+
 .one{
     height: 12vh;
     width: 28%;
