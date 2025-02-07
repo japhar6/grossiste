@@ -28,6 +28,7 @@ exports.register = async (req, res) => {
       if (adminExists) {
         return res.status(400).json({ message: "❌ Un admin existe déjà !" });
       }
+      const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
       const { nom, email, password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
