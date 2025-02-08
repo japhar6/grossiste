@@ -6,37 +6,61 @@ import axios from "axios";
 
 function ListeProduits() {
   const [produits, setProduits] = useState([]);
-  const [categories, setCategories] = useState([]); // Pour stocker les catégories uniques
+  const [categories, setCategories] = useState([]); 
   const [recherche, setRecherche] = useState("");
   const [categorie, setCategorie] = useState("");
   const [dateAjout, setDateAjout] = useState("");
+  const [order, setOrder] = useState("asc"); 
+  const [orderBy, setOrderBy] = useState("nom"); 
 
   useEffect(() => {
     fetchProduits();
   }, []);
 
-  // Fonction pour récupérer les produits depuis l'API
+ 
   const fetchProduits = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/produits/afficher");
       setProduits(response.data);
 
-      // Extraire les catégories uniques
       const categoriesUniq = [
         ...new Set(response.data.map((produit) => produit.categorie)),
       ];
-      setCategories(categoriesUniq); // Mettre à jour l'état avec les catégories uniques
+      setCategories(categoriesUniq); 
     } catch (error) {
       console.error("Erreur lors de la récupération des produits", error);
     }
   };
 
-  // Fonction pour filtrer les produits
+  
   const filteredProduits = produits.filter((produit) => {
     const matchesRecherche = produit.nom.toLowerCase().includes(recherche.toLowerCase());
     const matchesCategorie = categorie ? produit.categorie === categorie : true;
     const matchesDate = dateAjout ? produit.dateAjout.includes(dateAjout) : true;
     return matchesRecherche && matchesCategorie && matchesDate;
+  });
+
+  const sortedProduits = filteredProduits.sort((a, b) => {
+    let comparison = 0;
+
+
+    if (orderBy === "nom") {
+      comparison = a.nom.localeCompare(b.nom);
+    }
+
+    // Tri par date d'ajout
+    if (orderBy === "dateAjout") {
+      const dateA = new Date(a.dateAjout); 
+      const dateB = new Date(b.dateAjout);
+      comparison = dateA - dateB; 
+    }
+
+
+    if (order === "desc") {
+      comparison *= -1;
+    }
+
+    return comparison;
   });
 
   return (
@@ -89,19 +113,41 @@ function ListeProduits() {
                 <table className="table table-striped table-hover">
                   <thead>
                     <tr>
-                    <th>Code du produit</th>
-                      <th>Nom</th>
+                    <th>Code Produit</th>
+                      <th>
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            setOrderBy("nom");
+                            setOrder(order === "asc" ? "desc" : "asc");
+                          }}
+                        >
+                          Nom{" "}
+                          {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
+                        </span>
+                      </th>
                       <th>Description</th>
                       <th>Prix de Vente</th>
                       <th>Prix d'Achat</th>
                       <th>Catégorie</th>
-                      <th>Date d'Ajout</th>
+                      <th>
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            setOrderBy("dateAjout");
+                            setOrder(order === "asc" ? "desc" : "asc");
+                          }}
+                        >
+                          Date d'Ajout{" "}
+                          {orderBy === "dateAjout" && (order === "asc" ? "↑" : "↓")}
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProduits.map((produit) => (
+                    {sortedProduits.map((produit) => (
                       <tr key={produit._id}>
-                           <td>{produit.codeProduit}</td>
+                        <td>{produit.codeProduit}</td>
                         <td>{produit.nom}</td>
                         <td>{produit.description}</td>
                         <td>{produit.prixdevente} Ariary</td>
