@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../Styles/Produit.css";
+import "../Styles/Achat.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import Swal from "sweetalert2";
@@ -13,13 +13,16 @@ function AchatProduits() {
   const [prixAchat, setPrixAchat] = useState("");
 
   const [typesProduits, setTypesProduits] = useState(["Électronique", "Alimentaire"]);
-  const [nomsProduits, setNomsProduits] = useState(["Ordinateur", "Téléphone"]);
-
-  const [nouveauType, setNouveauType] = useState("");
-  const [nouveauNom, setNouveauNom] = useState("");
-  const [ajoutNouveauProduit, setAjoutNouveauProduit] = useState(false);
+  const [nomsProduits, setNomsProduits] = useState([
+    { nom: "Ordinateur", type: "Électronique" },
+    { nom: "Téléphone", type: "Électronique" },
+  ]);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [ajoutNouveauProduit, setAjoutNouveauProduit] = useState(false);
+  const [nouveauNom, setNouveauNom] = useState("");
+  const [nouveauType, setNouveauType] = useState("");
 
   const ajouterAuPanier = () => {
     if (produit && quantite && prixAchat) {
@@ -50,24 +53,22 @@ function AchatProduits() {
   };
 
   const ajouterNouveauProduit = () => {
-    if (nouveauType && nouveauNom) {
+    if (nouveauNom && nouveauType) {
       if (!typesProduits.includes(nouveauType)) {
         setTypesProduits([...typesProduits, nouveauType]);
       }
-      setNomsProduits([...nomsProduits, nouveauNom]);
 
-      // Réinitialisation du formulaire après ajout
-      setAjoutNouveauProduit(false);
-      setProduit(nouveauNom); // Sélectionner directement le produit ajouté
-      setNouveauType("");
+      setNomsProduits([...nomsProduits, { nom: nouveauNom, type: nouveauType }]);
+      setProduit(nouveauNom);
       setNouveauNom("");
+      setNouveauType("");
+      setAjoutNouveauProduit(false);
     }
   };
 
-  const prixTotal = panier.reduce((acc, item) => acc + item.total, 0);
-
-  // Filtrage des produits en fonction du terme de recherche
-  const produitsFiltres = nomsProduits.filter(nom => nom.toLowerCase().includes(searchTerm.toLowerCase()));
+  const produitsFiltres = nomsProduits.filter((p) =>
+    p.nom.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
@@ -104,44 +105,60 @@ function AchatProduits() {
                     <h6><i className="fa fa-box"></i> Ajouter un Produit</h6>
 
                     {!ajoutNouveauProduit ? (
-                      <>
-                        <input 
-                          type="text" 
-                          className="form-control mt-3" 
-                          placeholder="Nom du produit (recherche possible)" 
-                          value={searchTerm} 
-                          onChange={(e) => setSearchTerm(e.target.value)} 
+                      <div className="autocomplete">
+                        <input
+                          type="text"
+                          className="form-control mt-3"
+                          placeholder="Rechercher ou ajouter un produit..."
+                          value={searchTerm}
+                          onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setShowSuggestions(true);
+                          }}
+                          onFocus={() => setShowSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                         />
-                        <select className="form-control mt-3" value={produit} onChange={(e) => {
-                          if (e.target.value === "new") {
-                            setAjoutNouveauProduit(true);
-                          } else {
-                            setProduit(e.target.value);
-                          }
-                        }}>
-                          <option value="">Nom du produit</option>
-                          {produitsFiltres.map((nom, index) => (
-                            <option key={index} value={nom}>{nom}</option>
-                          ))}
-                          <option value="new">+ Nouveau produit</option> {/* Toujours afficher le "+ Nouveau produit" */}
-                        </select>
-                      </>
+                        {showSuggestions && (
+                          <ul className="suggestions-list">
+                            {produitsFiltres.map((p, index) => (
+                              <li
+                                key={index}
+                                onClick={() => {
+                                  setProduit(p.nom);
+                                  setSearchTerm(p.nom);
+                                  setShowSuggestions(false);
+                                }}
+                              >
+                                {p.nom} ({p.type})
+                              </li>
+                            ))}
+                            {searchTerm && !produitsFiltres.find((p) => p.nom === searchTerm) && (
+                              <li className="add-new" onClick={() => setAjoutNouveauProduit(true)}>
+                                + Ajouter Nouveau Produit
+                              </li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
                     ) : (
                       <>
-                        <input 
-                          type="text" 
-                          className="form-control mt-3" 
-                          placeholder="Type du nouveau produit" 
-                          value={nouveauType} 
-                          onChange={(e) => setNouveauType(e.target.value)} 
+                        <input
+                          type="text"
+                          className="form-control mt-3"
+                          placeholder="Nom du nouveau produit"
+                          value={nouveauNom}
+                          onChange={(e) => setNouveauNom(e.target.value)}
                         />
-                        <input 
-                          type="text" 
-                          className="form-control mt-3" 
-                          placeholder="Nom du nouveau produit" 
-                          value={nouveauNom} 
-                          onChange={(e) => setNouveauNom(e.target.value)} 
-                        />
+                        <select
+                          className="form-control mt-3"
+                          value={nouveauType}
+                          onChange={(e) => setNouveauType(e.target.value)}
+                        >
+                          <option value="">Sélectionner un type</option>
+                          {typesProduits.map((type, index) => (
+                            <option key={index} value={type}>{type}</option>
+                          ))}
+                        </select>
                         <button className="btn btn-success mt-3" onClick={ajouterNouveauProduit}>
                           Ajouter
                         </button>
@@ -172,13 +189,13 @@ function AchatProduits() {
                         <tr key={index}>
                           <td>{item.produit}</td>
                           <td>{item.quantite}</td>
-                          <td>{item.prixAchat} FCFA</td>
-                          <td>{item.total} FCFA</td>
+                          <td>{item.prixAchat} Ar</td>
+                          <td>{item.total} Ar</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                  <h6 className="mt-3">Total: {prixTotal} FCFA</h6>
+                  <h6 className="mt-3">Total: {panier.reduce((acc, item) => acc + item.total, 0)} Ar</h6>
                   <button className="btn btn-success mt-3" onClick={validerPanier}>Valider l'Achat</button>
                 </div>
               )}

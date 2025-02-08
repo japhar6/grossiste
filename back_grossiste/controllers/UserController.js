@@ -106,6 +106,27 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la récupération des utilisateurs", error });
   }
 };
+exports.countUsersByRole = async (req, res) => {
+  try {
+    // Compter les utilisateurs par rôle
+    const roleCounts = await User.aggregate([
+      { $unwind: "$role" }, 
+      {
+        $group: {
+          _id: "$role", 
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } } 
+    ]);
+
+    // Répondre avec les résultats
+    res.json(roleCounts);
+  } catch (error) {
+    res.status(500).json({ message: "❌ Erreur lors du comptage des utilisateurs par rôle", error });
+  }
+};
+
 
 exports.getUserById = async (req, res) => {
   try {

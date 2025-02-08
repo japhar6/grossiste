@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-
+import '../Styles/Navbar.css'
 function Header() {
     const [email, setEmail] = useState("");
+    const [currentTime, setCurrentTime] = useState("");
 
-    // Utiliser useEffect pour récupérer l'email après le montage du composant
+   
     useEffect(() => {
       const storedEmail = localStorage.getItem("email");
       if (storedEmail) {
@@ -13,7 +14,16 @@ function Header() {
 
         window.location.href = "/";
       }
+  
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString()); 
+    }, 1000);
+
+
+    return () => clearInterval(intervalId);
     }, []);
+    
     
   const handleLogout = () => {
     Swal.fire({
@@ -42,7 +52,9 @@ function Header() {
           </button>
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto">
+         
               <li className="nav-item">
+       
                 <div className="notification-icon">
                   <i className="fas fa-bell fa-lg"></i>
                   <span className="badge">3</span>
@@ -51,6 +63,7 @@ function Header() {
               <li className="nav-item">
                 <a className="nav-link" href="/profil">{email}</a>
               </li>
+       
               <li
                 className="nav-item"
                 onClick={handleLogout}
@@ -58,6 +71,7 @@ function Header() {
               >
                 <i className="fa-solid fa-right-from-bracket notification-icon mt-2 text-success"></i>
               </li>
+              <span className="heure">{currentTime}</span>
             </ul>
           </div>
         </div>

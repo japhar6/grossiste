@@ -17,8 +17,8 @@ function Fournisseur() {
   const [logo, setLogo] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
-  const [filterNom, setFilterNom] = useState("");  // Filtre par nom
-  const [filterType, setFilterType] = useState(""); // Filtre par type
+  const [filterNom, setFilterNom] = useState("");  
+  const [filterType, setFilterType] = useState(""); 
 
   useEffect(() => {
     fetchFournisseurs();
@@ -195,7 +195,7 @@ function Fournisseur() {
                         <td>
                           {f.type === "ristourne" && f.conditions?.ristourne
                             ? `${f.conditions.ristourne}%`
-                            : "N/A"}
+                            : "Aucune"}
                         </td>
                         <td>
                           <button className="btn btn-warning" onClick={() => handleEdit(f)}>

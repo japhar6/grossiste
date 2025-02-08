@@ -1,96 +1,186 @@
 /* Styles pour la page Achat de Produits */
 .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .contenue2 {
-    width: 100%;
-    padding: 20px;
-    background-color: #f8f9fa;
-  }
-  
-  .content {
-    width: 100%;
-    background: #ffffff;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-  }
-  
-  .mini-stat {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 20px;
-  }
-  
-  .filtrage,
-  .ajout-produit {
-    background: #f1f1f1;
-    border-radius: 5px;
-    padding: 15px;
-  }
-  
-  .btn-ajout {
-    margin-top: 10px;
-    padding: 10px 15px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .btn-ajout:hover {
-    background-color: #218838;
-  }
-  
-  .btn-supprimer {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .btn-supprimer:hover {
-    background-color: #c82333;
-  }
-  
-  .btn-valider {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .btn-valider:hover {
-    background-color: #0056b3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contenue2 {
+  width: 100%;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+.content {
+  width: 100%;
+  background: #ffffff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.mini-stat {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.filtrage,
+.ajout-produit {
+  background: #f1f1f1;
+  border-radius: 5px;
+  padding: 15px;
+}
+
+.btn-ajout {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-ajout:hover {
+  background-color: #218838;
+}
+
+.btn-supprimer {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-supprimer:hover {
+  background-color: #c82333;
+}
+
+.btn-valider {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-valider:hover {
+  background-color: #0056b3;
+}
+
+/* Ajouter une classe pour la mise en page côte à côte */
+.achat-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Style des sections individuelles (fournisseur et produit) */
+.fournisseur-section,
+.produit-section {
+  flex: 1 1 48%; /* Cela permet aux sections de prendre 48% de la largeur de l'écran */
+  background: #f1f1f1;
+  border-radius: 5px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+/* Ajuster la largeur de la section panier pour qu'elle prenne 48% de la largeur de l'écran */
+.consultation {
+  flex: 1 1 48%;
+  background: #ffffff;
+  border-radius: 5px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+/* Pour que les éléments dans chaque section soient bien alignés */
+.fournisseur-section select,
+.produit-section input {
+  width: 100%;
+}
+
+/* Style du tableau */
+.table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.table-striped {
+  border-collapse: collapse;
+}
+
+.table-striped th, .table-striped td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table-striped tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Ajuster la mise en page du tableau dans la section Panier */
+.consultation {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.consultation h6 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.consultation button {
+  margin-top: 20px;
+}
+
+/* Pour un design responsive (si l'écran est petit, les sections se mettront sous forme de colonne) */
+@media (max-width: 768px) {
+  .achat-container {
+    flex-direction: column;
   }
 
-  /* Ajouter une classe pour la mise en page côte à côte */
-.fournisseur-produit-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-  }
-  
-  /* Style des sections individuelles (fournisseur et produit) */
   .fournisseur-section,
-  .produit-section {
-    flex: 1;
-    background: #f1f1f1;
-    border-radius: 5px;
-    padding: 15px;
+  .produit-section,
+  .consultation {
+    flex: 1 1 100%; /* Les sections prennent toute la largeur sur les petits écrans */
   }
-  
-  /* Pour que les éléments dans chaque section soient bien alignés */
-  .fournisseur-section select,
-  .produit-section input {
-    width: 100%;
-  }
-  
-  
+}
+/* Améliorations pour le select dans la section "Nouveau Produit" */
+select {
+  background-color: #ffffff;
+  color: #495057;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%; /* Pour que le select occupe toute la largeur */
+  margin-bottom: 15px;
+}
+
+select:focus {
+  outline: none;
+  border-color: #007bff; /* Couleur de la bordure au focus */
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.25); /* Ombre autour du select au focus */
+}
+
+/* Ajout d'un style personnalisé pour l'option sélectionnée */
+select option {
+  background-color: #ffffff;
+  color: #495057;
+}
+
+select option:hover {
+  background-color: #f8f9fa; /* Changer la couleur d'arrière-plan au survol */
+}
+
+select option:checked {
+  background-color: #007bff; /* Couleur d'arrière-plan de l'option sélectionnée */
+  color: white;
+}
