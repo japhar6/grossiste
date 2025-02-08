@@ -31,9 +31,10 @@ function Login() {
             localStorage.setItem('token', data.token);
              localStorage.setItem('email', data.user.email);
             localStorage.setItem('role', data.user.role);
+            localStorage.setItem('userid', data.user._id);
             
 
-            setSuccess(true);  // ✅ Afficher le message de succès
+            setSuccess(true);  
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':

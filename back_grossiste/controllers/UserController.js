@@ -29,7 +29,6 @@ exports.register = async (req, res) => {
         return res.status(400).json({ message: "❌ Un admin existe déjà !" });
       }
 
-  
       // Extraire les informations du body
       const { nom, email, password, role } = req.body;
   
@@ -38,8 +37,6 @@ exports.register = async (req, res) => {
       if (userExists) {
         return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
       }
-  
-  
       // Gérer l'upload de la photo si nécessaire
       const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
@@ -80,7 +77,7 @@ exports.register = async (req, res) => {
       const token = jwt.sign(
         { userId: user._id, role: user.role },  
         process.env.JWT_SECRET,               
-        { expiresIn: "1h" }                  
+        { expiresIn: "3h" }                  
       );
   
       // Retourner une réponse avec le token
