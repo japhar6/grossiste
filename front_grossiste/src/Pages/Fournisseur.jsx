@@ -26,7 +26,7 @@ function Fournisseur() {
 
   const fetchFournisseurs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fournisseurs/");
+      const response = await axios.get("http://localhost:5000/api/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  // Initialisation des fournisseurs filtrés
     } catch (error) {
@@ -135,7 +135,7 @@ function Fournisseur() {
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
-              <h6 className="alert alert-info">
+              <h6 className="alert alert-success">
                 <i className="fa fa-truck"></i> Liste des Fournisseurs
               </h6>
 
@@ -221,7 +221,7 @@ function Fournisseur() {
 
             {/* Formulaire d'ajout/modification du fournisseur */}
             <div className="ajoutPersonnel p-3">
-              <h6 className="alert alert-info">
+              <h6 className="alert alert-success  ">
                 <i className="fa fa-plus"></i> {editingId ? "Modifier un fournisseur" : "Ajouter un Fournisseur"}
               </h6>
               <form onSubmit={handleSubmit}>

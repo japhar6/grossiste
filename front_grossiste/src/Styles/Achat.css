@@ -242,3 +242,173 @@ select option:checked {
 .btn-info:hover {
   background-color: #138496;
 }
+
+/* Style global pour les champs de saisie */
+input.form-control, select.form-control, .react-select__control {
+  width: 100%; /* Réduire la largeur des champs de saisie */
+  padding: 10px; /* Ajouter un peu de padding */
+  border-radius: 8px; /* Arrondir les coins des champs */
+  border: 1px solid #ccc; /* Bordure légère */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre subtile */
+  margin-bottom: 10px; /* Espacement entre les champs */
+  transition: all 0.3s ease; /* Transition douce */
+}
+
+input.form-control:focus, select.form-control:focus {
+  border-color: #4CAF50; /* Changer la couleur de la bordure au focus */
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); /* Ombre verte au focus */
+}
+
+/* Style pour le bouton "Ajouter" */
+button.btn-primary {
+  background-color: #4CAF50; /* Couleur verte du bouton */
+  color: white;
+  border: none;
+  padding: 12px 20px; /* Augmenter la taille du bouton */
+  border-radius: 8px; /* Arrondir les coins du bouton */
+  cursor: pointer;
+  transition: background-color 0.3s ease; /* Effet au survol */
+  width: 100%;
+}
+
+button.btn-primary:hover {
+  background-color: #45a049; /* Changer la couleur au survol */
+}
+
+button.btn-link {
+  background-color: transparent; /* Bouton transparent */
+  color: #007bff; /* Couleur bleue du texte */
+  text-decoration: none; /* Retirer le soulignement */
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.3s ease; /* Effet au survol */
+  width: 100%;
+}
+
+button.btn-link:hover {
+  color: #0056b3; /* Changer la couleur au survol */
+}
+
+/* Style pour les labels des champs */
+label {
+  font-size: 14px;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+/* Style général pour les sections */
+.produit-section {
+  padding: 10px;
+
+  border-radius: 10px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.achat-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.fournisseur-section, .produit-section {
+  flex: 1 1 45%;
+   /* Limiter la largeur de chaque section */
+}
+
+.mini-stat {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Style pour le tableau historique */
+table.table-striped {
+  margin-top: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+table.table-striped th, table.table-striped td {
+  padding: 12px;
+  text-align: center;
+}
+
+table.table-striped th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+table.table-striped tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Style du bouton valider le panier */
+button.btn-success {
+  background-color: #28a745;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Spécifier davantage le sélecteur pour s'assurer qu'il est appliqué */
+div.produit-section select.form-control {
+  width: 250px; /* Réduire la largeur des champs select */
+  padding: 10px; /* Ajouter un peu de padding */
+  border-radius: 8px; /* Arrondir les coins des champs */
+  border: 1px solid #ccc; /* Bordure légère */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre subtile */
+  margin-bottom: 10px; /* Espacement entre les champs */
+  transition: all 0.3s ease; /* Transition douce */
+  -webkit-appearance: none; /* Retirer les styles par défaut pour mieux contrôler */
+  -moz-appearance: none;
+  appearance: none;
+  background-color: white; /* Fond blanc */
+}
+
+/* Style pour le select au focus */
+div.produit-section select.form-control:focus {
+  border-color: #4CAF50; /* Changer la couleur de la bordure au focus */
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); /* Ombre verte au focus */
+}
+
+/* Personnalisation de l'icône du select (flèche) */
+div.produit-section select.form-control::-ms-expand {
+  display: none; /* Masquer la flèche par défaut dans IE */
+}
+
+div.produit-section select.form-control::after {
+  content: "▼"; /* Ajouter une flèche personnalisée si besoin */
+  font-size: 18px;
+  color: #333;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Style pour le bouton "Ajouter un Nouveau Produit" dans le select */
+div.produit-section button.btn-link {
+  background-color: transparent; /* Bouton transparent */
+  color: #007bff; /* Couleur bleue du texte */
+  text-decoration: none; /* Retirer le soulignement */
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.3s ease; /* Effet au survol */
+}
+
+div.produit-section button.btn-link:hover {
+  color: #0056b3; /* Changer la couleur au survol */
+}

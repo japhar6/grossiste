@@ -8,4 +8,5 @@ router.get("/afficher", produitController.afficherProduits);
 router.put("/modifier/:id", produitController.modifierProduit);
 router.delete("/supprimer/:id", produitController.supprimerProduit);
 router.get("/count", produitController.countProduits);
+router.get("/fournisseur/:fournisseurId", produitController.getProduitsParFournisseur);
 module.exports = router;

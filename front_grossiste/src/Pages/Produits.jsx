@@ -72,7 +72,7 @@ function ListeProduits() {
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
-              <h6 className="alert alert-info">
+              <h6 className="alert alert-success">
                 <i className="fa fa-box"></i> Liste des Produits
               </h6>
 
