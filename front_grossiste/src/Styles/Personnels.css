@@ -43,3 +43,38 @@
 .list table{
     font-size: 0.8em;
 }
+/* Modal centré */
+.custom-modal .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+  }
+  
+  /* Carte de personnel */
+  .user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .photo-container {
+    margin-bottom: 20px;
+  }
+  
+  .user-photo {
+    width: 150px;  /* Taille carrée */
+    height: 150px;
+    object-fit: cover;  /* Assure que l'image est recadrée et remplie */
+    border-radius: 50%;  /* Rendre l'image ronde */
+    border: 3px solid #007bff; /* Bordure autour de l'image */
+  }
+  
+  .user-info {
+    margin-top: 10px;
+  }
+  
+  .user-info p {
+    margin: 5px 0;
+    font-size: 1.1rem;
+  }
+  

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 function Sidebar(){
     const buttons = [
         { path: "/admin", icon: "fa-chart-line", text: "Tableau de bord" },
-        { path: "/personnels", icon: "fa-users", text: "Personnels" },
+        { path: "/personnel", icon: "fa-users", text: "Personnels" },
         { path: "/fournisseurs", icon: "fa-truck", text: "Fournisseur et achat" },
         { path: "/stock", icon: "fa-boxes", text: "Gestion de stock" },
         { path: "/articles", icon: "fa-tags", text: "Article et produits" },

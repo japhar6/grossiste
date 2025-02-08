@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
 import { useNavigate ,Link} from 'react-router-dom';
 import '../Styles/Login.css';
@@ -31,9 +32,10 @@ function Login() {
             localStorage.setItem('token', data.token);
              localStorage.setItem('email', data.user.email);
             localStorage.setItem('role', data.user.role);
+            localStorage.setItem('userid', data.user._id);
             
 
-            setSuccess(true);  // ✅ Afficher le message de succès
+            setSuccess(true);  
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':
