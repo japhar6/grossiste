@@ -28,7 +28,7 @@ function Fournisseur() {
     try {
       const response = await axios.get("http://localhost:5000/api/fournisseurs/tous");
       setFournisseurs(response.data);
-      setFilteredFournisseurs(response.data);  // Initialisation des fournisseurs filtrés
+      setFilteredFournisseurs(response.data);  
     } catch (error) {
       console.error("Erreur lors de la récupération des fournisseurs", error);
     }

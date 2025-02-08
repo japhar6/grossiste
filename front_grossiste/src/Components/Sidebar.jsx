@@ -9,7 +9,7 @@ function Sidebar(){
         { path: "/produit", icon: "fa-tags", text: "Article et produits" },
         { path: "/achat", icon: "fa-truck", text: " Achat" },
         { path: "/stock", icon: "fa-boxes", text: "Gestion de stock" },
-     
+        { path: "/entrepot", icon: "fa-boxes", text: "Gestion des entrepots" },
         { path: "/caisse", icon: "fa-cash-register", text: "Caisse" },
         { path: "/metier-magasinier", icon: "fa-warehouse", text: "Metier Magazinier" },
         { path: "/ventes", icon: "fa-shopping-cart", text: "Vente et prise de commande" },

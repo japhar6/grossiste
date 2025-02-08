@@ -29,7 +29,7 @@ exports.createEntrepot = async (req, res) => {
 // 🔹 Récupérer tous les entrepôts
 exports.getAllEntrepots = async (req, res) => {
   try {
-    const entrepots = await Entrepot.find().populate("magasinier", "nom email");
+    const entrepots = await Entrepot.find().populate("magasinier", "nom email photo ");
     res.status(200).json(entrepots);
   } catch (error) {
     res.status(500).json({ message: "❌ Erreur lors de la récupération des entrepôts.", error });
