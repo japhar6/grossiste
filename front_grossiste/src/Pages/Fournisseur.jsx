@@ -26,7 +26,7 @@ function Fournisseur() {
 
   const fetchFournisseurs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fournisseurs/");
+      const response = await axios.get("http://localhost:5000/api/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  // Initialisation des fournisseurs filtrés
     } catch (error) {
