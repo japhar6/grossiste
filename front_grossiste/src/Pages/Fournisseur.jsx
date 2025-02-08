@@ -58,10 +58,9 @@ function Fournisseur() {
               
                   >
                     <option value="">Tout</option>
-                    <option value="magasinier">Magasinier</option>
-                    <option value="caissier">Caissier</option>
-                    <option value="vendeur">Vendeur (Réception)</option>
-                    <option value="gestion_prix">Contrôleur de produit</option>
+                    <option value="magasinier">Prix libre</option>
+                    <option value="caissier">Ristourne</option>
+                
                   </select>
                 </form>
               </div>
