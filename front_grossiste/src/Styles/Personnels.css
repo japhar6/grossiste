@@ -19,13 +19,35 @@
 .ajoutPersonnel form button{
     width: 100%;
 }
+.role-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.role-count {
+  font-size: 1rem;
+  font-weight: normal;
+  margin-top: 5px;
+  color: #f2f2f2;
+}
+.role-name,
+.role-count {
+  letter-spacing: 1px;
+}
 .perso{
     height: 10vh;
     width: 25%;
     border-radius: 5px;
     background: rgb(81,173,110);
+    color: #fff;
     background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
-    box-shadow: 0 0 5px gray;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+.perso:hover {
+  transform: scale(1.05);
 }
 .mini{
     box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);

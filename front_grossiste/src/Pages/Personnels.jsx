@@ -19,6 +19,25 @@ function Personnels() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [roleCounts, setRoleCounts] = useState([]);
+
+
+
+  useEffect(() => {
+    // Fonction pour récupérer le comptage des utilisateurs par rôle
+    const fetchRoleCounts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/users/count-users-by-role");
+        setRoleCounts(response.data); // Stocker les données dans l'état
+        setLoading(false); // Fin du chargement
+      } catch (error) {
+        console.error("Erreur lors de la récupération des rôles :", error);
+        setLoading(false);
+      }
+    };
+
+    fetchRoleCounts(); // Appeler la fonction de récupération
+  }, []);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -204,12 +223,15 @@ function Personnels() {
           <div className="p-3 content center">
             <div className="mini-stat p-3">
             <h6 className='alert alert-info'><i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
-                <div className='center bg-light p-3 mini'>
-                    <div className="perso m-2"></div>
-                    <div className="perso m-2"></div>
-                    <div className="perso m-2"></div>
-                    <div className="perso m-2"></div>
-                </div>
+                   <div className='center bg-light p-3 mini'>
+      {roleCounts.map((role, index) => (
+        <div key={index} className="perso m-2">
+          <div className="role-name font-weight-bold">{role._id}</div>
+          <div className="role-count">{role.count} Personnel{role.count > 1 ? "s" : ""}</div>
+        </div>
+      ))}
+    </div>
+
               <h6 className="alert alert-info">
                 <i className="fa fa-line-chart"></i> Mini-statistique de vos personnels
               </h6>

@@ -27,4 +27,5 @@ router.put("/:id", authenticateJWT, upload.single("photo"), userController.updat
 // 📌 Suppression d'un utilisateur - Admin uniquement
 router.delete("/:id", authenticateJWT, authenticateAdmin, userController.deleteUser);
 
+router.get("/count-users-by-role", userController.countUsersByRole);
 module.exports = router;
