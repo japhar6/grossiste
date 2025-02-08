@@ -42,6 +42,14 @@ exports.afficherProduits = async (req, res) => {
     }
 };
 
+exports.countProduits = async (req, res) => {
+    try {
+      const count = await Produit.countDocuments();
+      res.status(200).json({ totalProduits: count });
+    } catch (error) {
+      res.status(500).json({ message: "❌ Erreur lors du comptage des produits", error });
+    }
+  };
 
 // ✅ Modifier un produit
 exports.modifierProduit = async (req, res) => {

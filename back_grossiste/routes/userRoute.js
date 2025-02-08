@@ -18,6 +18,7 @@ router.post("/login", userController.login);
 // 📌 Obtenir tous les utilisateurs - Admin uniquement
 router.get("/tout", authenticateJWT, authenticateAdmin, userController.getAllUsers);
 
+<<<<<<< HEAD
 
 // 📌 Obtenir un utilisateur spécifique - Accessible par l'utilisateur lui-même ou un admin
 router.get("/tout/:id", authenticateJWT, userController.getUserById);
@@ -27,6 +28,12 @@ router.get("/seul/:id", authenticateJWT, userController.getUserById);
 
 
 // 📌 Mise à jour du profil utilisateur - L'utilisateur peut mettre à jour son propre profil
+=======
+// Route pour obtenir un utilisateur spécifique 
+router.get("/seul/:id", authenticateJWT, userController.getUserById);
+
+// Route pour mettre à jour un utilisateur
+>>>>>>> 2593bf8d9c7d192cdce5b195571674b2954d056b
 router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);
 
 // 📌 Suppression d'un utilisateur - Admin uniquement

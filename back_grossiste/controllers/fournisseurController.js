@@ -26,6 +26,16 @@ exports.getFournisseurs = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la récupération des fournisseurs", error });
   }
 };
+// Compter le nombre de fournisseurs
+exports.countFournisseurs = async (req, res) => {
+  try {
+    const count = await Fournisseur.countDocuments();
+    res.status(200).json({ totalFournisseurs: count });
+  } catch (error) {
+    res.status(500).json({ message: "❌ Erreur lors du comptage des fournisseurs", error });
+  }
+};
+
 
 // Récupérer un fournisseur par ID
 exports.getFournisseurById = async (req, res) => {

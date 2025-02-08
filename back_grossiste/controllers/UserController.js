@@ -122,22 +122,19 @@ exports.getUserById = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { nom, email, photo, password } = req.body;  // On récupère également le mot de passe
+    const { nom, email, photo, password } = req.body;  
 
-    // Vérification de l'existence de l'utilisateur
+ 
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "❌ Utilisateur introuvable." });
     }
 
-    // Vérification que l'utilisateur connecté modifie son propre profil (et non celui d'un autre utilisateur)
-    if (currentUser._id.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "❌ Vous ne pouvez pas modifier le profil d'un autre utilisateur." });
-    }
+ 
 
     // Création d'un objet avec les données à mettre à jour
     const updatedData = {
-      nom: nom || currentUser.nom,  // Met à jour le nom uniquement si fourni
+      nom: nom || currentUser.nom,  
       email: email || currentUser.email,  // Met à jour l'email uniquement si fourni
       photo: req.file ? `/uploads/users/${req.file.filename}` : currentUser.photo,  // Mise à jour de la photo si une nouvelle est envoyée
     };
