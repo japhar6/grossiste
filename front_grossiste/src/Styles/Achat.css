@@ -1,0 +1,96 @@
+/* Styles pour la page Achat de Produits */
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .contenue2 {
+    width: 100%;
+    padding: 20px;
+    background-color: #f8f9fa;
+  }
+  
+  .content {
+    width: 100%;
+    background: #ffffff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  .mini-stat {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .filtrage,
+  .ajout-produit {
+    background: #f1f1f1;
+    border-radius: 5px;
+    padding: 15px;
+  }
+  
+  .btn-ajout {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-ajout:hover {
+    background-color: #218838;
+  }
+  
+  .btn-supprimer {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-supprimer:hover {
+    background-color: #c82333;
+  }
+  
+  .btn-valider {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn-valider:hover {
+    background-color: #0056b3;
+  }
+
+  /* Ajouter une classe pour la mise en page côte à côte */
+.fournisseur-produit-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  /* Style des sections individuelles (fournisseur et produit) */
+  .fournisseur-section,
+  .produit-section {
+    flex: 1;
+    background: #f1f1f1;
+    border-radius: 5px;
+    padding: 15px;
+  }
+  
+  /* Pour que les éléments dans chaque section soient bien alignés */
+  .fournisseur-section select,
+  .produit-section input {
+    width: 100%;
+  }
+  
+  

@@ -9,6 +9,7 @@ import Personnels from './Pages/Personnels.jsx';
 import Personnel from './Pages/Personnels.jsx';
 import Profil from './Pages/Profil.jsx';
 import ListeProduits from './Pages/Produits.jsx';
+import  AchatProduits from './Pages/Achat.jsx';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path='/produit' element={<ListeProduits />} />
           <Route path='/personnels' element={<Personnels />} />
           <Route path='/personnel' element={<Personnel />} />
+          <Route path='/achat' element={<AchatProduits />} />
           <Route path='/profil' element={<Profil />} />
 
         </Route>
