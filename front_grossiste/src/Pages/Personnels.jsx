@@ -237,9 +237,6 @@ function Personnels() {
       ))}
     </div>
 
-              <h6 className="alert alert-info">
-                <i className="fa fa-line-chart"></i> Mini-statistique de vos personnels
-              </h6>
               <div className="filtrage bg-light p-3 mt-3">
                 <h6 className="fw-bold">
                   <i className="fa fa-search"></i> Filtrage générale

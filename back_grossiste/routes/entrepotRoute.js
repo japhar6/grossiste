@@ -8,8 +8,7 @@ const authenticateMagasinier = require("../config/middleware/authenticateMagasin
 // 🔹 Ajouter un nouvel entrepôt (admin uniquement)
 router.post("/", authenticateJWT, authenticateAdmin, entrepotController.createEntrepot);
 
-// 🔹 Récupérer tous les entrepôts (admin + magasinier)
-router.get("/", authenticateJWT, authenticateMagasinier, entrepotController.getAllEntrepots);
+    router.get("/", authenticateJWT, authenticateMagasinier, entrepotController.getAllEntrepots);
 
 // 🔹 Récupérer un entrepôt par ID (admin + magasinier)
 router.get("/:id", authenticateJWT, authenticateMagasinier, entrepotController.getEntrepotById);
