@@ -139,24 +139,31 @@ function Fournisseur() {
                 <i className="fa fa-truck"></i> Liste des Fournisseurs
               </h6>
 
-              <div className="filter-controls">
-                <input
-                  type="text"
-                  placeholder="Filtrer par nom"
-                  value={filterNom}
-                  onChange={(e) => setFilterNom(e.target.value)}
-                  className="form-control"
-                />
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className="form-control"
-                >
-                  <option value="">Filtrer par type</option>
-                  <option value="prix_libre">Prix Libre</option>
-                  <option value="ristourne">Ristourne</option>
-                </select>
+              {/* Partie filtrage avec un design cohérent */}
+              <div className="filtrage bg-light p-3 mt-3">
+                <h6 className="fw-bold">
+                  <i className="fa fa-search"></i> Filtrage
+                </h6>
+                <form className="center">
+                  <input
+                    type="text"
+                    className="form-control p-2 mt-3 m-2"
+                    placeholder="Filtrer par nom"
+                    value={filterNom}
+                    onChange={(e) => setFilterNom(e.target.value)}
+                  />
+                  <select
+                    className="form-control mt-3 m-2 p-2"
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                  >
+                    <option value="">Filtrer par type</option>
+                    <option value="prix_libre">Prix Libre</option>
+                    <option value="ristourne">Ristourne</option>
+                  </select>
+                </form>
               </div>
+
               <div className="consultation">
                 <table className="table table-striped table-hover">
                   <thead>
@@ -164,10 +171,10 @@ function Fournisseur() {
                       <th>Logo</th>
                       <th>Nom</th>
                       <th>Type</th>
-                      <th>Telephone</th>
+                      <th>Téléphone</th>
                       <th>Email</th>
                       <th>Adresse</th>
-                      <th>Ristourne</th> {/* Colonne pour afficher la ristourne */}
+                      <th>Ristourne</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -211,6 +218,8 @@ function Fournisseur() {
                 </table>
               </div>
             </div>
+
+            {/* Formulaire d'ajout/modification du fournisseur */}
             <div className="ajoutPersonnel p-3">
               <h6 className="alert alert-info">
                 <i className="fa fa-plus"></i> {editingId ? "Modifier un fournisseur" : "Ajouter un Fournisseur"}
