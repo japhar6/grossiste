@@ -43,6 +43,7 @@
 .list table{
     font-size: 0.8em;
 }
+
 /* Modal centré */
 .custom-modal .modal-dialog {
     max-width: 500px;
@@ -77,4 +78,4 @@
     margin: 5px 0;
     font-size: 1.1rem;
   }
-  
+
