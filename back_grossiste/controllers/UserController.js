@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
     try {
-      const { nom, email, password, role } = req.body;
+      const { nom, email, password, role ,numero_cin} = req.body;
       const userExists = await User.findOne({ email });
       if (userExists) {
         return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
   
       const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
-      const newUser = new User({ nom, email, password, role, photo });
+      const newUser = new User({ nom, email, password, role, photo,numero_cin });
       await newUser.save();
   
       res.status(201).json({ message: "✅ Utilisateur créé avec succès", user: newUser });
@@ -30,7 +30,7 @@ exports.register = async (req, res) => {
       }
 
       // Extraire les informations du body
-      const { nom, email, password, role } = req.body;
+      const { nom, email, password, role,numero_cin } = req.body;
   
       // Vérifier si l'email est déjà utilisé
       const userExists = await User.findOne({ email });
@@ -41,7 +41,7 @@ exports.register = async (req, res) => {
       const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
      
-      const newUser = new User({ nom, email,  password, role, photo });
+      const newUser = new User({ nom, email,  password, role, photo,numero_cin });
   
       // Sauvegarder l'utilisateur dans la base de données
       await newUser.save();
@@ -143,7 +143,7 @@ exports.getUserById = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { nom, email, photo, password } = req.body;  
+    const { nom, email, photo, password,numero_cin} = req.body;  
 
  
     const currentUser = await User.findById(userId);
@@ -155,7 +155,8 @@ exports.updateUser = async (req, res) => {
 
     // Création d'un objet avec les données à mettre à jour
     const updatedData = {
-      nom: nom || currentUser.nom,  
+      nom: nom || currentUser.nom, 
+      numero_cin: numero_cin || currentUser.numero_cin,  
       email: email || currentUser.email,  // Met à jour l'email uniquement si fourni
       photo: req.file ? `/uploads/users/${req.file.filename}` : currentUser.photo,  // Mise à jour de la photo si une nouvelle est envoyée
     };
@@ -191,3 +192,26 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la suppression", error });
   }
 };
+exports.licencierEmploye = async (req, res) => {
+  const { employeId } = req.params; 
+
+  try {
+    // Trouver et mettre à jour l'employé pour le licencier (mettre le status à 'licencié')
+    const employe = await User.findByIdAndUpdate(
+      employeId,
+      { status: "licencié" },
+      { new: true }  // Retourner le document mis à jour
+    );
+
+    if (!employe) {
+      return res.status(404).json({ message: "Employé non trouvé" });
+    }
+
+    res.status(200).json({
+      message: "Employé licencié avec succès",
+      employe
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }}

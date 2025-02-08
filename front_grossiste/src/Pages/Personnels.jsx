@@ -11,6 +11,7 @@ function Personnels() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [nom, setNom] = useState("");
+  const [numero_cin, setnumero_cin] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,6 +21,7 @@ function Personnels() {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [roleCounts, setRoleCounts] = useState([]);
+  const [showLicencies, setShowLicencies] = useState(false);
 
 
 
@@ -85,6 +87,7 @@ function Personnels() {
       formData.append("nom", nom);
       formData.append("email", email);
       formData.append("password", password);
+      formData.append("numero_cin", numero_cin);
       formData.append("role", role);
       if (photo) formData.append("photo", photo);
 
@@ -109,6 +112,7 @@ function Personnels() {
       setPassword("");
       setConfirmPassword("");
       setRole("");
+      setnumero_cin("");
       setPhoto(null);
     } catch (error) {
       Swal.fire({
@@ -139,7 +143,7 @@ function Personnels() {
       try {
         const token = localStorage.getItem("token");
        
-        await axios.delete(`http://localhost:5000/api/users/${selectedUser._id}`, {
+        await axios.put(`http://localhost:5000/api/users/licencier/${selectedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -164,7 +168,7 @@ function Personnels() {
     setEmail(selectedUser.email);
     setRole(selectedUser.role);
     setPhoto(selectedUser.photo);
-
+    setnumero_cin(selectedUser.numero_cin);
     setShowEditModal(true);
     setShowModal(false);
   };
@@ -175,6 +179,7 @@ function Personnels() {
     const formData = new FormData();
     formData.append('nom', nom);
     formData.append('email', email);
+    formData.append('numero_cin', numero_cin);
     formData.append('role', role);
     if (photo) formData.append('photo', photo);
   
@@ -260,7 +265,12 @@ function Personnels() {
                   </select>
                 </form>
               </div>
-
+              <button 
+                          className="btn_lic" 
+                          onClick={() => setShowLicencies(!showLicencies)}
+                        >
+                          {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
+                </button>
               <div className="consultation">
                 <table className="table table-striped table-hover">
                   <thead>
@@ -268,23 +278,28 @@ function Personnels() {
                       <th>Nom</th>
                       <th>Email</th>
                       <th>Poste</th>
+                      <th>Numero CIN</th>
                       <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user._id}>
-                        <td>{user.nom}</td>
-                        <td>{user.email}</td>
-                        <td>{user.role}</td>
-                        <td>
-                          <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
-                            <i className="fa fa-eye"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                        {filteredUsers
+                          .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
+                          .map((user) => (
+                            <tr key={user._id}>
+                              <td>{user.nom}</td>
+                              <td>{user.email}</td>
+                              <td>{user.role}</td>
+                              <td>{user.numero_cin}</td>
+                              <td>
+                                <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
+                                  <i className="fa fa-eye"></i>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                    </tbody>
+
                 </table>
               </div>
             </div>
@@ -305,6 +320,26 @@ function Personnels() {
                         <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
                         <label htmlFor="floatingPassword">Email</label>
                   </div>
+                  <div className="form-floating">
+                        <input
+                          type="text"
+                          className="form-control"
+                          required
+                          value={numero_cin}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, ""); 
+                            value = value.slice(0, 12); 
+                            
+                            
+                            value = value.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+                            setnumero_cin(value);
+                          }}
+                          placeholder="xxx xxx xxx xxx"
+                        />
+                        <label htmlFor="floatingPassword">Numero_cin</label>
+                      </div>
+
                   <div className="mb-3">
                     <label>Postes</label>
                     <select className="form-control" value={role} onChange={(e) => setRole(e.target.value)}>
@@ -349,28 +384,31 @@ function Personnels() {
         <Modal.Body>
           {selectedUser && (
             <div className="user-card">
-              <div className="photo-container">
+              <div className="photo-cont">
                 <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
               </div>
               <div className="user-info">
                 <p><strong>Nom:</strong> {selectedUser.nom}</p>
+               
                 <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Poste:</strong> {selectedUser.role}</p>
+                <p><strong>Poste:</strong> {selectedUser.role}</p>       
+                 <p><strong>Numero_cin:</strong> {selectedUser.numero_cin}</p>
                 <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
                 
-                 <div className="d-flex justify-content-between w-100">
+                <div className="d-flex justify-content-between w-100">
+                        {selectedUser.status !== "licencié" && (
+                          <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
+                            <i className="fa fa-edit"></i> Modifier
+                          </Button>
+                        )}
 
-               <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
-                           <i className="fa fa-edit"></i> Modifier
-                </Button>
+                        {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
+                          <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
+                            <i className="fa fa-trash"></i> Licencier
+                          </Button>
+                        )}
+                      </div>
 
-                       {selectedUser.role !== "admin" && (
-                <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
-                          <i className="fa fa-trash"></i> Licencier
-                </Button>  )}
-                        
-
-                </div>
 
               </div>
             </div>
@@ -390,7 +428,7 @@ function Personnels() {
         <Modal.Body>
   {selectedUser && (
     <form onSubmit={handleEditSubmit}>
-         <div className="photo-container text-center">
+         <div className="photo-conter text-center">
                  <img 
                 src={`http://localhost:5000${selectedUser.photo}`} 
                 alt="Photo de profil" 
@@ -413,6 +451,16 @@ function Personnels() {
           className="form-control" 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
+        />
+      </div>
+     
+      <div className="mb-3">
+        <label>Numero cin</label>
+        <input 
+          type="number" 
+          className="form-control" 
+          value={numero_cin} 
+          onChange={(e) => setnumero_cin(e.target.value)} 
         />
       </div>
      
