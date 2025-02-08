@@ -7,5 +7,5 @@ router.post("/ajouter", produitController.ajouterProduit);
 router.get("/afficher", produitController.afficherProduits);
 router.put("/modifier/:id", produitController.modifierProduit);
 router.delete("/supprimer/:id", produitController.supprimerProduit);
-
+router.get("/count", produitController.countProduits);
 module.exports = router;
