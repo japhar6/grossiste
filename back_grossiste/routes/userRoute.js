@@ -17,10 +17,10 @@ router.post("/create-admin", upload.single("photo"), userController.createAdmin)
 // Route pour obtenir tous les utilisateurs - accessible par admin uniquement
 router.get("/tout", authenticateJWT, authenticateAdmin, userController.getAllUsers);
 
-// Route pour obtenir un utilisateur spécifique - accessible par admin uniquement
+// Route pour obtenir un utilisateur spécifique 
 router.get("/seul/:id", authenticateJWT, userController.getUserById);
 
-// Route pour mettre à jour un utilisateur - accessible par admin uniquement
+// Route pour mettre à jour un utilisateur
 router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);
 
 // Route pour supprimer un utilisateur - accessible par admin uniquement
