@@ -28,4 +28,5 @@ router.put("/:id", authenticateJWT, upload.single("photo"), userController.updat
 router.delete("/:id", authenticateJWT, authenticateAdmin, userController.deleteUser);
 
 router.get("/count-users-by-role", userController.countUsersByRole);
+router.put("/licencier/:employeId", userController.licencierEmploye);
 module.exports = router;

@@ -73,31 +73,74 @@
   }
   
   /* Carte de personnel */
-  .user-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .photo-container {
-    margin-bottom: 20px;
-  }
-  
-  .user-photo {
-    width: 150px;  /* Taille carrée */
-    height: 150px;
-    object-fit: cover;  /* Assure que l'image est recadrée et remplie */
-    border-radius: 50%;  /* Rendre l'image ronde */
-    border: 3px solid #007bff; /* Bordure autour de l'image */
-  }
-  
-  .user-info {
-    margin-top: 10px;
-  }
-  
-  .user-info p {
-    margin: 5px 0;
-    font-size: 1.1rem;
-  }
+  /* Style général du modal */
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Conteneur de la photo */
+.photo-container {
+  background: #2b0a0a;
+}  
+
+/* Image de profil */
+.user-photo {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Informations de l'utilisateur */
+.user-info {
+  text-align: center;
+  width: 100%;
+}
+
+.user-info p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.user-info strong {
+  color: #689fb4;
+}
+
+/* Boutons d'action */
+.d-flex.justify-content-between {
+  margin-top: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+button.mt-3 {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: all 0.3s ease-in-out;
+}
+
+button.mt-3:hover {
+  opacity: 0.8;
+}
+
+/* Bouton Modifier */
+button.variant-warning {
+  background-color: #ffc107;
+  color: black;
+}
+
+/* Bouton Licencier */
+button.variant-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
 
