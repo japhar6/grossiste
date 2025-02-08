@@ -6,9 +6,10 @@ function Sidebar(){
         { path: "/admin", icon: "fa-chart-line", text: "Tableau de bord" },
         { path: "/personnel", icon: "fa-users", text: "Personnels" },
         { path: "/fournisseur", icon: "fa-truck", text: "Fournisseur " },
+        { path: "/produit", icon: "fa-tags", text: "Article et produits" },
         { path: "/achat", icon: "fa-truck", text: " Achat" },
         { path: "/stock", icon: "fa-boxes", text: "Gestion de stock" },
-        { path: "/articles", icon: "fa-tags", text: "Article et produits" },
+     
         { path: "/caisse", icon: "fa-cash-register", text: "Caisse" },
         { path: "/metier-magasinier", icon: "fa-warehouse", text: "Metier Magazinier" },
         { path: "/ventes", icon: "fa-shopping-cart", text: "Vente et prise de commande" },
