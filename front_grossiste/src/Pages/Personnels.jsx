@@ -203,6 +203,13 @@ function Personnels() {
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
+            <h6 className='alert alert-info'><i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
+                <div className='center bg-light p-3 mini'>
+                    <div className="perso m-2"></div>
+                    <div className="perso m-2"></div>
+                    <div className="perso m-2"></div>
+                    <div className="perso m-2"></div>
+                </div>
               <h6 className="alert alert-info">
                 <i className="fa fa-line-chart"></i> Mini-statistique de vos personnels
               </h6>
@@ -266,16 +273,18 @@ function Personnels() {
               </h6>
               <form onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="bg-light p-4">
-                  <div className="mb-3">
-                    <label>Nom complet</label>
+                <div className="form-floating mb-3">
+               
                     <input type="text" className="form-control" required value={nom} onChange={(e) => setNom(e.target.value)} />
+                    <label htmlFor="floatingInput">Nom complet</label>
+
+                  </div>
+                  <div className="form-floating">
+                        <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <label htmlFor="floatingPassword">Email</label>
                   </div>
                   <div className="mb-3">
-                    <label>Email</label>
-                    <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                  </div>
-                  <div className="mb-3">
-                    <label>Rôle</label>
+                    <label>Postes</label>
                     <select className="form-control" value={role} onChange={(e) => setRole(e.target.value)}>
                       <option value="">Sélectionner un rôle</option>
                       <option value="magasinier">Magasinier</option>
