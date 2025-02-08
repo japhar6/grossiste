@@ -195,7 +195,7 @@ function Fournisseur() {
                         <td>
                           {f.type === "ristourne" && f.conditions?.ristourne
                             ? `${f.conditions.ristourne}%`
-                            : "N/A"}
+                            : "Aucune"}
                         </td>
                         <td>
                           <button className="btn btn-warning" onClick={() => handleEdit(f)}>
