@@ -29,10 +29,10 @@ function Personnels() {
       try {
         const response = await axios.get("http://localhost:5000/api/users/count-users-by-role");
         setRoleCounts(response.data); // Stocker les données dans l'état
-        setLoading(false); // Fin du chargement
+     
       } catch (error) {
         console.error("Erreur lors de la récupération des rôles :", error);
-        setLoading(false);
+     
       }
     };
 
