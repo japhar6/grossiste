@@ -316,11 +316,11 @@ function Personnels() {
                     <label htmlFor="floatingInput">Nom complet</label>
 
                   </div>
-                  <div className="form-floating">
+                  <div className="form-floating mb-3">
                         <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <label htmlFor="floatingPassword">Email</label>
+                        <label htmlFor="floatingInput">Email</label>
                   </div>
-                  <div className="form-floating">
+                  <div className="form-floating mb-3">
                         <input
                           type="text"
                           className="form-control"
@@ -337,26 +337,27 @@ function Personnels() {
                           }}
                           placeholder="xxx xxx xxx xxx"
                         />
-                        <label htmlFor="floatingPassword">Numero_cin</label>
+                        <label htmlFor="floatingInput">Numero_cin</label>
                       </div>
 
-                  <div className="mb-3">
+                  <div className=" mb-3">
                     <label>Postes</label>
                     <select className="form-control" value={role} onChange={(e) => setRole(e.target.value)}>
-                      <option value="">Sélectionner un rôle</option>
+                      <option value="">Sélectionner un poste</option>
                       <option value="magasinier">Magasinier</option>
                       <option value="caissier">Caissier</option>
                       <option value="vendeur">Vendeur (Réception)</option>
                       <option value="gestion_prix">Contrôleur de produit</option>
                     </select>
                   </div>
-                  <div className="mb-3">
-                    <label>Mot de passe</label>
+                  <div className="form-floating  mb-3">
+                    
                     <input type="password" className="form-control" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <label htmlFor="floatingInput">Mot de passe</label>
                   </div>
-                  <div className="mb-3">
-                    <label>Confirmer le mot de passe</label>
+                  <div className="form-floating  mb-3">
                     <input type="password" className="form-control" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                    <label htmlFor="floatingInput">Confirmer le mot de passe</label>
                   </div>
                   <div className="mb-3">
                   <label>Photo</label>
