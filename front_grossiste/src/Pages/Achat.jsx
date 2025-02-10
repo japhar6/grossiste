@@ -78,6 +78,12 @@ function AchatProduits() {
         });
         setNouvelleCategorie("")
         setAjouterCategorie(false); 
+        setAfficherFormulaireProduit(false);  
+        const nouveauProduitOption = {
+          label: `${data.nom} - ${data.prixAchat} Ar`,
+          value: data.nom,
+        };
+
       })
       .catch((error) => {
         alert("Erreur lors de l'ajout du produit");
@@ -227,43 +233,44 @@ function AchatProduits() {
       setNouveauProduit({ ...nouveauProduit, fournisseur: selectedFournisseur });  
     };
     
-  useEffect(() => {
-    if (fournisseur) {
-      fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            const options = data.map((produit) => ({
-              label: `${produit.nom} - ${produit.prixAchat} Ar`,
-              value: produit.nom,
-            }));
-            setProduitsOptions(options);
-          } else {
-            // Vider la liste des produits si aucun produit n'est trouvé pour ce fournisseur
+    useEffect(() => {
+      if (fournisseur) {
+        fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (Array.isArray(data) && data.length > 0) {
+              const options = data.map((produit) => ({
+                label: `${produit.nom} - ${produit.prixAchat} Ar`,
+                value: produit.nom,
+              }));
+              setProduitsOptions(options);
+            } else {
+              // Vider la liste des produits si aucun produit n'est trouvé pour ce fournisseur
+              setProduitsOptions([]);
+              Swal.fire({
+                title: "Erreur",
+                text: "Ce fournisseur n'a pas encore de produit.",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+            }
+          })
+          .catch((error) => {
+            // En cas d'erreur, vider aussi la liste des produits
             setProduitsOptions([]);
             Swal.fire({
               title: "Erreur",
-              text: "Ce fournisseur n'a pas encore de produit.",
+              text: "Une erreur est survenue lors de la récupération des produits.",
               icon: "error",
               confirmButtonText: "OK",
             });
-          }
-        })
-        .catch((error) => {
-          // En cas d'erreur, vider aussi la liste des produits
-          setProduitsOptions([]);
-          Swal.fire({
-            title: "Erreur",
-            text: "Une erreur est survenue lors de la récupération des produits.",
-            icon: "error",
-            confirmButtonText: "OK",
           });
-        });
-    } else {
-      // Si aucun fournisseur n'est sélectionné, vider les produits
-      setProduitsOptions([]);
-    }
-  }, [fournisseur]);
+      } else {
+        // Si aucun fournisseur n'est sélectionné, vider les produits
+        setProduitsOptions([]);
+      }
+    }, [fournisseur]);
+    
   
 
   return (
@@ -392,28 +399,27 @@ function AchatProduits() {
                         value={nouveauProduit.description}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, description: e.target.value })}
                       />
-                 <select
-        className="form-control mt-3"
-        value={nouveauProduit.categorie}
-        onChange={handleCategorieChange}
-      >
-        <option value="">Choisir une catégorie</option>
-        {categories.map((categorie, index) => (
-          <option key={index} value={categorie}>{categorie}</option>
-        ))}
-        <option value="ajouter">Ajouter une nouvelle catégorie</option>
-      </select>
+                                        <select
+                                className="form-control mt-3"
+                                value={nouveauProduit.categorie}
+                                onChange={handleCategorieChange}
+                              >
+                                <option value="">Choisir une catégorie</option>
+                                {categories.map((categorie, index) => (
+                                  <option key={index} value={categorie}>{categorie}</option>
+                                ))}
+                                <option value="ajouter">Ajouter une nouvelle catégorie</option>
+                              </select>
 
-      {/* Champ pour saisir une nouvelle catégorie si l'option "Ajouter une nouvelle catégorie" est choisie */}
-      {ajouterCategorie && (
-        <input
-          type="text"
-          className="form-control mt-2"
-          placeholder="Ajouter une nouvelle catégorie"
-          value={nouvelleCategorie}
-          onChange={(e) => setNouvelleCategorie(e.target.value)}
-        />
-      )}
+                              {ajouterCategorie && (
+                                <input
+                                  type="text"
+                                  className="form-control mt-2"
+                                  placeholder="Ajouter une nouvelle catégorie"
+                                  value={nouvelleCategorie}
+                                  onChange={(e) => setNouvelleCategorie(e.target.value)}
+                                />
+                              )}
       
                        <input
                         type="text"
@@ -447,6 +453,7 @@ function AchatProduits() {
                         placeholder="Choisir un produit"
                         isSearchable
                         noOptionsMessage={() => customNoOptionMessage}
+                        isDisabled={!fournisseur} 
                       />
                           
 
@@ -456,6 +463,7 @@ function AchatProduits() {
                         placeholder="Quantité"
                         value={quantite}
                         onChange={(e) => setQuantite(e.target.value)}
+                        disabled={!fournisseur} 
                       />
                       <input
                         type="number"
@@ -463,8 +471,9 @@ function AchatProduits() {
                         placeholder="Prix d'achat"
                         value={prixAchat}
                         onChange={(e) => setPrixAchat(e.target.value)}
+                        disabled={!fournisseur} 
                       />
-                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
+                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}  disabled={!fournisseur} >Ajouter au Panier</button>
                     </div>
                   )}
                 </div>
