@@ -13,10 +13,10 @@ router.post("/register", authenticateJWT, authenticateAdmin, upload.single("phot
 router.post("/login", userController.login);
 
 // Route pour obtenir tous les utilisateurs - accessible par admin uniquement
-router.get("/", authenticateJWT, authenticateAdmin, userController.getAllUsers);
+router.get("/tout", authenticateJWT, authenticateAdmin, userController.getAllUsers);
 
 // Route pour obtenir un utilisateur spécifique - accessible par admin uniquement
-router.get("/:id", authenticateJWT, userController.getUserById);
+router.get("/tout/:id", authenticateJWT, userController.getUserById);
 
 // Route pour mettre à jour un utilisateur - accessible par admin uniquement
 router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);

@@ -9,61 +9,57 @@ const Entrepot = require('../models/Entrepot');
 
 // Ajouter un achat
 exports.ajouterAchat = async (req, res) => {
-  try {
-      const { produit, fournisseur, quantite, prixAchat } = req.body;
-
-      // Vérification des champs obligatoires
-      if (!produit || !fournisseur || !quantite || !prixAchat) {
-          return res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
-      }
-
-      // Vérifier si le produit et le fournisseur existent
-      const produitExistant = await Produit.findById(produit);
-      if (!produitExistant) {
-          return res.status(404).json({ message: "Produit non trouvé" });
-      }
-
-      const fournisseurExistant = await Fournisseur.findById(fournisseur);
-      if (!fournisseurExistant) {
-          return res.status(404).json({ message: "Fournisseur non trouvé" });
-      }
-
-      // 🔹 Trouver ou créer un panier
-      let panierExistant = await Panier.findOne();
-      if (!panierExistant) {
-          panierExistant = new Panier({
-              achats: [],
-              totalGeneral: 0
-          });
-          await panierExistant.save();
-      }
-
-      // Calculer le total de l'achat
-      const total = quantite * prixAchat;
-
-      // Création de l'achat
-      const nouvelAchat = new Achat({
-          produit,
-          fournisseur,
-          quantite,
-          prixAchat,
-          total,
-          panier: panierExistant._id  // Lier l'achat au panier
-      });
-
-      await nouvelAchat.save();
-
-      // Ajouter l'achat au panier et mettre à jour le total général du panier
-      panierExistant.achats.push(nouvelAchat._id);
-      panierExistant.totalGeneral += total;
-      await panierExistant.save();
-
-      res.status(201).json({ message: "✅ Achat ajouté avec succès", achat: nouvelAchat, panier: panierExistant });
-  } catch (error) {
-      console.error("❌ Erreur lors de l'ajout de l'achat:", error);
-      res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
-  }
-};
+    try {
+        const { produit, fournisseur, quantite, prixAchat, panierId } = req.body;
+  
+        // Vérification des champs obligatoires
+        if (!produit || !fournisseur || !quantite || !prixAchat || !panierId) {
+            return res.status(400).json({ message: "Tous les champs obligatoires doivent être remplis." });
+        }
+  
+        // Vérifier si le produit et le fournisseur existent
+        const produitExistant = await Produit.findById(produit);
+        if (!produitExistant) {
+            return res.status(404).json({ message: "Produit non trouvé" });
+        }
+  
+        const fournisseurExistant = await Fournisseur.findById(fournisseur);
+        if (!fournisseurExistant) {
+            return res.status(404).json({ message: "Fournisseur non trouvé" });
+        }
+  
+        // 🔹 Trouver le panier correspondant à l'achat
+        let panierExistant = await Panier.findById(panierId);
+        if (!panierExistant) {
+            return res.status(404).json({ message: "Panier non trouvé" });
+        }
+  
+        // Calculer le total de l'achat
+        const total = quantite * prixAchat;
+  
+        // Création de l'achat
+        const nouvelAchat = new Achat({
+            produit,
+            fournisseur,
+            quantite,
+            prixAchat,
+            total,
+            panier: panierExistant._id  
+        });
+  
+        await nouvelAchat.save();
+  
+        // Ajouter l'achat au panier et mettre à jour le total général du panier
+        panierExistant.achats.push(nouvelAchat._id);
+        panierExistant.totalGeneral += total;
+        await panierExistant.save();
+  
+        res.status(201).json({ message: "✅ Achat ajouté avec succès", achat: nouvelAchat, panier: panierExistant });
+    } catch (error) {
+        console.error("❌ Erreur lors de l'ajout de l'achat:", error);
+        res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
+    }
+  };
 
 
 exports.validerAchat = async (req, res) => {
