@@ -18,5 +18,23 @@ router.get('/categories', async (req, res) => {
       res.status(500).json({ message: 'Erreur lors de la récupération des catégories' });
     }
   });
+ 
+  router.get('/recuperer/:id', (req, res) => {
+    const produitId = req.params.id;
+  
+  
+    Produit.findById(produitId)
+      .then((produit) => {
+        if (!produit) {
+          return res.status(404).json({ message: "Produit non trouvé" });
+        }
+        res.json(produit); 
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).json({ message: "Erreur serveur" });
+      });
+  });
+  
   
 module.exports = router;

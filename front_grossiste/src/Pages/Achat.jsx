@@ -19,13 +19,30 @@ function AchatProduits() {
   const [categories, setCategories] = useState([]);
   const [nouvelleCategorie, setNouvelleCategorie] = useState(""); 
   const [ajouterCategorie, setAjouterCategorie] = useState(false); 
- const [produitsOptions, setProduitsOptions] = useState([]);
+
 
   const [typeFiltre, setTypeFiltre] = useState("");
   const [dateFiltre, setDateFiltre] = useState("");
   const [nouveauProduit, setNouveauProduit] = useState({ nom: "", categorie: "" ,description :"",prixDachat: "",unite:"",fournisseur:""});
   const [afficherFormulaireProduit, setAfficherFormulaireProduit] = useState(false);
 
+  const handleProduitChange = (selectedOption) => {
+    setProduit(selectedOption);  // Garde l'objet ou l'ID du produit sélectionné
+  
+    // Faire une requête pour récupérer les détails du produit
+    fetch(`http://localhost:5000/api/produits/recuperer/${selectedOption.value}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data) {
+          setPrixAchat(data.prixDachat); 
+        }
+      })
+      .catch((error) => {
+        console.error("Erreur lors de la récupération du produit:", error);
+        setPrixAchat(""); // Si une erreur survient, réinitialise le prix d'achat
+      });
+  };
+  
   const ajouterAuPanier = () => {
     if (produit && quantite && prixAchat) {
       const nouvelArticle = { produit, quantite, prixAchat, total: quantite * prixAchat };
@@ -41,24 +58,27 @@ function AchatProduits() {
       .then((data) => setCategories(data))
       .catch((error) => console.error("Erreur lors de la récupération des catégories", error));
   }, []);
+  const [produitsOptions, setProduitsOptions] = useState([]);
   
   const handleAjoutProduit = (e) => {
     e.preventDefault();
-
+  
+    // Validation des champs
     if (!nouveauProduit.nom || !nouveauProduit.categorie || !nouveauProduit.unite || !nouveauProduit.fournisseur) {
       alert("Tous les champs requis doivent être remplis.");
       return;
     }
-
-    // Si une nouvelle catégorie est saisie, l'ajouter à la catégorie du produit
+  
+    // Ajouter la nouvelle catégorie si nécessaire
     const categorieFinale = ajouterCategorie ? nouvelleCategorie : nouveauProduit.categorie;
-
+  
     const produit = {
       ...nouveauProduit,
       categorie: categorieFinale,
       prixDachat: parseFloat(nouveauProduit.prixDachat),
     };
-
+  
+    // Envoi du produit à l'API pour ajout
     fetch("http://localhost:5000/api/produits/ajouter", {
       method: "POST",
       headers: {
@@ -69,6 +89,8 @@ function AchatProduits() {
       .then((response) => response.json())
       .then((data) => {
         alert("Produit ajouté avec succès");
+  
+        // Réinitialiser le formulaire
         setNouveauProduit({
           nom: "",
           description: "",
@@ -77,15 +99,83 @@ function AchatProduits() {
           unite: "",
           fournisseur: "",
         });
-        setNouvelleCategorie("")
-        setAjouterCategorie(false); 
+        setNouvelleCategorie("");
+        setAjouterCategorie(false);
+        setAfficherFormulaireProduit(false);
+  
+       
+        if (fournisseur) {
+          fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
+            .then((response) => response.json())
+            .then((data) => {
+              if (Array.isArray(data) && data.length > 0) {
+                const options = data.map((produit) => ({
+                  label: `${produit.nom} - ${produit.categorie}`,  // Afficher nom et catégorie
+                  value: produit._id,  // Utiliser l'ID comme valeur
+                }));
+                
+                setProduitsOptions(options);
+              } else {
+                setProduitsOptions([]);
+                Swal.fire({
+                  title: "Erreur",
+                  text: "Ce fournisseur n'a pas encore de produit.",
+                  icon: "error",
+                  confirmButtonText: "OK",
+                });
+              }
+            })
+            .catch((error) => {
+              setProduitsOptions([]);
+              Swal.fire({
+                title: "Erreur",
+                text: "Une erreur est survenue lors de la récupération des produits.",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+            });
+        }
       })
       .catch((error) => {
         alert("Erreur lors de l'ajout du produit");
         console.error(error);
       });
   };
-
+  
+  useEffect(() => {
+    if (prixAchat !== undefined && prixAchat !== null) {
+     
+      const produitId = produit._id; 
+  
+      const updatePrix = async () => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/produits/modifier/${produitId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prixDachat: prixAchat, 
+            }),
+          });
+  
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Produit mis à jour avec succès', data);
+           
+          } else {
+            console.error('Erreur lors de la mise à jour du produit');
+          }
+        } catch (error) {
+          console.error('Erreur réseau', error);
+        }
+      };
+  
+      updatePrix(); 
+    }
+  }, [prixAchat]); 
+  
+  
   const handleCategorieChange = (e) => {
     const selectedCategorie = e.target.value;
     setNouveauProduit({ ...nouveauProduit, categorie: selectedCategorie });
@@ -96,8 +186,44 @@ function AchatProduits() {
       setAjouterCategorie(false);
     }
   };
+  useEffect(() => {
+    if (fournisseur) {
+      fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const options = data.map((produit) => ({
+              label: `${produit.nom} - ${produit.categorie}`,  // Afficher nom et catégorie
+              value: produit._id,  // Utiliser l'ID comme valeur
+            }));
+            
+            setProduitsOptions(options);
+          } else {
+            setProduitsOptions([]);
+            Swal.fire({
+              title: "Erreur",
+              text: "Ce fournisseur n'a pas encore de produit.",
+              icon: "error",
+              confirmButtonText: "OK",
+            });
+          }
+        })
+        .catch((error) => {
+          setProduitsOptions([]);
+          Swal.fire({
+            title: "Erreur",
+            text: "Une erreur est survenue lors de la récupération des produits.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        });
+    } else {
+      setProduitsOptions([]);
+    }
+  }, [fournisseur]);  
+  
 
-  // Fonction pour récupérer les fournisseurs
+
   useEffect(() => {
     fetch("http://localhost:5000/api/fournisseurs/tous")
       .then((response) => response.json())
@@ -122,8 +248,8 @@ function AchatProduits() {
         });
       });
   }, []);
-   // Fonction pour créer le panier
-   const creerNouveauPanier = () => {
+
+      const creerNouveauPanier = () => {
     const panierData = {
       fournisseur,
       produits: panier,
@@ -228,43 +354,7 @@ function AchatProduits() {
       setNouveauProduit({ ...nouveauProduit, fournisseur: selectedFournisseur });  
     };
     
-  useEffect(() => {
-    if (fournisseur) {
-      fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            const options = data.map((produit) => ({
-              label: `${produit.nom} - ${produit.prixAchat} Ar`,
-              value: produit.nom,
-            }));
-            setProduitsOptions(options);
-          } else {
-            // Vider la liste des produits si aucun produit n'est trouvé pour ce fournisseur
-            setProduitsOptions([]);
-            Swal.fire({
-              title: "Erreur",
-              text: "Ce fournisseur n'a pas encore de produit.",
-              icon: "error",
-              confirmButtonText: "OK",
-            });
-          }
-        })
-        .catch((error) => {
-          // En cas d'erreur, vider aussi la liste des produits
-          setProduitsOptions([]);
-          Swal.fire({
-            title: "Erreur",
-            text: "Une erreur est survenue lors de la récupération des produits.",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        });
-    } else {
-      // Si aucun fournisseur n'est sélectionné, vider les produits
-      setProduitsOptions([]);
-    }
-  }, [fournisseur]);
+    
   
 
   return (
@@ -287,7 +377,7 @@ function AchatProduits() {
                 </div>
               )}
 
-{!panierCreer && (
+              {!panierCreer && (
                 <HistoriqueAchats
                   historiqueAchats={historiqueAchats}
                   searchTerm={searchTerm}
@@ -332,28 +422,27 @@ function AchatProduits() {
                         value={nouveauProduit.description}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, description: e.target.value })}
                       />
-                 <select
-        className="form-control mt-3"
-        value={nouveauProduit.categorie}
-        onChange={handleCategorieChange}
-      >
-        <option value="">Choisir une catégorie</option>
-        {categories.map((categorie, index) => (
-          <option key={index} value={categorie}>{categorie}</option>
-        ))}
-        <option value="ajouter">Ajouter une nouvelle catégorie</option>
-      </select>
+                         <select
+                                className="form-control mt-3"
+                                value={nouveauProduit.categorie}
+                                onChange={handleCategorieChange}
+                              >
+                                <option value="">Choisir une catégorie</option>
+                                {categories.map((categorie, index) => (
+                                  <option key={index} value={categorie}>{categorie}</option>
+                                ))}
+                                <option value="ajouter">Ajouter une nouvelle catégorie</option>
+                              </select>
 
-      {/* Champ pour saisir une nouvelle catégorie si l'option "Ajouter une nouvelle catégorie" est choisie */}
-      {ajouterCategorie && (
-        <input
-          type="text"
-          className="form-control mt-2"
-          placeholder="Ajouter une nouvelle catégorie"
-          value={nouvelleCategorie}
-          onChange={(e) => setNouvelleCategorie(e.target.value)}
-        />
-      )}
+                              {ajouterCategorie && (
+                                <input
+                                  type="text"
+                                  className="form-control mt-2"
+                                  placeholder="Ajouter une nouvelle catégorie"
+                                  value={nouvelleCategorie}
+                                  onChange={(e) => setNouvelleCategorie(e.target.value)}
+                                />
+                              )}
       
                        <input
                         type="text"
@@ -379,16 +468,19 @@ function AchatProduits() {
                   ) : (
                     <div className="produit-section mt-3">
                       <h6><i className="fa fa-box"></i> Choisir un Produit</h6>
-                           <Select
-                        className="form-control mt-3"
-                        value={produit ? { label: produit, value: produit } : null}
-                        onChange={(selectedOption) => setProduit(selectedOption.value)}
-                        options={produitsOptions}
-                        placeholder="Choisir un produit"
-                        isSearchable
-                        noOptionsMessage={() => customNoOptionMessage}
-                      />
-                          
+                                        <Select
+                    className="form-control mt-3"
+                    value={produit ? { label: `${produit.label} `, value: produit.value } : null}
+                    onChange={handleProduitChange}
+                    options={produitsOptions}
+                    placeholder="Choisir un produit"
+                    isSearchable
+                    noOptionsMessage={() => customNoOptionMessage}
+                    isDisabled={!fournisseur}
+                  />
+
+                                            
+
 
                           <div className="quantite-section mt-3 d-flex align-items-center">
   {/* Saisie de la quantité */}
@@ -428,6 +520,25 @@ function AchatProduits() {
                         onChange={(e) => setPrixAchat(e.target.value)}
                       />
                       <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
+=======
+                      <input
+                        type="number"
+                        className="form-control mt-3"
+                        placeholder="Quantité"
+                        value={quantite}
+                        onChange={(e) => setQuantite(e.target.value)}
+                        disabled={!fournisseur} 
+                      />
+                        <input
+  type="number"
+  className="form-control mt-3"
+  placeholder="Prix d'achat"
+  value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} // Valeur par défaut si `undefined`
+  onChange={(e) => setPrixAchat(e.target.value)}
+  disabled={!fournisseur}
+/>
+
+                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}  disabled={!fournisseur} >Ajouter au Panier</button>
                     </div>
                   )}
                 </div>

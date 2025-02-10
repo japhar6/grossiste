@@ -94,7 +94,7 @@ exports.modifierProduit = async (req, res) => {
                 nom: nom || produitExistant.nom,
                 description: description || produitExistant.description,
                 prixdevente: prixdevente || produitExistant.prixdevente,
-                prixdachat: prixDachat || produitExistant.prixdachat,
+                prixDachat: prixDachat || produitExistant.prixDachat,
              
                 categorie: categorie || produitExistant.categorie,
                 unite: unite || produitExistant.unite,
