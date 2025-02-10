@@ -109,95 +109,96 @@ function Entrepot() {
         <section className="contenue">
           <Header />
           <div className="p-3 content center">
-            <div className="entrepot-container">
-              {/* Tableau des entrepôts */}
-              <div className="entrepot-table-container">
-                <h6 className="alert alert-info">
-                  <i className="fa fa-warehouse"></i> Liste des Entrepôts
-                </h6>
-                <table className="entrepot-table">
-                  <thead>
-                    <tr>
-                      <th>Nom</th>
-                      <th>Localisation</th>
-                      <th>Type</th>
-                      <th>Responsable</th>
-                      <th>Date de création</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entrepots.map((entrepot) => (
-                      <tr key={entrepot._id}>
-                        <td>{entrepot.nom}</td>
-                        <td>{entrepot.localisation}</td>
-                        <td>{entrepot.type}</td>
-                        <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun"}</td>
-                        <td>{entrepot.dateCreation}</td>
-                        <td>
-                          <button className="btn btn-warning ms-2">Modifier</button>
-                          <button
-                            className="btn btn-danger ms-2"
-                            onClick={() => handleDeleteEntrepot(entrepot._id)}
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="entrepot-container">
+  {/* Tableau des entrepôts */}
+  <div className="entrepot-table-container">
+    <h6 className="alert alert-info">
+      <i className="fa fa-warehouse"></i> Liste des Entrepôts
+    </h6>
+    <table className="entrepot-table">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Localisation</th>
+          <th>Type</th>
+          <th>Responsable</th>
+          <th>Date de création</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {entrepots.map((entrepot) => (
+          <tr key={entrepot._id}>
+            <td>{entrepot.nom}</td>
+            <td>{entrepot.localisation}</td>
+            <td>{entrepot.type}</td>
+            <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun"}</td>
+            <td>{entrepot.dateCreation}</td>
+            <td>
+              <button className="btn btn-warning ms-2">Modifier</button>
+              <button
+                className="btn btn-danger ms-2"
+                onClick={() => handleDeleteEntrepot(entrepot._id)}
+              >
+                Supprimer
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-              {/* Formulaire d'ajout */}
-              <div className="entrepot-form-container">
-                <h6 className="alert alert-info">
-                  <i className="fa fa-plus"></i> Ajouter un Entrepôt
-                </h6>
-                <input
-                  type="text"
-                  placeholder="Nom de l'entrepôt"
-                  value={newEntrepot.nom}
-                  onChange={(e) => setNewEntrepot({ ...newEntrepot, nom: e.target.value })}
-                  className="form-control"
-                />
-                <input
-                  type="text"
-                  placeholder="Localisation"
-                  value={newEntrepot.localisation}
-                  onChange={(e) => setNewEntrepot({ ...newEntrepot, localisation: e.target.value })}
-                  className="form-control"
-                />
-                <select
-                  className="form-control"
-                  value={newEntrepot.type}
-                  onChange={(e) => setNewEntrepot({ ...newEntrepot, type: e.target.value })}
-                >
-                  <option value="">Sélectionnez un type</option>
-                  <option value="principal">Principal</option>
-                  <option value="secondaire">Secondaire</option>
-                </select>
-                <select
-                  className="form-control"
-                  value={newEntrepot.magasinier}
-                  onChange={(e) => setNewEntrepot({ ...newEntrepot, magasinier: e.target.value })}
-                >
-                  <option value="">Sélectionnez un magasinier</option>
-                  {magasiniersDisponibles.length === 0 ? (
-                    <option disabled>Aucun magasinier disponible</option>
-                  ) : (
-                    magasiniersDisponibles.map((magasinier) => (
-                      <option key={magasinier._id} value={magasinier._id}>
-                        {magasinier.nom}
-                      </option>
-                    ))
-                  )}
-                </select>
-                <button className="btn btn-success" onClick={handleAddEntrepot}>
-                  Ajouter
-                </button>
-              </div>
-            </div>
+  {/* Formulaire d'ajout */}
+  <div className="entrepot-form-container">
+    <h6 className="alert alert-info">
+      <i className="fa fa-plus"></i> Ajouter un Entrepôt
+    </h6>
+    <input
+      type="text"
+      placeholder="Nom de l'entrepôt"
+      value={newEntrepot.nom}
+      onChange={(e) => setNewEntrepot({ ...newEntrepot, nom: e.target.value })}
+      className="form-control"
+    />
+    <input
+      type="text"
+      placeholder="Localisation"
+      value={newEntrepot.localisation}
+      onChange={(e) => setNewEntrepot({ ...newEntrepot, localisation: e.target.value })}
+      className="form-control"
+    />
+    <select
+      className="form-control"
+      value={newEntrepot.type}
+      onChange={(e) => setNewEntrepot({ ...newEntrepot, type: e.target.value })}
+    >
+      <option value="">Sélectionnez un type</option>
+      <option value="principal">Principal</option>
+      <option value="secondaire">Secondaire</option>
+    </select>
+    <select
+      className="form-control"
+      value={newEntrepot.magasinier}
+      onChange={(e) => setNewEntrepot({ ...newEntrepot, magasinier: e.target.value })}
+    >
+      <option value="">Sélectionnez un magasinier</option>
+      {magasiniersDisponibles.length === 0 ? (
+        <option disabled>Aucun magasinier disponible</option>
+      ) : (
+        magasiniersDisponibles.map((magasinier) => (
+          <option key={magasinier._id} value={magasinier._id}>
+            {magasinier.nom}
+          </option>
+        ))
+      )}
+    </select>
+    <button className="btn btn-success" onClick={handleAddEntrepot}>
+      Ajouter
+    </button>
+  </div>
+</div>
+
           </div>
         </section>
       </main>
