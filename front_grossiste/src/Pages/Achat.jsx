@@ -520,25 +520,11 @@ function AchatProduits() {
                         onChange={(e) => setPrixAchat(e.target.value)}
                       />
                       <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
-=======
-                      <input
-                        type="number"
-                        className="form-control mt-3"
-                        placeholder="Quantité"
-                        value={quantite}
-                        onChange={(e) => setQuantite(e.target.value)}
-                        disabled={!fournisseur} 
-                      />
-                        <input
-  type="number"
-  className="form-control mt-3"
-  placeholder="Prix d'achat"
-  value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} // Valeur par défaut si `undefined`
-  onChange={(e) => setPrixAchat(e.target.value)}
-  disabled={!fournisseur}
-/>
 
-                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}  disabled={!fournisseur} >Ajouter au Panier</button>
+                        
+
+
+                    
                     </div>
                   )}
                 </div>
