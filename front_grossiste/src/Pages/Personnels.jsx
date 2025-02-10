@@ -460,6 +460,7 @@ function Personnels() {
           className="form-control" 
           value={numero_cin} 
           onChange={(e) => setnumero_cin(e.target.value)} 
+          required
         />
       </div>
      
