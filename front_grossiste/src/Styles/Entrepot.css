@@ -128,4 +128,43 @@
       width: 90%;
     }
   }
+  .entrepot-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  
+  .entrepot-table-container {
+    flex: 4; /* 80% */
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .entrepot-form-container {
+    flex: 1; /* 20% */
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .entrepot-form-container input,
+  .entrepot-form-container select,
+  .entrepot-form-container button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  @media (max-width: 1024px) {
+    .entrepot-container {
+      flex-direction: column;
+    }
+  
+    .entrepot-table-container,
+    .entrepot-form-container {
+      width: 100%;
+    }
+  }
   

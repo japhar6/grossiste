@@ -237,10 +237,6 @@ function Personnels() {
       ))}
     </div>
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 3ea5df80624b6f23a3a2175599ed51e975931472
               <div className="filtrage bg-light p-3 mt-3">
                 <h6 className="fw-bold">
                   <i className="fa fa-search"></i> Filtrage générale
