@@ -27,7 +27,7 @@ function AchatProduits() {
   const [afficherFormulaireProduit, setAfficherFormulaireProduit] = useState(false);
 
   const handleProduitChange = (selectedOption) => {
-    setProduit(selectedOption);  // Garde l'objet ou l'ID du produit sélectionné
+    setProduit(selectedOption);  
   
     // Faire une requête pour récupérer les détails du produit
     fetch(`http://localhost:5000/api/produits/recuperer/${selectedOption.value}`)
@@ -39,19 +39,11 @@ function AchatProduits() {
       })
       .catch((error) => {
         console.error("Erreur lors de la récupération du produit:", error);
-        setPrixAchat(""); // Si une erreur survient, réinitialise le prix d'achat
+        setPrixAchat(""); 
       });
   };
   
-  const ajouterAuPanier = () => {
-    if (produit && quantite && prixAchat) {
-      const nouvelArticle = { produit, quantite, prixAchat, total: quantite * prixAchat };
-      setPanier([...panier, nouvelArticle]);
-      setProduit("");
-      setQuantite("");
-      setPrixAchat("");
-    }
-  };
+
   useEffect(() => {
     fetch("http://localhost:5000/api/produits/categories")
       .then((response) => response.json())
@@ -142,38 +134,6 @@ function AchatProduits() {
       });
   };
   
-  useEffect(() => {
-    if (prixAchat !== undefined && prixAchat !== null) {
-     
-      const produitId = produit._id; 
-  
-      const updatePrix = async () => {
-        try {
-          const response = await fetch(`http://localhost:5000/api/produits/modifier/${produitId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              prixDachat: prixAchat, 
-            }),
-          });
-  
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Produit mis à jour avec succès', data);
-           
-          } else {
-            console.error('Erreur lors de la mise à jour du produit');
-          }
-        } catch (error) {
-          console.error('Erreur réseau', error);
-        }
-      };
-  
-      updatePrix(); 
-    }
-  }, [prixAchat]); 
   
   
   const handleCategorieChange = (e) => {
@@ -193,8 +153,8 @@ function AchatProduits() {
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             const options = data.map((produit) => ({
-              label: `${produit.nom} - ${produit.categorie}`,  // Afficher nom et catégorie
-              value: produit._id,  // Utiliser l'ID comme valeur
+              label: `${produit.nom} - ${produit.categorie}`,  
+              value: produit._id,  
             }));
             
             setProduitsOptions(options);
@@ -292,6 +252,94 @@ function AchatProduits() {
         });
       });
   };
+  const ajouterAuPanier = () => {
+    if (produit && quantite && prixAchat) {
+      const nouvelArticle = { produit, quantite, prixAchat, total: quantite * prixAchat };
+  
+      // Vérifier si le produit est déjà dans le panier
+      const produitExistant = panier.find((article) => article.produit === produit);
+  
+      if (produitExistant) {
+        // Si le produit est déjà dans le panier, on met à jour la quantité et le total
+        const panierMisAJour = panier.map((article) => 
+          article.produit === produit 
+            ? { ...article, quantite: article.quantite + quantite, total: (article.quantite + quantite) * prixAchat }
+            : article
+        );
+        setPanier(panierMisAJour);
+      } else {
+       
+        setPanier([...panier, nouvelArticle]);
+      }
+  
+      // Réinitialiser les champs de saisie
+      setProduit("");
+      setQuantite("");
+      setPrixAchat("");
+  
+      // Mise à jour du prix dans la base de données si le prix a changé
+      const produitId = produit._id;
+  
+      const updatePrix = async () => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/produits/modifier/${produitId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prixDachat: prixAchat,
+            }),
+          });
+  
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Produit mis à jour avec succès', data);
+          } else {
+            console.error('Erreur lors de la mise à jour du produit');
+          }
+        } catch (error) {
+          console.error('Erreur réseau', error);
+        }
+      };
+  
+      updatePrix();
+  
+      // Création de l'achat pour ce produit
+      const creerAchat = async () => {
+        const achatData = {
+          produit: produitId, 
+          quantite,
+          prixAchat,
+          total: quantite * prixAchat,
+          fournisseur,
+          dateAchat: new Date().toISOString(), 
+        };
+  
+        try {
+          const response = await fetch('http://localhost:5000/api/achats/ajouter', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(achatData),
+          });
+  
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Achat créé avec succès', data);
+          } else {
+            console.error('Erreur lors de la création de l\'achat');
+          }
+        } catch (error) {
+          console.error('Erreur réseau', error);
+        }
+      };
+  
+      creerAchat();
+    }
+  };
+  
 
   const validerPanier = () => {
     Swal.fire({
@@ -322,13 +370,13 @@ function AchatProduits() {
 
 
 
-  // Fonction pour trier les produits en fonction de la recherche
+
   const getFilteredAndSortedProducts = () => {
     const filteredProducts = nomsProduits.filter((product) =>
       product.nom.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Trier les produits pour que ceux qui commencent par la lettre de recherche viennent en premier
+  
     return filteredProducts.sort((a, b) => {
       const matchA = a.nom.toLowerCase().startsWith(searchTerm.toLowerCase()) ? 0 : 1;
       const matchB = b.nom.toLowerCase().startsWith(searchTerm.toLowerCase()) ? 0 : 1;
@@ -337,7 +385,7 @@ function AchatProduits() {
   };
 
 
-  // Ajout de l'option "Ajouter un Nouveau Produit"
+
   const customNoOptionMessage = (
     <button
       className="btn btn-link mt-2"
@@ -346,7 +394,7 @@ function AchatProduits() {
       Ajouter un Nouveau Produit
     </button>
   );
-    // Fonction pour gérer la sélection du fournisseur
+
     const handleFournisseurChange = (e) => {
       const selectedFournisseur = e.target.value;  
       setFournisseur(selectedFournisseur);  
@@ -489,14 +537,14 @@ function AchatProduits() {
                         onChange={(e) => setQuantite(e.target.value)}
                         disabled={!fournisseur} 
                       />
-                        <input
-  type="number"
-  className="form-control mt-3"
-  placeholder="Prix d'achat"
-  value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} // Valeur par défaut si `undefined`
-  onChange={(e) => setPrixAchat(e.target.value)}
-  disabled={!fournisseur}
-/>
+                       <input
+                          type="number"
+                          className="form-control mt-3"
+                          placeholder="Prix d'achat"
+                          value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} 
+                          onChange={(e) => setPrixAchat(e.target.value)}
+                          disabled={!fournisseur}
+                        />
 
                       <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}  disabled={!fournisseur} >Ajouter au Panier</button>
                     </div>
