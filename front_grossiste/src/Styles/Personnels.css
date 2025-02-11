@@ -1,0 +1,146 @@
+.ajoutPersonnel{
+    height: 90vh;
+    width: 30%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
+}
+.mini-stat{
+    height: 90vh;
+    width: 70%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
+    margin-right: 1%;
+}
+.ajoutPersonnel form label{
+    font-size: 0.8em;
+}
+.ajoutPersonnel form button{
+    width: 100%;
+}
+.role-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.role-count {
+  font-size: 1rem;
+  font-weight: normal;
+  margin-top: 5px;
+  color: #f2f2f2;
+}
+.role-name,
+.role-count {
+  letter-spacing: 1px;
+}
+.perso{
+    height: 10vh;
+    width: 25%;
+    border-radius: 5px;
+    background: rgb(81,173,110);
+    color: #fff;
+    background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+.perso:hover {
+  transform: scale(1.05);
+}
+.mini{
+    box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
+    border-radius: 5px;
+}
+.filtrage{
+    box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
+    border-radius: 5px;
+}
+.list{
+    height: 45vh;
+    width: 100%;
+    overflow-y: scroll;
+}
+.list table{
+    font-size: 0.8em;
+}
+
+/* Modal centré */
+.custom-modal .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+  }
+  
+  /* Carte de personnel */
+  /* Style général du modal */
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Conteneur de la photo */
+.photo-container {
+  background: #2b0a0a;
+}  
+
+/* Image de profil */
+.user-photo {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Informations de l'utilisateur */
+.user-info {
+  text-align: center;
+  width: 100%;
+}
+
+.user-info p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.user-info strong {
+  color: #689fb4;
+}
+
+/* Boutons d'action */
+.d-flex.justify-content-between {
+  margin-top: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+button.mt-3 {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: all 0.3s ease-in-out;
+}
+
+button.mt-3:hover {
+  opacity: 0.8;
+}
+
+/* Bouton Modifier */
+button.variant-warning {
+  background-color: #ffc107;
+  color: black;
+}
+
+/* Bouton Licencier */
+button.variant-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+

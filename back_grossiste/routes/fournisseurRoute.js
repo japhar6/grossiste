@@ -5,9 +5,9 @@ const upload = require("../config/multerLogo");
 
 
 router.post("/", upload.single("logo"), fournisseurController.ajouterFournisseur);
-router.get("/", fournisseurController.getFournisseurs);
-router.get("/:id", fournisseurController.getFournisseurById);
+router.get("/tous", fournisseurController.getFournisseurs);
+router.get("/recup/:id", fournisseurController.getFournisseurById);
 router.put("/:id", upload.single("logo"), fournisseurController.updateFournisseur);
 router.delete("/:id", fournisseurController.deleteFournisseur);
-
+router.get("/count", fournisseurController.countFournisseurs);
 module.exports = router;

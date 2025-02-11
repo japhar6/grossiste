@@ -32,6 +32,22 @@ exports.ajouterProduit = async (req, res) => {
 };
 
 
+exports.getProduitsParFournisseur = async (req, res) => {
+  try {
+    const { fournisseurId } = req.params; 
+    const produits = await Produit.find({ fournisseur: fournisseurId }); 
+
+    if (!produits.length) {
+      return res.status(404).json({ message: "Aucun produit trouvé pour ce fournisseur." });
+    }
+
+    res.status(200).json(produits);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des produits du fournisseur :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 // ✅ Récupérer tous les produits
 exports.afficherProduits = async (req, res) => {
     try {
@@ -42,6 +58,14 @@ exports.afficherProduits = async (req, res) => {
     }
 };
 
+exports.countProduits = async (req, res) => {
+    try {
+      const count = await Produit.countDocuments();
+      res.status(200).json({ totalProduits: count });
+    } catch (error) {
+      res.status(500).json({ message: "❌ Erreur lors du comptage des produits", error });
+    }
+  };
 
 // ✅ Modifier un produit
 exports.modifierProduit = async (req, res) => {
@@ -70,7 +94,7 @@ exports.modifierProduit = async (req, res) => {
                 nom: nom || produitExistant.nom,
                 description: description || produitExistant.description,
                 prixdevente: prixdevente || produitExistant.prixdevente,
-                prixdachat: prixDachat || produitExistant.prixdachat,
+                prixDachat: prixDachat || produitExistant.prixDachat,
              
                 categorie: categorie || produitExistant.categorie,
                 unite: unite || produitExistant.unite,

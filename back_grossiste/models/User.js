@@ -10,7 +10,13 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "vendeur", "magasinier", "caissier", "gestion_prix"],
     required: true
   },
-  photo: { type: String }, 
+  photo: { type: String },
+  status: {
+    type: String,
+    enum: ["actif", "licencié"],
+    default: "actif" 
+  },
+  numero_cin: { type: String, required: true, unique: true }, 
   createdAt: { type: Date, default: Date.now }
 });
 

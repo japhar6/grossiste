@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
     try {
-      const { nom, email, password, role } = req.body;
+      const { nom, email, password, role ,numero_cin} = req.body;
       const userExists = await User.findOne({ email });
       if (userExists) {
         return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
   
       const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
   
-      const newUser = new User({ nom, email, password, role, photo });
+      const newUser = new User({ nom, email, password, role, photo,numero_cin });
       await newUser.save();
   
       res.status(201).json({ message: "✅ Utilisateur créé avec succès", user: newUser });
@@ -21,6 +21,39 @@ exports.register = async (req, res) => {
     }
   };
   
+  exports.createAdmin = async (req, res) => {
+    try {
+      // Vérifier si un admin existe déjà
+      const adminExists = await User.findOne({ role: "admin" });
+      if (adminExists) {
+        return res.status(400).json({ message: "❌ Un admin existe déjà !" });
+      }
+
+      // Extraire les informations du body
+      const { nom, email, password, role,numero_cin } = req.body;
+  
+      // Vérifier si l'email est déjà utilisé
+      const userExists = await User.findOne({ email });
+      if (userExists) {
+        return res.status(400).json({ message: "❌ Cet email est déjà utilisé" });
+      }
+      // Gérer l'upload de la photo si nécessaire
+      const photo = req.file ? `/uploads/users/${req.file.filename}` : null;
+  
+     
+      const newUser = new User({ nom, email,  password, role, photo,numero_cin });
+  
+      // Sauvegarder l'utilisateur dans la base de données
+      await newUser.save();
+  
+      // Retourner la réponse de succès
+      res.status(201).json({ message: "✅ Utilisateur créé avec succès", user: newUser });
+  
+    } catch (error) {
+      // Si une erreur se produit, renvoyer une erreur générique
+      res.status(500).json({ message: "❌ Erreur lors de l'enregistrement de l'utilisateur", error: error.message });
+    }
+  };
 
   exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -42,21 +75,21 @@ exports.register = async (req, res) => {
   
       // Créer un token JWT
       const token = jwt.sign(
-        { userId: user._id, role: user.role },  // Payload avec l'ID de l'utilisateur et son rôle
-        process.env.JWT_SECRET,                 // Clé secrète pour signer le token
-        { expiresIn: "1h" }                    // Durée de validité du token
+        { userId: user._id, role: user.role },  
+        process.env.JWT_SECRET,               
+        { expiresIn: "3h" }                  
       );
   
       // Retourner une réponse avec le token
       res.status(200).json({
         message: "✅ Connexion réussie !",
-        token,                                  // Inclure le token dans la réponse
+        token,                                  
         user: {
           _id: user._id,
           email: user.email,
           role: user.role,
           nom: user.nom,
-          photo: user.photo,                    // Si tu as un champ photo pour l'utilisateur
+          photo: user.photo,                  
         }
       });
     } catch (error) {
@@ -73,6 +106,27 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la récupération des utilisateurs", error });
   }
 };
+exports.countUsersByRole = async (req, res) => {
+  try {
+    // Compter les utilisateurs par rôle
+    const roleCounts = await User.aggregate([
+      { $unwind: "$role" }, 
+      {
+        $group: {
+          _id: "$role", 
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } } 
+    ]);
+
+    // Répondre avec les résultats
+    res.json(roleCounts);
+  } catch (error) {
+    res.status(500).json({ message: "❌ Erreur lors du comptage des utilisateurs par rôle", error });
+  }
+};
+
 
 exports.getUserById = async (req, res) => {
   try {
@@ -89,22 +143,20 @@ exports.getUserById = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { nom, email, photo, password } = req.body;  // On récupère également le mot de passe
+    const { nom, email, photo, password,numero_cin} = req.body;  
 
-    // Vérification de l'existence de l'utilisateur
+ 
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "❌ Utilisateur introuvable." });
     }
 
-    // Vérification que l'utilisateur connecté modifie son propre profil (et non celui d'un autre utilisateur)
-    if (currentUser._id.toString() !== req.user.userId) {
-      return res.status(403).json({ message: "❌ Vous ne pouvez pas modifier le profil d'un autre utilisateur." });
-    }
+ 
 
     // Création d'un objet avec les données à mettre à jour
     const updatedData = {
-      nom: nom || currentUser.nom,  // Met à jour le nom uniquement si fourni
+      nom: nom || currentUser.nom, 
+      numero_cin: numero_cin || currentUser.numero_cin,  
       email: email || currentUser.email,  // Met à jour l'email uniquement si fourni
       photo: req.file ? `/uploads/users/${req.file.filename}` : currentUser.photo,  // Mise à jour de la photo si une nouvelle est envoyée
     };
@@ -140,3 +192,26 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la suppression", error });
   }
 };
+exports.licencierEmploye = async (req, res) => {
+  const { employeId } = req.params; 
+
+  try {
+    // Trouver et mettre à jour l'employé pour le licencier (mettre le status à 'licencié')
+    const employe = await User.findByIdAndUpdate(
+      employeId,
+      { status: "licencié" },
+      { new: true }  // Retourner le document mis à jour
+    );
+
+    if (!employe) {
+      return res.status(404).json({ message: "Employé non trouvé" });
+    }
+
+    res.status(200).json({
+      message: "Employé licencié avec succès",
+      employe
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }}

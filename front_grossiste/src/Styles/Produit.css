@@ -1,0 +1,12 @@
+
+.mini-stat{
+    height: 90vh;
+    width: 100%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
+    margin-right: 1%;
+    overflow-y: hidden;
+}
+
+
