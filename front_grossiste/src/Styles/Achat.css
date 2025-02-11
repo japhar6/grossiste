@@ -31,324 +31,74 @@
   padding: 15px;
 }
 
-.btn-ajout {
-  margin-top: 10px;
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn-ajout:hover {
-  background-color: #218838;
-}
-
-.btn-supprimer {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn-supprimer:hover {
-  background-color: #c82333;
-}
-
-.btn-valider {
-  background-color: #007bff;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.btn-valider:hover {
-  background-color: #0056b3;
-}
-
-/* Ajouter une classe pour la mise en page côte à côte */
-.achat-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-/* Style des sections individuelles (fournisseur et produit) */
-.fournisseur-section,
-.produit-section {
-  flex: 1 1 48%; /* Cela permet aux sections de prendre 48% de la largeur de l'écran */
-  background: #f1f1f1;
-  border-radius: 5px;
-  padding: 15px;
-  box-sizing: border-box;
-}
-
-/* Ajuster la largeur de la section panier pour qu'elle prenne 48% de la largeur de l'écran */
-.consultation {
-  flex: 1 1 48%;
-  background: #ffffff;
-  border-radius: 5px;
-  padding: 15px;
-  box-sizing: border-box;
-}
-
-/* Pour que les éléments dans chaque section soient bien alignés */
-.fournisseur-section select,
-.produit-section input {
+/* Uniformisation des champs de saisie et des selects */
+input.form-control, select.form-control, .react-select__control {
   width: 100%;
-}
-
-/* Style du tableau */
-.table {
-  width: 100%;
-  margin-top: 20px;
-}
-
-.table-striped {
-  border-collapse: collapse;
-}
-
-.table-striped th, .table-striped td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-.table-striped tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Ajuster la mise en page du tableau dans la section Panier */
-.consultation {
-  margin-top: 20px;
-  padding: 20px;
-}
-
-.consultation h6 {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-.consultation button {
-  margin-top: 20px;
-}
-
-/* Pour un design responsive (si l'écran est petit, les sections se mettront sous forme de colonne) */
-@media (max-width: 768px) {
-  .achat-container {
-    flex-direction: column;
-  }
-
-  .fournisseur-section,
-  .produit-section,
-  .consultation {
-    flex: 1 1 100%; /* Les sections prennent toute la largeur sur les petits écrans */
-  }
-}
-/* Améliorations pour le select dans la section "Nouveau Produit" */
-select {
-  background-color: #ffffff;
-  color: #495057;
-  border: 2px solid #ced4da;
+  padding: 12px 15px;
   border-radius: 8px;
-  padding: 10px 15px;
-  font-size: 16px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  width: 100%; /* Pour que le select occupe toute la largeur */
-  margin-bottom: 15px;
+  border: 1px solid #ced4da;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  color: #495057;
+  font-family: "Poppins", sans-serif;
 }
 
-select:focus {
+input.form-control:focus,
+select.form-control:focus,
+.react-select__control--is-focused {
+  border-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
   outline: none;
-  border-color: #007bff; /* Couleur de la bordure au focus */
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.25); /* Ombre autour du select au focus */
 }
 
-/* Ajout d'un style personnalisé pour l'option sélectionnée */
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-caret-down-fill' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14l-4.796-5.481A1 1 0 0 1 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.481a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
 select option {
   background-color: #ffffff;
   color: #495057;
 }
 
-select option:hover {
-  background-color: #f8f9fa; /* Changer la couleur d'arrière-plan au survol */
+/* Champs alignés dans la section quantité */
+.quantite-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-select option:checked {
-  background-color: #007bff; /* Couleur d'arrière-plan de l'option sélectionnée */
-  color: white;
+.quantite-section input {
+  flex: 1;
 }
 
-
-/*historique*/
-.mini-stat {
-  height: 90vh;
-  width: 100%;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
-  margin-right: 1%;
-  overflow-y: hidden;
+.react-select__control {
+  min-width: 160px;
 }
 
-.filtrage {
-  box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
-  border-radius: 5px;
-}
-
-.table {
-  font-size: 0.9em;
-}
-
-.table th,
-.table td {
-  padding: 10px;
-  text-align: left;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: #f9f9f9;
-}
-
-.table-hover tbody tr:hover {
-  background-color: #f1f1f1;
-}
-
-.historique-section {
-  margin-top: 20px;
-}
-
-.historique-section h6 {
-  font-weight: bold;
-  color: #007bff;
-}
-
-.consultation h6 {
-  font-weight: bold;
-  color: #28a745;
-}
-
-.btn-info {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.btn-info:hover {
-  background-color: #138496;
-}
-
-/* Style global pour les champs de saisie */
-input.form-control, select.form-control, .react-select__control {
-  width: 100%; /* Réduire la largeur des champs de saisie */
-  padding: 10px; /* Ajouter un peu de padding */
-  border-radius: 8px; /* Arrondir les coins des champs */
-  border: 1px solid #ccc; /* Bordure légère */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre subtile */
-  margin-bottom: 10px; /* Espacement entre les champs */
-  transition: all 0.3s ease; /* Transition douce */
-}
-
-input.form-control:focus, select.form-control:focus {
-  border-color: #4CAF50; /* Changer la couleur de la bordure au focus */
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); /* Ombre verte au focus */
-}
-
-/* Style pour le bouton "Ajouter" */
+/* Style des boutons */
 button.btn-primary {
-  background-color: #4CAF50; /* Couleur verte du bouton */
+  background-color: #4CAF50;
   color: white;
   border: none;
-  padding: 12px 20px; /* Augmenter la taille du bouton */
-  border-radius: 8px; /* Arrondir les coins du bouton */
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  font-family: "Poppins", sans-serif;
   cursor: pointer;
-  transition: background-color 0.3s ease; /* Effet au survol */
   width: 100%;
 }
 
 button.btn-primary:hover {
-  background-color: #45a049; /* Changer la couleur au survol */
+  background-color: #45a049;
 }
 
-button.btn-link {
-  background-color: transparent; /* Bouton transparent */
-  color: #007bff; /* Couleur bleue du texte */
-  text-decoration: none; /* Retirer le soulignement */
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.3s ease; /* Effet au survol */
-  width: 100%;
-}
-
-button.btn-link:hover {
-  color: #0056b3; /* Changer la couleur au survol */
-}
-
-/* Style pour les labels des champs */
-label {
-  font-size: 14px;
-  color: #333;
-  font-weight: bold;
-  margin-bottom: 5px;
-  display: block;
-}
-
-/* Style général pour les sections */
-.produit-section {
-  padding: 10px;
-
-  border-radius: 10px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
-}
-
-.achat-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 50px;
-  flex-wrap: wrap;
-}
-
-.fournisseur-section, .produit-section {
-  flex: 1 1 45%;
-   /* Limiter la largeur de chaque section */
-}
-
-.mini-stat {
-  padding: 20px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Style pour le tableau historique */
-table.table-striped {
-  margin-top: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #ddd;
-}
-
-table.table-striped th, table.table-striped td {
-  padding: 12px;
-  text-align: center;
-}
-
-table.table-striped th {
-  background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-table.table-striped tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Style du bouton valider le panier */
 button.btn-success {
   background-color: #28a745;
   border: none;
@@ -363,52 +113,94 @@ button.btn-success:hover {
   background-color: #218838;
 }
 
-/* Spécifier davantage le sélecteur pour s'assurer qu'il est appliqué */
-div.produit-section select.form-control {
-  width: 250px; /* Réduire la largeur des champs select */
-  padding: 10px; /* Ajouter un peu de padding */
-  border-radius: 8px; /* Arrondir les coins des champs */
-  border: 1px solid #ccc; /* Bordure légère */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre subtile */
-  margin-bottom: 10px; /* Espacement entre les champs */
-  transition: all 0.3s ease; /* Transition douce */
-  -webkit-appearance: none; /* Retirer les styles par défaut pour mieux contrôler */
-  -moz-appearance: none;
-  appearance: none;
-  background-color: white; /* Fond blanc */
-}
-
-/* Style pour le select au focus */
-div.produit-section select.form-control:focus {
-  border-color: #4CAF50; /* Changer la couleur de la bordure au focus */
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.3); /* Ombre verte au focus */
-}
-
-/* Personnalisation de l'icône du select (flèche) */
-div.produit-section select.form-control::-ms-expand {
-  display: none; /* Masquer la flèche par défaut dans IE */
-}
-
-div.produit-section select.form-control::after {
-  content: "▼"; /* Ajouter une flèche personnalisée si besoin */
-  font-size: 18px;
+/* Style pour les labels */
+label {
+  font-size: 14px;
   color: #333;
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
 }
 
-/* Style pour le bouton "Ajouter un Nouveau Produit" dans le select */
-div.produit-section button.btn-link {
-  background-color: transparent; /* Bouton transparent */
-  color: #007bff; /* Couleur bleue du texte */
-  text-decoration: none; /* Retirer le soulignement */
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.3s ease; /* Effet au survol */
+/* Style du tableau */
+.table {
+  width: 100%;
+  margin-top: 20px;
 }
 
-div.produit-section button.btn-link:hover {
-  color: #0056b3; /* Changer la couleur au survol */
+.table-striped {
+  border-collapse: collapse;
+}
+
+.table-striped th,
+.table-striped td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table-striped tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Responsive pour petits écrans */
+@media (max-width: 768px) {
+  .achat-container {
+    flex-direction: column;
+  }
+
+  .fournisseur-section,
+  .produit-section,
+  .consultation {
+    flex: 1 1 100%;
+  }
+}
+
+.achat-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.fournisseur-section,
+.produit-section {
+  flex: 1 1 48%;
+  background: #f1f1f1;
+  border-radius: 5px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.consultation {
+  flex: 1 1 48%;
+  background: #ffffff;
+  border-radius: 5px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+.quantite-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.quantite-section input,
+.quantite-section .react-select__control {
+  flex: 1;
+  min-width: 350px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  font-size: 14px;
+  color: #495057;
+}
+
+.quantite-section input:focus,
+.quantite-section .react-select__control--is-focused {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  outline: none;
 }

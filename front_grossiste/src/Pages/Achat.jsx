@@ -481,24 +481,50 @@ function AchatProduits() {
 
                                             
 
+
+                          <div className="quantite-section mt-3 d-flex align-items-center">
+  {/* Saisie de la quantité */}
+  <input
+    type="number"
+    className="form-control me-2"
+    placeholder="Quantité"
+    value={quantite}
+    onChange={(e) => setQuantite(e.target.value)}
+  />
+
+  {/* Sélection du type de quantité */}
+  <Select
+    className="form-control"
+    value={produit.typeQuantite ? { label: produit.typeQuantite, value: produit.typeQuantite } : null}
+    onChange={(selectedOption) => setProduit({ ...produit, typeQuantite: selectedOption.value })}
+    options={[
+      { value: "Paquet", label: "Paquet" },
+      { value: "Cartouche", label: "Cartouche" },
+      { value: "Carton", label: "Carton" },
+      { value: "Sacs", label: "Sacs" },
+      { value: "Bidon", label: "Bidon" },
+      { value: "Pièce", label: "Pièce" },
+      { value: "Boîte", label: "Boîte" },
+      { value: "Sachet", label: "Sachet" }
+    ]}
+    placeholder="Type de Quantité"
+    isSearchable
+  />
+</div>
+
                       <input
                         type="number"
                         className="form-control mt-3"
-                        placeholder="Quantité"
-                        value={quantite}
-                        onChange={(e) => setQuantite(e.target.value)}
-                        disabled={!fournisseur} 
+                        placeholder="Prix d'achat"
+                        value={prixAchat}
+                        onChange={(e) => setPrixAchat(e.target.value)}
                       />
-                        <input
-  type="number"
-  className="form-control mt-3"
-  placeholder="Prix d'achat"
-  value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} // Valeur par défaut si `undefined`
-  onChange={(e) => setPrixAchat(e.target.value)}
-  disabled={!fournisseur}
-/>
+                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
 
-                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}  disabled={!fournisseur} >Ajouter au Panier</button>
+                        
+
+
+                    
                     </div>
                   )}
                 </div>

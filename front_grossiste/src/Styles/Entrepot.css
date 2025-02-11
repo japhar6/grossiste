@@ -131,20 +131,28 @@
   .entrepot-container {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
+    align-items: stretch;  /* Aligne les éléments à la même hauteur */
     gap: 20px;
-    margin-top: -550px;
+    margin-top: 20px;  /* Ajoutez un léger espacement si nécessaire */
 }
 
 .entrepot-table-container {
-    flex: 3;
-    width: 70%;
+
+    width: 60%;
+    display: flex;
+ /* S'assure que la table occupe toute la hauteur disponible */
 }
 
 .entrepot-form-container {
     flex: 1;
-    width: 30%;
+    width: 40%;
+    display: flex;
+    flex-direction: column; 
+    justify-content: flex-start; /* Garde l'alignement vertical */
+}
+
+.entrepot-table-container, .entrepot-form-container {
+    justify-content: flex-start; /* Aligne les éléments au début */
 }
 
 .entrepot-table {
@@ -156,3 +164,6 @@
 .entrepot-form-container button {
     width: 100%;
 }
+
+
+
