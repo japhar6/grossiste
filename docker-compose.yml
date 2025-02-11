@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: adminpass123
+      MONGO_INITDB_DATABASE: grossiste
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: adminpass123
+      ME_CONFIG_MONGODB_URL: mongodb://root:adminpass123@mongodb:27017/grossiste?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: root
+      ME_CONFIG_BASICAUTH_PASSWORD: adminpass123
+    ports:
+      - "8081:8081"
+
+  backend:
+    build: ./back_grossiste
+    container_name: backend_grossiste
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://root:adminpass123@mongodb:27017/grossiste?authSource=admin
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./back_grossiste:/app
+      - /app/node_modules
+    command: ["npm", "start"]
+
+volumes:
+  mongodb_data:
