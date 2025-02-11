@@ -12,7 +12,7 @@ function Sidebar(){
         { path: "/entrepot", icon: "fa-boxes", text: "Gestion des entrepots" },
         { path: "/caisse", icon: "fa-cash-register", text: "Caisse" },
         { path: "/metier-magasinier", icon: "fa-warehouse", text: "Metier Magazinier" },
-        { path: "/ventes", icon: "fa-shopping-cart", text: "Vente et prise de commande" },
+        { path: "/commande", icon: "fa-shopping-cart", text: "Vente et prise de commande" },
         { path: "/commerciaux", icon: "fa-briefcase", text: "Gestion des commerciaux" },
         { 
           path: "/clients", 
