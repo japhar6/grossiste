@@ -25,7 +25,10 @@ const stockRoutes = require('./routes/stockRoute');
 const panierRoutes = require('./routes/panierRoute');
 
 const inventaireRoutes = require('./routes/inventaireRoute');
+
 const transfertRoute = require('./routes/transfertRoute');
+
+const commandeRoutes = require("./routes/commandeRoute");
 
 // Middleware
 app.use(express.json());
@@ -47,6 +50,7 @@ app.use('/api/stocks', stockRoutes);
 app.use('/api/paniers', panierRoutes); 
 app.use('/api/inventaire', inventaireRoutes);
 app.use('/api/transfert', transfertRoute);
+app.use("/api/commandes", commandeRoutes);
 
 // Route de test
 app.get("/", (req, res) => {

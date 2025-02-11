@@ -15,8 +15,11 @@ router.post("/create-admin", upload.single("photo"), userController.createAdmin)
 // 📌 Connexion - Accessible par tous les utilisateurs
 router.post("/login", userController.login);
 
-// 📌 Obtenir tous les utilisateurs - Admin uniquement
+// Route pour obtenir tous les utilisateurs - accessible par admin uniquement
 router.get("/tout", authenticateJWT, authenticateAdmin, userController.getAllUsers);
+
+// Route pour obtenir un utilisateur spécifique - accessible par admin uniquement
+router.get("/tout/:id", authenticateJWT, userController.getUserById);
 
 // Route pour obtenir un utilisateur spécifique 
 router.get("/seul/:id", authenticateJWT, userController.getUserById);
@@ -28,5 +31,6 @@ router.put("/:id", authenticateJWT, upload.single("photo"), userController.updat
 router.delete("/:id", authenticateJWT, authenticateAdmin, userController.deleteUser);
 
 router.get("/count-users-by-role", userController.countUsersByRole);
+
 router.put("/licencier/:employeId", userController.licencierEmploye);
 module.exports = router;
