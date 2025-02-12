@@ -3,7 +3,7 @@ const Produit = require("../models/Produits");
 // Ajouter une nouvelle commande
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { clientId, vendeurId, produits } = req.body;
+        const { clientId, vendeurId, produits,modePaiement } = req.body;
 
         // Valider si tous les produits existent dans la base de données
         const produitsDetails = await Promise.all(produits.map(async (item) => {
@@ -20,6 +20,8 @@ exports.ajouterCommande = async (req, res) => {
                 produit: produit._id,
                 quantite: item.quantite,
                 prixUnitaire,
+                modePaiement,
+                prixUnitaire,
                 total: totalProduit
             };
         }));
@@ -30,7 +32,7 @@ exports.ajouterCommande = async (req, res) => {
         // Créer la commande avec les produits détaillés et le total général
         const nouvelleCommande = new Commande({
             clientId,
-            vendeurId,
+            vendeurId,modePaiement,
             produits: produitsDetails,
             totalGeneral
         });

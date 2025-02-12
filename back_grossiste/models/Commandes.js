@@ -11,6 +11,11 @@ const commandeSchema = new mongoose.Schema({
         ref: 'User', 
         required: true 
     },
+    modePaiement: { 
+        type: String, 
+        enum: ["espèce", "mobile money", "virement bancaire", "à crédit"], 
+        required: true
+    },
     produits: [
         {
             produit: { 
