@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const commandeController = require('../controllers/commandeController');
+const commandeController = require('../controllers/CommandeController');
 
 // Route pour ajouter une commande
 router.post('/ajouter', commandeController.ajouterCommande);

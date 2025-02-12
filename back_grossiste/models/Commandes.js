@@ -44,7 +44,11 @@ const commandeSchema = new mongoose.Schema({
     },
     statut: { 
         type: String, 
+<<<<<<< HEAD
         enum: ["en cours", "terminée", "annulée","livré"], 
+=======
+        enum: ["en cours", "terminée", "livrée", "annulée"], 
+>>>>>>> a20878b9705a4f7ad6bce6ce4fc557dfe05e7388
         default: "en cours" 
     }
 }, { timestamps: true });

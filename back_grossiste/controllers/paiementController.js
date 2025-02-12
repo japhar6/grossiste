@@ -1,7 +1,3 @@
-
-
-// Ajouter un paiement pour une commande
-
 const Paiement = require("../models/Paiement");
 const Commande = require("../models/Commandes");
 

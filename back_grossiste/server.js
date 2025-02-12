@@ -31,7 +31,12 @@ const transfertRoute = require('./routes/transfertRoute');
 const paiementRoute = require('./routes/paiementRoute');
 
 const commandeRoutes = require("./routes/commandeRoute");
+<<<<<<< HEAD
 const comercialeRoutes = require("./routes/comercialeRoute");
+=======
+const venteRoutes = require("./routes/venteRoute");
+
+>>>>>>> a20878b9705a4f7ad6bce6ce4fc557dfe05e7388
 
 // Middleware
 app.use(express.json());
@@ -56,7 +61,11 @@ app.use('/api/transfert', transfertRoute);
 app.use('/api/client', clientRoutes);
 app.use('/api/paiement', paiementRoute);
 app.use("/api/commandes", commandeRoutes);
+<<<<<<< HEAD
 app.use("/api/comercial", comercialeRoutes);
+=======
+app.use("/api/ventes", venteRoutes);
+>>>>>>> a20878b9705a4f7ad6bce6ce4fc557dfe05e7388
 
 // Route de test
 app.get("/", (req, res) => {
