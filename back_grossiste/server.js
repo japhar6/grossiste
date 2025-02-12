@@ -31,6 +31,7 @@ const transfertRoute = require('./routes/transfertRoute');
 const paiementRoute = require('./routes/paiementRoute');
 
 const commandeRoutes = require("./routes/commandeRoute");
+const comercialeRoutes = require("./routes/comercialeRoute");
 
 // Middleware
 app.use(express.json());
@@ -55,6 +56,7 @@ app.use('/api/transfert', transfertRoute);
 app.use('/api/client', clientRoutes);
 app.use('/api/paiement', paiementRoute);
 app.use("/api/commandes", commandeRoutes);
+app.use("/api/comercial", comercialeRoutes);
 
 // Route de test
 app.get("/", (req, res) => {

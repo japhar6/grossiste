@@ -1,6 +1,7 @@
 const Commande = require('../models/Commandes');
 const Produit = require("../models/Produits");
-// Ajouter une nouvelle commande
+
+
 exports.ajouterCommande = async (req, res) => {
     try {
         const { clientId, vendeurId, produits,modePaiement } = req.body;
@@ -13,7 +14,7 @@ exports.ajouterCommande = async (req, res) => {
             }
 
             // Calculer le prix total du produit
-            const prixUnitaire = produit.prixdevente; // Récupérer le prix de vente du produit
+            const prixUnitaire = produit.prixdevente; 
             const totalProduit = prixUnitaire * item.quantite;
 
             return {
