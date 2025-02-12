@@ -1,80 +1,126 @@
-const Paiement = require('../models/Paiement'); 
-const Client = require('../models/Client');
-const User = require('../models/User');
 
-// Créer un paiement
-exports.createPaiement = async (req, res) => {
-  try {
-    const { commandeId, clientId, montantTotal, montantPaye, statut, caissierId } = req.body;
 
-    // Vérifier si le client existe
-    const client = await Client.findById(clientId);
-    if (!client) {
-      return res.status(404).json({ message: 'Client non trouvé' });
+// Ajouter un paiement pour une commande
+
+const Paiement = require("../models/Paiement");
+const Commande = require("../models/Commandes");
+
+
+exports.validerpayement = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { statut, remiseGlobale, remiseParProduit, modePaiement, remiseFixe } = req.body; // Ajout de remiseFixe
+  
+        // Recherche de la commande par ID
+        const commande = await Commande.findById(id);
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+  
+        // Calcul du total de la commande avant remise
+        let montantFinalPaye = commande.totalGeneral;
+        let montanApres = montantFinalPaye; // Valeur initiale
+
+        // Si remise globale est spécifiée et non égale à 0, l'appliquer
+        if (remiseGlobale && remiseGlobale > 0) {
+            montanApres -= montanApres * (remiseGlobale / 100);
+            console.log("Total après remise globale:", montanApres); 
+        }
+  
+        // Calcul du montant après remise par produit
+        let produitsAvecRemises = [];
+        if ((!remiseGlobale || remiseGlobale === 0) && remiseParProduit && Array.isArray(remiseParProduit)) {
+            // Appliquer remise par produit sans modifier la commande
+            produitsAvecRemises = commande.produits.map(item => {
+                const produitRemise = remiseParProduit.find(rp => rp.produitId.toString() === item.produit.toString());
+
+                if (produitRemise) {
+                    const remiseProduit = produitRemise.remise || 0;
+                    const prixProduit = item.prixUnitaire;
+                    const prixApresRemise = prixProduit - (prixProduit * (remiseProduit / 100));
+                    const totalProduit = prixApresRemise * item.quantite;
+
+                    console.log(`Produit: ${item.produit}, Prix avant remise: ${prixProduit}, Remise: ${remiseProduit}%, Prix après remise: ${prixApresRemise}, Total produit: ${totalProduit}`);
+
+                    return {
+                        produitId: item.produit,
+                        remise: remiseProduit,
+                        prixAvantRemise: prixProduit,
+                        prixApresRemise: prixApresRemise,
+                        totalProduit: totalProduit
+                    };
+                }
+
+                return null; // Aucun changement si pas de remise appliquée
+            }).filter(item => item !== null); // Supprimer les éléments null qui n'ont pas eu de remise
+
+            // Calcul final du montant après remise par produit
+            montanApres = produitsAvecRemises.reduce((acc, item) => acc + item.totalProduit, 0);
+            console.log("Montant final après remise par produit :", montanApres);
+        }
+
+        // Appliquer la remise fixe si elle est fournie
+        if (remiseFixe && remiseFixe > 0) {
+            montanApres -= remiseFixe;
+            console.log("Total après remise fixe:", montanApres);
+        }
+
+        // Mettre à jour le statut de la commande
+        commande.statut = "terminée";
+        await commande.save();
+  
+        // Créer un paiement avec le montant correctement mis à jour
+        const paiement = new Paiement({
+            commandeId: commande._id,
+            montantPaye: montanApres,  // Montant final après remise
+            modePaiement,
+            totalPaiement: montanApres,  // Le même montant ici aussi
+            statut: "complet",
+            remiseGlobale: remiseGlobale || 0,
+            remiseParProduit: remiseParProduit || [],
+            remiseFixe: remiseFixe || 0  // Ajouter la remise fixe
+        });
+  
+        // Sauvegarder le paiement dans la base de données
+        await paiement.save();
+  
+        return res.status(200).json({ message: "Paiement validé avec succès", paiement: {
+            commandeId: paiement.commandeId,
+            montantPaye: paiement.montantPaye,
+            modePaiement: paiement.modePaiement,
+            statut: paiement.statut,
+            remiseGlobale: paiement.remiseGlobale,
+            remiseParProduit: paiement.remiseParProduit,
+            remiseFixe: paiement.remiseFixe,  // Inclure la remise fixe dans la réponse
+            totalPaiement: paiement.totalPaiement,
+            produitsAvecRemises: produitsAvecRemises,
+            montantFinal: montanApres
+        } });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-
-    // Créer un paiement
-    const newPaiement = new Paiement({
-      commandeId,
-      clientId,
-      montantTotal,
-      montantPaye,
-      statut: montantPaye === montantTotal ? 'complet' : statut || 'en cours',
-      caissierId,
-    });
-
-    await newPaiement.save();
-    res.status(201).json({ message: 'Paiement effectué avec succès', paiement: newPaiement });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de l\'encaissement du paiement', error });
-  }
 };
+
 
 // Récupérer tous les paiements
-exports.getAllPaiements = async (req, res) => {
-  try {
-    const paiements = await Paiement.find().populate('clientId', 'nom').populate('caissierId','nom'); 
-    res.status(200).json(paiements);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération des paiements', error });
-  }
+exports.getPaiements = async (req, res) => {
+    try {
+        const paiements = await Paiement.find();
+        res.status(200).json(paiements);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 };
 
-// Récupérer un paiement par ID
+// Récupérer un paiement par son ID
 exports.getPaiementById = async (req, res) => {
-  try {
-    const paiement = await Paiement.findById(req.params.id).populate('clientId', 'nom'); 
-    if (!paiement) {
-      return res.status(404).json({ message: 'Paiement non trouvé' });
+    try {
+        const paiement = await Paiement.findById(req.params.id);
+        if (!paiement) {
+            return res.status(404).json({ message: "Paiement non trouvé" });
+        }
+        res.status(200).json(paiement);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-    res.status(200).json(paiement);
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la récupération du paiement', error });
-  }
-};
-
-// Mettre à jour un paiement
-exports.updatePaiement = async (req, res) => {
-  try {
-    const updatedPaiement = await Paiement.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedPaiement) {
-      return res.status(404).json({ message: 'Paiement non trouvé' });
-    }
-    res.status(200).json({ message: 'Paiement mis à jour avec succès', paiement: updatedPaiement });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du paiement', error });
-  }
-};
-
-// Supprimer un paiement
-exports.deletePaiement = async (req, res) => {
-  try {
-    const paiement = await Paiement.findByIdAndDelete(req.params.id);
-    if (!paiement) {
-      return res.status(404).json({ message: 'Paiement non trouvé' });
-    }
-    res.status(200).json({ message: 'Paiement supprimé avec succès' });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la suppression du paiement', error });
-  }
 };

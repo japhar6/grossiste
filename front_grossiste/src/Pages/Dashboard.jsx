@@ -95,7 +95,7 @@ function Dashboard() {
                 </div>
               </div>
               <div className="profil">
-                {/* Vous pouvez ajouter ici une section profil utilisateur */}
+
               </div>
             </div>
           </div>

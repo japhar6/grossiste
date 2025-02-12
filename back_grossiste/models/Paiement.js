@@ -1,49 +1,52 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const paiementSchema = new mongoose.Schema({
-  commandeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Commande',  // Référence à la commande
-    required: true,
-  },
-  clientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Client',    // Référence au client
-    required: true,
-  },
-  montantTotal: {
-    type: Number,
-    required: true,
-  },
-  montantPaye: {
-    type: Number,
-    required: true,
-    validate: {
-      validator: function(v) {
-        return v <= this.montantTotal; // Validation pour s'assurer que le montant payé ne dépasse pas le montant total
-      },
-      message: props => `Le montant payé ne peut pas dépasser le montant total (${props.value} > ${this.montantTotal})`
+    commandeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Commande",
+        required: true
     },
-  },
-  statut: {
-    type: String,
-    enum: ['en cours', 'complet', 'partiel'],  
-    default: 'en cours',
-  },
-  datePaiement: {
-    type: Date,
-    default: Date.now,  
-  },
-  caissierId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',   // Référence au caissier
-    required: true,
-  },
-});
+    montantPaye: {
+        type: Number,
+        required: true
+    },
+    modePaiement: { 
+        type: String, 
+        enum: ["espèce", "mobile money", "virement bancaire", "à crédit"], 
+        required: true
+    },
+    statut: { 
+        type: String, 
+        enum: ["partiel", "complet", "annulé"], 
+        default: "partiel"
+    },
+    remiseGlobale: { 
+        type: Number, 
+        default: 0 
+    },
+    remiseFixe: {  // Ajout de la remise fixe
+        type: Number,
+        default: 0
+    },
+    remiseParProduit: [
+        {
+            produitId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Produit",
+                required: true
+            },
+            remise: {
+                type: Number,
+                default: 0
+            }
+        }
+    ],
+    totalPaiement: {
+        type: Number,
+        required: true
+    }
+}, { timestamps: true });
 
-// Méthode virtuelle pour calculer le reste à payer
-paiementSchema.virtual('resteAPayer').get(function() {
-  return this.montantTotal - this.montantPaye;
-});
+const Paiement = mongoose.model("Paiement", paiementSchema);
 
-module.exports = mongoose.model('Paiement', paiementSchema);
+module.exports = Paiement;

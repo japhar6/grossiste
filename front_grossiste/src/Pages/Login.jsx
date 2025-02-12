@@ -73,9 +73,7 @@ function Login() {
                         <p>Optimisez la gestion et la distribution des Produits de Première Nécessité (PPN)...</p>
                         <Link to="/inscription">
 
-                        <button className='btn btn-success p-3 mt-5'>
-                            <i className='fa fa-users'></i> Créer un compte pour le système
-                        </button>
+                      
                         </Link>
                     </div>
                     <div className='formulaire p-5'>
