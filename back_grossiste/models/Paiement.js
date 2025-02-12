@@ -10,11 +10,7 @@ const paiementSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    modePaiement: { 
-        type: String, 
-        enum: ["espèce", "mobile money", "virement bancaire", "à crédit"], 
-        required: true
-    },
+  
     statut: { 
         type: String, 
         enum: ["partiel", "complet", "annulé"], 

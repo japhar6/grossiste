@@ -568,7 +568,6 @@ function AchatProduits() {
                         value={prixAchat}
                         onChange={(e) => setPrixAchat(e.target.value)}
                       />
-<<<<<<< HEAD
                        <input
                           type="number"
                           className="form-control mt-3"
@@ -577,9 +576,7 @@ function AchatProduits() {
                           onChange={(e) => setPrixAchat(e.target.value)}
                           disabled={!fournisseur}
                         />
-=======
                       <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
->>>>>>> 7339d90bea6707ea2a163e81c002aed1696885e3
 
                         
 

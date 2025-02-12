@@ -9,7 +9,7 @@ const Commande = require("../models/Commandes");
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params;
-        const { statut, remiseGlobale, remiseParProduit, modePaiement, remiseFixe } = req.body; // Ajout de remiseFixe
+        const { statut, remiseGlobale, remiseParProduit, remiseFixe } = req.body; // Ajout de remiseFixe
   
         // Recherche de la commande par ID
         const commande = await Commande.findById(id);
@@ -73,7 +73,7 @@ exports.validerpayement = async (req, res) => {
         const paiement = new Paiement({
             commandeId: commande._id,
             montantPaye: montanApres,  // Montant final après remise
-            modePaiement,
+        
             totalPaiement: montanApres,  // Le même montant ici aussi
             statut: "complet",
             remiseGlobale: remiseGlobale || 0,
@@ -87,11 +87,10 @@ exports.validerpayement = async (req, res) => {
         return res.status(200).json({ message: "Paiement validé avec succès", paiement: {
             commandeId: paiement.commandeId,
             montantPaye: paiement.montantPaye,
-            modePaiement: paiement.modePaiement,
             statut: paiement.statut,
             remiseGlobale: paiement.remiseGlobale,
             remiseParProduit: paiement.remiseParProduit,
-            remiseFixe: paiement.remiseFixe,  // Inclure la remise fixe dans la réponse
+            remiseFixe: paiement.remiseFixe,  
             totalPaiement: paiement.totalPaiement,
             produitsAvecRemises: produitsAvecRemises,
             montantFinal: montanApres
