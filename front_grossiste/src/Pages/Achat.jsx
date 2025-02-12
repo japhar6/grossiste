@@ -363,7 +363,7 @@ function AchatProduits() {
       <header></header>
       <main className="center">
         <Sidebar />
-        <section className="contenue2">
+        <section className="contenue">
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
@@ -372,7 +372,7 @@ function AchatProduits() {
               </h6>
               {!panierCreer && (
                 <div className="filtrage bg-light p-3 mt-3">
-                  <button className="btn btn-success" onClick={creerNouveauPanier}>
+                  <button className="btn1 btn1-success" onClick={creerNouveauPanier}>
                     Créer un Nouveau Panier
                   </button>
                 </div>
@@ -539,6 +539,7 @@ function AchatProduits() {
         <tr>
           <th>Produit</th>
           <th>Quantité</th>
+          <th>Unité</th>
           <th>Prix d'Achat</th>
           <th>Total</th>
         </tr>
@@ -548,6 +549,7 @@ function AchatProduits() {
           <tr key={index}>
             <td>{item.produit}</td>
             <td>{item.quantite}</td>
+            
             <td>{item.prixAchat} Ar</td>
             <td>{item.total} Ar</td>
           </tr>
