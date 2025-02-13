@@ -20,7 +20,7 @@ function AchatProduits() {
   const [categories, setCategories] = useState([]);
   const [nouvelleCategorie, setNouvelleCategorie] = useState(""); 
   const [ajouterCategorie, setAjouterCategorie] = useState(false); 
-
+const [panierId, setPanierId] = useState(null); 
 
   const [typeFiltre, setTypeFiltre] = useState("");
   const [dateFiltre, setDateFiltre] = useState("");
@@ -208,14 +208,13 @@ function AchatProduits() {
           confirmButtonText: "OK",
         });
       });
-  }, []);
-
-      const creerNouveauPanier = () => {
+  }, []);   
+  
+  const creerNouveauPanier = () => {
     const panierData = {
       fournisseur,
       produits: panier,
     };
-
     fetch("http://localhost:5000/api/paniers/ajouter", {
       method: "POST",
       headers: {
@@ -225,17 +224,26 @@ function AchatProduits() {
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data && data.message === "Panier créé avec succès") {
+        console.log("Réponse API complète :", data); // Vérifie tout ce que l'API renvoie
+        console.log("Panier :", data.panier); // Vérifie si `panier` existe
+        console.log("Panier ID :", data.panier ? data.panier._id : "ID non trouvé"); // Vérifie si `_id` est bien présent
+    
+        if (data && data.message === "Panier créé avec succès" && data.panier?._id) {
+          setPanierId(data.panier._id);
+          console.log("Panier ID enregistré dans state :", data.panier._id);
+    
           Swal.fire({
             title: "Panier créé avec succès",
             text: "Votre panier a été créé avec succès !",
             icon: "success",
             confirmButtonText: "OK",
           });
+    
           setPanierCreer(true);
           setPanier([]);
           setFournisseur("");
         } else {
+          console.error("Erreur : L'ID du panier est manquant.");
           Swal.fire({
             title: "Erreur",
             text: data.message || "Impossible de créer le panier.",
@@ -245,6 +253,7 @@ function AchatProduits() {
         }
       })
       .catch((error) => {
+        console.error("Erreur lors de la requête :", error);
         Swal.fire({
           title: "Erreur",
           text: "Une erreur est survenue lors de la création du panier.",
@@ -252,96 +261,111 @@ function AchatProduits() {
           confirmButtonText: "OK",
         });
       });
-  };
-  const ajouterAuPanier = () => {
-    if (produit && quantite && prixAchat) {
-      const nouvelArticle = { produit, quantite, prixAchat, total: quantite * prixAchat };
-  
-      // Vérifier si le produit est déjà dans le panier
-      const produitExistant = panier.find((article) => article.produit === produit);
-  
-      if (produitExistant) {
-        // Si le produit est déjà dans le panier, on met à jour la quantité et le total
-        const panierMisAJour = panier.map((article) => 
-          article.produit === produit 
-            ? { ...article, quantite: article.quantite + quantite, total: (article.quantite + quantite) * prixAchat }
-            : article
-        );
-        setPanier(panierMisAJour);
-      } else {
-       
-        setPanier([...panier, nouvelArticle]);
-      }
-  
-      // Réinitialiser les champs de saisie
-      setProduit("");
-      setQuantite("");
-      setPrixAchat("");
-  
-      // Mise à jour du prix dans la base de données si le prix a changé
-      const produitId = produit._id;
-  
-      const updatePrix = async () => {
-        try {
-          const response = await fetch(`http://localhost:5000/api/produits/modifier/${produitId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              prixDachat: prixAchat,
-            }),
-          });
-  
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Produit mis à jour avec succès', data);
-          } else {
-            console.error('Erreur lors de la mise à jour du produit');
-          }
-        } catch (error) {
-          console.error('Erreur réseau', error);
-        }
-      };
-  
-      updatePrix();
-  
-      // Création de l'achat pour ce produit
-      const creerAchat = async () => {
-        const achatData = {
-          produit: produitId, 
+     }
+     const ajouterAuPanier = () => {
+      if (produit && quantite && prixAchat) {
+        const nouvelArticle = {
+          produit,
           quantite,
           prixAchat,
           total: quantite * prixAchat,
-          fournisseur,
-          dateAchat: new Date().toISOString(), 
+          fournisseur: produit.fournisseur, // Assurez-vous que le produit a un fournisseur
+          panier: panier._id, // Utilise l'id du panier actuel si disponible
         };
-  
-        try {
-          const response = await fetch('http://localhost:5000/api/achats/ajouter', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(achatData),
-          });
-  
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Achat créé avec succès', data);
-          } else {
-            console.error('Erreur lors de la création de l\'achat');
-          }
-        } catch (error) {
-          console.error('Erreur réseau', error);
+    
+        // Vérifier si le produit est déjà dans le panier
+        const produitExistant = panier.find((article) => article.produit === produit._id);
+    
+        // Si le produit est déjà dans le panier, on met à jour la quantité et le total
+        if (produitExistant) {
+          const panierMisAJour = panier.map((article) =>
+            article.produit === produit._id
+              ? {
+                  ...article,
+                  quantite: article.quantite + quantite,
+                  total: (article.quantite + quantite) * prixAchat,
+                }
+              : article
+          );
+          setPanier(panierMisAJour);
+        } else {
+          // Ajouter le nouvel article au panier
+          setPanier([...panier, nouvelArticle]);
         }
-      };
+    
+        // Réinitialiser les champs de saisie
+        setProduit("");
+        setQuantite("");
+        setPrixAchat("");
+    
+        // Création de l'achat pour ce produit
+        const creerAchat = async () => {
+          const achatData = {
+            produitId: produit._id, // Utilise `_id` du produit
+            fournisseurId: produit.fournisseur._id, // Ajoute le fournisseur
+            quantite,
+            prixAchat,
+            total: quantite * prixAchat,
+            panierId: panier._id, // Ajoute l'id du panier
+            dateAchat: new Date().toISOString(), // Ajoute la date actuelle
+          };
+    
+          console.log(achatData); // Vérifie la structure des données avant d'envoyer
+    
+          try {
+            const response = await fetch("http://localhost:5000/api/achats/ajouter", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(achatData),
+            });
+    
+            if (!response.ok) {
+              throw new Error("Erreur lors de la création de l'achat");
+            }
+    
+            // Traitez la réponse ici si nécessaire
+          } catch (error) {
+            console.error(error);
+          }
+        };
+    
+        // Appel pour créer l'achat après la mise à jour du panier
+        creerAchat();
+      } else {
+        console.error("Tous les champs requis ne sont pas remplis.");
+      }
+    };
+    
+  /*
+  const produitId = produit._id;
   
-      creerAchat();
+  const updatePrix = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/produits/modifier/${produitId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prixDachat: prixAchat,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Produit mis à jour avec succès', data);
+      } else {
+        console.error('Erreur lors de la mise à jour du produit');
+      }
+    } catch (error) {
+      console.error('Erreur réseau', error);
     }
   };
-  
 
+  updatePrix();
+*/
   const validerPanier = () => {
     Swal.fire({
       title: "Panier validé",
@@ -517,57 +541,33 @@ function AchatProduits() {
                   ) : (
                     <div className="produit-section mt-3">
                       <h6><i className="fa fa-box"></i> Choisir un Produit</h6>
-                                        <Select
-                    className="form-control mt-3"
-                    value={produit ? { label: `${produit.label} `, value: produit.value } : null}
-                    onChange={handleProduitChange}
-                    options={produitsOptions}
-                    placeholder="Choisir un produit"
-                    isSearchable
-                    noOptionsMessage={() => customNoOptionMessage}
-                    isDisabled={!fournisseur}
-                  />
+                      <Select
+  className="form-control mt-3"
+  value={produit ? { label: produit.label, value: produit.value } : null} 
+  onChange={handleProduitChange}
+  options={produitsOptions}
+  placeholder="Choisir un produit"
+  isSearchable
+  noOptionsMessage={() => customNoOptionMessage}
+  isDisabled={!fournisseur}
+/>
 
                                             
 
 
                           <div className="quantite-section mt-3 d-flex align-items-center">
   {/* Saisie de la quantité */}
-  <input
-    type="number"
-    className="form-control me-2"
-    placeholder="Quantité"
-    value={quantite}
-    onChange={(e) => setQuantite(e.target.value)}
-  />
+                        <input
+                          type="number"
+                          className="form-control me-2"
+                          placeholder="Quantité"
+                          value={quantite}
+                          onChange={(e) => setQuantite(e.target.value)}
+                        />
 
-  {/* Sélection du type de quantité */}
-  <Select
-    className="form-control"
-    value={produit.typeQuantite ? { label: produit.typeQuantite, value: produit.typeQuantite } : null}
-    onChange={(selectedOption) => setProduit({ ...produit, typeQuantite: selectedOption.value })}
-    options={[
-      { value: "Paquet", label: "Paquet" },
-      { value: "Cartouche", label: "Cartouche" },
-      { value: "Carton", label: "Carton" },
-      { value: "Sacs", label: "Sacs" },
-      { value: "Bidon", label: "Bidon" },
-      { value: "Pièce", label: "Pièce" },
-      { value: "Boîte", label: "Boîte" },
-      { value: "Sachet", label: "Sachet" }
-    ]}
-    placeholder="Type de Quantité"
-    isSearchable
-  />
-</div>
+                          
+                        </div>
 
-                      <input
-                        type="number"
-                        className="form-control mt-3"
-                        placeholder="Prix d'achat"
-                        value={prixAchat}
-                        onChange={(e) => setPrixAchat(e.target.value)}
-                      />
                        <input
                           type="number"
                           className="form-control mt-3"
@@ -578,10 +578,6 @@ function AchatProduits() {
                         />
                       <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
 
-                        
-
-
-                    
                     </div>
                   )}
                 </div>
