@@ -297,7 +297,7 @@ function Fournisseur() {
                       onChange={(e) => setLogo(e.target.files[0])}
                     />
                   </div>
-                  <button className="btn btn-success" type="submit">
+                  <button className="btn1 btn1  -success" type="submit">
                     {editingId ? "Modifier" : "Enregistrer"}
                   </button>
                 </div>

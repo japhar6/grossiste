@@ -21,29 +21,39 @@ function AchatProduits() {
   const [nouvelleCategorie, setNouvelleCategorie] = useState(""); 
   const [ajouterCategorie, setAjouterCategorie] = useState(false); 
 const [panierId, setPanierId] = useState(null); 
-
+const [achats, setAchats] = useState([]);
   const [typeFiltre, setTypeFiltre] = useState("");
   const [dateFiltre, setDateFiltre] = useState("");
   const [nouveauProduit, setNouveauProduit] = useState({ nom: "", categorie: "" ,description :"",prixDachat: "",unite:"",fournisseur:""});
   const [afficherFormulaireProduit, setAfficherFormulaireProduit] = useState(false);
-
+  const [produitId, setProduitId] = useState(""); 
   const handleProduitChange = (selectedOption) => {
-    setProduit(selectedOption);  
-  
+    if (!selectedOption) return; 
+
+    // Assurez-vous que l'objet contient bien la propriété value (l'ID du produit)
+    const produitId = selectedOption.value; // Récupérer l'ID du produit
+console.log("produit" ,produitId);
+    if (!produitId) {
+      console.error("ID du produit manquant");
+      return;
+    }
+    setProduitId(produitId);
+    // Mettre à jour le produit sélectionné
+    setProduit(selectedOption);
+
     // Faire une requête pour récupérer les détails du produit
-    fetch(`http://localhost:5000/api/produits/recuperer/${selectedOption.value}`)
+    fetch(`http://localhost:5000/api/produits/recuperer/${produitId}`)
       .then((response) => response.json())
       .then((data) => {
         if (data) {
-          setPrixAchat(data.prixDachat); 
+          setPrixAchat(data.prixDachat); // Mettre à jour le prix d'achat
         }
       })
       .catch((error) => {
         console.error("Erreur lors de la récupération du produit:", error);
-        setPrixAchat(""); 
+        setPrixAchat(""); // Réinitialiser en cas d'erreur
       });
   };
-  
 
   useEffect(() => {
     fetch("http://localhost:5000/api/produits/categories")
@@ -147,6 +157,22 @@ const [panierId, setPanierId] = useState(null);
       setAjouterCategorie(false);
     }
   };
+
+  const fetchAchats = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/achats/panier/${panierId}`);
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de la récupération des achats.");
+      }
+  
+      setAchats(data.achats);
+    } catch (error) {
+      console.error("Erreur :", error);
+    }
+  };
+  
   useEffect(() => {
     if (fournisseur) {
       fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
@@ -155,7 +181,7 @@ const [panierId, setPanierId] = useState(null);
           if (Array.isArray(data) && data.length > 0) {
             const options = data.map((produit) => ({
               label: `${produit.nom} - ${produit.categorie}`,  
-              value: produit._id,  
+              value: produit._id,  // Assurez-vous que vous utilisez l'_id ici
             }));
             
             setProduitsOptions(options);
@@ -210,134 +236,121 @@ const [panierId, setPanierId] = useState(null);
       });
   }, []);   
   
-  const creerNouveauPanier = () => {
+  const creerNouveauPanier = async () => {
+  
     const panierData = {
       fournisseur,
       produits: panier,
     };
-    fetch("http://localhost:5000/api/paniers/ajouter", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(panierData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Réponse API complète :", data); // Vérifie tout ce que l'API renvoie
-        console.log("Panier :", data.panier); // Vérifie si `panier` existe
-        console.log("Panier ID :", data.panier ? data.panier._id : "ID non trouvé"); // Vérifie si `_id` est bien présent
-    
-        if (data && data.message === "Panier créé avec succès" && data.panier?._id) {
-          setPanierId(data.panier._id);
-          console.log("Panier ID enregistré dans state :", data.panier._id);
-    
-          Swal.fire({
-            title: "Panier créé avec succès",
-            text: "Votre panier a été créé avec succès !",
-            icon: "success",
-            confirmButtonText: "OK",
-          });
-    
-          setPanierCreer(true);
-          setPanier([]);
-          setFournisseur("");
-        } else {
-          console.error("Erreur : L'ID du panier est manquant.");
-          Swal.fire({
-            title: "Erreur",
-            text: data.message || "Impossible de créer le panier.",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la requête :", error);
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/paniers/ajouter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(panierData),
+      });
+  
+      const data = await response.json();
+      console.log("Réponse API complète :", data);
+  
+      if (data?.message === "Panier créé avec succès" && data.panier?._id) {
+        setPanierId(data.panier._id);
+        setPanierCreer(true);
+        setPanier([]);
+        setFournisseur("");
+  
         Swal.fire({
-          title: "Erreur",
-          text: "Une erreur est survenue lors de la création du panier.",
-          icon: "error",
+          title: "Succès",
+          text: "Votre panier a été créé avec succès !",
+          icon: "success",
           confirmButtonText: "OK",
         });
-      });
-     }
-     const ajouterAuPanier = () => {
-      if (produit && quantite && prixAchat) {
-        const nouvelArticle = {
-          produit,
-          quantite,
-          prixAchat,
-          total: quantite * prixAchat,
-          fournisseur: produit.fournisseur, // Assurez-vous que le produit a un fournisseur
-          panier: panier._id, // Utilise l'id du panier actuel si disponible
-        };
-    
-        // Vérifier si le produit est déjà dans le panier
-        const produitExistant = panier.find((article) => article.produit === produit._id);
-    
-        // Si le produit est déjà dans le panier, on met à jour la quantité et le total
-        if (produitExistant) {
-          const panierMisAJour = panier.map((article) =>
-            article.produit === produit._id
-              ? {
-                  ...article,
-                  quantite: article.quantite + quantite,
-                  total: (article.quantite + quantite) * prixAchat,
-                }
-              : article
-          );
-          setPanier(panierMisAJour);
-        } else {
-          // Ajouter le nouvel article au panier
-          setPanier([...panier, nouvelArticle]);
-        }
-    
-        // Réinitialiser les champs de saisie
-        setProduit("");
-        setQuantite("");
-        setPrixAchat("");
-    
-        // Création de l'achat pour ce produit
-        const creerAchat = async () => {
-          const achatData = {
-            produitId: produit._id, // Utilise `_id` du produit
-            fournisseurId: produit.fournisseur._id, // Ajoute le fournisseur
-            quantite,
-            prixAchat,
-            total: quantite * prixAchat,
-            panierId: panier._id, // Ajoute l'id du panier
-            dateAchat: new Date().toISOString(), // Ajoute la date actuelle
-          };
-    
-          console.log(achatData); // Vérifie la structure des données avant d'envoyer
-    
-          try {
-            const response = await fetch("http://localhost:5000/api/achats/ajouter", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(achatData),
-            });
-    
-            if (!response.ok) {
-              throw new Error("Erreur lors de la création de l'achat");
-            }
-    
-            // Traitez la réponse ici si nécessaire
-          } catch (error) {
-            console.error(error);
-          }
-        };
-    
-        // Appel pour créer l'achat après la mise à jour du panier
-        creerAchat();
       } else {
-        console.error("Tous les champs requis ne sont pas remplis.");
+        throw new Error(data.message || "Impossible de créer le panier.");
       }
+    } catch (error) {
+      console.error("Erreur lors de la requête :", error);
+      Swal.fire({
+        title: "Erreur",
+        text: error.message || "Une erreur est survenue lors de la création du panier.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const ajouterAuPanier = async () => {
+   
+    const quantiteNumerique = Number(quantite);
+  
+    if (isNaN(quantiteNumerique)) {
+      Swal.fire({
+        title: "Erreur",
+        text: "La quantité doit être un nombre valide.",
+        icon: "warning",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+  
+  
+    console.log("ID du panier avant envoi :", panierId); // Vérifie que l'ID est correct ici
+
+    const total = quantiteNumerique * prixAchat;
+  
+    const achatData = {
+      fournisseur: fournisseur,
+      panierId: panierId,  // L'ID du panier
+      produit: produitId,  // L'ID du produit
+      quantite: quantiteNumerique,  // Quantité du produit
+      prixAchat: prixAchat,  // Prix d'achat du produit
+      total: total,  // Total calculé
+      dateAchat: new Date().toISOString(),  // Date actuelle de l'achat
     };
+  
+    console.log("Données envoyées pour création de l'achat :", achatData);
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/achats/ajouter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(achatData),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de la création de l'achat");
+      }
+  
+      Swal.fire({
+        title: "Succès",
+        text: "Achat ajouté avec succès.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      fetchAchats();
+      // Réinitialisation des champs après succès
+      setFournisseur("");  // Réinitialiser fournisseur
     
+      setQuantite("");     // Réinitialiser quantité
+      setPrixAchat("");    // Réinitialiser prixAchat
+      setProduit("");      // Réinitialiser produit
+    } catch (error) {
+      console.error("Erreur lors de la création de l'achat :", error);
+      Swal.fire({
+        title: "Erreur",
+        text: error.message || "Une erreur est survenue.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+
   /*
   const produitId = produit._id;
   
@@ -435,7 +448,7 @@ const [panierId, setPanierId] = useState(null);
       <header></header>
       <main className="center">
         <Sidebar />
-        <section className="contenue2">
+        <section className="contenue">
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
@@ -444,7 +457,7 @@ const [panierId, setPanierId] = useState(null);
               </h6>
               {!panierCreer && (
                 <div className="filtrage bg-light p-3 mt-3">
-                  <button className="btn btn-success" onClick={creerNouveauPanier}>
+                  <button className="btn1 btn1-success" onClick={creerNouveauPanier}>
                     Créer un Nouveau Panier
                   </button>
                 </div>
@@ -543,7 +556,7 @@ const [panierId, setPanierId] = useState(null);
                       <h6><i className="fa fa-box"></i> Choisir un Produit</h6>
                       <Select
   className="form-control mt-3"
-  value={produit ? { label: produit.label, value: produit.value } : null} 
+  value={produit ? { label: produit.label, value: produit.label } : null} 
   onChange={handleProduitChange}
   options={produitsOptions}
   placeholder="Choisir un produit"
@@ -591,26 +604,29 @@ const [panierId, setPanierId] = useState(null);
         <tr>
           <th>Produit</th>
           <th>Quantité</th>
+          <th>Unité</th>
           <th>Prix d'Achat</th>
           <th>Total</th>
         </tr>
       </thead>
       <tbody>
-        {panier.map((item, index) => (
-          <tr key={index}>
-            <td>{item.produit}</td>
-            <td>{item.quantite}</td>
-            <td>{item.prixAchat} Ar</td>
-            <td>{item.total} Ar</td>
-          </tr>
-        ))}
-      </tbody>
+  {achats.map((achat) => (
+    <tr key={achat._id}>
+      <td>{achat.produit?.nom || "Produit inconnu"}</td>
+      <td>{achat.quantite}</td>
+      <td>{achat.produit?.unite || "Unité"}</td>
+      <td>{achat.prixAchat} Ar</td>
+      <td>{achat.total} Ar</td>
+    </tr>
+  ))}
+</tbody>
+
     </table>
     
     {/* Total et bouton à droite */}
     <div className="total-validation-container">
-      <h6>Total: {panier.reduce((acc, item) => acc + item.total, 0)} Ar</h6>
-      <button className="btn btn-success" onClick={validerPanier}>Valider l'Achat</button>
+    <h6>Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
+    <button className="btn btn-success" onClick={validerPanier}>Valider l'Achat</button>
     </div>
   </div>
 )}

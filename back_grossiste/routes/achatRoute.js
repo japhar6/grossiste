@@ -7,6 +7,7 @@ router.get("/afficher", achatController.afficherAchats);
 router.put("/modifier/:id", achatController.modifierAchat);
 router.delete('/supprimer/:id', achatController.supprimerAchat);
 
-router.post('/valider/:achatId', achatController.validerAchat);
+router.post('/valider/:panierId', achatController.validerPanier);
 
+router.get("/panier/:panierId", achatController.getAchatsByPanier);
 module.exports = router;

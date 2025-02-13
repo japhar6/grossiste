@@ -109,7 +109,7 @@ function Login() {
                                 </div>
                                 <div>
                                     {!success && (
-                                        <button type="submit" className='btn btn-success p-3 mt-3' disabled={loading}>
+                                        <button type="submit" className='btn1 btn1-success p-3 mt-3' disabled={loading}>
                                             {loading ? (
                                                 <span>
                                                     <i className="fa fa-spinner fa-spin"></i> Connexion...

@@ -34,3 +34,19 @@ exports.supprimerPanier = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la suppression du panier", error });
     }
 };
+
+exports.getPanierById = async (req, res) => {
+    try {
+      const { panierId } = req.params;
+      const panier = await Panier.findById(panierId);
+  
+      if (!panier) {
+        return res.status(404).json({ message: "Panier non trouvé" });
+      }
+  
+      res.status(200).json(panier);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du panier :", error);
+      res.status(500).json({ message: "Erreur serveur" });
+    }
+  };

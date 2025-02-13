@@ -363,7 +363,7 @@ function Personnels() {
                       onChange={(e) => setPhoto(e.target.files[0])} />
                   
                   </div>
-                  <button className="btn btn-success" type="submit">Enregistrer</button>
+                  <button className="btn1 btn1-success" type="submit">Enregistrer</button>
                 </div>
               </form>
             </div>
