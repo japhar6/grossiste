@@ -1,5 +1,7 @@
 const Stock = require('../models/Stock');
 const Commande = require('../models/Commandes');
+const PaiementCommerciale = require("../models/PaimentCommerciale");
+
 // Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
   try {
@@ -91,11 +93,14 @@ exports.deleteStock = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression du stock', error });
   }
 };
-
 exports.retournerProduits = async (req, res) => {
   try {
     const { id } = req.params;  // ID du paiement commercial
-    const { produitsRetournes } = req.body;  // Liste des produits retournés avec quantités
+    const { produitsRetournes, entrepotId } = req.body;  // Liste des produits retournés et l'ID de l'entrepôt
+
+    if (!entrepotId) {
+      return res.status(400).json({ message: "Entrepôt non spécifié" });
+    }
 
     const paiementCommerciale = await PaiementCommerciale.findById(id);
     if (!paiementCommerciale) {
@@ -105,20 +110,19 @@ exports.retournerProduits = async (req, res) => {
     // Parcours de la liste des produits retournés
     for (const produit of produitsRetournes) {
       const stockProduit = await Stock.findOne({
-        entrepot: paiementCommerciale.commandeId.entrepotId, // Entrepôt du commercial
+        entrepot: entrepotId,  // On vérifie l'entrepôt spécifié dans la requête
         produit: produit.produit,
       });
 
       if (!stockProduit) {
-        return res.status(404).json({ message: `Produit ${produit.produit} non trouvé dans l'entrepôt` });
+        return res.status(404).json({ message: `Produit ${produit.produit} non trouvé dans cet entrepôt` });
       }
 
       // Mettre à jour le stock
       stockProduit.quantité += produit.quantite;
       await stockProduit.save();
 
-      // Ajuster le paiement du commercial
-      paiementCommerciale.montantRestant += stockProduit.prixUnitaire * produit.quantite;
+
     }
 
     // Sauvegarder les mises à jour du paiement
@@ -129,6 +133,7 @@ exports.retournerProduits = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 exports.sortirProduitsStock = async (req, res) => {
   try {
