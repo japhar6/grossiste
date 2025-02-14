@@ -1,22 +1,5 @@
 /* Styles pour la page Achat de Produits */
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-.contenue2 {
-  width: 100%;
-  padding: 20px;
-  background-color: #f8f9fa;
-}
-
-.content {
-  width: 100%;
-  background: #ffffff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-}
 
 .mini-stat {
   background: #ffffff;
@@ -166,10 +149,12 @@ label {
 .fournisseur-section,
 .produit-section {
   flex: 1 1 48%;
-  background: #f1f1f1;
-  border-radius: 5px;
+  background: #ffffff;
+
   padding: 15px;
   box-sizing: border-box;
+  border-radius: 10px;
+  box-shadow: 2px  10px 14px 10px rgba(0, 0, 0, 0.1);
 }
 
 .consultation {
@@ -178,6 +163,9 @@ label {
   border-radius: 5px;
   padding: 15px;
   box-sizing: border-box;
+  border-radius: 10px;
+  box-shadow:2px 10px 14px 8px rgba(0, 0, 0, 0.1);
+
 }
 .quantite-section {
   display: flex;

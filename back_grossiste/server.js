@@ -16,6 +16,7 @@ const produitRoutes = require("./routes/produitRoute");
 const userRoutes = require("./routes/userRoute");
 
 const achatsRoutes = require("./routes/achatRoute");
+const activiteComRoutes = require("./routes/activiteRoutes");
 
 
 const entrepotRoutes = require("./routes/entrepotRoute");
@@ -46,6 +47,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 // Middleware pour les routes des fournisseurs
+app.use("/api/activiteCom", activiteComRoutes);
 app.use("/api/fournisseurs", fournisseurRoutes);
 app.use("/api/produits", produitRoutes);
 app.use("/api/users", userRoutes);
