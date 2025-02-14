@@ -1,54 +1,78 @@
-const Commande = require('../models/Commandes');
+const Commande = require("../models/Commandes");
 const Produit = require("../models/Produits");
-
+const Client = require("../models/Client");
+const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { clientId, vendeurId, produits,modePaiement } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut } = req.body;
 
-        // Valider si tous les produits existent dans la base de données
+        // Vérifier que typeClient est fourni
+        if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
+            return res.status(400).json({ message: "typeClient doit être 'Client' ou 'Commercial'." });
+        }
+
+        let clientOuCommercial;
+        if (typeClient === "Client") {
+            if (!clientId) return res.status(400).json({ message: "clientId est requis pour un Client." });
+            clientOuCommercial = await Client.findById(clientId);
+        } else {
+            if (!commercialId) return res.status(400).json({ message: "commercialId est requis pour un Commercial." });
+            clientOuCommercial = await Commercial.findById(commercialId);
+        }
+
+        // Vérifier si le client ou commercial existe
+        if (!clientOuCommercial) {
+            return res.status(404).json({ message: `${typeClient} non trouvé avec cet ID.` });
+        }
+
+        // Forcer le mode de paiement à "à crédit" si c'est un commercial
+        const paiementFinal = typeClient === "Commercial" ? "à crédit" : modePaiement;
+
+        // Vérifier que tous les produits existent
         const produitsDetails = await Promise.all(produits.map(async (item) => {
             const produit = await Produit.findById(item.produit);
-            if (!produit) {
-                throw new Error(`Produit avec ID ${item.produit} non trouvé.`);
-            }
-
-            // Calculer le prix total du produit
-            const prixUnitaire = produit.prixdevente; 
+            if (!produit) throw new Error(`Produit avec ID ${item.produit} non trouvé.`);
+            
+            const prixUnitaire = produit.prixdevente;
             const totalProduit = prixUnitaire * item.quantite;
 
             return {
                 produit: produit._id,
                 quantite: item.quantite,
                 prixUnitaire,
-                modePaiement,
-                prixUnitaire,
                 total: totalProduit
             };
         }));
 
-        // Calculer le total général de la commande
+        // Calcul du total général
         const totalGeneral = produitsDetails.reduce((acc, item) => acc + item.total, 0);
 
-        // Créer la commande avec les produits détaillés et le total général
+        // Création de la commande
         const nouvelleCommande = new Commande({
-            clientId,
-            vendeurId,modePaiement,
+            typeClient,
+            clientId: typeClient === "Client" ? clientId : null,
+            commercialId: typeClient === "Commercial" ? commercialId : null,
+            vendeurId,
+            modePaiement: paiementFinal,
             produits: produitsDetails,
-            totalGeneral
+            totalGeneral,
+            statut
         });
 
-        // Sauvegarder la commande dans la base de données
+        // Enregistrement
         await nouvelleCommande.save();
 
         res.status(201).json({
             message: "Commande créée avec succès.",
             commande: nouvelleCommande
         });
+
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
     try {

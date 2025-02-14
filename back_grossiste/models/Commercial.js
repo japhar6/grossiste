@@ -22,6 +22,9 @@ const commercialSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    type : {
+        type: String, required : true 
+    }
 }, { timestamps: true });
 
 const Commercial = mongoose.model("Commercial", commercialSchema);

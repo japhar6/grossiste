@@ -3,18 +3,26 @@ const mongoose = require("mongoose");
 const commandeSchema = new mongoose.Schema({
     clientId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Client',  
-        required: true 
+        ref: 'Client' 
+    },
+    commercialId: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Commercial' 
     },
     vendeurId: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'User', 
         required: true 
     },
+    typeClient: { 
+        type: String, 
+        enum: ["Client", "Commercial"], 
+        required: true 
+    },
     modePaiement: { 
         type: String, 
         enum: ["espèce", "mobile money", "virement bancaire", "à crédit"], 
-        required: true
+        required: true 
     },
     produits: [
         {
@@ -44,13 +52,10 @@ const commandeSchema = new mongoose.Schema({
     },
     statut: { 
         type: String, 
-
-        enum: ["en cours", "terminée", "livrée", "annulée"], 
-
-        default: "en cours" 
+        enum: ["en attente", "en cours", "terminée", "livrée", "annulée"], 
+        default: "en attente" 
     }
 }, { timestamps: true });
 
 const Commande = mongoose.model("Commande", commandeSchema);
-
 module.exports = Commande;
