@@ -16,12 +16,15 @@ const commercialSchema = new mongoose.Schema({
     },
     statut: {
         type: String,
-        default: 'actif', // statut : actif ou inactif
+        default: 'actif', 
     },
     dateInscription: {
         type: Date,
         default: Date.now,
     },
+    type : {
+        type: String, required : true 
+    }
 }, { timestamps: true });
 
 const Commercial = mongoose.model("Commercial", commercialSchema);

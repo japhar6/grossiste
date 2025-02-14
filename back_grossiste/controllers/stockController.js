@@ -1,5 +1,5 @@
 const Stock = require('../models/Stock');
-
+const Commande = require('../models/Commandes');
 // Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
   try {
@@ -89,5 +89,99 @@ exports.deleteStock = async (req, res) => {
     res.status(200).json({ message: 'Stock supprimé avec succès' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression du stock', error });
+  }
+};
+
+exports.retournerProduits = async (req, res) => {
+  try {
+    const { id } = req.params;  // ID du paiement commercial
+    const { produitsRetournes } = req.body;  // Liste des produits retournés avec quantités
+
+    const paiementCommerciale = await PaiementCommerciale.findById(id);
+    if (!paiementCommerciale) {
+      return res.status(404).json({ message: "Paiement commercial non trouvé" });
+    }
+
+    // Parcours de la liste des produits retournés
+    for (const produit of produitsRetournes) {
+      const stockProduit = await Stock.findOne({
+        entrepot: paiementCommerciale.commandeId.entrepotId, // Entrepôt du commercial
+        produit: produit.produit,
+      });
+
+      if (!stockProduit) {
+        return res.status(404).json({ message: `Produit ${produit.produit} non trouvé dans l'entrepôt` });
+      }
+
+      // Mettre à jour le stock
+      stockProduit.quantité += produit.quantite;
+      await stockProduit.save();
+
+      // Ajuster le paiement du commercial
+      paiementCommerciale.montantRestant += stockProduit.prixUnitaire * produit.quantite;
+    }
+
+    // Sauvegarder les mises à jour du paiement
+    await paiementCommerciale.save();
+
+    return res.status(200).json({ message: "Retour de produits effectué et paiement ajusté", paiementCommerciale });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.sortirProduitsStock = async (req, res) => {
+  try {
+    const { commandeId } = req.params;
+    const { entrepotId } = req.body;  // On attend l'ID de l'entrepôt dans le corps de la requête
+
+    if (!entrepotId) {
+      return res.status(400).json({ message: "Entrepôt non spécifié" });
+    }
+
+    const commande = await Commande.findById(commandeId).populate('produits.produit');
+
+    if (!commande) {
+      return res.status(404).json({ message: "Commande non trouvée" });
+    }
+
+    // Vérification de la disponibilité des produits dans le stock
+    for (let item of commande.produits) {
+      const stock = await Stock.findOne({ produit: item.produit._id, entrepot: entrepotId });
+
+      console.log(`Vérification du stock pour le produit ${item.produit._id} dans l'entrepôt ${entrepotId}`);
+      console.log("Stock trouvé :", stock);
+
+      if (!stock) {
+        return res.status(400).json({ message: `Pas de stock trouvé pour le produit ${item.produit.nom} dans cet entrepôt` });
+      }
+
+      if (stock.quantité < item.quantite) {
+        return res.status(400).json({ message: `Pas assez de stock pour le produit ${item.produit.nom}` });
+      }
+    }
+
+    // Sortie des produits et mise à jour du stock
+    for (let item of commande.produits) {
+      const stock = await Stock.findOne({ produit: item.produit._id, entrepot: entrepotId });
+
+      stock.quantité -= item.quantite;
+
+      if (stock.quantité < 0) {
+        return res.status(400).json({ message: "Stock insuffisant" });
+      }
+
+      await stock.save();
+    }
+
+    // Mettre à jour le statut de la commande
+    commande.statut = 'livrée';
+    await commande.save();
+
+    return res.status(200).json({ message: "Produits sortis et stock mis à jour avec succès", commande });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };

@@ -1,6 +1,6 @@
 const Paiement = require("../models/Paiement");
-const Commande = require("../models/Commandes");
-
+const Commande = require("../models/Commandes")
+;
 
 exports.validerpayement = async (req, res) => {
     try {
@@ -13,54 +13,58 @@ exports.validerpayement = async (req, res) => {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
   
-        // Calcul du total de la commande avant remise
-        let montantFinalPaye = commande.totalGeneral;
-        let montanApres = montantFinalPaye; // Valeur initiale
+       // Calcul du montant après remise globale
+let montantFinalPaye = commande.totalGeneral;
+let montanApres = montantFinalPaye; // Valeur initiale
 
-        // Si remise globale est spécifiée et non égale à 0, l'appliquer
-        if (remiseGlobale && remiseGlobale > 0) {
-            montanApres -= montanApres * (remiseGlobale / 100);
-            console.log("Total après remise globale:", montanApres); 
-        }
-  
-        // Calcul du montant après remise par produit
-        let produitsAvecRemises = [];
-        if ((!remiseGlobale || remiseGlobale === 0) && remiseParProduit && Array.isArray(remiseParProduit)) {
-            // Appliquer remise par produit sans modifier la commande
-            produitsAvecRemises = commande.produits.map(item => {
-                const produitRemise = remiseParProduit.find(rp => rp.produitId.toString() === item.produit.toString());
+// Si remise globale est spécifiée et non égale à 0, l'appliquer
+if (remiseGlobale && remiseGlobale > 0) {
+    montanApres -= montanApres * (remiseGlobale / 100);
+    console.log("Total après remise globale:", montanApres); 
+}
 
-                if (produitRemise) {
-                    const remiseProduit = produitRemise.remise || 0;
-                    const prixProduit = item.prixUnitaire;
-                    const prixApresRemise = prixProduit - (prixProduit * (remiseProduit / 100));
-                    const totalProduit = prixApresRemise * item.quantite;
+// Calcul du montant après remise par produit
+let produitsAvecRemises = [];
+if ((!remiseGlobale || remiseGlobale === 0) && remiseParProduit && Array.isArray(remiseParProduit)) {
+    // Appliquer remise par produit sans modifier la commande
+    produitsAvecRemises = commande.produits.map(item => {
+        const produitRemise = remiseParProduit.find(rp => rp.produitId.toString() === item.produit.toString());
 
-                    console.log(`Produit: ${item.produit}, Prix avant remise: ${prixProduit}, Remise: ${remiseProduit}%, Prix après remise: ${prixApresRemise}, Total produit: ${totalProduit}`);
+        if (produitRemise) {
+            const remiseProduit = produitRemise.remise || 0;
+            const prixProduit = item.prixUnitaire;
+            const prixApresRemise = prixProduit - (prixProduit * (remiseProduit / 100));
+            const totalProduit = prixApresRemise * item.quantite;
 
-                    return {
-                        produitId: item.produit,
-                        remise: remiseProduit,
-                        prixAvantRemise: prixProduit,
-                        prixApresRemise: prixApresRemise,
-                        totalProduit: totalProduit
-                    };
-                }
-
-                return null; // Aucun changement si pas de remise appliquée
-            }).filter(item => item !== null); // Supprimer les éléments null qui n'ont pas eu de remise
-
-            // Calcul final du montant après remise par produit
-            montanApres = produitsAvecRemises.reduce((acc, item) => acc + item.totalProduit, 0);
-            console.log("Montant final après remise par produit :", montanApres);
+            return {
+                produitId: item.produit,
+                remise: remiseProduit,
+                prixAvantRemise: prixProduit,
+                prixApresRemise: prixApresRemise,
+                totalProduit: totalProduit
+            };
         }
 
-        // Appliquer la remise fixe si elle est fournie
-        if (remiseFixe && remiseFixe > 0) {
-            montanApres -= remiseFixe;
-            console.log("Total après remise fixe:", montanApres);
-        }
+        return null; // Aucun changement si pas de remise appliquée
+    }).filter(item => item !== null); // Supprimer les éléments null qui n'ont pas eu de remise
 
+    // Calcul final du montant après remise par produit
+    if (produitsAvecRemises.length > 0) {
+        montanApres = produitsAvecRemises.reduce((acc, item) => acc + item.totalProduit, 0);
+        console.log("Montant final après remise par produit :", montanApres);
+    }
+}
+
+// Appliquer la remise fixe si elle est fournie
+if (remiseFixe && remiseFixe > 0) {
+    montanApres -= remiseFixe;
+    console.log("Total après remise fixe:", montanApres);
+}
+
+// Si aucune remise n'est appliquée, utiliser le montant final sans modification
+if (montanApres === montantFinalPaye) {
+    montanApres = montantFinalPaye;
+}
         // Mettre à jour le statut de la commande
         commande.statut = "terminée";
         await commande.save();
@@ -94,7 +98,8 @@ exports.validerpayement = async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-};
+}; 
+
 
 
 // Récupérer tous les paiements

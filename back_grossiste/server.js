@@ -16,7 +16,7 @@ const produitRoutes = require("./routes/produitRoute");
 const userRoutes = require("./routes/userRoute");
 
 const achatsRoutes = require("./routes/achatRoute");
-const activiteComRoutes = require("./routes/activiteRoutes");
+
 
 
 const entrepotRoutes = require("./routes/entrepotRoute");
@@ -30,7 +30,7 @@ const inventaireRoutes = require('./routes/inventaireRoute');
 
 const transfertRoute = require('./routes/transfertRoute');
 const paiementRoute = require('./routes/paiementRoute');
-
+const paiementcomRoute = require('./routes/paimentComRoute');
 const commandeRoutes = require("./routes/commandeRoute");
 const comercialeRoutes = require("./routes/comercialeRoute");
 const venteRoutes = require("./routes/venteRoute");
@@ -47,7 +47,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 // Middleware pour les routes des fournisseurs
-app.use("/api/activiteCom", activiteComRoutes);
+
 app.use("/api/fournisseurs", fournisseurRoutes);
 app.use("/api/produits", produitRoutes);
 app.use("/api/users", userRoutes);
@@ -58,6 +58,7 @@ app.use('/api/paniers', panierRoutes);
 app.use('/api/inventaire', inventaireRoutes);
 app.use('/api/transfert', transfertRoute);
 app.use('/api/client', clientRoutes);
+app.use('/api/paiementCom', paiementcomRoute);
 app.use('/api/paiement', paiementRoute);
 app.use("/api/commandes", commandeRoutes);
 app.use("/api/comercial", comercialeRoutes);
