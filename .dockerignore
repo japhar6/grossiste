@@ -1,0 +1,34 @@
+# Ignorer les dossiers node_modules pour éviter de les copier dans l'image
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Ignorer les fichiers de log
+logs
+*.log
+logs/*
+
+# Ignorer les fichiers de build
+build
+dist
+
+# Ignorer les fichiers sensibles
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignorer les fichiers temporaires
+.DS_Store
+Thumbs.db
+
+# Ignorer les dépendances et caches spécifiques
+.pnpm-store
+.npm
+.cache
+.next
+out
+.idea
+.vscode
