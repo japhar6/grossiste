@@ -12,7 +12,8 @@ import ListeProduits from './Pages/Produits.jsx';
 import  AchatProduits from './Pages/Achat.jsx';
 import  Entrepot from './Pages/Entrepot.jsx';
 import  PriseCommande from './Pages/PriseCommande.jsx';
-import  Caisse from './Pages/Caisse.jsx';
+import Caisse from './Pages/Caisse.jsx';
+
 
 function App() {
   return (

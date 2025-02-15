@@ -14,6 +14,7 @@ function PriseCommande() {
   const [searchTerm, setSearchTerm] = useState("");
   const [commande, setCommande] = useState([]);
   const [typeQuantite, setTypeQuantite] = useState("cartons");
+  const [modePaiement, setModePaiement] = useState("");
 
   const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
     if (quantite <= 0 || !isChecked) return;
@@ -55,7 +56,7 @@ function PriseCommande() {
   return (
     <main className="center">
       <Sidebar />
-      <section className="contenue2">
+      <section className="contenue">
         <Header />
         <div className="p-3 content center">
           <div className="mini-stat p-3">
@@ -89,6 +90,17 @@ function PriseCommande() {
                     value={client.adresse}
                     onChange={(e) => setClient({ ...client, adresse: e.target.value })}
                   />
+                  <select
+                    className="form-control mt-2"
+                    value={modePaiement}
+                    onChange={(e) => setModePaiement(e.target.value)}
+                  >
+                    <option value="">Sélectionner le mode de paiement</option>
+                    <option value="cash">Cash</option>
+                    <option value="mobile_money">Mobile Money</option>
+                    <option value="credit">Crédit</option>
+                    <option value="virement">Virement bancaire</option>
+                  </select>
                 </div>
               </div>
 
@@ -109,7 +121,7 @@ function PriseCommande() {
                       <th>Type</th>
                       <th>Prix</th>
                       <th>Quantité</th>
-                      <th>Type Quantité</th>
+                      <th>Unité</th>
                       <th>Ajouter</th>
                     </tr>
                   </thead>
@@ -118,7 +130,7 @@ function PriseCommande() {
                       <tr key={p.id}>
                         <td>{p.nom}</td>
                         <td>{p.type}</td>
-                        <td>{p.prix} FCFA</td>
+                        <td>{p.prix} Ar</td>
                         <td>
                           <input
                             type="number"
@@ -170,7 +182,7 @@ function PriseCommande() {
                   <tr>
                     <th>Nom</th>
                     <th>Quantité</th>
-                    <th>Type de Quantité</th>
+                    <th>Unité</th>
                     <th>Prix Unitaire</th>
                     <th>Total</th>
                   </tr>
@@ -188,9 +200,9 @@ function PriseCommande() {
                 </tbody>
               </table>
               <h6 className="total">
-                Total: {commande.reduce((acc, item) => acc + item.quantite * item.prix, 0)} FCFA
+                Total: {commande.reduce((acc, item) => acc + item.quantite * item.prix, 0)} Ariary
               </h6>
-              <button className="btn btn-success mt-3" onClick={validerCommande}>
+              <button className="btn btn-success  mt-3" onClick={validerCommande}>
                 Enregistrer la Commande
               </button>
             </div>
