@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const app = express();
 const bcrypt = require('bcryptjs');
-require("dotenv").config();
+require("dotenv").config({ path: '../.env' });
 
 
 const path = require("path");
