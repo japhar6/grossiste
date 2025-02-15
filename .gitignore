@@ -1,0 +1,41 @@
+# Node.js
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# React.js / Vite
+build/
+dist/
+out/
+.vite/
+.vite-cache/
+*.cache
+
+# Logs
+logs
+*.log
+logs/*
+
+# Environnements et secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.sublime-workspace
+
+# OS spécifiques
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+.dockerignore

@@ -32,9 +32,6 @@ services:
   backend:
     build: ./back_grossiste
     container_name: backend_grossiste
-    restart: always
-    depends_on:
-      - mongodb
     environment:
       PORT: 5000
       MONGO_URI: mongodb://root:adminpass123@mongodb:27017/grossiste?authSource=admin
