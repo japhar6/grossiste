@@ -1,43 +1,138 @@
 const Commande = require("../models/Commandes");
 const Produit = require("../models/Produits");
+const Client = require("../models/Client");
+const Commercial = require("../models/Commercial");
 
-exports.ajouterBDC = async (req, res) => {
+exports.ajouterCommande = async (req, res) => {
     try {
-        const { nom, numero, adresse, modePaiement, produits } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut } = req.body;
 
-        // Vérification et récupération des produits avec leur prix de vente
-        const produitsAvecPrix = await Promise.all(
-            produits.map(async (item) => {
-                const produit = await Produit.findById(item.produit);
-                if (!produit) {
-                    throw new Error(`Le produit avec l'ID ${item.produit} n'existe pas.`);
-                }
-                return {
-                    produit: item.produit,
-                    nomProduit: produit.nom,
-                    quantite: item.quantite,
-                    prixUnitaire: produit.prixdevente,
-                    total: produit.prixdevente * item.quantite
-                };
-            })
-        );
+        // Vérifier que typeClient est fourni
+        if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
+            return res.status(400).json({ message: "typeClient doit être 'Client' ou 'Commercial'." });
+        }
 
-        // Calcul du montant total
-        const totalGeneral = produitsAvecPrix.reduce((acc, item) => acc + item.total, 0);
+        let clientOuCommercial;
+        if (typeClient === "Client") {
+            if (!clientId) return res.status(400).json({ message: "clientId est requis pour un Client." });
+            clientOuCommercial = await Client.findById(clientId);
+        } else {
+            if (!commercialId) return res.status(400).json({ message: "commercialId est requis pour un Commercial." });
+            clientOuCommercial = await Commercial.findById(commercialId);
+        }
+
+        // Vérifier si le client ou commercial existe
+        if (!clientOuCommercial) {
+            return res.status(404).json({ message: `${typeClient} non trouvé avec cet ID.` });
+        }
+
+        // Forcer le mode de paiement à "à crédit" si c'est un commercial
+        const paiementFinal = typeClient === "Commercial" ? "à crédit" : modePaiement;
+
+        // Vérifier que tous les produits existent
+        const produitsDetails = await Promise.all(produits.map(async (item) => {
+            const produit = await Produit.findById(item.produit);
+            if (!produit) throw new Error(`Produit avec ID ${item.produit} non trouvé.`);
+            
+            const prixUnitaire = produit.prixdevente;
+            const totalProduit = prixUnitaire * item.quantite;
+
+            return {
+                produit: produit._id,
+                quantite: item.quantite,
+                prixUnitaire,
+                total: totalProduit
+            };
+        }));
+
+        // Calcul du total général
+        const totalGeneral = produitsDetails.reduce((acc, item) => acc + item.total, 0);
 
         // Création de la commande
         const nouvelleCommande = new Commande({
-            client: { nom, numero, adresse }, // Structure corrigée
-            modePaiement,
-            statut: "en cours", // Vérifié dans le modèle
-            produits: produitsAvecPrix,
-            totalGeneral
+            typeClient,
+            clientId: typeClient === "Client" ? clientId : null,
+            commercialId: typeClient === "Commercial" ? commercialId : null,
+            vendeurId,
+            modePaiement: paiementFinal,
+            produits: produitsDetails,
+            totalGeneral,
+            statut
         });
 
-        // Sauvegarde dans la base de données
+        // Enregistrement
         await nouvelleCommande.save();
 
-        res.status(201).json({ message: "Bon de commande ajouté avec succès", commande: nouvelleCommande });
+        res.status(201).json({
+            message: "Commande créée avec succès.",
+            commande: nouvelleCommande
+        });
+
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Récupérer toutes les commandes
+exports.getCommandes = async (req, res) => {
+    try {
+        const commandes = await Commande.find();
+        res.status(200).json(commandes);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Récupérer une commande par son ID
+exports.getCommandeById = async (req, res) => {
+    try {
+        const commande = await Commande.findById(req.params.id);
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+        res.status(200).json(commande);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Mettre à jour une commande
+exports.updateCommande = async (req, res) => {
+    try {
+        const commande = await Commande.findById(req.params.id);
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+
+        const { produits } = req.body;
+        let totalGeneral = 0;
+        const produitsAvecTotal = produits.map(item => {
+            const totalProduit = item.prixUnitaire * item.quantite;
+            totalGeneral += totalProduit;
+            return {
+                ...item,
+                total: totalProduit
+            };
+        });
+
+        commande.produits = produitsAvecTotal;
+        commande.totalGeneral = totalGeneral;
+
+        await commande.save();
+        res.status(200).json({ message: "Commande mise à jour avec succès", commande });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Supprimer une commande
+exports.deleteCommande = async (req, res) => {
+    try {
+        const commande = await Commande.findByIdAndDelete(req.params.id);
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+        res.status(200).json({ message: "Commande supprimée avec succès" });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

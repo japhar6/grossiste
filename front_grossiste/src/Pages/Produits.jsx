@@ -68,7 +68,7 @@ function ListeProduits() {
       <header></header>
       <main className="center">
         <Sidebar />
-        <section className="contenue2">
+        <section className="contenue">
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
