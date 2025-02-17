@@ -96,6 +96,38 @@ exports.getCommandeById = async (req, res) => {
     }
 };
 
+// Récupérer une commande par son ID ou référence
+exports.getCommandeById = async (req, res) => {
+    try {
+        const { referenceFacture } = req.params;
+        let commande;
+
+        if (referenceFacture) {
+            commande = await Commande.findOne({ referenceFacture })
+                .populate("clientId", "nom telephone")
+                .populate("commercialId", "nom prenoms")
+                .populate("produits.produit", "nom");
+        } else {
+            commande = await Commande.findById(req.params.id)
+                .populate("clientId", "nom prenoms")
+                .populate("commercialId", "nom prenoms")
+                .populate("produits.produit", "nom");
+        }
+
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+
+        console.log(commande); // Vérifie la structure des produits ici
+
+        res.status(200).json(commande);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+
 // Mettre à jour une commande
 exports.updateCommande = async (req, res) => {
     try {

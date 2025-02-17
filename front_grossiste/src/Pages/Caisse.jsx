@@ -1,64 +1,30 @@
 import React, { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 
 function Caisse() {
-  const [client, setClient] = useState({ nom: "Jean Dupont", telephone: "0123456789", adresse: "123 Rue Principale" });
-  const [commande, setCommande] = useState([
-    { id: 1, nom: "Ordinateur Portable", quantite: 1, prix: 1500000, remise: 0 },
-    { id: 2, nom: "Smartphone", quantite: 2, prix: 800000, remise: 0 },
-  ]);
-  const [typeRemise, setTypeRemise] = useState("aucune");
-  const [valeurRemise, setValeurRemise] = useState(0);
+  const [referenceFacture, setReferenceFacture] = useState("");
+  const [commande, setCommande] = useState(null);
+  const [client, setClient] = useState(null);  // Nouvel état pour le client
 
-  // Calculer le total avant remise
-  const totalAvantRemise = commande.reduce((acc, item) => acc + item.quantite * item.prix, 0);
 
-  // Calculer la remise et le total après remise
-  const calculerRemise = () => {
-    let total = totalAvantRemise;
-    let remiseTotale = 0;
-
-    if (typeRemise === "produit") {
-      commande.forEach((item) => {
-        const remiseProduit = (item.prix * item.remise) / 100;
-        remiseTotale += remiseProduit * item.quantite;
-      });
-      total -= remiseTotale;
-    } else if (typeRemise === "total") {
-      remiseTotale = (totalAvantRemise * valeurRemise) / 100;
-      total -= remiseTotale;
-    } else if (typeRemise === "fixe") {
-      remiseTotale = valeurRemise;
-      total -= remiseTotale;
+  // Fonction pour rechercher la commande
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
+      if (!response.ok) {
+        throw new Error("Commande non trouvée");
+      }
+      const data = await response.json();
+      setCommande(data);
+      setClient(data.clientId); // Assure-toi d'utiliser clientId, pas clients
+    } catch (error) {
+      console.error(error);
+      setCommande(null);
+      setClient(null);
     }
-
-    return { total, remiseTotale };
   };
-
-  // Mise à jour de la remise par produit
-  const handleRemiseChange = (e, productId) => {
-    let newRemise = parseFloat(e.target.value);
-    if (isNaN(newRemise)) newRemise = 0;
-    if (newRemise < 0) newRemise = 0;
-    if (newRemise > 80) newRemise = 80;
-
-    setCommande(commande.map(item => item.id === productId ? { ...item, remise: newRemise } : item));
-  };
-
-  const validerCommande = () => {
-    if (!client.nom || !client.telephone || commande.length === 0) {
-      Swal.fire("Erreur", "Veuillez remplir toutes les informations", "error");
-      return;
-    }
-    Swal.fire("Commande validée", "Votre commande a été enregistrée", "success");
-    setCommande([]);
-    setClient({ nom: "", telephone: "", adresse: "" });
-  };
-
-  const { total, remiseTotale } = calculerRemise();
 
   return (
     <main className="center">
@@ -71,26 +37,30 @@ function Caisse() {
               <i className="fa fa-shopping-cart"></i> Caisse
             </h6>
 
+            {/* Recherche de commande */}
             <div className="commande-container d-flex justify-content-between">
               <div className="client-info w-50 p-3">
-                <h6><i className="fa fa-user"></i> Référence de la facture</h6>
-                <div className="form-group mt-3">
+                <h6><i className="fa fa-user"></i> Référence de la commande</h6>
+                <div className="form-group">
                   <input
                     type="text"
                     className="form-control"
-                    value="FACT-2025001"
-                    onChange={(e) => setClient({ ...client, reference: e.target.value })}
+                    placeholder="Entrer la référence"
+                    value={referenceFacture}
+                    onChange={(e) => setReferenceFacture(e.target.value)}
                   />
+                  <button className="btn btn-primary ms-2" onClick={handleSearch}>
+                    Rechercher
+                  </button>
                 </div>
               </div>
-
-              <div className="produits w-50 p-3">
+              <div className="produits p-3">
                 <h6><i className="fa fa-box"></i> Détails du paiement </h6>
                 <table className="table mt-2">
                   <thead>
                     <tr>
                       <th>Client</th>
-                      <th>Adresse</th>
+                      <th>Contact</th>
                       <th>Remise</th>
                       <th>Valeur</th>
                       <th>Mode de paiement</th>
@@ -98,14 +68,11 @@ function Caisse() {
                   </thead>
                   <tbody>
                     <tr>
-                      <td>{client.nom}</td>
-                      <td>{client.adresse}</td>
+                      {/* Affichage des informations du client */}
+                      <td>{client ? client.nom : ''}</td>
+                      <td>{client ? client.telephone : ''}</td>
                       <td>
-                        <select
-                          className="form-control"
-                          value={typeRemise}
-                          onChange={(e) => setTypeRemise(e.target.value)}
-                        >
+                        <select className="form-control">
                           <option value="aucune">Aucune</option>
                           <option value="produit">Par produit (%)</option>
                           <option value="total">Total (%)</option>
@@ -116,16 +83,13 @@ function Caisse() {
                         <input
                           type="number"
                           className="form-control"
-                          value={valeurRemise}
-                          onChange={(e) => setValeurRemise(e.target.value)}
-                          disabled={typeRemise === "aucune" || typeRemise === "produit"}
                         />
                       </td>
                       <td>
                         <select className="form-control">
                           <option value="cash">Cash</option>
                           <option value="mobile_money">Mobile Money</option>
-                          <option value="credit">Crédit</option>
+                          <option value="credit">A crédit</option>
                           <option value="virement">Virement bancaire</option>
                         </select>
                       </td>
@@ -134,63 +98,44 @@ function Caisse() {
                 </table>
               </div>
             </div>
-
-            <div className="commande mt-4">
-              <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-              <table className="table table-bordered mt-2 text-center">
-                <thead>
-                  <tr>
-                    <th>Nom</th>
-                    <th>Quantité</th>
-                    <th>Remise par produit (%)</th>
-                    <th>Prix Unitaire</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commande.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.nom}</td>
-                      <td>{item.quantite}</td>
-                      <td>
-                        {typeRemise === "produit" ? (
-                          <input
-                            type="number"
-                            value={item.remise}
-                            onChange={(e) => handleRemiseChange(e, item.id)}
-                            max="80"
-                            min="0"
-                          />
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td>{item.prix} Ariary</td>
-                      <td>{(item.quantite * item.prix) - ((item.prix * item.remise) / 100) * item.quantite} Ariary</td>
+            {/* Affichage des détails de la commande */}
+            {commande && (
+              <div className="commande mt-4">
+                <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
+                <table className="table table-bordered mt-2 text-center">
+                  <thead>
+                    <tr>
+                      <th>Nom du produit</th>
+                      <th>Quantité</th>
+                      <th>Prix Unitaire</th>
+                      <th>Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {commande.produits.map((produit, index) => (
+                      <tr key={index}>
+                        <td>{produit.produit.nom}</td>
+                        <td>{produit.quantite}</td>
+                        <td>{produit.prixUnitaire} Ariary</td>
+                        <td>{produit.total} Ariary</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
 
-              <h6 className="total">
-                Total avant remise: {totalAvantRemise} Ariary
-              </h6>
+                <h6 className="total">
+                  Total avant remise: {commande.totalAvantRemise} Ariary
+                </h6>
 
-              {remiseTotale > 0 && (
-                <>
-                  <h6 className="remise">
-                    Remise appliquée: {remiseTotale} Ariary
-                  </h6>
-                  <h6 className="total">
-                    Total après remise: {total} Ariary
-                  </h6>
-                </>
-              )}
+                <h6 className="total">
+                  Total après remise: {commande.totalApresRemise} Ariary
+                </h6>
 
-              <button className="btn btn-success mt-3" onClick={validerCommande}>
-                Valider le paiement
-              </button>
-            </div>
+                <button className="btn btn-success mt-3">
+                  Valider le paiement
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>

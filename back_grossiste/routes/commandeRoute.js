@@ -17,4 +17,7 @@ router.put('/:id', commandeController.updateCommande);
 // Route pour supprimer une commande
 router.delete('/:id', commandeController.deleteCommande);
 
+// Route pour récupérer une commande par référence de facture
+router.get('/reference/:referenceFacture', commandeController.getCommandeById);
+
 module.exports = router;
