@@ -6,271 +6,271 @@ import "../Styles/Commade.css";
 import axios from "axios";
 
 function PriseCommande() {
-  const [newPerson, setNewPerson] = useState({
-    nom: "",
-    telephone: "",
-    adresse: "",
-  });
-
-
-// Définir l'état pour les produits sélectionnés
-const [selectedProducts, setSelectedProducts] = useState([]);
-
-  const [commande, setCommande] = useState([]);
-  const [typeQuantite, setTypeQuantite] = useState("cartons");
-  const [modePaiement, setModePaiement] = useState("");
-  const [type, setType] = useState(""); // "client" ou "commercial"
-const [isNew, setIsNew] = useState(false); // Indique si on ajoute un nouveau
-const [selectedPerson, setSelectedPerson] = useState("");
-const [clients, setClients] = useState([]);
-const [commerciaux, setCommerciaux] = useState([]);
-const [checkedProduits, setCheckedProduits] = useState({});
-const [selectedId, setSelectedId] = useState("");
-const [produits, setProduits] = useState([]);
-const [searchTerm, setSearchTerm] = useState("");
-const [categorie, setCategorie] = useState("");
-const [categories, setCategories] = useState([]);
-
-const [selectedProduit, setSelectedProduit] = useState(null); // Initialisation de l'état
-
-
-const handleSelectChange = (e) => {
-  const id = e.target.value;
-  setSelectedPerson(id);
-  setSelectedId(id); // Affecte l'ID à la variable d'état
-  setIsNew(id === "new");
-
-  console.log("ID sélectionné :", id);
-};
-useEffect(() => {
-  fetchClients();
-  fetchCommerciaux();
-}, []);
-useEffect(() => {
-  // Récupérer les produits et les catégories
-  fetchProduits();
-}, []);
-
-const fetchClients = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/api/client");
-    setClients(response.data);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des clients", error);
-  }
-};
-
-const fetchCommerciaux = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/api/comercial");
-    setCommerciaux(response.data);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des commerciaux", error);
-  }
-};
-
-// Créer une personne (client ou commercial)
-const creerPersonne = async () => {
-  try {
-    // Vérification des données envoyées
-    console.log("Données envoyées :", newPerson);
-
-    // Validation des champs selon le type (client ou commercial)
-    if (type === "client") {
-      // Vérifier que le nom, le téléphone et l'adresse sont remplis pour un client
-      if (!newPerson.nom || !newPerson.telephone || !newPerson.adresse) {
-        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
-        return;
-      }
-    } else if (type === "commercial") {
-      // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
-      if (!newPerson.nom || !newPerson.telephone || !newPerson.email || !newPerson.type) {
-        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
-        return;
-      }
-    }
-
-    // Déterminer l'URL selon le type (client ou commercial)
-    const url = type === "client" ? "http://localhost:5000/api/client" : "http://localhost:5000/api/comercial/";
-    
-    // Envoi de la requête POST
-    const response = await axios.post(url, newPerson);
-    
-    if (response.data) {
-      Swal.fire(`${type === "client" ? "Client" : "Commercial"} créé avec succès !`);
-    
-      // Mettre à jour la liste des clients/commerciaux en fonction du type
-      if (type === "client") {
-        setClients((prevClients) => [
-          ...prevClients,
-          { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
-        ]);
-      } else {
-        setCommerciaux((prevCommerciaux) => [
-          ...prevCommerciaux,
-          { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
-        ]);
-      }
-
-      // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
-      const updatedList = await axios.get(url);  // Recharger les données à partir de l'API
-      if (type === "client") {
-        setClients(updatedList.data);
-      } else {
-        setCommerciaux(updatedList.data);
-      }
-
-      // Sélectionner le nouvel élément
-      setSelectedPerson(response.data._id);
-      setIsNew(false);
-
-     
-      setModePaiement('');
-      
-
-      // Réinitialiser les champs du formulaire après l'ajout
-      setNewPerson({
-        nom: '',
-        telephone: '',
-        adresse: '', // Remettre l'adresse à vide si elle n'est pas nécessaire pour un commercial
-        email: '',
-        type: '',
-      });
-      
-      // Réinitialiser le select (si tu utilises un select ou une liste déroulante)
-      setSelectedPerson(null);  // Si tu veux réinitialiser la sélection de la personne
-    }
-  } catch (error) {
-    console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
-    Swal.fire("Erreur", "Une erreur s'est produite", "error");
-  }
-};
-
- 
-const fetchProduits = async () => {
-  try {
-    const response = await axios.get("http://localhost:5000/api/produits/afficher");
-    setProduits(response.data);
-
-    // Extraire les catégories uniques
-    const categoriesUniq = [
-      ...new Set(response.data.map((produit) => produit.categorie)),
-    ];
-    setCategories(categoriesUniq); 
-  } catch (error) {
-    console.error("Erreur lors de la récupération des produits", error);
-  }
-};
-
-// Filtrer les produits en fonction de la recherche et de la catégorie
-const produitsFiltres = produits.filter((p) => {
-  const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
-  const matchesCategorie = categorie ? p.categorie === categorie : true;
-  return matchesRecherche && matchesCategorie;
-});
-
-const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
-  if (quantite <= 0) return;
-
-  setCheckedProduits((prev) => ({ ...prev, [produit._id]: isChecked }));
-
-  setCommande((prevCommande) => {
-    if (isChecked) {
-      const existant = prevCommande.find((item) => item._id === produit._id);
-      if (existant) {
-        return prevCommande.map((item) =>
-          item._id === produit._id
-            ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-            : item
-        );
-      } else {
-        return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
-      }
-    } else {
-      return prevCommande.filter((item) => item._id !== produit._id);
-    }
-  });
-};
-
-
-
-    const handleKeyDown = (produit, e) => {
-      if (e.key === "Enter") {
-        handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
-      }
-    };
-
-    const validerCommande = async () => {
-      if (!selectedPerson || commande.length === 0) {
-          Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
-          return;
-      }
-  
-      // Ne pas imposer la sélection du mode de paiement si c'est un commercial
-      if (!modePaiement && type !== "commercial") {
-          Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
-          return;
-      }
-  
-      // Récupérer l'ID du vendeur depuis LocalStorage
-      const vendeurId = localStorage.getItem("userid"); 
-      if (!vendeurId) {
-          Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
-          return;
-      }
-  
-      // Vérifie si c'est un commercial ou un client
-      const isCommercial = type === "commercial"; 
-      const typeClient = isCommercial ? "Commercial" : "Client";
-  
-      const nouvelleCommande = {
-          typeClient,
-          commercialId: isCommercial ? selectedPerson : null, 
-          clientId: !isCommercial ? selectedPerson : null, 
-          vendeurId,
-          produits: commande.map(prod => ({
-              produit: prod._id, 
-              quantite: prod.quantite,
-          })),
-          modePaiement: isCommercial ? "à crédit" : modePaiement, // Met par défaut à "crédit" pour les commerciaux
-          statut: "en attente",
-      };
-  
-      console.log("Commande prête à être envoyée :", nouvelleCommande);
-  
-      try {
-          const response = await axios.post("http://localhost:5000/api/commandes/ajouter", nouvelleCommande);
-  
-          if (response.data) {
-              Swal.fire({
-                  title: "Commande validée",
-                  text: "Votre commande a été enregistrée avec succès",
-                  icon: "success",
-                  confirmButtonText: "OK"
-              }).then(() => {
-                  // 🔹 Réinitialisation complète après validation
-                  setCommande([]); 
-                  setSelectedPerson(""); 
-                  setModePaiement(""); 
-                  setSearchTerm(""); 
-                  setSelectedProducts([]); // ✅ Réinitialise les produits sélectionnés
-                  setCheckedProduits({}); // ✅ Réinitialise les cases cochées
+              const [newPerson, setNewPerson] = useState({
+                nom: "",
+                telephone: "",
+                adresse: "",
               });
-          }
-      } catch (error) {
-          console.error("Erreur lors de l'enregistrement de la commande", error);
-          Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
-      }
-  };
-  
-  
-  
-  const handleProduitSelect = (produit) => {
-    console.log("Produit sélectionné:", produit); // Debugging pour vérifier la sélection
-    setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
-  };
-  
-  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
+
+
+              // Définir l'état pour les produits sélectionnés
+              const [selectedProducts, setSelectedProducts] = useState([]);
+
+                const [commande, setCommande] = useState([]);
+                const [typeQuantite, setTypeQuantite] = useState("");
+                const [modePaiement, setModePaiement] = useState("");
+                const [type, setType] = useState(""); 
+              const [isNew, setIsNew] = useState(false); 
+              const [selectedPerson, setSelectedPerson] = useState("");
+              const [clients, setClients] = useState([]);
+              const [commerciaux, setCommerciaux] = useState([]);
+              const [checkedProduits, setCheckedProduits] = useState({});
+              const [selectedId, setSelectedId] = useState("");
+              const [produits, setProduits] = useState([]);
+              const [searchTerm, setSearchTerm] = useState("");
+              const [categorie, setCategorie] = useState("");
+              const [categories, setCategories] = useState([]);
+
+              const [selectedProduit, setSelectedProduit] = useState(null); 
+
+
+                                const handleSelectChange = (e) => {
+                                  const id = e.target.value;
+                                  setSelectedPerson(id);
+                                  setSelectedId(id); 
+                                  setIsNew(id === "new");
+
+                                  console.log("ID sélectionné :", id);
+                                };
+                                useEffect(() => {
+                                  fetchClients();
+                                  fetchCommerciaux();
+                                }, []);
+                                useEffect(() => {
+                                
+                                  fetchProduits();
+                                }, []);
+
+                                const fetchClients = async () => {
+                                  try {
+                                    const response = await axios.get("http://localhost:5000/api/client");
+                                    setClients(response.data);
+                                  } catch (error) {
+                                    console.error("Erreur lors de la récupération des clients", error);
+                                  }
+                                };
+
+                                const fetchCommerciaux = async () => {
+                                  try {
+                                    const response = await axios.get("http://localhost:5000/api/comercial");
+                                    setCommerciaux(response.data);
+                                  } catch (error) {
+                                    console.error("Erreur lors de la récupération des commerciaux", error);
+                                  }
+                                };
+
+                                // Créer une personne (client ou commercial)
+                                const creerPersonne = async () => {
+                                  try {
+                                    // Vérification des données envoyées
+                                    console.log("Données envoyées :", newPerson);
+
+                                    // Validation des champs selon le type (client ou commercial)
+                                    if (type === "client") {
+                                      // Vérifier que le nom, le téléphone et l'adresse sont remplis pour un client
+                                      if (!newPerson.nom || !newPerson.telephone || !newPerson.adresse) {
+                                        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
+                                        return;
+                                      }
+                                    } else if (type === "commercial") {
+                                      // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
+                                      if (!newPerson.nom || !newPerson.telephone || !newPerson.email || !newPerson.type) {
+                                        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
+                                        return;
+                                      }
+                                    }
+
+                                    // Déterminer l'URL selon le type (client ou commercial)
+                                    const url = type === "client" ? "http://localhost:5000/api/client" : "http://localhost:5000/api/comercial/";
+                                    
+                                    // Envoi de la requête POST
+                                    const response = await axios.post(url, newPerson);
+                                    
+                                    if (response.data) {
+                                      Swal.fire(`${type === "client" ? "Client" : "Commercial"} créé avec succès !`);
+                                    
+                                      // Mettre à jour la liste des clients/commerciaux en fonction du type
+                                      if (type === "client") {
+                                        setClients((prevClients) => [
+                                          ...prevClients,
+                                          { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
+                                        ]);
+                                      } else {
+                                        setCommerciaux((prevCommerciaux) => [
+                                          ...prevCommerciaux,
+                                          { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
+                                        ]);
+                                      }
+
+                                      // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
+                                      const updatedList = await axios.get(url);  // Recharger les données à partir de l'API
+                                      if (type === "client") {
+                                        setClients(updatedList.data);
+                                      } else {
+                                        setCommerciaux(updatedList.data);
+                                      }
+
+                                      // Sélectionner le nouvel élément
+                                      setSelectedPerson(response.data._id);
+                                      setIsNew(false);
+
+                                    
+                                      setModePaiement('');
+                                      
+
+                                      // Réinitialiser les champs du formulaire après l'ajout
+                                      setNewPerson({
+                                        nom: '',
+                                        telephone: '',
+                                        adresse: '', // Remettre l'adresse à vide si elle n'est pas nécessaire pour un commercial
+                                        email: '',
+                                        type: '',
+                                      });
+                                      
+                                      // Réinitialiser le select (si tu utilises un select ou une liste déroulante)
+                                      setSelectedPerson(null);  // Si tu veux réinitialiser la sélection de la personne
+                                    }
+                                  } catch (error) {
+                                    console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
+                                    Swal.fire("Erreur", "Une erreur s'est produite", "error");
+                                  }
+                                };
+
+                                
+                                const fetchProduits = async () => {
+                                  try {
+                                    const response = await axios.get("http://localhost:5000/api/produits/afficher");
+                                    setProduits(response.data);
+
+                                    // Extraire les catégories uniques
+                                    const categoriesUniq = [
+                                      ...new Set(response.data.map((produit) => produit.categorie)),
+                                    ];
+                                    setCategories(categoriesUniq); 
+                                  } catch (error) {
+                                    console.error("Erreur lors de la récupération des produits", error);
+                                  }
+                                };
+
+                                // Filtrer les produits en fonction de la recherche et de la catégorie
+                                const produitsFiltres = produits.filter((p) => {
+                                  const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
+                                  const matchesCategorie = categorie ? p.categorie === categorie : true;
+                                  return matchesRecherche && matchesCategorie;
+                                });
+
+                                const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
+                                  if (quantite <= 0) return;
+
+                                  setCheckedProduits((prev) => ({ ...prev, [produit._id]: isChecked }));
+
+                                  setCommande((prevCommande) => {
+                                    if (isChecked) {
+                                      const existant = prevCommande.find((item) => item._id === produit._id);
+                                      if (existant) {
+                                        return prevCommande.map((item) =>
+                                          item._id === produit._id
+                                            ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                            : item
+                                        );
+                                      } else {
+                                        return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                      }
+                                    } else {
+                                      return prevCommande.filter((item) => item._id !== produit._id);
+                                    }
+                                  });
+                                };
+
+
+
+                                    const handleKeyDown = (produit, e) => {
+                                      if (e.key === "Enter") {
+                                        handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
+                                      }
+                                    };
+
+                                    const validerCommande = async () => {
+                                      if (!selectedPerson || commande.length === 0) {
+                                          Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
+                                          return;
+                                      }
+                                  
+                                      // Ne pas imposer la sélection du mode de paiement si c'est un commercial
+                                      if (!modePaiement && type !== "commercial") {
+                                          Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
+                                          return;
+                                      }
+                                  
+                                      // Récupérer l'ID du vendeur depuis LocalStorage
+                                      const vendeurId = localStorage.getItem("userid"); 
+                                      if (!vendeurId) {
+                                          Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
+                                          return;
+                                      }
+                                  
+                                      // Vérifie si c'est un commercial ou un client
+                                      const isCommercial = type === "commercial"; 
+                                      const typeClient = isCommercial ? "Commercial" : "Client";
+                                  
+                                      const nouvelleCommande = {
+                                          typeClient,
+                                          commercialId: isCommercial ? selectedPerson : null, 
+                                          clientId: !isCommercial ? selectedPerson : null, 
+                                          vendeurId,
+                                          produits: commande.map(prod => ({
+                                              produit: prod._id, 
+                                              quantite: prod.quantite,
+                                          })),
+                                          modePaiement: isCommercial ? "à crédit" : modePaiement, // Met par défaut à "crédit" pour les commerciaux
+                                          statut: "en attente",
+                                      };
+                                  
+                                      console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                  
+                                      try {
+                                          const response = await axios.post("http://localhost:5000/api/commandes/ajouter", nouvelleCommande);
+                                  
+                                          if (response.data) {
+                                              Swal.fire({
+                                                  title: "Commande validée",
+                                                  text: "Votre commande a été enregistrée avec succès",
+                                                  icon: "success",
+                                                  confirmButtonText: "OK"
+                                              }).then(() => {
+                                                  // 🔹 Réinitialisation complète après validation
+                                                  setCommande([]); 
+                                                  setSelectedPerson(""); 
+                                                  setModePaiement(""); 
+                                                  setSearchTerm(""); 
+                                                  setSelectedProducts([]); // ✅ Réinitialise les produits sélectionnés
+                                                  setCheckedProduits({}); // ✅ Réinitialise les cases cochées
+                                              });
+                                          }
+                                      } catch (error) {
+                                          console.error("Erreur lors de l'enregistrement de la commande", error);
+                                          Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                                      }
+                                  };
+                                  
+                                  
+                                  
+                                  const handleProduitSelect = (produit) => {
+                                    console.log("Produit sélectionné:", produit); // Debugging pour vérifier la sélection
+                                    setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
+                                  };
+                                  
+                                  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
 
   return (
     <main className="center">
@@ -460,7 +460,7 @@ const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
                                                                       <input
                                                                         type="text"
                                                                         className="form-control"
-                                                                        value={p.unite || 'Non spécifiée'} // Affichage de l'unité ou texte par défaut
+                                                                        value={p.unite || 'Non spécifiée'} 
                
                                                                         readOnly
                                                                       />
@@ -497,47 +497,47 @@ const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
                                                         </tbody>
                                                       </table>
 
-              </div>
-            </div>
+                                             </div>
+                                        </div>
 
-            {/* Récapitulatif de la Commande */}
-            <div className="commande mt-4">
-              <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
-              <table className="table table-bordered mt-2">
-                <thead>
-                  <tr>
-                    <th>Nom</th>
-                    <th>Quantité</th>
-                    <th>Unité</th>
-                    <th>Prix Unitaire</th>
-                    <th>Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {commande.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.nom}</td>
-                      <td>{item.quantite}</td>
-                      <td>{item.typeQuantite}</td>
-                      <td>{item.prix} Ariary</td> 
-<td>{item.quantite * item.prix} Ariary</td>
+                                          {/* Récapitulatif de la Commande */}
+                                          <div className="commande mt-4">
+                                            <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+                                            <table className="table table-bordered mt-2">
+                                              <thead>
+                                                <tr>
+                                                  <th>Nom</th>
+                                                  <th>Quantité</th>
+                                                  <th>Unité</th>
+                                                  <th>Prix Unitaire</th>
+                                                  <th>Total</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {commande.map((item, index) => (
+                                                  <tr key={index}>
+                                                        <td>{item.nom}</td>
+                                                        <td>{item.quantite}</td>
+                                                        <td>{item.typeQuantite}</td>
+                                                        <td>{item.prix} Ariary</td> 
+                                                        <td>{item.quantite * item.prix} Ariary</td>
 
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <h6 className="total">
-  Total: {totalCommande} Ariary
-</h6>
+                                                  </tr>
+                                                ))}
+                                              </tbody>
+                                            </table>
+                                              <h6 className="total">
+                                                         Total: {totalCommande} Ariary
+                                               </h6>
 
-              <button className="btn btn-success  mt-3" onClick={validerCommande}>
-                Enregistrer la Commande
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+                                            <button className="btn btn-success  mt-3" onClick={validerCommande}>
+                                              Enregistrer la Commande
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </section>
+                                  </main>
   );
 }
 

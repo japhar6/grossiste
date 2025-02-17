@@ -9,6 +9,7 @@ router.put("/modifier/:id", produitController.modifierProduit);
 router.delete("/supprimer/:id", produitController.supprimerProduit);
 router.get("/count", produitController.countProduits);
 router.get("/fournisseur/:fournisseurId", produitController.getProduitsParFournisseur);
+
 router.get('/categories', async (req, res) => {
     try {
 

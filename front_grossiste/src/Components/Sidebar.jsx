@@ -12,12 +12,8 @@ function Sidebar(){
         { path: "/entrepot", icon: "fa-home", text: "Gestion des entrepots" },
         { path: "/caisse", icon: "fa-cash-register", text: "Caisse" },
         { path: "/metier-magasinier", icon: "fa-warehouse", text: "Metier Magazinier" },
-
-   
-
-        { path: "/commande", icon: "fa-shopping-cart", text: "Vente et prise de commande" },
-        { path: "/ventes", icon: "fa-shopping-bag", text: "Vente & prise de commande" },
-        { path: "/commerciaux", icon: "fa-briefcase", text: "Gestion des commerciaux" },
+        { path: "/commande", icon: "fa-shopping-cart", text: "Vente et prise de commande" },   
+       { path: "/commerciale", icon: "fa-briefcase", text: "Gestion des commerciaux" },
         { 
           path: "/clients", 
           icon: "fa-user-friends", 
@@ -41,6 +37,7 @@ function Sidebar(){
                             to={button.path} 
                             key={index} 
                             className="btn btn-light p-3 d-flex align-items-center mb-2 btn-sm"
+                            style={{fontSize:"0.6em !important"}}
                             >
                             <i className={`fa ${button.icon} text-success fw-bold me-2`}></i>
                             {button.text}
