@@ -5,6 +5,8 @@
   .mini-stat {
     width: 100%;
     padding: 20px;
+ 
+    overflow-y: scroll;
   }
   
   .alert-info {
@@ -20,6 +22,8 @@
     gap: 20px;  /* Espace entre les deux sections */
     flex-wrap: wrap;
     margin-top: 20px;
+   
+   
   }
   
   /* === CLIENT INFO (COLONNE GAUCHE) === */
@@ -210,6 +214,7 @@
     padding: 15px;
   }
   
+ 
   .commande-container {
     display: flex;
     justify-content: space-between;

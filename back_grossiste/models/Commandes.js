@@ -19,6 +19,10 @@ const commandeSchema = new mongoose.Schema({
         enum: ["Client", "Commercial"], 
         required: true 
     },
+    referenceFacture: {
+        type: String,
+        unique: true
+    },
     modePaiement: { 
         type: String, 
         enum: ["espèce", "mobile money", "virement bancaire", "à crédit"], 
@@ -56,6 +60,28 @@ const commandeSchema = new mongoose.Schema({
         default: "en attente" 
     }
 }, { timestamps: true });
+
+// Hook pour générer la référence de facture
+commandeSchema.pre('save', async function(next) {
+    if (!this.referenceFacture) {
+        try {
+            const prefix = this.typeClient === "Client" ? "FACTCLI" : "FACTCOM";
+            const lastCommande = await mongoose.model("Commande").findOne({ referenceFacture: new RegExp(`^${prefix}-`) })
+                .sort({ createdAt: -1 });
+
+            let numero = 1;
+            if (lastCommande && lastCommande.referenceFacture) {
+                const lastNumber = parseInt(lastCommande.referenceFacture.split('-')[1]);
+                numero = lastNumber + 1;
+            }
+
+            this.referenceFacture = `${prefix}-${String(numero).padStart(3, '0')}`;
+        } catch (error) {
+            return next(error);
+        }
+    }
+    next();
+});
 
 const Commande = mongoose.model("Commande", commandeSchema);
 module.exports = Commande;

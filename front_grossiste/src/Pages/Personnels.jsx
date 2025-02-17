@@ -270,7 +270,7 @@ function Personnels() {
                           {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
                 </button>
               <div className="consultation">
-                <table className="table table-striped table-hover">
+                <table className="table table-striped table-hover ">
                   <thead>
                     <tr>
                       <th>Nom</th>
