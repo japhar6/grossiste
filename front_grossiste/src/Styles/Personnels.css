@@ -25,6 +25,7 @@
   margin-bottom: 10px;
   text-transform: uppercase;
 }
+
 .role-count {
   font-size: 1rem;
   font-weight: normal;
@@ -62,9 +63,15 @@
     height: 45vh;
     width: 100%;
     overflow-y: scroll;
+   
 }
 .list table{
     font-size: 0.8em;
+  
+}
+.table{
+  overflow: scroll;
+
 }
 
 /* Modal centré */

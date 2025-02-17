@@ -1,20 +1,69 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
+import axios from "axios";
 
 function PriseCommande() {
   const [client, setClient] = useState({ nom: "", telephone: "", adresse: "" });
-  const [produits, setProduits] = useState([
-    { id: 1, nom: "Ordinateur", prix: 300000, type: "Électronique" },
-    { id: 2, nom: "Téléphone", prix: 150000, type: "Électronique" },
-    { id: 3, nom: "Casque", prix: 50000, type: "Accessoire" },
-  ]);
+  const [produits, setProduits] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [commande, setCommande] = useState([]);
   const [typeQuantite, setTypeQuantite] = useState("cartons");
   const [modePaiement, setModePaiement] = useState("");
+ const [categorie, setCategorie] = useState("");
+  const [categories, setCategories] = useState([]); 
+
+
+  const [selectedClient, setSelectedClient] = useState("");
+  const [type, setType] = useState(""); // "client" ou "commercial"
+const [isNew, setIsNew] = useState(false); // Indique si on ajoute un nouveau
+const [selectedPerson, setSelectedPerson] = useState("");
+const [clients, setClients] = useState([]);
+const [commerciaux, setCommerciaux] = useState([]);
+
+useEffect(() => {
+  fetchClients();
+  fetchCommerciaux();
+}, []);
+
+const fetchClients = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/client");
+    setClients(response.data);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des clients", error);
+  }
+};
+
+const fetchCommerciaux = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/comercial");
+    setCommerciaux(response.data);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des commerciaux", error);
+  }
+};
+
+  
+
+ 
+  const fetchProduits = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/produits/afficher");
+      setProduits(response.data);
+
+      const categoriesUniq = [
+        ...new Set(response.data.map((produit) => produit.categorie)),
+      ];
+      setCategories(categoriesUniq); 
+    } catch (error) {
+      console.error("Erreur lors de la récupération des produits", error);
+    }
+  };
+
+
 
   const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
     if (quantite <= 0 || !isChecked) return;
@@ -50,8 +99,16 @@ function PriseCommande() {
   };
 
   const produitsFiltres = produits.filter((p) =>
-    p.nom.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  {
+    const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategorie = categorie ? p.categorie === categorie : true;
+    return matchesRecherche &&   matchesCategorie ;
+});
+  
+  const filteredProduits = produits.filter((produit) => {
+    const matchesCategorie = categorie ? produit.categorie === categorie : true;
+    return  matchesCategorie ;
+  });
 
   return (
     <main className="center">
@@ -63,33 +120,83 @@ function PriseCommande() {
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Prise de Commande
             </h6>
+            <div className="form-group mt-3">
+  <label>Type :</label>
+  <select
+    className="form-control"
+    value={type}
+    onChange={(e) => {
+      setType(e.target.value);
+      setIsNew(false);
+      setSelectedPerson("");
+    }}
+  >
+    <option value="">Choisir un type</option>
+    <option value="client">Client</option>
+    <option value="commercial">Commercial</option>
+  </select>
+</div>
 
+
+             
             <div className="commande-container d-flex justify-content-between">
               {/* Informations Client (colonne gauche) */}
               <div className="client-info w-50 p-3">
                 <h6><i className="fa fa-user"></i> Informations Client</h6>
                 <div className="form-group mt-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nom du client"
-                    value={client.nom}
-                    onChange={(e) => setClient({ ...client, nom: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    className="form-control mt-2"
-                    placeholder="Téléphone"
-                    value={client.telephone}
-                    onChange={(e) => setClient({ ...client, telephone: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    className="form-control mt-2"
-                    placeholder="Adresse"
-                    value={client.adresse}
-                    onChange={(e) => setClient({ ...client, adresse: e.target.value })}
-                  />
+                {type && (
+  <div className="form-group mt-3">
+    <label>{type === "client" ? "Sélectionner un client" : "Sélectionner un commercial"}</label>
+    <select
+      className="form-control"
+      value={selectedPerson}
+      onChange={(e) => {
+        setSelectedPerson(e.target.value);
+        setIsNew(e.target.value === "new");
+      }}
+    >
+      <option value="">Sélectionner</option>
+      {(type === "client" ? clients : commerciaux).map((p) => (
+        <option key={p._id} value={p._id}>
+          {p.nom} - {p.telephone}
+        </option>
+      ))}
+      <option value="new">Ajouter un nouveau {type}</option>
+    </select>
+  </div>
+)}
+
+</div>
+
+{/* Affichage du formulaire si "Nouveau client" est sélectionné */}
+{isNew && (
+  <div className="form-group mt-3">
+    <input
+      type="text"
+      className="form-control"
+      placeholder={`Nom du ${type}`}
+      value={newPerson.nom}
+      onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
+    />
+    <input
+      type="text"
+      className="form-control mt-2"
+      placeholder="Téléphone"
+      value={newPerson.telephone}
+      onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
+    />
+    <input
+      type="text"
+      className="form-control mt-2"
+      placeholder="Adresse"
+      value={newPerson.adresse}
+      onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
+    />
+  </div>
+)}
+
+
+   
                   <select
                     className="form-control mt-2"
                     value={modePaiement}
@@ -101,7 +208,7 @@ function PriseCommande() {
                     <option value="credit">Crédit</option>
                     <option value="virement">Virement bancaire</option>
                   </select>
-                </div>
+                
               </div>
 
               {/* Liste des Produits (colonne droite) */}
@@ -114,6 +221,18 @@ function PriseCommande() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
+                     <select
+                    className="form-control mt-3 m-2 p-2"
+                    value={categorie}
+                    onChange={(e) => setCategorie(e.target.value)}
+                  >
+                    <option value="">Toutes les catégories</option>
+                    {categories.map((cat, index) => (
+                      <option key={index} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                 <table className="table mt-2">
                   <thead>
                     <tr>
@@ -127,10 +246,10 @@ function PriseCommande() {
                   </thead>
                   <tbody>
                     {produitsFiltres.map((p) => (
-                      <tr key={p.id}>
-                        <td>{p.nom}</td>
-                        <td>{p.type}</td>
-                        <td>{p.prix} Ar</td>
+                          <tr key={p._id}>
+                    <td>{p.nom}</td>
+                    <td>{p.categorie}</td>
+                        <td>{p.prixdevente} Ariary</td>
                         <td>
                           <input
                             type="number"
@@ -193,14 +312,14 @@ function PriseCommande() {
                       <td>{item.nom}</td>
                       <td>{item.quantite}</td>
                       <td>{item.typeQuantite}</td>
-                      <td>{item.prix} FCFA</td>
-                      <td>{item.quantite * item.prix} FCFA</td>
+                      <td>{item.prix} Ariary</td>
+                      <td>{item.quantite * item.prix} Ariary</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               <h6 className="total">
-                Total: {commande.reduce((acc, item) => acc + item.quantite * item.prix, 0)} Ariary
+                Total:  Ariary
               </h6>
               <button className="btn btn-success  mt-3" onClick={validerCommande}>
                 Enregistrer la Commande
