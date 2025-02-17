@@ -11,7 +11,7 @@ const commercialSchema = new mongoose.Schema({
         unique: true
     },
     telephone: {
-        type: Number,
+        type: String,
         required: true
     },
     statut: {

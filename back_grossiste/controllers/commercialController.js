@@ -3,18 +3,24 @@ const Commercial = require('../models/Commercial');
 // Créer un commercial
 exports.createCommercial = async (req, res) => {
     try {
-        const { nom, email,telephone } = req.body;
-
-        const newCommercial = new Commercial({
-            nom,
-            email,telephone
-        });
-
+        const { nom, email, telephone, type } = req.body;
+    
+        // Vérifie si les champs sont valides
+        if (!nom || !telephone || !email || !type) {
+          return res.status(400).json({ message: "Les champs sont manquants" });
+        }
+    
+        // Créer un nouveau commercial
+        const newCommercial = new Commercial({ nom, email, telephone, type });
+    
+        // Sauvegarder dans la base de données
         await newCommercial.save();
-        res.status(201).json({ message: "Commercial créé avec succès", commercial: newCommercial });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+    
+        return res.status(201).json(newCommercial);
+      } catch (error) {
+        console.error("Erreur lors de la création du commercial", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+      }
 };
 
 // Récupérer tous les commerciaux
