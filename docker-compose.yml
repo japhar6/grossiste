@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Service MongoDB
   mongodb:
     image: mongo:latest
     container_name: mongodb
@@ -16,6 +17,7 @@ services:
     volumes:
       - mongodb_data:/data/db
 
+  # Service Mongo-Express (Interface Web pour MongoDB)
   mongo-express:
     image: mongo-express:latest
     container_name: mongo-express
@@ -31,18 +33,35 @@ services:
     ports:
       - "8081:8081"
 
+  # Service Backend (Node.js + Express)
   backend:
     build: ./back_grossiste
-    container_name: backend_grossiste
+    container_name: backend
+    restart: always
     environment:
       PORT: ${PORT}
       MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}  
     ports:
       - "5000:5000"
     volumes:
       - ./back_grossiste:/app
       - /app/node_modules
     command: ["npm", "start"]
+    depends_on:
+      - mongodb
+
+  # Service Frontend (React + Nginx)
+  frontend:
+    build: ./front_grossiste
+    container_name: frontend
+    restart: always
+    ports:
+      - "5173:443"  # Redirige le port 80 (Nginx) vers 5173 (local)
+    depends_on:
+      - backend
+    volumes:
+      - ./front_grossiste/nginx/ssl:/etc/nginx/ssl  # Assure que les certificats SSL sont accessibles
 
 volumes:
   mongodb_data:
