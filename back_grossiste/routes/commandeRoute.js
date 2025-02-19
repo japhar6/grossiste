@@ -18,4 +18,7 @@ router.put('/:id', commandeController.updateCommande);
 router.delete('/:id', commandeController.deleteCommande);
 
 router.get("/count", commandeController.countCommande);
+// Route pour récupérer une commande par référence de facture
+router.get('/reference/:referenceFacture', commandeController.getCommandeById);
+
 module.exports = router;

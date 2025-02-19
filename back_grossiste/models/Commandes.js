@@ -55,7 +55,7 @@ const commandeSchema = new mongoose.Schema({
         required: true 
     },
     statut: { 
-        type: String, 
+        type: String,  
         enum: ["en attente", "en cours", "terminée", "livrée", "annulée"], 
         default: "en attente" 
     }

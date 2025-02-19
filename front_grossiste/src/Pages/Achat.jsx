@@ -498,7 +498,7 @@ console.log("produit" ,produitId);
 
   const customNoOptionMessage = (
     <button
-      className="btn btn-link mt-2"
+      className="btn btn-link mt-1"
       onClick={() => setAfficherFormulaireProduit(true)}
     >
       Ajouter un Nouveau Produit
@@ -569,7 +569,7 @@ console.log("produit" ,produitId);
                       <input
                         type="text"
                         className="form-control mt-2"
-                        placeholder="description du produit"
+                        placeholder="Description du produit"
                         value={nouveauProduit.description}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, description: e.target.value })}
                       />
@@ -598,14 +598,14 @@ console.log("produit" ,produitId);
                        <input
                         type="text"
                         className="form-control mt-2"
-                        placeholder="prixDachat du produit"
+                        placeholder="Prix d'achat du produit"
                         value={nouveauProduit.prixDachat}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, prixDachat: e.target.value })}
                       />
                        <input
                         type="text"
                         className="form-control mt-2"
-                        placeholder="unite du produit"
+                        placeholder="Unite du produit"
                         value={nouveauProduit.unite}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, unite: e.target.value })}
                       />
@@ -629,10 +629,6 @@ console.log("produit" ,produitId);
                           noOptionsMessage={() => customNoOptionMessage}
                           isDisabled={!fournisseur}
                         />
-
-                                            
-
-
                           <div className="quantite-section mt-3 d-flex align-items-center">
  
                         <input

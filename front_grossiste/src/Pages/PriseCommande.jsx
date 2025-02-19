@@ -77,7 +77,7 @@ function PriseCommande() {
 
                                     // Validation des champs selon le type (client ou commercial)
                                     if (type === "client") {
-                                      // Vérifier que le nom, le téléphone et l'adresse sont remplis pour un client
+                                      
                                       if (!newPerson.nom || !newPerson.telephone || !newPerson.adresse) {
                                         Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
                                         return;
@@ -97,9 +97,16 @@ function PriseCommande() {
                                     const response = await axios.post(url, newPerson);
                                     
                                     if (response.data) {
-                                      Swal.fire(`${type === "client" ? "Client" : "Commercial"} créé avec succès !`);
+                                      Swal.fire(
+                                        {
+                                        icon: "success",
+                                        title: "Succès",
+                                        text: `${type === "client" ? "Client" : "Commercial"} créé avec succès !`,
+                                        
+                                  
+                                        });
                                     
-                                      // Mettre à jour la liste des clients/commerciaux en fonction du type
+                                    
                                       if (type === "client") {
                                         setClients((prevClients) => [
                                           ...prevClients,
@@ -126,19 +133,17 @@ function PriseCommande() {
 
                                     
                                       setModePaiement('');
-                                      
-
-                                      // Réinitialiser les champs du formulaire après l'ajout
+         
                                       setNewPerson({
                                         nom: '',
                                         telephone: '',
-                                        adresse: '', // Remettre l'adresse à vide si elle n'est pas nécessaire pour un commercial
+                                        adresse: '', 
                                         email: '',
                                         type: '',
                                       });
                                       
-                                      // Réinitialiser le select (si tu utilises un select ou une liste déroulante)
-                                      setSelectedPerson(null);  // Si tu veux réinitialiser la sélection de la personne
+                           
+                                      setSelectedPerson(null); 
                                     }
                                   } catch (error) {
                                     console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
@@ -266,7 +271,7 @@ function PriseCommande() {
                                   
                                   
                                   const handleProduitSelect = (produit) => {
-                                    console.log("Produit sélectionné:", produit); // Debugging pour vérifier la sélection
+                                    console.log("Produit sélectionné:", produit);
                                     setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
                                   };
                                   
