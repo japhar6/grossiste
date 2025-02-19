@@ -192,3 +192,20 @@ exports.deleteCommande = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+exports.getCommandesByVendeur = async (req, res) => {
+    try {
+        const { vendeurId } = req.params;
+
+        // Rechercher les commandes par ID de vendeur
+        const commandes = await Commande.find({ vendeurId }).populate('produits.produit', 'nom prixDachat'); // Ajustez les champs si nécessaire
+
+        if (!commandes || commandes.length === 0) {
+            return res.status(404).json({ message: "Aucune commande trouvée pour ce vendeur" });
+        }
+
+        res.status(200).json(commandes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

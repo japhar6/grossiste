@@ -45,7 +45,7 @@ function Login() {
                         navigate('/SortieCommande');
                         break;
                     case 'vendeur':
-                        navigate('/vente');
+                        navigate('/vendeur');
                         break;
                     case 'caissier':
                         navigate('/caisse');

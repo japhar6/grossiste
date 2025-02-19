@@ -9,6 +9,7 @@ import PrivateRoute from './config/privateRoute.jsx';
 import Personnels from './Pages/Personnels.jsx';
 import Personnel from './Pages/Personnels.jsx';
 import Profil from './Pages/Profil.jsx';
+import ProfilV from './Pages/ProfilVendeur.jsx';
 import ListeProduits from './Pages/Produits.jsx';
 import  AchatProduits from './Pages/Achat.jsx';
 import  Entrepot from './Pages/Entrepot.jsx';
@@ -17,7 +18,8 @@ import Caisse from './Pages/Caisse.jsx';
 import SortieCommande from './Pages/SortieCommande.jsx';
 import Stock from './Pages/Stock.jsx';
 import Commerciale from './Pages/Commerciale.jsx';
-
+import Vendeur from './Pages/Vendeur.jsx';
+import HistoV from './Pages/HistoventeVendeur.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -35,9 +37,12 @@ function App() {
           <Route path='/commande' element={<  PriseCommande/>} />
           <Route path='/caisse' element={<  Caisse/>} />
           <Route path='/profil' element={<Profil />} />
+          <Route path='/profilv' element={<ProfilV />} />
           <Route path='/SortieCommande' element={<SortieCommande />} />
           <Route path='/stock' element={<Stock />} />
           <Route path='/commerciale' element={<Commerciale />} />
+          <Route path='/vendeur' element={<Vendeur />} />
+          <Route path='/histov' element={<HistoV />} />
         </Route>
       </Routes>
     </BrowserRouter>
