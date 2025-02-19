@@ -28,11 +28,12 @@ function Login() {
             if (!response.ok) {
                 throw new Error(data.message || 'Erreur de connexion');
             }
-
+           
             localStorage.setItem('token', data.token);
              localStorage.setItem('email', data.user.email);
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('userid', data.user._id);
+            localStorage.setItem('nom', data.user.nom);
             
 
             setSuccess(true);  

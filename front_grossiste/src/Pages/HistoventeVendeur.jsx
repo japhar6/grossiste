@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2"; 
-import "../Styles/Profile.css";
+
 import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 
 function HistoV() {
   const [commandes, setCommandes] = useState([]);
-  const vendeurId = localStorage.getItem('userid'); // Assurez-vous que l'ID du vendeur est stocké dans le local storage
+  const vendeurId = localStorage.getItem('userid');
+  const nom = localStorage.getItem('nom'); 
 
   useEffect(() => {
     const fetchCommandes = async () => {
@@ -37,7 +38,7 @@ function HistoV() {
         <section className="contenue">
           <Header />
           <div className="profil-container p-4">
-            <h2>Historique des Commandes</h2>
+            <h2>Historique des Commandes fait par {nom}</h2>
             {commandes.length === 0 ? (
               <p>Aucune commande trouvée pour ce vendeur.</p>
             ) : (
