@@ -79,12 +79,17 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         await paiementCommerciale.save();
 
         // Enregistrer la vente
-        const vente = new Vente({
-            commercialId: commande.commercialId,
-            commandeId: commande._id,
-            produitsVendus: produitsVendus,
-            montantTotal: montantTotalVendu
-        });
+    // Enregistrer la vente
+const vente = new VenteCom({
+    commercialId: commande.commercialId,
+    commandeId: commande._id,
+    produitsVendus: produitsVendus.map(produit => ({
+        produitId: produit.produitId, 
+        quantite: produit.quantite
+    })),
+    montantTotal: montantTotalVendu
+});
+
 
         await vente.save();
 
