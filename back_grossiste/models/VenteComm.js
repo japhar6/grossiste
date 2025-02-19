@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const Produit = mongoose.model('Produit');
 const ventecomSchema = new mongoose.Schema({
     commercialId: { 
         type: mongoose.Schema.Types.ObjectId, 

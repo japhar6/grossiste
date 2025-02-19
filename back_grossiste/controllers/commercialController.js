@@ -1,5 +1,5 @@
 const Commercial = require('../models/Commercial');
-
+const Vente = require('../models/VenteComm');    
 // Créer un commercial
 exports.createCommercial = async (req, res) => {
     try {
@@ -32,6 +32,25 @@ exports.getAllCommercials = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// Dans votre contrôleur de commerciaux
+exports.getAllCommercials = async (req, res) => {
+    try {
+        const commerciaux = await Commercial.find();
+
+        // Récupérer les ventes pour chaque commercial
+        const commerciauxAvecVentes = await Promise.all(commerciaux.map(async (commercial) => {
+            const ventes = await Vente.find({ commercialId: commercial._id })
+                .populate("produitsVendus.produitId", "nom");
+            return { ...commercial.toObject(), ventes }; // Ajouter les ventes à chaque commercial
+        }));
+
+        res.json(commerciauxAvecVentes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 // Récupérer un commercial par ID
 exports.getCommercialById = async (req, res) => {

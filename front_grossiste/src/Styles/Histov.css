@@ -1,0 +1,23 @@
+.produit-table-container {
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9; /* Couleur d'arrière-plan différente */
+  }
+  
+  .produit-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .produit-table th, .produit-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .produit-table th {
+    background-color: #e9e9e9; /* Couleur d'arrière-plan différente pour l'en-tête */
+  }
+  
