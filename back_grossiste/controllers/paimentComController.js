@@ -22,6 +22,10 @@ exports.validerPaiementCommerciale = async (req, res) => {
 
         // Le montant final à payer est simplement le total de la commande
         const montantFinalPaye = commande.totalGeneral;
+        
+        // Mettre à jour le statut de la commande
+        commande.statut = "terminée";
+        await commande.save();
 
         // Créer un paiement à crédit pour le commercial
         const paiementCommerciale = new PaiementCommerciale({

@@ -21,4 +21,8 @@ router.get("/count", commandeController.countCommande);
 // Route pour récupérer une commande par référence de facture
 router.get('/reference/:referenceFacture', commandeController.getCommandeById);
 
+// Route pour récupérer les commandes avec les statuts "terminée" et "livrée"
+router.get('/TermineeLivree', commandeController.getCommandesTermineesEtLivrees);
+
+
 module.exports = router;

@@ -1,0 +1,54 @@
+.sortie-stock-section {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .filtrage {
+    background: #f1f1f1;
+    border-radius: 5px;
+    padding: 15px;
+  }
+  
+  input.form-control, select.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    font-size: 14px;
+  }
+  
+  button.btn-info {
+    background-color: #17a2b8;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  button.btn-info:hover {
+    background-color: #138496;
+  }
+  
+  .table {
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .table-striped th, .table-striped td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .table-striped tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  @media (max-width: 768px) {
+    .sortie-stock-section {
+      padding: 10px;
+    }
+  }
+  

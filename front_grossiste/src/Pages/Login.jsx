@@ -42,7 +42,7 @@ function Login() {
                         navigate('/admin');
                         break;
                     case 'magasinier':
-                        navigate('/magasin');
+                        navigate('/SortieCommande');
                         break;
                     case 'vendeur':
                         navigate('/vente');
