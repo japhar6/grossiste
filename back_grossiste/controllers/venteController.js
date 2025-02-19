@@ -1,6 +1,7 @@
 const Vente = require('../models/Ventes');
 const Commande = require('../models/Commandes');
 const Stock = require('../models/Stock');
+const Produit = require("../models/Produits");
 
 // Valider la vente après validation par le magasinier
 exports.validerVente = async (req, res) => {

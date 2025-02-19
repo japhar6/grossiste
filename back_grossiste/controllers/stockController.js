@@ -1,6 +1,7 @@
 const Stock = require('../models/Stock');
 const Commande = require('../models/Commandes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
+const Produit = require("../models/Produits"); 
 
 // Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {

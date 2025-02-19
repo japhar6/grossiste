@@ -1,6 +1,8 @@
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Commande = require("../models/Commandes");
-const Vente = require('../models/VenteComm'); 
+const VenteCom = require('../models/VenteComm'); // Assure-toi du bon chemin
+const Produit = require("../models/Produits");
+const mongoose = require('mongoose');
 
 exports.validerPaiementCommerciale = async (req, res) => {
     try {
@@ -102,28 +104,20 @@ const vente = new VenteCom({
         res.status(400).json({ message: error.message });
     }
 };
-exports.recupererPerformanceCommercial = async (req, res) => {
+
+exports.getVentesByCommercial = async (req, res) => {
     try {
         const { commercialId } = req.params;
 
-        // Récupérer toutes les ventes associées au commercial
-        const ventes = await Vente.find({ commercialId }) // Changer pour récupérer toutes les ventes
-            .populate('produitsVendus.produitId', 'nom prixUnitaire') // Populate pour obtenir les détails des produits
-            .exec();
+        const ventes = await VenteCom.find({ commercialId }).populate("produitsVendus.produitId", "nom");
+    ;
+        if (!ventes || ventes.length === 0) {
+            return res.status(404).json({ message: "Aucune vente trouvée pour ce commercial" });
+        }
 
-        let totalVentes = ventes.length;
-        let montantTotal = 0;
-        ventes.forEach(vente => {
-            montantTotal += vente.montantTotal;
-        });
-
-        return res.status(200).json({
-            commercialId,
-            totalVentes,
-            montantTotal,
-            ventes // Optionnel, si tu veux retourner les détails des ventes
-        });
+        res.status(200).json(ventes);
     } catch (error) {
-        return res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
+
