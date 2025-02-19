@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongodb-secrets
+  namespace: innov
+type: Opaque
+data:
+  MONGO_INITDB_ROOT_USERNAME: cm9vdA==  # root
+  MONGO_INITDB_ROOT_PASSWORD: YWRtaW5wYXNzMTIz  # adminpass123
+  MONGO_INITDB_DATABASE: Z3Jvc3Npc3Rl  # grossiste
+  ME_CONFIG_MONGODB_ADMINUSERNAME: RWRkeQ==  # Edy
+  ME_CONFIG_MONGODB_ADMINPASSWORD: UmFrb3RvMTU=  # Rakoto15
+  MONGO_URI: bW9uZ29kYjovL3Jvb3Q6YWRtaW5wYXNzMTIzQG1vbmdbZGI6MjcwMTcvZ3Jvc3Npc3RlP2F1dGhTb3VyY2U9YWRtaW4=  # Mongo URI
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+  namespace: innov
+spec:
+  capacity:
+    storage: 5Gi  # Taille du volume
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/mongodb  # Le chemin sur le serveur hôte où le stockage sera monté
+  persistentVolumeReclaimPolicy: Retain  # La politique de récupération lorsque le PVC est supprimé
+  storageClassName: microk8s-hostpath  # Ajout de la StorageClass
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: innov
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi  # La quantité d'espace de stockage demandée
+  volumeMode: Filesystem
+  volumeName: mongodb-pv  # Le nom du PV que nous avons créé plus haut
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: innov
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: eddyrakotonirina/inoov-t:mongo_innov
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: MONGO_INITDB_DATABASE
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: ME_CONFIG_MONGODB_ADMINUSERNAME
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secrets
+                  key: ME_CONFIG_MONGODB_ADMINPASSWORD
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc  # Référence au PVC
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: innov
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  clusterIP: None  # Service sans IP interne pour accéder à MongoDB depuis d'autres pods dans le cluster
