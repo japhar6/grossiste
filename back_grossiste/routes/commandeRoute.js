@@ -9,7 +9,7 @@ router.post('/ajouter', commandeController.ajouterCommande);
 router.get('/', commandeController.getCommandes);
 
 // Route pour récupérer une commande par son ID
-router.get('/:id', commandeController.getCommandeById);
+router.get('/recuperer/:id', commandeController.getCommandeById);
 
 // Route pour mettre à jour une commande
 router.put('/:id', commandeController.updateCommande);
@@ -17,6 +17,7 @@ router.put('/:id', commandeController.updateCommande);
 // Route pour supprimer une commande
 router.delete('/:id', commandeController.deleteCommande);
 
+router.get("/count", commandeController.countCommande);
 // Route pour récupérer une commande par référence de facture
 router.get('/reference/:referenceFacture', commandeController.getCommandeById);
 

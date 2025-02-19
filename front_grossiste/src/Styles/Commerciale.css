@@ -1,0 +1,105 @@
+/* Styles pour la gestion des commerciaux */
+.gestion-commerciaux {
+    padding: 20px;
+    background-color: #f4f7fc; /* Fond légèrement gris clair */
+    border-radius: 10px;
+  }
+  
+  .gestion-commerciaux h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #2c3e50; /* Titre en couleur foncée */
+  }
+  
+  /* Tableau des commerciaux */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden; /* Empêche les coins arrondis d'être coupés */
+  }
+  
+  .table-striped th,
+  .table-striped td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+  }
+  
+  /* En-têtes de colonnes */
+  .table-striped th {
+    background-color: #3498db; /* Bleu clair pour les en-têtes */
+    color: white;
+    font-weight: bold;
+  }
+  
+  /* Lignes impaires avec une couleur différente */
+  .table-striped tr:nth-child(even) {
+    background-color: #ecf0f1; /* Gris très clair */
+  }
+  
+  /* Survol des lignes */
+  .table-striped tr:hover {
+    background-color: #f1c40f; /* Jaune pour survol */
+    color: white;
+  }
+  
+  /* Commission */
+  .table-striped td:last-child {
+    color: #28a745; /* Vert pour les commissions */
+    font-weight: bold;
+  }
+  
+  /* Ventes et retours */
+  .table-striped li {
+    list-style-type: none;
+    margin: 5px 0;
+    font-size: 13px;
+    color: #7f8c8d; /* Gris pour les éléments des ventes/retours */
+  }
+  
+  /* Texte "Aucune vente" et "Aucun retour" */
+  .table-striped span {
+    color: #bdc3c7; /* Gris pâle pour les messages vides */
+    font-style: italic;
+  }
+  
+  /* Mise en forme des lignes de vente et retour */
+  ul {
+    padding-left: 20px;
+  }
+  
+  ul li {
+    font-size: 13px;
+    color: #34495e; /* Gris foncé pour les lignes de ventes/retours */
+  }
+  
+  ul li span {
+    font-weight: bold;
+    color: #e67e22; /* Orange pour les produits retournés ou à mettre en évidence */
+  }
+  
+  /* Mise en forme de la section commerciale */
+  .gestion-commerciaux table td {
+    vertical-align: top;
+  }
+  
+  /* Mise en forme responsive pour les petits écrans */
+  @media (max-width: 768px) {
+    .gestion-commerciaux h2 {
+      font-size: 20px;
+    }
+  
+    .table-striped th,
+    .table-striped td {
+      font-size: 12px;
+    }
+  
+    .table-striped {
+      font-size: 10px;
+    }
+  }
+  

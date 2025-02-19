@@ -40,7 +40,7 @@
     height: 10vh;
     width: 25%;
     border-radius: 5px;
-    background: rgb(81,173,110);
+    background: rgb(90, 81, 173);
     color: #fff;
     background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -94,15 +94,21 @@
 
 /* Conteneur de la photo */
 .photo-container {
-  background: #2b0a0a;
+  background: #a30b0b ;
 }  
 
 /* Image de profil */
 .user-photo {
-  width: 180px;
-  height: 180px;
+  width:280px !important;
+  height: 250px !important ;
   object-fit: cover;
 }
+.user-photo {
+ 
+  border-radius: 50%;  
+  border: 3px solid #007bff; 
+}
+
 
 /* Informations de l'utilisateur */
 .user-info {

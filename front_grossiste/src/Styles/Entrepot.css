@@ -66,12 +66,15 @@
 .btn-danger:hover {
   background: #c82333;
 }
-
+.ajoutEntrepot
+{
+  background-color: white
+}
 /* ---- Conteneur du formulaire (Droite) ---- */
 .ajoutEntrepot-container {
   flex: 1;
   max-width: 350px;
-  background: white;
+  background: white !important;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

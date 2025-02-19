@@ -9,12 +9,14 @@ router.post('/', clientController.createClient);
 router.get('/', clientController.getAllClients);
 
 // Route pour obtenir un client par ID
-router.get('/:id', clientController.getClientById);
+router.get('/recuperer/:id', clientController.getClientById);
 
 // Route pour mettre à jour un client
 router.put('/:id', clientController.updateClient);
 
 // Route pour supprimer un client
 router.delete('/:id', clientController.deleteClient);
+
+router.get("/count", clientController.countClient);
 
 module.exports = router;

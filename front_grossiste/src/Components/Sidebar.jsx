@@ -13,8 +13,6 @@ function Sidebar(){
         { path: "/caisse", icon: "fa-cash-register", text: "Caisse" },
         { path: "/SortieCommande", icon: "fa-warehouse", text: "Metier Magazinier" },
 
-   
-
         { path: "/commande", icon: "fa-shopping-cart", text: "Vente et prise de commande" },
         { path: "/ventes", icon: "fa-shopping-bag", text: "Vente & prise de commande" },
         { path: "/commerciaux", icon: "fa-briefcase", text: "Gestion des commerciaux" },
@@ -41,6 +39,7 @@ function Sidebar(){
                             to={button.path} 
                             key={index} 
                             className="btn btn-light p-3 d-flex align-items-center mb-2 btn-sm"
+                            style={{fontSize:"0.6em !important"}}
                             >
                             <i className={`fa ${button.icon} text-success fw-bold me-2`}></i>
                             {button.text}

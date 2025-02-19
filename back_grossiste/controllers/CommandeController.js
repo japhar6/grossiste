@@ -83,6 +83,15 @@ exports.getCommandes = async (req, res) => {
     }
 };
 
+exports.countCommande = async (req, res) => {
+  try {
+    const count = await Commande.countDocuments();
+    res.status(200).json({ totalcommande: count });
+  } catch (error) {
+res.status(500).json({ message: "❌ Erreur lors du comptage des commandes", error: error.message });
+
+  }
+};
 // Récupérer une commande par son ID
 exports.getCommandeById = async (req, res) => {
     try {
