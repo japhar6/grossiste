@@ -14,6 +14,7 @@ import  Entrepot from './Pages/Entrepot.jsx';
 import  PriseCommande from './Pages/PriseCommande.jsx';
 import Caisse from './Pages/Caisse.jsx';
 import Commerciale from './Pages/Commerciale.jsx';
+import Stock from './Pages/Stock.jsx';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path='/caisse' element={<  Caisse/>} />
           <Route path='/profil' element={<Profil />} />
           <Route path='/commerciale' element={<Commerciale />} />
+          <Route path='/stock' element={<Stock />} />
 
         </Route>
       </Routes>

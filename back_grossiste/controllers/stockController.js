@@ -190,3 +190,14 @@ exports.sortirProduitsStock = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+exports.getStocksByEntrepot = async (req, res) => {
+  try {
+      const { entrepotId } = req.params;
+      const stocks = await Stock.find({ entrepot: entrepotId }).populate('produit');
+
+      res.status(200).json(stocks);
+  } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération des stocks", error });
+  }
+};

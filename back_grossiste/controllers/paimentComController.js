@@ -1,5 +1,6 @@
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Commande = require("../models/Commandes");
+const Vente = require('../models/VenteComm'); 
 
 exports.validerPaiementCommerciale = async (req, res) => {
     try {
@@ -52,12 +53,11 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        // Si le statut du paiement est déjà "complet", on ne peut plus modifier la commande
+        // Vérifier si le paiement est déjà complet
         if (paiementCommerciale.statut === "complet") {
             return res.status(400).json({ message: "Le paiement est déjà complet, vous ne pouvez plus modifier la commande." });
         }
 
-        // Calcul du montant payé en fonction des produits vendus
         let montantTotalVendu = 0;
         produitsVendus.forEach(produit => {
             const produitCommande = commande.produits.find(item => item.produit.toString() === produit.produitId.toString());
@@ -78,11 +78,47 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         // Sauvegarder les mises à jour
         await paiementCommerciale.save();
 
+        // Enregistrer la vente
+        const vente = new Vente({
+            commercialId: commande.commercialId,
+            commandeId: commande._id,
+            produitsVendus: produitsVendus,
+            montantTotal: montantTotalVendu
+        });
+
+        await vente.save();
+
         return res.status(200).json({
-            message: "Paiement mis à jour avec succès",
-            paiementCommerciale
+            message: "Paiement et vente mis à jour avec succès",
+            paiementCommerciale,
+            vente
         });
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+exports.recupererPerformanceCommercial = async (req, res) => {
+    try {
+        const { commercialId } = req.params;
+
+        // Récupérer toutes les ventes associées au commercial
+        const ventes = await Vente.find({ commercialId }) // Changer pour récupérer toutes les ventes
+            .populate('produitsVendus.produitId', 'nom prixUnitaire') // Populate pour obtenir les détails des produits
+            .exec();
+
+        let totalVentes = ventes.length;
+        let montantTotal = 0;
+        ventes.forEach(vente => {
+            montantTotal += vente.montantTotal;
+        });
+
+        return res.status(200).json({
+            commercialId,
+            totalVentes,
+            montantTotal,
+            ventes // Optionnel, si tu veux retourner les détails des ventes
+        });
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
     }
 };

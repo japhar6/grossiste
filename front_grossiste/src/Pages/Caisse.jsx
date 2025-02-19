@@ -18,7 +18,7 @@ function Caisse() {
       }
       const data = await response.json();
       setCommande(data);
-      setClient(data.clientId); // Assure-toi d'utiliser clientId, pas clients
+      setClient(data.clientId); 
     } catch (error) {
       console.error(error);
       setCommande(null);

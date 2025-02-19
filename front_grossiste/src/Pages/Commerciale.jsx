@@ -1,43 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import "../Styles/Commerciale.css";
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
 
-const tauxCommission = 0.1; // Commission de 10% sur chaque vente
-
-const commerciaux = [
-  {
-    id: 1,
-    nom: 'Jean Dupont',
-    statut: 'Actif',
-    telephone: '0123456789',
-    ventes: [
-      { produit: 'Produit A', quantite: 10, montant: 200, date: '2025-02-12' },
-      { produit: 'Produit B', quantite: 5, montant: 100, date: '2025-02-13' }
-    ],
-    retours: [
-      { produit: 'Produit A', quantite: 2, raison: 'Défectueux', date: '2025-02-14' }
-    ]
-  },
-  {
-    id: 2,
-    nom: 'Marie Martin',
-    statut: 'Inactif',
-    telephone: '0987654321',
-    ventes: [
-      { produit: 'Produit C', quantite: 15, montant: 300, date: '2025-02-12' }
-    ],
-    retours: []
-  }
-];
-
-const calculerCommission = (ventes) => {
-  return ventes.reduce((total, vente) => {
-    return total + vente.quantite * vente.montant * tauxCommission;
-  }, 0);
-};
-
 const GestionCommerciaux = () => {
+  const [commerciaux, setCommerciaux] = useState([]);
+
+  useEffect(() => {
+    // Récupérer les données des commerciaux depuis l'API
+    const fetchCommerciaux = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/comercial'); // Assure-toi que l'URL est correcte
+        setCommerciaux(response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des commerciaux :", error);
+      }
+    };
+
+    fetchCommerciaux();
+  }, []);
+
   return (
     <main className="center">
       <Sidebar />
@@ -51,46 +34,20 @@ const GestionCommerciaux = () => {
             <thead>
               <tr>
                 <th>Nom</th>
-                <th>Statut</th>
+                <th>Email</th>
                 <th>Téléphone</th>
-                <th>Ventes</th>
-                <th>Retours</th>
-                <th>Commission</th>
+                <th>Statut</th>
+                <th>Date d'Inscription</th>
               </tr>
             </thead>
             <tbody>
               {commerciaux.map((commercial) => (
-                <tr key={commercial.id}>
+                <tr key={commercial._id}>
                   <td>{commercial.nom}</td>
-                  <td>{commercial.statut}</td>
+                  <td>{commercial.email}</td>
                   <td>{commercial.telephone}</td>
-                  <td>
-                    {commercial.ventes.length === 0 ? (
-                      <span>Aucune vente</span>
-                    ) : (
-                      <ul>
-                        {commercial.ventes.map((vente, index) => (
-                          <li key={index}>
-                            {vente.produit} ({vente.quantite} x {vente.montant}€) - {vente.date}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </td>
-                  <td>
-                    {commercial.retours.length === 0 ? (
-                      <span>Aucun retour</span>
-                    ) : (
-                      <ul>
-                        {commercial.retours.map((retour, index) => (
-                          <li key={index}>
-                            {retour.produit} ({retour.quantite} retourné) - Raison : {retour.raison} - {retour.date}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </td>
-                  <td>{calculerCommission(commercial.ventes).toFixed(2)}€</td>
+                  <td>{commercial.statut}</td>
+                  <td>{new Date(commercial.dateInscription).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -102,4 +59,3 @@ const GestionCommerciaux = () => {
 };
 
 export default GestionCommerciaux;
-    

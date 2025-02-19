@@ -7,7 +7,7 @@ body {
   box-sizing: border-box;
   background: rgb(247,247,247);
 background: radial-gradient(circle, rgb(255, 255, 255) 0%, rgb(199, 199, 199) 100%);
-
+overflow: hidden;
 }
 .center{
   justify-content: center;
