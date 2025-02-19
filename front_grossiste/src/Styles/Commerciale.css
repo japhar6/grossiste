@@ -43,7 +43,7 @@
   
   /* Survol des lignes */
   .table-striped tr:hover {
-    background-color: #f1c40f; /* Jaune pour survol */
+    background-color: #c0bcaa; /* Jaune pour survol */
     color: white;
   }
   

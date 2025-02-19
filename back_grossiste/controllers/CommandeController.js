@@ -115,12 +115,12 @@ exports.getCommandeById = async (req, res) => {
             commande = await Commande.findOne({ referenceFacture })
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
-                .populate("produits.produit", "nom", "fournisseur" ,"quantite");
+                .populate("produits.produit", "nom");
         } else {
             commande = await Commande.findById(req.params.id)
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
-                .populate("produits.produit", "nom", "fournisseur" ,"quantite");
+                .populate("produits.produit", "nom");
         }
 
         if (!commande) {
@@ -139,11 +139,11 @@ exports.getCommandeById = async (req, res) => {
 exports.getCommandesTermineesEtLivrees = async (req, res) => {
     try {
         // Filtrer les commandes par les statuts "terminée" et "livrée"
-        const commandes = await Commande.find({
+        const commande = await Commande.find({
             statut: { $in: ["terminée", "livrée"] }
         });
 
-        res.status(200).json(commandes);
+        res.status(200).json(commande);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

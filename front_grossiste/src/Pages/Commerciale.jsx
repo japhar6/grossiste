@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // Importer SweetAlert
 import "../Styles/Commerciale.css";
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
-import Modal from '../Components/Modal'; // Importer le modal
+import Modal from '../Components/Modal';
 
 const GestionCommerciaux = () => {
   const [commerciaux, setCommerciaux] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [ventesDetails, setVentesDetails] = useState([]);
 
+  const [commercialNom, setCommercialNom] = useState('');
   useEffect(() => {
     const fetchCommerciauxAvecVentes = async () => {
       try {
@@ -23,13 +25,37 @@ const GestionCommerciaux = () => {
     fetchCommerciauxAvecVentes();
   }, []);
 
-  const handleRowClick = async (commercialId) => {
+  const handleRowClick = async (commercialId, commercialNom) => {
+    setCommercialNom(commercialNom); // Mettre à jour le nom du commercial sélectionné
     try {
       const response = await axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`);
-      setVentesDetails(response.data);
-      setModalOpen(true);
+      
+      // Vérifiez si la réponse contient des ventes
+      if (Array.isArray(response.data) && response.data.length === 0) {
+        Swal.fire({
+          title: 'Aucune Vente',
+          text: `Le commercial ${commercialNom} n'a pas encore effectué de ventes.`,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        });
+      } else {
+        setVentesDetails(response.data);
+        setModalOpen(true);
+      }
     } catch (error) {
-      console.error("Erreur lors de la récupération des ventes :", error);
+      if (error.response && error.response.status === 404) {
+        Swal.fire({
+          title: 'Aucune Vente',
+          text: `Aucune performance trouvée pour le commercial ${commercialNom}.`,
+          icon: 'info',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          // Reload la page après avoir cliqué sur OK
+          window.location.reload();
+        });
+      } else {
+        console.error("Erreur lors de la récupération des ventes :", error);
+      }
     }
   };
 
@@ -54,8 +80,8 @@ const GestionCommerciaux = () => {
             </thead>
             <tbody>
               {commerciaux.map((commercial) => (
-                <tr key={commercial._id} onClick={() => handleRowClick(commercial._id)} style={{ cursor: 'pointer' }}>
-                  <td>{commercial.nom}</td>
+              <tr key={commercial._id} onClick={() => handleRowClick(commercial._id, commercial.nom)} style={{ cursor: 'pointer' }}>
+       <td>{commercial.nom}</td>
                   <td>{commercial.email}</td>
                   <td>{commercial.telephone}</td>
                   <td>{commercial.statut}</td>
@@ -66,7 +92,7 @@ const GestionCommerciaux = () => {
             </tbody>
           </table>
 
-          <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} ventes={ventesDetails} />
+          <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} ventes={ventesDetails} commercialNom={commercialNom}  />
         </div>
       </section>
     </main>
