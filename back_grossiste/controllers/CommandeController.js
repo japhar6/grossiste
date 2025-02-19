@@ -105,12 +105,12 @@ exports.getCommandeById = async (req, res) => {
         if (referenceFacture) {
             commande = await Commande.findOne({ referenceFacture })
                 .populate("clientId", "nom telephone")
-                .populate("commercialId", "nom prenoms")
+                .populate("commercialId", "nom telephone")
                 .populate("produits.produit", "nom");
         } else {
             commande = await Commande.findById(req.params.id)
-                .populate("clientId", "nom prenoms")
-                .populate("commercialId", "nom prenoms")
+                .populate("clientId", "nom telephone")
+                .populate("commercialId", "nom telephone")
                 .populate("produits.produit", "nom");
         }
 
@@ -119,6 +119,20 @@ exports.getCommandeById = async (req, res) => {
         }
 
         console.log(commande); // Vérifie la structure des produits ici
+
+        res.status(200).json(commande);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Récupérer les commandes avec les statuts "terminée" et "livrée"
+exports.getCommandesTermineesEtLivrees = async (req, res) => {
+    try {
+        // Filtrer les commandes par les statuts "terminée" et "livrée"
+        const commande = await Commande.find({
+            statut: { $in: ["terminée", "livrée"] }
+        });
 
         res.status(200).json(commande);
     } catch (error) {

@@ -1,5 +1,6 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './Pages/Login';
 import Fournisseur from './Pages/Fournisseur';
@@ -13,7 +14,7 @@ import  AchatProduits from './Pages/Achat.jsx';
 import  Entrepot from './Pages/Entrepot.jsx';
 import  PriseCommande from './Pages/PriseCommande.jsx';
 import Caisse from './Pages/Caisse.jsx';
-
+import SortieCommande from './Pages/SortieCommande.jsx';
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function App() {
           <Route path='/commande' element={<  PriseCommande/>} />
           <Route path='/caisse' element={<  Caisse/>} />
           <Route path='/profil' element={<Profil />} />
-
+          <Route path='/SortieCommande' element={<SortieCommande />} />
         </Route>
       </Routes>
     </BrowserRouter>

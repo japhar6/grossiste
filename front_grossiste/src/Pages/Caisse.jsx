@@ -6,10 +6,13 @@ import "../Styles/Commade.css";
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
-  const [client, setClient] = useState(null);  // Nouvel état pour le client
+  const [client, setClient] = useState(null);
+  const [commercial, setCommercial] = useState(null);
 
+  const [typeRemise, setTypeRemise] = useState("aucune");
+  const [valeurRemise, setValeurRemise] = useState(0);
+  const [totalApresRemise, setTotalApresRemise] = useState(0);
 
-  // Fonction pour rechercher la commande
   const handleSearch = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
@@ -17,12 +20,84 @@ function Caisse() {
         throw new Error("Commande non trouvée");
       }
       const data = await response.json();
+
+      if (data.typeClient === "Client") {
+        setClient(data.clientId);
+        setCommercial(null);
+      } else if (data.typeClient === "Commercial") {
+        setCommercial(data.commercialId);
+        setClient(null);
+      }
+
       setCommande(data);
-      setClient(data.clientId); // Assure-toi d'utiliser clientId, pas clients
+      setTotalApresRemise(data.totalGeneral);
     } catch (error) {
       console.error(error);
       setCommande(null);
       setClient(null);
+      setCommercial(null);
+    }
+  };
+
+  const calculerRemise = () => {
+    if (!commande) return;
+
+    let totalFinal = commande.totalGeneral;
+
+    if (typeRemise === "total" && valeurRemise > 0) {
+      totalFinal -= totalFinal * (valeurRemise / 100);
+    } else if (typeRemise === "fixe" && valeurRemise > 0) {
+      totalFinal -= valeurRemise;
+    } else if (typeRemise === "produit") {
+      totalFinal = commande.produits.reduce((total, produit) => {
+        const remiseProduit = (produit.prixUnitaire * (valeurRemise / 100)) * produit.quantite;
+        return total + (produit.total - remiseProduit);
+      }, 0);
+    }
+
+    setTotalApresRemise(Math.max(totalFinal, 0));
+  };
+
+  const validerPaiement = async () => {
+    if (!commande) return;
+
+    const data = {
+      statut: "complet",
+      remiseGlobale: typeRemise === "total" ? valeurRemise : 0,
+      remiseFixe: typeRemise === "fixe" ? valeurRemise : 0,
+      remiseParProduit:
+        typeRemise === "produit"
+          ? commande.produits.map((produit) => ({
+              produitId: produit.produit._id,
+              remise: valeurRemise,
+            }))
+          : [],
+      totalPaye: totalApresRemise,
+    };
+
+    try {
+      let url = `http://localhost:5000/api/paiement/ajouter/${commande._id}`;
+      if (commande.typeClient === "Commercial") {
+        url = `http://localhost:5000/api/paiementCom/commercial/${commande._id}`;
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Échec du paiement");
+      }
+
+      const result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors du paiement");
     }
   };
 
@@ -37,7 +112,6 @@ function Caisse() {
               <i className="fa fa-shopping-cart"></i> Caisse
             </h6>
 
-            {/* Recherche de commande */}
             <div className="commande-container d-flex justify-content-between">
               <div className="client-info w-50 p-3">
                 <h6><i className="fa fa-user"></i> Référence de la commande</h6>
@@ -54,12 +128,13 @@ function Caisse() {
                   </button>
                 </div>
               </div>
+
               <div className="produits p-3">
                 <h6><i className="fa fa-box"></i> Détails du paiement </h6>
                 <table className="table mt-2">
                   <thead>
                     <tr>
-                      <th>Client</th>
+                      <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
                       <th>Contact</th>
                       <th>Remise</th>
                       <th>Valeur</th>
@@ -68,11 +143,10 @@ function Caisse() {
                   </thead>
                   <tbody>
                     <tr>
-                      {/* Affichage des informations du client */}
-                      <td>{client ? client.nom : ''}</td>
-                      <td>{client ? client.telephone : ''}</td>
+                      <td>{commande?.typeClient === "Commercial" ? commercial?.nom : client?.nom}</td>
+                      <td>{commande?.typeClient === "Commercial" ? commercial?.telephone : client?.telephone}</td>
                       <td>
-                        <select className="form-control">
+                        <select className="form-control" value={typeRemise} onChange={(e) => setTypeRemise(e.target.value)}>
                           <option value="aucune">Aucune</option>
                           <option value="produit">Par produit (%)</option>
                           <option value="total">Total (%)</option>
@@ -83,22 +157,21 @@ function Caisse() {
                         <input
                           type="number"
                           className="form-control"
+                          value={valeurRemise}
+                          onChange={(e) => setValeurRemise(parseFloat(e.target.value))}
                         />
                       </td>
-                      <td>
-                        <select className="form-control">
-                          <option value="cash">Cash</option>
-                          <option value="mobile_money">Mobile Money</option>
-                          <option value="credit">A crédit</option>
-                          <option value="virement">Virement bancaire</option>
-                        </select>
-                      </td>
+                      <td>{commande ? commande.modePaiement : ""}</td>
                     </tr>
                   </tbody>
                 </table>
+
+                <button className="btn btn-secondary mt-2" onClick={calculerRemise}>
+                  Appliquer Remise
+                </button>
               </div>
             </div>
-            {/* Affichage des détails de la commande */}
+
             {commande && (
               <div className="commande mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
@@ -122,16 +195,10 @@ function Caisse() {
                     ))}
                   </tbody>
                 </table>
+                <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
+                <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
 
-                <h6 className="total">
-                  Total avant remise: {commande.totalAvantRemise} Ariary
-                </h6>
-
-                <h6 className="total">
-                  Total après remise: {commande.totalApresRemise} Ariary
-                </h6>
-
-                <button className="btn btn-success mt-3">
+                <button className="btn btn-success mt-3" onClick={validerPaiement}>
                   Valider le paiement
                 </button>
               </div>

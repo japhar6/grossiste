@@ -11,7 +11,7 @@ function Sidebar(){
         { path: "/stock", icon: "fa-boxes", text: "Gestion de stock" },
         { path: "/entrepot", icon: "fa-home", text: "Gestion des entrepots" },
         { path: "/caisse", icon: "fa-cash-register", text: "Caisse" },
-        { path: "/metier-magasinier", icon: "fa-warehouse", text: "Metier Magazinier" },
+        { path: "/SortieCommande", icon: "fa-warehouse", text: "Metier Magazinier" },
 
    
 
