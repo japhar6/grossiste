@@ -3,10 +3,14 @@ import axios from "axios";
 import "../Styles/SortieStock.css";
 
 function SortieStock() {
-  // États pour stocker les commandes et le détail de la commande sélectionnée
   const [commandes, setCommandes] = useState([]);
+  const [commandeSelectionnee, setCommandeSelectionnee] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [clientType, setClientType] = useState("");
+  const [statutCommande, setStatutCommande] = useState("");
+  const [searchDate, setSearchDate] = useState("");
 
-  // Appel API pour récupérer les commandes avec les statuts "terminée" ou "livrée"
+  
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
@@ -19,6 +23,24 @@ function SortieStock() {
     fetchCommandes();
   }, []);
 
+  const getDetailsCommande = (commandeId) => {
+    const commande = commandes.find((c) => c._id === commandeId);
+    setCommandeSelectionnee(commande);
+  };
+
+  // Filtrage des commandes
+  const filteredCommandes = commandes.filter((commande) => {
+    const dateCommande = commande.updatedAt ? new Date(commande.updatedAt).toISOString().split("T")[0] : "";
+    const clientNom = commande.clientId ? commande.clientId.nom : commande.commercialId ? commande.commercialId.nom : "N/A";
+    
+    return (
+      (searchTerm === "" || commande.referenceFacture.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (clientType === "" || (clientType === "client" && commande.clientId) || (clientType === "commercial" && commande.commercialId)) &&
+      (statutCommande === "" || commande.statut.toLowerCase() === statutCommande.toLowerCase()) &&
+      (searchDate === "" || dateCommande === searchDate)
+    );
+  });
+
   return (
     <div className="sortie-stock-section mt-3">
       <h6>Historique des Sorties de stock</h6>
@@ -27,29 +49,44 @@ function SortieStock() {
           <i className="fa fa-search"></i> Filtrage
         </h6>
         <form className="center">
-          <input
-            type="text"
-            className="form-control p-2 mt-3 m-2"
-            placeholder="Recherche de commande"
+          <input 
+            type="text" 
+            className="form-control p-2 mt-3 m-2" 
+            placeholder="Recherche de commande" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select className="form-control mt-3 m-2 p-2">
+          <select 
+            className="form-control mt-3 m-2 p-2" 
+            value={clientType} 
+            onChange={(e) => setClientType(e.target.value)}
+          >
             <option value="">Type de client</option>
-            <option value="">Client</option>
-            <option value="">Commercial</option>
+            <option value="client">Client</option>
+            <option value="commercial">Commercial</option>
           </select>
-          <select className="form-control mt-3 m-2 p-2">
+          <select 
+            className="form-control mt-3 m-2 p-2"
+            value={statutCommande} 
+            onChange={(e) => setStatutCommande(e.target.value)}
+          >
             <option value="">Statut du commande</option>
-            <option value="terminée">terminée</option>
-            <option value="livrée">livrée</option>
+            <option value="terminée">Terminée</option>
+            <option value="livrée">Livrée</option>
           </select>
-          <input type="date" className="form-control mt-3 m-2 p-2" />
+          <input 
+            type="date" 
+            className="form-control mt-3 m-2 p-2" 
+            value={searchDate} 
+            onChange={(e) => setSearchDate(e.target.value)}
+          />
         </form>
       </div>
 
       <table className="table table-striped mt-3">
         <thead>
           <tr>
-            <th>Réference facture</th>
+            <th>Référence facture</th>
             <th>Vendeur</th>
             <th>Client</th>
             <th>Mode de paiement</th>
@@ -59,14 +96,14 @@ function SortieStock() {
           </tr>
         </thead>
         <tbody>
-          {commandes.map((commande) => (
+          {filteredCommandes.map((commande) => (
             <tr key={commande._id}>
               <td>{commande.referenceFacture}</td>
-              <td>{commande.vendeurId ? commande.vendeurId.nom : ""}</td>
-              <td>{commande.clientId ? commande.clientId.nom : ""}</td>
+              <td>{commande.vendeurId ? commande.vendeurId.nom : "N/A"}</td>
+              <td>{commande.clientId ? commande.clientId.nom : commande.commercialId ? commande.commercialId.nom : "N/A"}</td>
               <td>{commande.modePaiement}</td>
               <td>{commande.statut}</td>
-              <td>{new Date(commande.date).toLocaleDateString()}</td>
+              <td>{commande.updatedAt ? new Date(commande.updatedAt).toLocaleDateString() : "N/A"}</td>
               <td>
                 <button
                   className="btn btn-info"
@@ -91,29 +128,33 @@ function SortieStock() {
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body">
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Produit</th>
-                        <th>Quantité</th>
-                        <th>Unité</th>
-                        <th>Fournisseur</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                    </tbody>
-                  </table>
+              {commandeSelectionnee ? (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Produit</th>
+                      <th>Quantité</th>
+                      <th>Unité</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {commandeSelectionnee.produits.map((produit, index) => (
+                    <tr key={index}>
+                        <td>{produit.produit ? produit.produit.nom : "N/A"}</td>
+                        <td>{produit.quantite}</td>
+                        <td>{produit.produit ? produit.produit.unite : "N/A"}</td>
+                    </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p>Aucune commande sélectionnée</p>
+              )}
             </div>
             <div className="modal-footer center">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-              <button type="button" className="btn btn-info">Valider la sortie</button>
-            </div>
+              <button className="btn btn-info">Valider la vente</button>
+              </div>
           </div>
         </div>
       </div>

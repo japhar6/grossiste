@@ -139,16 +139,20 @@ exports.getCommandeById = async (req, res) => {
 exports.getCommandesTermineesEtLivrees = async (req, res) => {
     try {
         // Filtrer les commandes par les statuts "terminée" et "livrée"
-        const commande = await Commande.find({
+        const commandes = await Commande.find({
             statut: { $in: ["terminée", "livrée"] }
-        });
+        })
+        .populate("produits.produit", "nom unite")  // Récupérer les produits associés (nom du produit)
+        .populate("produits.fournisseur", "nom")  // Récupérer les informations du fournisseur (nom)
+        .populate("clientId", "nom telephone")  // Récupérer les informations du client
+        .populate("commercialId", "nom telephone")
+        .populate("vendeurId", "nom")  // Récupérer les informations du vendeur
 
-        res.status(200).json(commande);
+        res.status(200).json(commandes);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 
 // Mettre à jour une commande
