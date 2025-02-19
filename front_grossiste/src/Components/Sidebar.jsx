@@ -15,7 +15,7 @@ function Sidebar(){
 
         { path: "/commande", icon: "fa-shopping-cart", text: "Vente et prise de commande" },
         { path: "/ventes", icon: "fa-shopping-bag", text: "Vente & prise de commande" },
-        { path: "/commerciaux", icon: "fa-briefcase", text: "Gestion des commerciaux" },
+        { path: "/commerciale", icon: "fa-briefcase", text: "Gestion des commerciaux" },
         { 
           path: "/clients", 
           icon: "fa-user-friends", 
