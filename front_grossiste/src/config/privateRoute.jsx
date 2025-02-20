@@ -29,7 +29,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     return <Navigate to={defaultHomePage[role] || "/"} replace />;
   }
 
-  // 🚨 Bloquer la modification de l'URL 🚨
+  // 🚨 Bloquer la modification de l'URL tayguihroizhuheu🚨
   if (!rolePaths[role]?.includes(location.pathname)) {
     return <Navigate to={defaultHomePage[role]} replace />;
   }
