@@ -77,6 +77,10 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
 
         paiementCommerciale.montantPaye += montantTotalVendu;
         paiementCommerciale.montantRestant -= montantTotalVendu;
+         // Mettre à jour le statut de la commande
+         commande.modePaiement = "espèce";
+         await commande.save();
+ 
 
         // Si le montant restant est 0, on marque le paiement comme complet
         if (paiementCommerciale.montantRestant <= 0) {
