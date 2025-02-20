@@ -7,7 +7,11 @@ body {
   box-sizing: border-box;
   background: rgb(247,247,247);
 background: radial-gradient(circle, rgb(255, 255, 255) 0%, rgb(199, 199, 199) 100%);
-overflow: hidden;
+overflow: auto;
+}
+.scrollable {
+  overflow-y: auto; /* Permet le défilement vertical */
+  height: 100vh; /* Ou une hauteur fixe */
 }
 .center{
   justify-content: center;

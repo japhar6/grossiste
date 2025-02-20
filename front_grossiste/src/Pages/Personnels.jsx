@@ -302,7 +302,7 @@ function Personnels() {
               </div>
             </div>
 
-            <div className="ajoutPersonnel p-3">
+            <div className="ajoutPersonnel col-12 col-md-4 p-3">
               <h6 className="alert alert-success">
                 <i className="fa fa-users"></i> Ajouter un personnel
               </h6>

@@ -191,6 +191,7 @@ function PaiementCom() {
                     })}
                   </tbody>
                 </table>
+                <h6 className="total">Montant restant:  Ariary</h6>
                 <h6 className="total">Total à payer: {calculerTotalApresRetour()} Ariary</h6>
               </div>
             )}

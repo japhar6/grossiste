@@ -63,6 +63,7 @@
     height: 45vh;
     width: 100%;
     overflow-y: scroll;
+
    
 }
 .list table{
@@ -158,3 +159,20 @@ button.variant-danger {
 }
 
 
+@media (max-width: 768px) {
+  .ajoutPersonnel {
+    width: 100%; /* Prend toute la largeur sur mobile */
+    height: auto; /* Ajuste la hauteur */
+    margin-top: 20px; /* Ajoute un espace au-dessus */
+  }
+  .mini-stat {
+    width: 100%; /* Prend toute la largeur sur mobile */
+    height: auto; /* Ajuste la hauteur */
+    margin-right: 0; /* Enlève le margin droit */
+  }
+  .perso {
+    width: 100%; /* Ajuste la largeur des éléments de personnel */
+    height: auto; /* Ajuste la hauteur */
+    margin-bottom: 15px; /* Ajoute de l'espace entre les éléments */
+  }
+}
