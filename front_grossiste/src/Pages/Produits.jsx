@@ -20,7 +20,7 @@ function ListeProduits() {
  
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/produits/afficher");
+      const response = await axios.get("/api/produits/afficher");
       setProduits(response.data);
 
       const categoriesUniq = [

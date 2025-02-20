@@ -1,0 +1,37 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: innov-ingress
+  namespace: innov
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"  # 🔥 Important !
+    nginx.ingress.kubernetes.io/enable-cors: "true"  # ✅ Active CORS côté Nginx
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://front"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+spec:
+  rules:
+    # 🌐 FRONTEND
+    - host: front
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 443
+
+    # 🗂 BACKEND
+    - host: back
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 30002

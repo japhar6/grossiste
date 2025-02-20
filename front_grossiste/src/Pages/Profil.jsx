@@ -26,7 +26,7 @@ function Profil() {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5000/api/users/seul/${usId}`, {
+        const response = await axios.get(`/api/users/seul/${usId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
