@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import "../Styles/Commade.css";
@@ -8,54 +8,101 @@ function PaiementCom() {
   const [commande, setCommande] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
+  const [produitsRetournes, setProduitsRetournes] = useState({});
+  const [produitsVendus, setProduitsVendus] = useState([]);
 
-  const [typeRemise, setTypeRemise] = useState("aucune");
-  const [valeurRemise, setValeurRemise] = useState(0);
-  const [totalApresRemise, setTotalApresRemise] = useState(0);
-
+  // Recherche de la commande en fonction de la référence
   const handleSearch = async () => {
+    if (!referenceFacture) return; // Validation si la référence est vide
     try {
       const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
-      if (!response.ok) {
-        throw new Error("Commande non trouvée");
-      }
+      if (!response.ok) throw new Error("Commande non trouvée");
       const data = await response.json();
 
-      if (data.typeClient === "Client") {
-        setClient(data.clientId);
-        setCommercial(null);
-      } else if (data.typeClient === "Commercial") {
+      // Détermine le type de client (Commercial ou Non)
+      if (data.typeClient === "Commercial") {
         setCommercial(data.commercialId);
         setClient(null);
+      } else {
+        setClient(data.clientId);
+        setCommercial(null);
       }
 
+      // Mise à jour de l'état des commandes et des produits
       setCommande(data);
-      setTotalApresRemise(data.totalGeneral);
+      setProduitsRetournes({});
+      setProduitsVendus([]);
     } catch (error) {
       console.error(error);
+      alert("Erreur lors de la recherche de la commande");
       setCommande(null);
       setClient(null);
       setCommercial(null);
     }
   };
 
-  const calculerRemise = () => {
-    if (!commande) return;
+  const handleQuantiteChange = (produitId, e) => {
+    const quantite = parseInt(e.target.value) || 0;
+    if (quantite > 0 && produitId) {
+      setProduitsVendus((prev) => {
+        const updatedProduits = [...prev];
+        const index = updatedProduits.findIndex(p => p.produitId === produitId);
+        if (index >= 0) {
+          updatedProduits[index].quantite = quantite;
+        } else {
+          updatedProduits.push({ produitId, quantite });
+        }
+        return updatedProduits;
+      });
+    } else {
+      alert("Quantité invalide ou produit sans ID.");
+    }
+  };
 
-    let totalFinal = commande.totalGeneral;
+  // Calcul du total après retour de produits
+  const calculerTotalApresRetour = () => {
+    if (!commande) return 0;
 
-    if (typeRemise === "total" && valeurRemise > 0) {
-      totalFinal -= totalFinal * (valeurRemise / 100);
-    } else if (typeRemise === "fixe" && valeurRemise > 0) {
-      totalFinal -= valeurRemise;
-    } else if (typeRemise === "produit") {
-      totalFinal = commande.produits.reduce((total, produit) => {
-        const remiseProduit = (produit.prixUnitaire * (valeurRemise / 100)) * produit.quantite;
-        return total + (produit.total - remiseProduit);
-      }, 0);
+    return commande.produits.reduce((total, produit) => {
+      const quantiteRetournee = parseInt(produitsRetournes[produit.produit.id] || 0);
+      const nouvelleQuantite = Math.max(produit.quantite - quantiteRetournee, 0);
+      return total + nouvelleQuantite * produit.prixUnitaire;
+    }, 0);
+  };
+
+  // Validation de la commande et mise à jour de la vente
+  const handleValidation = async () => {
+    const produitsInvalides = produitsVendus.filter(p => !p.produitId || p.quantite <= 0);
+    if (produitsInvalides.length > 0) {
+      alert("Certains produits sont invalides, assurez-vous que chaque produit a un ID valide et une quantité positive.");
+      return;
     }
 
-    setTotalApresRemise(Math.max(totalFinal, 0));
+    try {
+      // Prépare les données à envoyer
+      const produitsVendusToSend = produitsVendus.map(produit => ({
+        produitId: produit.produitId,
+        quantite: produit.quantite,
+      }));
+
+      const response = await fetch(`http://localhost:5000/api/paiementCom/mettre-ajour/${referenceFacture}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          produitsVendus: produitsVendusToSend,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert("Paiement et vente mis à jour avec succès");
+      } else {
+        throw new Error("Erreur lors de la mise à jour du paiement");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Une erreur s'est produite lors de la mise à jour du paiement");
+    }
   };
 
   return (
@@ -93,8 +140,6 @@ function PaiementCom() {
                     <tr>
                       <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
                       <th>Contact</th>
-                      <th>Remise</th>
-                      <th>Valeur</th>
                       <th>Mode de paiement</th>
                     </tr>
                   </thead>
@@ -102,30 +147,10 @@ function PaiementCom() {
                     <tr>
                       <td>{commande?.typeClient === "Commercial" ? commercial?.nom : client?.nom}</td>
                       <td>{commande?.typeClient === "Commercial" ? commercial?.telephone : client?.telephone}</td>
-                      <td>
-                        <select className="form-control" value={typeRemise} onChange={(e) => setTypeRemise(e.target.value)}>
-                          <option value="aucune">Aucune</option>
-                          <option value="produit">Par produit (%)</option>
-                          <option value="total">Total (%)</option>
-                          <option value="fixe">Fixe</option>
-                        </select>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={valeurRemise}
-                          onChange={(e) => setValeurRemise(parseFloat(e.target.value))}
-                        />
-                      </td>
-                      <td>{commande ? commande.modePaiement : ""}</td>
+                      <td>{commande?.modePaiement || ""}</td>
                     </tr>
                   </tbody>
                 </table>
-
-                <button className="btn btn-secondary mt-2" onClick={calculerRemise}>
-                  Appliquer Remise
-                </button>
               </div>
             </div>
 
@@ -138,22 +163,35 @@ function PaiementCom() {
                       <th>Nom du produit</th>
                       <th>Quantité</th>
                       <th>Prix Unitaire</th>
-                      <th>Total</th>
+                      <th>Produit vendu</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {commande.produits.map((produit, index) => (
-                      <tr key={index}>
-                        <td>{produit.produit.nom}</td>
-                        <td>{produit.quantite}</td>
-                        <td>{produit.prixUnitaire} Ariary</td>
-                        <td>{produit.total} Ariary</td>
-                      </tr>
-                    ))}
+                    {commande.produits.map((produit, index) => {
+                      const produitId = produit.produit._id;  // Accès correct à l'ID du produit
+                      return (
+                        <tr key={index}>
+                          <td>{produit.produit.nom}</td>
+                          <td>{produit.quantite}</td>
+                          <td>{produit.prixUnitaire} Ariary</td>
+                          <td>
+                            <input
+                              type="number"
+                              className="form-control"
+                              value={produitsVendus.find(p => p.produitId === produitId)?.quantite}
+                              onChange={(e) => handleQuantiteChange(produitId, e)}
+                            />
+                          </td>
+                          <td>
+                            <button className="btn btn-info" onClick={handleValidation}>Valider</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
-                <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
-                <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
+                <h6 className="total">Total à payer: {calculerTotalApresRetour()} Ariary</h6>
               </div>
             )}
           </div>
