@@ -5,7 +5,7 @@ const Commande = require("../models/Commandes")
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params;
-        const { statut, remiseGlobale, remiseParProduit, remiseFixe } = req.body; // Ajout de remiseFixe
+        const { statut, remiseGlobale, remiseParProduit, remiseFixe, idCaissier } = req.body; // Ajout de remiseFixe
   
         // Recherche de la commande par ID
         const commande = await Commande.findById(id);
@@ -78,7 +78,8 @@ if (montanApres === montantFinalPaye) {
             statut: "complet",
             remiseGlobale: remiseGlobale || 0,
             remiseParProduit: remiseParProduit || [],
-            remiseFixe: remiseFixe || 0  // Ajouter la remise fixe
+            remiseFixe: remiseFixe || 0 ,
+            idCaissier  
         });
   
         // Sauvegarder le paiement dans la base de données
@@ -102,7 +103,7 @@ if (montanApres === montantFinalPaye) {
 
 
 
-// Récupérer tous les paiements
+// Récupérer tous les paiements des client 
 exports.getPaiements = async (req, res) => {
     try {
         const paiements = await Paiement.find();

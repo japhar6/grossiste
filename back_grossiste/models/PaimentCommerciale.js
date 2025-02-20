@@ -22,6 +22,11 @@ const paiementCommercialeSchema = new mongoose.Schema({
         type: String,
         enum: ["partiel", "complet"],
         default: "partiel"
+    },
+    idCaissier: { // Nouveau champ pour stocker l'ID du caissier
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Assure-toi que "User" est le modèle de tes utilisateurs (caissiers)
+        required: true
     }
 }, { timestamps: true });
 

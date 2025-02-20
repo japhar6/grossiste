@@ -58,49 +58,6 @@ function PaiementCom() {
     setTotalApresRemise(Math.max(totalFinal, 0));
   };
 
-  const validerPaiement = async () => {
-    if (!commande) return;
-
-    const data = {
-      statut: "complet",
-      remiseGlobale: typeRemise === "total" ? valeurRemise : 0,
-      remiseFixe: typeRemise === "fixe" ? valeurRemise : 0,
-      remiseParProduit:
-        typeRemise === "produit"
-          ? commande.produits.map((produit) => ({
-              produitId: produit.produit._id,
-              remise: valeurRemise,
-            }))
-          : [],
-      totalPaye: totalApresRemise,
-    };
-
-    try {
-      let url = `http://localhost:5000/api/paiement/ajouter/${commande._id}`;
-      if (commande.typeClient === "Commercial") {
-        url = `http://localhost:5000/api/paiementCom/commercial/${commande._id}`;
-      }
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error("Échec du paiement");
-      }
-
-      const result = await response.json();
-      alert(result.message);
-    } catch (error) {
-      console.error(error);
-      alert("Erreur lors du paiement");
-    }
-  };
-
   return (
     <main className="center">
       <Sidebar />
@@ -114,7 +71,7 @@ function PaiementCom() {
 
             <div className="commande-container d-flex justify-content-between">
               <div className="client-info w-50 p-3">
-                <h6><i className="fa fa-user"></i> Référence de la commande</h6>
+                <h6><i className="fa fa-user"></i> Référence de la commande du commercial</h6>
                 <div className="form-group">
                   <input
                     type="text"
@@ -197,10 +154,6 @@ function PaiementCom() {
                 </table>
                 <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
                 <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
-
-                <button className="btn btn-success mt-3" onClick={validerPaiement}>
-                  Valider le paiement
-                </button>
               </div>
             )}
           </div>

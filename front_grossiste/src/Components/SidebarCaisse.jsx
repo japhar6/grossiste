@@ -9,7 +9,7 @@ function SidebarVendeur(){
 
         { path: "/caissier", icon: "fa-cash-register", text: "Caisse" },
         { path: "/histoc", icon: "fa-tags", text: "Historique des paiements" },
-        { path: "/PaiementCom", icon: "fa-tags", text: "Historique des paiements" },
+        { path: "/PaiementCom", icon: "fa-tags", text: "Paiement commerciaux" },
     
       ];
     return(

@@ -54,50 +54,56 @@ exports.register = async (req, res) => {
       res.status(500).json({ message: "❌ Erreur lors de l'enregistrement de l'utilisateur", error: error.message });
     }
   };
-
   exports.login = async (req, res) => {
     const { email, password } = req.body;
-  
-    try {
-      // Vérifier si l'utilisateur existe
-      const user = await User.findOne({ email });
-  
-      if (!user) {
-        return res.status(404).json({ message: "❌ Utilisateur non trouvé !" });
-      }
-  
-      // Comparer le mot de passe avec celui dans la base de données
-      const match = await bcrypt.compare(password, user.password);
-  
-      if (!match) {
-        return res.status(400).json({ message: "❌ Mot de passe incorrect !" });
-      }
-  
-      // Créer un token JWT
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },  
-        process.env.JWT_SECRET,               
-        { expiresIn: "3h" }                  
-      );
-  
-      // Retourner une réponse avec le token
-      res.status(200).json({
-        message: "✅ Connexion réussie !",
-        token,                                  
-        user: {
-          _id: user._id,
-          email: user.email,
-          role: user.role,
-          nom: user.nom,
-          photo: user.photo,                  
-        }
-      });
-    } catch (error) {
-      console.error("❌ Erreur lors de la connexion:", error);
-      res.status(500).json({ message: "❌ Erreur serveur lors de la connexion" });
-    }
-  };
 
+    try {
+        // Vérifier si l'utilisateur existe
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "❌ Utilisateur non trouvé !" });
+        }
+
+        // Vérifier si l'utilisateur est licencié
+        if (user.status === "licencié") {
+            return res.status(403).json({ message: "❌ Vous êtes licencié et ne pouvez plus accéder à la plateforme." });
+        }
+
+        // Comparer le mot de passe
+        const match = await bcrypt.compare(password, user.password);
+
+        if (!match) {
+            return res.status(400).json({ message: "❌ Mot de passe incorrect !" });
+        }
+
+        // Générer le token uniquement si l'utilisateur est actif
+        const token = jwt.sign(
+            { userId: user._id, role: user.role },  
+            process.env.JWT_SECRET,               
+            { expiresIn: "3h" }                  
+        );
+
+        // Retourner une réponse avec le token
+        res.status(200).json({
+            message: "✅ Connexion réussie !",
+            token,                                  
+            user: {
+                _id: user._id,
+                email: user.email,
+                role: user.role,
+                nom: user.nom,
+                photo: user.photo,                  
+            }
+        });
+    } catch (error) {
+        console.error("❌ Erreur lors de la connexion:", error);
+        res.status(500).json({ message: "❌ Erreur serveur lors de la connexion" });
+    }
+};
+
+  
+  
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
