@@ -1,0 +1,52 @@
+.aside {
+    width: 250px;
+    transition: width 0.3s ease-in-out;
+    background-color: #f8f9fa;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.aside.collapsed {
+    width: 100px;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Boutons du menu */
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    transition: background 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.sidebar-item.active {
+    background: #198754 !important;
+    color: white !important;
+}
+
+/* Icônes */
+.sidebar-item i {
+    width: 25px; /* Taille fixe pour éviter le déplacement */
+    text-align: center;
+    font-size: 18px;
+}
+
+/* Mode collapsed : masquer le texte et centrer les icônes */
+.aside.collapsed .sidebar-item {
+    justify-content: center; /* Centrer l'icône */
+    padding: 12px; /* Assurer un bon espacement */
+}
+
+/* Mode collapsed : masquer uniquement le texte */
+.aside.collapsed .sidebar-item span {
+    display: none;
+}
+
+/* Effet au survol */
+.sidebar-item:hover {
+    background: rgba(0, 128, 0, 0.1);
+}

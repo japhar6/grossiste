@@ -57,7 +57,7 @@ function Header() {
        
                 <div className="notification-icon">
                   <i className="fas fa-bell fa-lg"></i>
-                  <span className="badge">3</span>
+              
                 </div>
               </li>
               <li className="nav-item">
