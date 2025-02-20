@@ -76,8 +76,8 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         });
 
         paiementCommerciale.montantPaye += montantTotalVendu;
-        paiementCommerciale.montantRestant -= montantTotalVendu;
-         // Mettre à jour le statut de la commande
+        paiementCommerciale.montantRestant = paiementCommerciale.totalPaiement - paiementCommerciale.montantPaye;
+        // Mettre à jour le statut de la commande
          commande.modePaiement = "espèce";
          await commande.save();
  
@@ -90,7 +90,6 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         await paiementCommerciale.save();
 
         // Enregistrer la vente
-    // Enregistrer la vente
 const vente = new VenteCom({
     commercialId: commande.commercialId,
     commandeId: commande._id,
