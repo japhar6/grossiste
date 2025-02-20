@@ -1,54 +1,172 @@
 .sortie-stock-section {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 750px; /* Ajuste selon tes besoins */
+  overflow-y: auto; /* Ajoute le défilement vertical */
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  margin-top: 20px;
+  min-width: 600px; /* Assure un minimum pour éviter le défilement horizontal */
+}
+
+.filtrage {
+  background: #f1f1f1;
+  border-radius: 5px;
+  padding: 15px;
+}
+
+input.form-control, select.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  font-size: 14px;
+}
+
+
+button.btn-info {
+  background-color: #17a2b8;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+button.btn-info:hover {
+  background-color: #138496;
+}
+
+.table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.table-striped th, .table-striped td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table-striped tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+@media (max-width: 768px) {
+  .sortie-stock-section {
+    padding: 15px; 
+   
+
   }
-  
+
   .filtrage {
-    background: #f1f1f1;
-    border-radius: 5px;
-    padding: 15px;
+    padding: 1rem;  /* Réduit le padding pour les petits écrans */
   }
-  
-  input.form-control, select.form-control {
-    width: 100%;
-    padding: 12px 15px;
-    border-radius: 8px;
-    border: 1px solid #ced4da;
-    font-size: 14px;
+  .form-control {
+    padding: 0.5rem;  /* Réduit le padding des champs de formulaire */
+    font-size: 0.9rem;  /* Réduit la taille de la police */
   }
-  
+  .mt-2 {
+    margin-top: 0.5rem;  /* Réduit la marge supérieure pour les petits écrans */
+  }
+  .m-1 {
+    margin: 0.25rem;  /* Réduit la marge pour les petits écrans */
+  }
+
+  form {
+    display: flex;
+    flex-direction: column; /* Aligne les champs de formulaire verticalement */
+    gap: 10px; /* Espace entre les champs de formulaire */
+  }
+
+  input.form-control, 
+  select.form-control {
+    padding: 10px; /* Ajuste le rembourrage des champs de formulaire */
+    font-size: 14px; /* Conserve la taille de police pour la lisibilité */
+    margin-bottom: 10px; /* Espace entre les champs */
+  }
+
   button.btn-info {
-    background-color: #17a2b8;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    color: white;
-    cursor: pointer;
+    padding: 10px; /* Ajuste le rembourrage des boutons */
+    font-size: 14px; /* Conserve la taille de police pour les boutons */
+    margin-top: 10px; /* Espace entre les boutons */
   }
-  
-  button.btn-info:hover {
-    background-color: #138496;
-  }
-  
+
   .table {
-    width: 100%;
-    margin-top: 20px;
+    display: block; /* Utilise le défilement horizontal */
+
+    white-space: nowrap;
+  /* Empêche le retour à la ligne dans les cellules */
   }
-  
-  .table-striped th, .table-striped td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+  .reference-col::after {
+    content: " (Réf Fact)"; /* Ajoute l'abréviation sur mobile */
   }
-  
+  .reference-col {
+    font-size: 0; /* Masque le texte original */
+  }
+
+  .table-striped th:nth-child(2), 
+  .table-striped td:nth-child(2),
+  .table-striped th:nth-child(3), 
+  .table-striped td:nth-child(3),
+  .table-striped th:nth-child(4), 
+  .table-striped td:nth-child(4),
+  .table-striped th:nth-child(5), 
+  .table-striped td:nth-child(5),
+  .table-striped th:nth-child(8), 
+  .table-striped td:nth-child(8) {
+    display: none; /* Masque les colonnes 2, 3, 4, 5 et 8 */
+  }
+
+  .table-striped th, 
+  .table-striped td {
+    min-width: 120px; /* Largeur minimale pour les colonnes sur mobile */
+    font-size: 12px; /* Taille de police ajustée pour mobile */
+  }
+
   .table-striped tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #f9f9f9; /* Conserve le style de fond pour les lignes paires */
   }
-  
-  @media (max-width: 768px) {
-    .sortie-stock-section {
-      padding: 10px;
-    }
+
+  h6 {
+    font-size: 1.2rem; /* Ajustement de la taille des titres pour mobile */
   }
-  
+
+  .modal-dialog {
+    margin: 0 15px; /* Espace sur les côtés du modal */
+  }
+
+  .modal-content {
+    border-radius: 8px; /* Coins arrondis pour le modal */
+  }
+}
+.modaltable {
+  width: 100%; /* Prend toute la largeur disponible */
+  border-collapse: collapse; /* Supprime les espaces entre les bordures */
+  font-size: 14px; /* Réduit la taille du texte */
+}
+
+.modaltable th,
+.modaltable td {
+  padding: 6px; /* Réduit l'espacement intérieur */
+  text-align: left; /* Alignement du texte */
+  border: 1px solid #ddd; /* Ajoute une bordure fine */
+  white-space: nowrap; /* Empêche le texte de s'étendre sur plusieurs lignes */
+}
+
+.modaltable th {
+  background-color: #f8f9fa; /* Fond plus clair pour l'en-tête */
+  font-weight: bold;
+}
+
+.modaltable tbody tr:nth-child(even) {
+  background-color: #f2f2f2; /* Alternance des couleurs */
+}
+
+.modaltable tbody tr:hover {
+  background-color: #e9ecef; /* Surbrillance au survol */
+}
