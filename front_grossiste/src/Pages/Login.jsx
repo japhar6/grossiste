@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate ,Link} from 'react-router-dom';
 import '../Styles/Login.css';
-
+import Swal from "sweetalert2";
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -57,9 +57,20 @@ function Login() {
             }, 1000);
 
         } catch (error) {
-            setError(error.message);
+          
+            console.log("Erreur de connexion:", error);
+        
+            Swal.fire({
+                title: "Erreur!",
+                text: error,
+                icon: "error",
+                confirmButtonText: "Réessayer",
+            });
+        
             setLoading(false);
         }
+        
+        
     };
 
     return (

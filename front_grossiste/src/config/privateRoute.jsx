@@ -1,20 +1,40 @@
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-
-import { Navigate, Outlet } from "react-router-dom";
-
-const PrivateRoute = ({alloWedRoles}) => {
+const PrivateRoute = ({ allowedRoles }) => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
- if (!token) {
-  return <Navigate to="/" replace /> ;
- }
+  const location = useLocation();
 
- if (!alloWedRoles.includes(role))
- {
-  return <Navigate to="/" replace /> ;
- }
-return <Outlet /> ;
+  // Mapping des rôles et de leurs pages autorisées
+  const rolePaths = {
+    admin: ["/admin", "/produit", "/fournisseur", "/personnel", "/caisse", "/entrepot", "/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande"],
+    vendeur: ["/vendeur", "/profilv", "/histov"],
+    magasinier: ["/magasinier", "/profilm", "/histom"],
+    caissier: ["/caissier", "/profilc", "/histoc"],
+  };
 
+  // Page d'accueil par rôle
+  const defaultHomePage = {
+    admin: "/admin",
+    vendeur: "/vendeur",
+    magasinier: "/magasinier",
+    caissier: "/caissier",
+  };
+
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to={defaultHomePage[role] || "/"} replace />;
+  }
+
+  // 🚨 Bloquer la modification de l'URL 🚨
+  if (!rolePaths[role]?.includes(location.pathname)) {
+    return <Navigate to={defaultHomePage[role]} replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default PrivateRoute;
