@@ -26,6 +26,7 @@ import HistoV from './Pages/HistoventeVendeur.jsx';
 import HistoM from './Pages/Histopaiement.jsx';
 import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
+import PaiementCom from './Pages/PaiementCom.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -69,7 +70,7 @@ function App() {
           <Route path='/caissier' element={<  Caissier/>} />    
          <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
-        
+          <Route path='/PaiementCom' element={<PaiementCom />} />
           </Route>
       </Routes>
     </BrowserRouter>
