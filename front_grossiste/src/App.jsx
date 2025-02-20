@@ -23,7 +23,7 @@ import Commerciale from './Pages/Commerciale.jsx';
 import Vendeur from './Pages/Vendeur.jsx';
 import Magasinier from './Pages/Magasinier.jsx';
 import HistoV from './Pages/HistoventeVendeur.jsx';
-import HistoM from './Pages/Histopaiement.jsx';
+
 import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
@@ -63,7 +63,7 @@ function App() {
         <Route element={<PrivateRoute allowedRoles={["magasinier"]} />}>
           <Route path='/magasinier' element={<Magasinier />} />
           <Route path='/profilm' element={<ProfilM />} />
-          <Route path='/histom' element={<HistoM />} />
+        
         </Route>
 
         {/* Routes CAISSIER */}

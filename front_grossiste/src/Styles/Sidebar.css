@@ -1,21 +1,28 @@
+/* Sidebar */
 .aside {
     width: 250px;
     transition: width 0.3s ease-in-out;
     background-color: #f8f9fa;
     height: 100vh;
-    overflow: hidden;
+    position: relative; /* Pour un meilleur positionnement */
 }
 
+/* Sidebar en mode réduit */
 .aside.collapsed {
-    width: 100px;
+    width: 90px;
 }
 
+/* Sidebar cachée (sur mobile) */
+.aside.hidden {
+    display: none; /* Laisser l'affichage à none ici */
+}
+
+/* Boutons du menu */
 .menu {
     display: flex;
     flex-direction: column;
 }
 
-/* Boutons du menu */
 .sidebar-item {
     display: flex;
     align-items: center;
@@ -37,11 +44,10 @@
 
 /* Mode collapsed : masquer le texte et centrer les icônes */
 .aside.collapsed .sidebar-item {
-    justify-content: center; /* Centrer l'icône */
-    padding: 12px; /* Assurer un bon espacement */
+    justify-content: center;
+    padding: 9px; 
 }
 
-/* Mode collapsed : masquer uniquement le texte */
 .aside.collapsed .sidebar-item span {
     display: none;
 }
@@ -49,4 +55,68 @@
 /* Effet au survol */
 .sidebar-item:hover {
     background: rgba(0, 128, 0, 0.1);
+}
+
+.collapse-btn {
+    margin-bottom: 20px; /* Ajoute un espace en bas du bouton */
+    background: white;
+    border-radius: 50%;
+    padding: 8px 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Rendre le bouton visible même si la sidebar est en mode collapsed */
+.collapse-btn.visible {
+    display: block; /* S'assure qu'il est visible */
+}
+
+/* Si la sidebar est affichée */
+.aside:not(.hidden) + .collapse-btn {
+    left: 260px;
+}
+
+/* Si la sidebar est réduite */
+.aside.collapsed + .collapse-btn {
+    left: 100px;
+}
+
+/* Styles pour le nouveau bouton */
+.show-sidebar-btn {
+    margin-top: 20px; /* Espacement en haut */
+    display: block; /* Toujours afficher en tant que bloc */
+}
+
+/* Pour les écrans plus petits */
+@media (max-width: 768px) {
+    .aside {
+        width: 90px;
+    }
+
+    .aside.hidden {
+        display: none; /* Gardez cette ligne pour masquer la sidebar */
+    }
+
+    .aside .sidebar-item {
+        justify-content: center;
+        padding: 9px;
+    }
+
+    .aside .sidebar-item span {
+        display: none;
+    }
+
+    .collapse-btn {
+        display: block; /* Rendre toujours visible sur mobile */
+        position: relative; /* Positionnement dans la sidebar */
+        margin: 10px auto; /* Centrer le bouton */
+    }
+    
+    /* Pour le bouton d'affichage de la sidebar cachée */
+    .show-sidebar-btn {
+        position: fixed; /* Position fixe en bas à droite */
+        bottom: 20px; /* Espacement en bas */
+        right: 20px; /* Espacement à droite */
+        z-index: 1000; /* S'assurer qu'il soit au-dessus */
+    }
 }
