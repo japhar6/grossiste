@@ -8,7 +8,8 @@ const paiementController = require('../controllers/paimentComController');
 router.post('/commercial/:id', paiementController.validerPaiementCommerciale);
 
 // Mettre à jour le paiement après vente des produits
-router.put('/:id/mettre-ajour', paiementController.mettreAJourPaiementCommerciale);
+router.put('/mettre-ajour/:referenceFacture', paiementController.mettreAJourPaiementCommerciale);
+
 
 router.get('/performance/commercial/:commercialId', paiementController.getVentesByCommercial);
 

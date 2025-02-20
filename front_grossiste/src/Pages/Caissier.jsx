@@ -12,7 +12,7 @@ function Caisse() {
   const [typeRemise, setTypeRemise] = useState("aucune");
   const [valeurRemise, setValeurRemise] = useState(0);
   const [totalApresRemise, setTotalApresRemise] = useState(0);
-
+  const idCaissier = localStorage.getItem("userid"); 
   const handleSearch = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
@@ -73,6 +73,7 @@ function Caisse() {
             }))
           : [],
       totalPaye: totalApresRemise,
+      idCaissier
     };
 
     try {
