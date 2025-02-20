@@ -98,3 +98,28 @@ background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 1
     }
     
 }
+/* Responsive */
+@media (max-width: 768px) {
+    .description h1 {
+        font-size: 1.8rem; 
+        text-align: center;
+    
+    }
+.login{
+    margin-top: -200px;
+}
+    .description{
+        top:100px;
+    }
+    .gradient {
+        font-size: 2rem; /* Réduit encore plus pour les très petits écrans */
+    }
+
+    .description p {
+        font-size: 0.9em; /* Ajuste la taille du texte descriptif */
+    }
+
+    .form button {
+        font-size: 0.9em; /* Ajuste la taille du texte du bouton */
+    }
+}
