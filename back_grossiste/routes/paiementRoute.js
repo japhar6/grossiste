@@ -11,4 +11,6 @@ router.get('/', paiementController.getPaiements);
 // Route pour récupérer un paiement par son ID
 router.get('/:id', paiementController.getPaiementById);
 
+router.get("/caissier/:idCaissier", paiementController.getPaiementsParCaissier);
+
 module.exports = router;

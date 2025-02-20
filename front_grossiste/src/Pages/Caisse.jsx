@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import "../Styles/Commade.css";
-
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -12,7 +11,7 @@ function Caisse() {
   const [typeRemise, setTypeRemise] = useState("aucune");
   const [valeurRemise, setValeurRemise] = useState(0);
   const [totalApresRemise, setTotalApresRemise] = useState(0);
-
+  const idCaissier = localStorage.getItem("userid"); 
   const handleSearch = async () => {
     try {
       const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
@@ -73,6 +72,7 @@ function Caisse() {
             }))
           : [],
       totalPaye: totalApresRemise,
+      idCaissier
     };
 
     try {

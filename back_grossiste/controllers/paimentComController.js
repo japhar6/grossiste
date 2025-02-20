@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 exports.validerPaiementCommerciale = async (req, res) => {
     try {
         const { id } = req.params;
-        const { statut } = req.body;  // Pas de remise pour un commercial
+        const { statut, idCaissier } = req.body;  // Pas de remise pour un commercial
 
         // Recherche de la commande par ID
         const commande = await Commande.findById(id);
@@ -33,7 +33,9 @@ exports.validerPaiementCommerciale = async (req, res) => {
             montantPaye: 0,  // Pas encore payé
             montantRestant: montantFinalPaye,  // Le montant restant à payer
             totalPaiement: montantFinalPaye,  // Le montant total à payer
-            statut: "partiel"  // Statut initial à "partiel"
+            statut: "partiel", // Statut initial à "partiel"
+            idCaissier, // ID du caissier
+            referenceFacture: commande.referenceFacture // Ajout de la référence de facture
         });
 
         // Sauvegarder le paiement
@@ -44,12 +46,13 @@ exports.validerPaiementCommerciale = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 exports.mettreAJourPaiementCommerciale = async (req, res) => {
     try {
-        const { id } = req.params;  // ID du paiement commercial
+        const { referenceFacture  } = req.params;  // ID du paiement commercial
         const { produitsVendus } = req.body;  // Liste des produits vendus avec quantités
 
-        const paiementCommerciale = await PaiementCommerciale.findById(id);
+        const paiementCommerciale = await PaiementCommerciale.findById(referenceFacture );
         if (!paiementCommerciale) {
             return res.status(404).json({ message: "Paiement à crédit non trouvé" });
         }
@@ -74,6 +77,10 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
 
         paiementCommerciale.montantPaye += montantTotalVendu;
         paiementCommerciale.montantRestant -= montantTotalVendu;
+         // Mettre à jour le statut de la commande
+         commande.modePaiement = "espèce";
+         await commande.save();
+ 
 
         // Si le montant restant est 0, on marque le paiement comme complet
         if (paiementCommerciale.montantRestant <= 0) {

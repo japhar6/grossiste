@@ -1,6 +1,6 @@
 const Paiement = require("../models/Paiement");
-const Commande = require("../models/Commandes")
-;
+const Commande = require("../models/Commandes");
+const PaiementCommerciale = require("../models/PaimentCommerciale");
 
 exports.validerpayement = async (req, res) => {
     try {
@@ -125,3 +125,47 @@ exports.getPaiementById = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+exports.getPaiementsParCaissier = async (req, res) => {
+    try {
+        const { idCaissier } = req.params;
+
+        // Récupérer les paiements clients avec les détails des commandes
+        const paiementsClients = await Paiement.find({ idCaissier: idCaissier })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
+                    { path: 'commercialId', select: 'nom' } // Récupérer le nom du commercial
+                ]
+            });
+
+        // Récupérer les paiements commerciaux avec les détails des commandes
+        const paiementsCommerciaux = await PaiementCommerciale.find({ idCaissier: idCaissier })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' },
+                    { path: 'commercialId', select: 'nom' }
+                ]
+            });
+
+        // Combiner les deux résultats
+        const paiements = {
+            clients: paiementsClients.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu', // Nom du client
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu' // Nom du commercial
+            })),
+            commerciaux: paiementsCommerciaux.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu'
+            }))
+        };
+
+        res.status(200).json(paiements);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
