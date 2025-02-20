@@ -24,6 +24,19 @@ const ventecomSchema = new mongoose.Schema({
             }
         }
     ],
+    produitsRestants: [
+        {
+            produitId: { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: "Produit", 
+                required: true 
+            },
+            quantiteRestante: { 
+                type: Number, 
+                required: true 
+            }
+        }
+    ], 
     dateVente: { 
         type: Date, 
         default: Date.now 
@@ -34,5 +47,5 @@ const ventecomSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const VenteCom = mongoose.model("VenteCom", ventecomSchema); // Changer "Vente" en "VenteCom"
+const VenteCom = mongoose.model("VenteCom", ventecomSchema);
 module.exports = VenteCom;

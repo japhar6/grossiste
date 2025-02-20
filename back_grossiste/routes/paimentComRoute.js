@@ -14,4 +14,5 @@ router.put('/mettre-ajour/:referenceFacture', paiementController.mettreAJourPaie
 router.get('/performance/commercial/:commercialId', paiementController.getVentesByCommercial);
 
 
+
 module.exports = router;
