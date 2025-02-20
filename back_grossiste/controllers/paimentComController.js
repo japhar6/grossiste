@@ -52,7 +52,7 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         const { referenceFacture  } = req.params;  
         const { produitsVendus } = req.body;  // Liste des produits vendus avec quantités
 
-        const paiementCommerciale = await PaiementCommerciale.findOne({referenceFacture} );
+        const paiementCommerciale = await PaiementCommerciale.findOne({referenceFacture});
         if (!paiementCommerciale) {
             return res.status(404).json({ message: "Paiement à crédit non trouvé" });
         }
@@ -83,10 +83,8 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
  
 
         // Si le montant restant est 0, on marque le paiement comme complet
-        if (paiementCommerciale.montantRestant <= 0) {
+       
             paiementCommerciale.statut = "complet";
-            paiementCommerciale.montantRestant = 0;
-        }
 
         // Sauvegarder les mises à jour
         await paiementCommerciale.save();
@@ -131,4 +129,3 @@ exports.getVentesByCommercial = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
