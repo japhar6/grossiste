@@ -83,6 +83,15 @@ exports.getCommandes = async (req, res) => {
     }
 };
 
+exports.countCommande = async (req, res) => {
+  try {
+    const count = await Commande.countDocuments();
+    res.status(200).json({ totalcommande: count });
+  } catch (error) {
+res.status(500).json({ message: "❌ Erreur lors du comptage des commandes", error: error.message });
+
+  }
+};
 // Récupérer une commande par son ID
 exports.getCommandeById = async (req, res) => {
     try {
@@ -95,6 +104,55 @@ exports.getCommandeById = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// Récupérer une commande par son ID ou référence
+exports.getCommandeById = async (req, res) => {
+    try {
+        const { referenceFacture } = req.params;
+        let commande;
+
+        if (referenceFacture) {
+            commande = await Commande.findOne({ referenceFacture })
+                .populate("clientId", "nom telephone")
+                .populate("commercialId", "nom telephone")
+                .populate("produits.produit", "nom");
+        } else {
+            commande = await Commande.findById(req.params.id)
+                .populate("clientId", "nom telephone")
+                .populate("commercialId", "nom telephone")
+                .populate("produits.produit", "nom");
+        }
+
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+
+        console.log(commande); // Vérifie la structure des produits ici
+
+        res.status(200).json(commande);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+// Récupérer les commandes avec les statuts "terminée" et "livrée"
+exports.getCommandesTermineesEtLivrees = async (req, res) => {
+    try {
+        // Filtrer les commandes par les statuts "terminée" et "livrée"
+        const commandes = await Commande.find({
+            statut: { $in: ["terminée", "livrée"] }
+        })
+        .populate("produits.produit", "nom unite")  // Récupérer les produits associés (nom du produit)
+        .populate("clientId", "nom telephone")  // Récupérer les informations du client
+        .populate("commercialId", "nom telephone")
+        .populate("vendeurId", "nom")  // Récupérer les informations du vendeur
+
+        res.status(200).json(commandes);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 // Mettre à jour une commande
 exports.updateCommande = async (req, res) => {
@@ -135,5 +193,22 @@ exports.deleteCommande = async (req, res) => {
         res.status(200).json({ message: "Commande supprimée avec succès" });
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+exports.getCommandesByVendeur = async (req, res) => {
+    try {
+        const { vendeurId } = req.params;
+
+        // Rechercher les commandes par ID de vendeur
+        const commandes = await Commande.find({ vendeurId }).populate('produits.produit', 'nom prixDachat'); // Ajustez les champs si nécessaire
+
+        if (!commandes || commandes.length === 0) {
+            return res.status(404).json({ message: "Aucune commande trouvée pour ce vendeur" });
+        }
+
+        res.status(200).json(commandes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

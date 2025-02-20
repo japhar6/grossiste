@@ -1,11 +1,11 @@
 const Paiement = require("../models/Paiement");
-const Commande = require("../models/Commandes")
-;
+const Commande = require("../models/Commandes");
+const PaiementCommerciale = require("../models/PaimentCommerciale");
 
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params;
-        const { statut, remiseGlobale, remiseParProduit, remiseFixe } = req.body; // Ajout de remiseFixe
+        const { statut, remiseGlobale, remiseParProduit, remiseFixe, idCaissier } = req.body; // Ajout de remiseFixe
   
         // Recherche de la commande par ID
         const commande = await Commande.findById(id);
@@ -78,7 +78,8 @@ if (montanApres === montantFinalPaye) {
             statut: "complet",
             remiseGlobale: remiseGlobale || 0,
             remiseParProduit: remiseParProduit || [],
-            remiseFixe: remiseFixe || 0  // Ajouter la remise fixe
+            remiseFixe: remiseFixe || 0 ,
+            idCaissier  
         });
   
         // Sauvegarder le paiement dans la base de données
@@ -102,7 +103,7 @@ if (montanApres === montantFinalPaye) {
 
 
 
-// Récupérer tous les paiements
+// Récupérer tous les paiements des client 
 exports.getPaiements = async (req, res) => {
     try {
         const paiements = await Paiement.find();
@@ -122,5 +123,78 @@ exports.getPaiementById = async (req, res) => {
         res.status(200).json(paiement);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+exports.getPaiementsParCaissier = async (req, res) => {
+    try {
+        const { idCaissier } = req.params;
+
+        // Récupérer les paiements clients avec les détails des commandes
+        const paiementsClients = await Paiement.find({ idCaissier: idCaissier })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
+                    { path: 'commercialId', select: 'nom' } // Récupérer le nom du commercial
+                ]
+            });
+
+        // Récupérer les paiements commerciaux avec les détails des commandes
+        const paiementsCommerciaux = await PaiementCommerciale.find({ idCaissier: idCaissier })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' },
+                    { path: 'commercialId', select: 'nom' }
+                ]
+            });
+
+        // Combiner les deux résultats
+        const paiements = {
+            clients: paiementsClients.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu', // Nom du client
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu' // Nom du commercial
+            })),
+            commerciaux: paiementsCommerciaux.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu'
+            }))
+        };
+
+        res.status(200).json(paiements);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+exports.getPerformanceVenteParMois = async (req, res) => {
+    try {
+        const result = await Paiement.aggregate([
+            {
+                $group: {
+                    _id: {
+                        $dateToString: { format: "%Y-%m", date: "$createdAt" }
+                    },
+                    totalMontant: { $sum: "$montantPaye" },
+                    totalPaiement: { $sum: "$totalPaiement" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (err) {
+        console.error("Erreur lors de la récupération des performances :", err);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des performances"
+        });
     }
 };

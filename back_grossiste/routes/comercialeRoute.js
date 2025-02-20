@@ -3,7 +3,7 @@ const router = express.Router();
 const commercialController = require('../controllers/commercialController');
 
 // Créer un commercial
-router.post('/ajouter', commercialController.createCommercial);
+router.post('/', commercialController.createCommercial);
 
 // Récupérer tous les commerciaux
 router.get('/', commercialController.getAllCommercials);

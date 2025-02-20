@@ -14,6 +14,7 @@ function Entrepot() {
     type: "",
     magasinier: "",
   });
+  
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -71,11 +72,45 @@ function Entrepot() {
         setEntrepots([...entrepots, response.data]);
         setNewEntrepot({ nom: "", localisation: "", type: "", magasinier: "" });
         Swal.fire({ icon: "success", title: "Entrepôt ajouté!", text: "L'entrepôt a été ajouté avec succès." });
+        window.location.reload();
       })
       .catch((error) => {
         Swal.fire({ icon: "error", title: "Erreur", text: "Une erreur est survenue lors de l'ajout de l'entrepôt." });
       });
+
   };
+  
+  
+  const handleSupprimer = async (id) => {
+    const result = await Swal.fire({
+      title: 'Êtes-vous sûr?',
+      text: "Vous allez Supprimer cette entrepot . Cette action est irréversible!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, Supprimer!',
+      cancelButtonText: 'Annuler',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const token = localStorage.getItem("token");
+       
+        await axios.delete(`http://localhost:5000/api/entrepot/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        Swal.fire('Supprimé!', 'L\'entrepot a été supprimé.', 'success').then(window.location.reload());
+
+    
+      } catch (error) {
+        console.error("Erreur de suppression", error);
+        Swal.fire('Erreur', 'Une erreur s\'est produite lors de la suppression.', 'error');
+      }
+    }
+  };
+
 
   return (
     <main className="center">
@@ -135,7 +170,7 @@ function Entrepot() {
                         <td>{entrepot.dateCreation}</td>
                         <td>
                           <button className="btn btn-warning ms-2">Modifier</button>
-                          <button className="btn btn-danger ms-2">Supprimer</button>
+                          <button className="btn btn-danger ms-2"  onClick={() => handleSupprimer(entrepot._id)} >Supprimer</button>
                         </td>
                       </tr>
                     ))}

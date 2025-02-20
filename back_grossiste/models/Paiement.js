@@ -10,7 +10,6 @@ const paiementSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-  
     statut: { 
         type: String, 
         enum: ["partiel", "complet", "annulé"], 
@@ -39,6 +38,11 @@ const paiementSchema = new mongoose.Schema({
     ],
     totalPaiement: {
         type: Number,
+        required: true
+    },
+    idCaissier: { // Nouveau champ pour stocker l'ID du caissier
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Assure-toi que "User" est le modèle de tes utilisateurs (caissiers)
         required: true
     }
 }, { timestamps: true });

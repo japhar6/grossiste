@@ -18,6 +18,16 @@ exports.createClient = async (req, res) => {
   }
 };
 
+exports.countClient = async (req, res) => {
+  try {
+    const count = await Client.countDocuments();
+    res.status(200).json({ totalclient: count });
+  } catch (error) {
+res.status(500).json({ message: "❌ Erreur lors du comptage des clients", error: error.message });
+
+  }
+};
+
 // Récupérer tous les clients
 exports.getAllClients = async (req, res) => {
   try {
