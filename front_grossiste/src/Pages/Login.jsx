@@ -51,6 +51,10 @@ function Login() {
                     case 'caissier':
                         navigate('/caissier');
                         break;
+                        case 'gestion_prix':
+                            navigate('/gestionprix');
+                            break;
+                    
                     default:
                         navigate('/dashboard');
                 }

@@ -11,6 +11,7 @@ import Profil from './Pages/Profil.jsx';
 import ProfilV from './Pages/ProfilVendeur.jsx';
 import ProfilC from './Pages/ProfilCaissier.jsx';
 import ProfilM from './Pages/ProfilMagasinier.jsx';
+import ProfilG from './Pages/ProfilG.jsx';
 import ListeProduits from './Pages/Produits.jsx';
 import AchatProduits from './Pages/Achat.jsx';
 import Entrepot from './Pages/Entrepot.jsx';
@@ -25,7 +26,7 @@ import HistoV from './Pages/HistoventeVendeur.jsx';
 import HistoM from './Pages/Histopaiement.jsx';
 import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
-
+import GestionPrix from './Pages/Gestion_Prix.jsx';
 import ForbiddenPage from "./Pages/ForbiddenPage";
 
 function App() {
@@ -71,6 +72,10 @@ function App() {
           <Route path='/caissier' element={<Caissier />} />
           <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
+        </Route>
+        <Route element={<PrivateRoute allowedRoles={["gestion_prix"]} />}>
+        <Route path='/gestionprix' element={<GestionPrix />} />
+        <Route path='/profilg' element={<ProfilG />} />
         </Route>
       </Routes>
     </BrowserRouter>

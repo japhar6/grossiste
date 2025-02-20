@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/Produit.css";
-import Sidebar from "../Components/Sidebar";
-import Header from "../Components/Navbar";
+import Sidebar from "../Components/SidebarGestion";
+import Header from "../Components/NavbarG";
 import axios from "axios";
 
 function ListeProduits() {

@@ -648,6 +648,7 @@ console.log("produit" ,produitId);
                           placeholder="Prix d'achat"
                           value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} 
                           onChange={(e) => setPrixAchat(e.target.value)}
+                          readOnly
                           disabled={!fournisseur}
                         />
                       <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>

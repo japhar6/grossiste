@@ -11,6 +11,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     vendeur: ["/vendeur", "/profilv", "/histov"],
     magasinier: ["/magasinier", "/profilm", "/histom"],
     caissier: ["/caissier", "/profilc", "/histoc"],
+    gestion_prix:["/gestionprix","/profilg"]
   };
 
   // Page d'accueil par rôle
@@ -19,6 +20,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     vendeur: "/vendeur",
     magasinier: "/magasinier",
     caissier: "/caissier",
+    gestion_prix:"/gestionprix"
   };
 
   if (!token) {
