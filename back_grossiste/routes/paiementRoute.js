@@ -9,6 +9,9 @@ router.post('/ajouter/:id', paiementController.validerpayement);
 router.get('/', paiementController.getPaiements);
 
 // Route pour récupérer un paiement par son ID
-router.get('/:id', paiementController.getPaiementById);
+router.get('/recuperer/:id', paiementController.getPaiementById);
 
+router.get("/caissier/:idCaissier", paiementController.getPaiementsParCaissier);
+
+router.get('/performance-vente', paiementController.getPerformanceVenteParMois);
 module.exports = router;

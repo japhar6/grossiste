@@ -1,20 +1,26 @@
 const Commercial = require('../models/Commercial');
-
+const Vente = require('../models/VenteComm');    
 // Créer un commercial
 exports.createCommercial = async (req, res) => {
     try {
-        const { nom, email,telephone } = req.body;
-
-        const newCommercial = new Commercial({
-            nom,
-            email,telephone
-        });
-
+        const { nom, email, telephone, type } = req.body;
+    
+        // Vérifie si les champs sont valides
+        if (!nom || !telephone || !email || !type) {
+          return res.status(400).json({ message: "Les champs sont manquants" });
+        }
+    
+        // Créer un nouveau commercial
+        const newCommercial = new Commercial({ nom, email, telephone, type });
+    
+        // Sauvegarder dans la base de données
         await newCommercial.save();
-        res.status(201).json({ message: "Commercial créé avec succès", commercial: newCommercial });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+    
+        return res.status(201).json(newCommercial);
+      } catch (error) {
+        console.error("Erreur lors de la création du commercial", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+      }
 };
 
 // Récupérer tous les commerciaux
@@ -26,6 +32,25 @@ exports.getAllCommercials = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+// Dans votre contrôleur de commerciaux
+exports.getAllCommercials = async (req, res) => {
+    try {
+        const commerciaux = await Commercial.find();
+
+        // Récupérer les ventes pour chaque commercial
+        const commerciauxAvecVentes = await Promise.all(commerciaux.map(async (commercial) => {
+            const ventes = await Vente.find({ commercialId: commercial._id })
+                .populate("produitsVendus.produitId", "nom");
+            return { ...commercial.toObject(), ventes }; // Ajouter les ventes à chaque commercial
+        }));
+
+        res.json(commerciauxAvecVentes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 // Récupérer un commercial par ID
 exports.getCommercialById = async (req, res) => {

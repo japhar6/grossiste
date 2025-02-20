@@ -1,6 +1,7 @@
 const Stock = require('../models/Stock');
 const Commande = require('../models/Commandes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
+const Produit = require("../models/Produits"); 
 
 // Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
@@ -188,5 +189,16 @@ exports.sortirProduitsStock = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+exports.getStocksByEntrepot = async (req, res) => {
+  try {
+      const { entrepotId } = req.params;
+      const stocks = await Stock.find({ entrepot: entrepotId }).populate('produit');
+
+      res.status(200).json(stocks);
+  } catch (error) {
+      res.status(500).json({ message: "Erreur lors de la récupération des stocks", error });
   }
 };

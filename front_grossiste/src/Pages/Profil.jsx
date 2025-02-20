@@ -118,7 +118,7 @@ function Profil() {
               <div className="user-profile">
                 <h2>Mon Profil</h2>
                 <div className="user-info">
-                  <div className="photo-container">
+                  <div className="photos-container">
                     <img
                       src={`http://localhost:5000${user.photo}`}
                       alt="Photo de profil"

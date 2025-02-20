@@ -165,7 +165,7 @@ function Fournisseur() {
               </div>
 
               <div className="consultation">
-                <table className="table table-striped table-hover">
+                <table className="table table-striped table-hover ">
                   <thead>
                     <tr>
                       <th>Logo</th>

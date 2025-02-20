@@ -8,6 +8,9 @@ import DonutChart from '../Components/DonutChart';
 function Dashboard() {
   const [fournisseursCount, setFournisseursCount] = useState(0);
   const [produitCount, setproduitCount] = useState(0);
+  const [clientCount, setclientCount] = useState(0);
+  const [commandecount, setcommandeCount] = useState(0);
+
   useEffect(() => {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchFournisseursCount = async () => {
@@ -22,6 +25,40 @@ function Dashboard() {
 
     fetchFournisseursCount();
   }, []);
+
+
+
+  useEffect(() => {
+    // Fonction pour récupérer le nombre de fournisseurs
+    const fetchCommandecount = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/commandes/count');
+        const data = await response.json();
+        setcommandeCount(data.totalcommande);
+      } catch (error) {
+        console.error('Erreur lors du chargement des fournisseurs:', error);
+      }
+    };
+
+    fetchCommandecount();
+  }, []);
+
+  useEffect(() => {
+    // Fonction pour récupérer le nombre de fournisseurs
+    const fetchClientCount = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/client/count');
+        const data = await response.json();
+        setclientCount(data.totalclient);
+        console.log("countcli",data.totalclient);
+      } catch (error) {
+        console.error('Erreur lors du chargement des fournisseurs:', error);
+      }
+    };
+
+    fetchClientCount();
+  }, []);
+
   useEffect(() => {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchproduitCount = async () => {
@@ -53,7 +90,7 @@ function Dashboard() {
               <div className='center'>
                 <div className="one p-4 center">
                   <div>
-                    <h1><i className='fa fa-bar-chart'></i> 152</h1>
+                    <h1><i className='fa fa-bar-chart'></i> {clientCount}</h1>
                   </div>
                   <div>
                     <h6>Clients</h6>
@@ -69,7 +106,7 @@ function Dashboard() {
                 </div>
                 <div className="one center">
                   <div>
-                    <h1><i className='fa fa-bar-chart'></i> 300</h1>
+                    <h1><i className='fa fa-bar-chart'></i> {commandecount}</h1>
                   </div>
                   <div>
                     <h6>Commandes</h6>

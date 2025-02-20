@@ -23,4 +23,5 @@ router.post('/retour/:id', stockController.retournerProduits);
 // Ajouter une route pour sortir des produits pour un commercial
 router.put('/sortir/:commandeId', stockController.sortirProduitsStock);
 
+router.get('/stocks/:entrepotId', stockController.getStocksByEntrepot);
 module.exports = router;

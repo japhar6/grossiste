@@ -270,7 +270,7 @@ function Personnels() {
                           {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
                 </button>
               <div className="consultation">
-                <table className="table table-striped table-hover">
+                <table className="table table-striped table-hover ">
                   <thead>
                     <tr>
                       <th>Nom</th>
@@ -318,6 +318,7 @@ function Personnels() {
                         <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
                         <label htmlFor="floatingInput">Email</label>
                   </div>
+                  
                   <div className="form-floating mb-3">
                         <input
                           type="text"
@@ -333,7 +334,7 @@ function Personnels() {
 
                             setnumero_cin(value);
                           }}
-                          placeholder="xxx xxx xxx xxx"
+                       
                         />
                         <label htmlFor="floatingInput">Numero_cin</label>
                       </div>
@@ -407,8 +408,6 @@ function Personnels() {
                           </Button>
                         )}
                       </div>
-
-
               </div>
             </div>
           )}
