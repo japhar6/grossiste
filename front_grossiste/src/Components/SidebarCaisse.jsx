@@ -48,6 +48,11 @@ function SidebarVendeur(){
     
     const buttons = [
   
+<<<<<<< HEAD
+=======
+        { path: "/caissier", icon: faCashRegister, text: "Caisse" },
+        { path: "/histoc", icon: faTags, text: "Historique des paiements" },
+>>>>>>> 60074ff3cfc67af30d09d6a7e8d94cfca1058a85
        
 
 
