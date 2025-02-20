@@ -143,7 +143,6 @@ exports.getCommandesTermineesEtLivrees = async (req, res) => {
             statut: { $in: ["terminée", "livrée"] }
         })
         .populate("produits.produit", "nom unite")  // Récupérer les produits associés (nom du produit)
-        .populate("produits.fournisseur", "nom")  // Récupérer les informations du fournisseur (nom)
         .populate("clientId", "nom telephone")  // Récupérer les informations du client
         .populate("commercialId", "nom telephone")
         .populate("vendeurId", "nom")  // Récupérer les informations du vendeur

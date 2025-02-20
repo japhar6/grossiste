@@ -28,6 +28,35 @@ function SortieStock() {
     setCommandeSelectionnee(commande);
   };
 
+  const validerVente = async () => {
+    if (!commandeSelectionnee) {
+      alert("Veuillez sélectionner une commande à valider.");
+      return;
+    }
+  
+    // Récupération du magasinierId depuis le localStorage
+    const magasinierId = localStorage.getItem("userid");
+    if (!magasinierId) {
+      alert("Magasinier non identifié.");
+      return;
+    }
+  
+    try {
+      const response = await axios.post("http://localhost:5000/api/ventes/valider", {
+        commandeId: commandeSelectionnee._id,
+        magasinierId: magasinierId,
+      });
+  
+      alert(response.data.message); // Affichage d'une notification de succès
+      setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id)); // Mise à jour de la liste des commandes
+      setCommandeSelectionnee(null); // Réinitialiser la sélection
+    } catch (error) {
+      console.error("Erreur lors de la validation de la vente:", error);
+      alert("Échec de la validation de la vente.");
+    }
+  };
+  
+
   // Filtrage des commandes
   const filteredCommandes = commandes.filter((commande) => {
     const dateCommande = commande.updatedAt ? new Date(commande.updatedAt).toISOString().split("T")[0] : "";
@@ -153,7 +182,9 @@ function SortieStock() {
             </div>
             <div className="modal-footer center">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-              <button className="btn btn-info">Valider la vente</button>
+              <button className="btn btn-info" onClick={validerVente}>
+  Valider la vente
+</button>
               </div>
           </div>
         </div>
