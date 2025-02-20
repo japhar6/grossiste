@@ -3,6 +3,11 @@ import React, { useState } from 'react';
 import { useNavigate ,Link} from 'react-router-dom';
 import '../Styles/Login.css';
 import Swal from "sweetalert2";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
+
+
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -11,6 +16,11 @@ function Login() {
     const [success, setSuccess] = useState(false); 
     const navigate = useNavigate();
 
+    const [showPassword, setShowPassword] = useState(false);
+    const togglePasswordVisibility = () => {
+        setShowPassword(prevState => !prevState); // Met à jour l'état pour afficher/masquer le mot de passe
+        console.log('Show Password:', !showPassword); // Affiche l'état dans la console
+    };
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -51,6 +61,10 @@ function Login() {
                     case 'caissier':
                         navigate('/caissier');
                         break;
+                        case 'gestion_prix':
+                            navigate('/gestionprix');
+                            break;
+                    
                     default:
                         navigate('/dashboard');
                 }
@@ -113,11 +127,26 @@ function Login() {
                                             value={email} onChange={(e) => setEmail(e.target.value)} />
                                         <label>Nom d'utilisateur</label>
                                     </div>
-                                    <div className="form-floating">
-                                        <input type="password" className="form-control" placeholder="Password" autoComplete="off" required
-                                            value={password} onChange={(e) => setPassword(e.target.value)} />
-                                        <label>Mot de passe</label>
-                                    </div>
+                                    <div className="form-floating mb-3" style={{ position: 'relative' }}>
+            <input
+                type={showPassword ? "text" : "password"}
+                className="form-control"
+                placeholder="Password"
+                autoComplete="off"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ paddingRight: '2.5rem' }}
+            />
+            <label>Mot de passe</label>
+            <span 
+                className="input-icon" 
+                onClick={togglePasswordVisibility} 
+                style={{ cursor: 'pointer', position: 'absolute', right: '20px', top: '20px' }}
+            >
+                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </span>
+        </div>
                                 </div>
                                 <div>
                                     {!success && (

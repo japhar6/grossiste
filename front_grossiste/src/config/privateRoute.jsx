@@ -19,6 +19,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     vendeur: "/vendeur",
     magasinier: "/magasinier",
     caissier: "/caissier",
+    gestion_prix:"/gestionprix"
   };
 
   if (!token) {

@@ -169,3 +169,32 @@ exports.getPaiementsParCaissier = async (req, res) => {
     }
 };
 
+exports.getPerformanceVenteParMois = async (req, res) => {
+    try {
+        const result = await Paiement.aggregate([
+            {
+                $group: {
+                    _id: {
+                        $dateToString: { format: "%Y-%m", date: "$createdAt" }
+                    },
+                    totalMontant: { $sum: "$montantPaye" },
+                    totalPaiement: { $sum: "$totalPaiement" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (err) {
+        console.error("Erreur lors de la récupération des performances :", err);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des performances"
+        });
+    }
+};

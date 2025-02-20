@@ -49,7 +49,7 @@ exports.validerPaiementCommerciale = async (req, res) => {
 
 exports.mettreAJourPaiementCommerciale = async (req, res) => {
     try {
-        const { referenceFacture  } = req.params;  // ID du paiement commercial
+        const { referenceFacture  } = req.params;  
         const { produitsVendus } = req.body;  // Liste des produits vendus avec quantités
 
         const paiementCommerciale = await PaiementCommerciale.findOne({referenceFacture});

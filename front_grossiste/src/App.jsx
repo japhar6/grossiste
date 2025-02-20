@@ -11,6 +11,7 @@ import Profil from './Pages/Profil.jsx';
 import ProfilV from './Pages/ProfilVendeur.jsx';
 import ProfilC from './Pages/ProfilCaissier.jsx';
 import ProfilM from './Pages/ProfilMagasinier.jsx';
+import ProfilG from './Pages/ProfilG.jsx';
 import ListeProduits from './Pages/Produits.jsx';
 import AchatProduits from './Pages/Achat.jsx';
 import Entrepot from './Pages/Entrepot.jsx';
