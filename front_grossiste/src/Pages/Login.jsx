@@ -43,13 +43,13 @@ function Login() {
                         navigate('/admin');
                         break;
                     case 'magasinier':
-                        navigate('/SortieCommande');
+                        navigate('/magasinier');
                         break;
                     case 'vendeur':
                         navigate('/vendeur');
                         break;
                     case 'caissier':
-                        navigate('/caisse');
+                        navigate('/caissier');
                         break;
                     default:
                         navigate('/dashboard');

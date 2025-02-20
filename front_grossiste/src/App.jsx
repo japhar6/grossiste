@@ -10,6 +10,8 @@ import Personnels from './Pages/Personnels.jsx';
 import Personnel from './Pages/Personnels.jsx';
 import Profil from './Pages/Profil.jsx';
 import ProfilV from './Pages/ProfilVendeur.jsx';
+import ProfilC from './Pages/ProfilCaissier.jsx';
+import ProfilM from './Pages/ProfilMagasinier.jsx';
 import ListeProduits from './Pages/Produits.jsx';
 import  AchatProduits from './Pages/Achat.jsx';
 import  Entrepot from './Pages/Entrepot.jsx';
@@ -19,31 +21,56 @@ import SortieCommande from './Pages/SortieCommande.jsx';
 import Stock from './Pages/Stock.jsx';
 import Commerciale from './Pages/Commerciale.jsx';
 import Vendeur from './Pages/Vendeur.jsx';
+import Magasinier from './Pages/Magasinier.jsx';
 import HistoV from './Pages/HistoventeVendeur.jsx';
+import HistoM from './Pages/Histopaiement.jsx';
+import HistoC from './Pages/Histopaiement.jsx';
+import Caissier from './Pages/Caissier.jsx';
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Login />} />
+ 
+        <Route element={<PrivateRoute alloWedRoles={["admin"]}/>}>
 
-        <Route element={<PrivateRoute />}>
-          <Route path='/fournisseur' element={<Fournisseur />} />
-          <Route path='/admin' element={<Dashboard />} />
-          <Route path='/produit' element={<ListeProduits />} />
-          <Route path='/personnels' element={<Personnels />} />
-          <Route path='/personnel' element={<Personnel />} />
-          <Route path='/achat' element={<AchatProduits />} />
-          <Route path='/entrepot' element={<Entrepot />} />
-          <Route path='/commande' element={<  PriseCommande/>} />
-          <Route path='/caisse' element={<  Caisse/>} />
-          <Route path='/profil' element={<Profil />} />
-          <Route path='/profilv' element={<ProfilV />} />
-          <Route path='/SortieCommande' element={<SortieCommande />} />
-          <Route path='/stock' element={<Stock />} />
-          <Route path='/commerciale' element={<Commerciale />} />
-          <Route path='/vendeur' element={<Vendeur />} />
-          <Route path='/histov' element={<HistoV />} />
+        <Route path='/admin' element={<Dashboard />} />
+   
+        <Route path='/produit' element={<ListeProduits />} />
+
+        <Route path='/fournisseur' element={<Fournisseur />} />
+        <Route path='/personnel' element={<Personnel />} />
+        <Route path='/caisse' element={<  Caisse/>} />
+        <Route path='/entrepot' element={<Entrepot />} />
+        <Route path='/stock' element={<Stock />} />
+        <Route path='/commerciale' element={<Commerciale />} />
+        <Route path='/profil' element={<Profil />} />
+        <Route path='/commande' element={<  PriseCommande/>} />
+        <Route path='/achat' element={<AchatProduits />} />
+        <Route path='/SortieCommande' element={<SortieCommande />} />
+
         </Route>
+        <Route element={<PrivateRoute alloWedRoles={["vendeur"]}/>}>
+              
+               <Route path='/vendeur' element={<Vendeur />} />
+               <Route path='/profilv' element={<ProfilV />} />
+               <Route path='/histov' element={<HistoV />} />
+
+        </Route>
+      
+        <Route element={<PrivateRoute alloWedRoles={["magasinier"]}/>}>
+               <Route path='/profilm' element={<ProfilM />} />
+               <Route path='/histom' element={<HistoM />} />
+               <Route path='/magasinier' element={<Magasinier />} />
+
+        </Route>
+       <Route element={<PrivateRoute alloWedRoles={["caissier"]}/>}>
+       
+          <Route path='/caissier' element={<  Caissier/>} />    
+         <Route path='/profilc' element={<ProfilC />} />
+          <Route path='/histoc' element={<HistoC />} />
+        
+          </Route>
       </Routes>
     </BrowserRouter>
   );
