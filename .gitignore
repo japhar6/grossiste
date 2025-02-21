@@ -41,7 +41,7 @@ docker-compose.override.yml
 .dockerignore
 secrets.yml
 
-# Ignorer tous les fichiers .yml et .yaml
-*.yml
-*.yaml
-Dockerfile
+# # Ignorer tous les fichiers .yml et .yaml
+# *.yml
+# *.yaml
+# Dockerfile
