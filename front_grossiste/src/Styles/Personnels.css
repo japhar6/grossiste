@@ -1,9 +1,15 @@
-.ajoutPersonnel{
-    height: 90vh;
-    width: 30%;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
+.ajoutPersonnel {
+  width: 100%; /* Prend toute la largeur */
+  margin-top: 20px; /* Espace au-dessus du formulaire */
+  background-color: white; /* Contexte visuel */
+  padding: 20px; /* Ajoutez un peu de remplissage pour le confort */
+}
+
+
+/* Empêcher le débordement sur mobile */
+.consultation table {
+  width: 100%;
+  border-collapse: collapse;
 }
 .mini-stat{
     height: 90vh;
@@ -36,17 +42,34 @@
 .role-count {
   letter-spacing: 1px;
 }
-.perso{
-    height: 10vh;
-    width: 25%;
-    border-radius: 5px;
-    background: rgb(90, 81, 173);
-    color: #fff;
-    background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    transition: transform 0.3s ease;
-    cursor: pointer;
+.perso {
+  flex: 1;
+  min-width: 180px; /* Assure une bonne taille minimale */
+  max-width: 220px; /* Empêche d'être trop large */
+  height: 10vh;
+  border-radius: 5px;
+  background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%);
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+
+/* Assure que .mini ne pousse pas ajoutPersonnel hors de l'écran */
+.mini {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Ajoute une largeur minimale pour éviter qu'il ne disparaisse */
+.ajoutPersonnel {
+  min-width: 300px;
+  max-width: 400px; /* Empêche d'être trop large */
+  flex: 1;
 }
 .perso:hover {
   transform: scale(1.05);
@@ -160,19 +183,73 @@ button.variant-danger {
 
 
 @media (max-width: 768px) {
-  .ajoutPersonnel {
-    width: 100%; /* Prend toute la largeur sur mobile */
-    height: auto; /* Ajuste la hauteur */
-    margin-top: 20px; /* Ajoute un espace au-dessus */
-  }
   .mini-stat {
-    width: 100%; /* Prend toute la largeur sur mobile */
-    height: auto; /* Ajuste la hauteur */
-    margin-right: 0; /* Enlève le margin droit */
+    display: flex;
+    flex-direction: column;
   }
+  .ajoutPersonnel {
+    margin-top: 20px; /* Ajoutez un peu d'espace au-dessus pour la visibilité */
+    position: relative; /* Changez position en relative si nécessaire */
+    width: 100%; /* Assurez-vous qu'il prend toute la largeur */
+  }
+
+  .contenue {
+    overflow-y: auto; /* Permet le défilement vertical */
+  }
+
+
+  .mini,
+  .perso-container-bottom {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
   .perso {
-    width: 100%; /* Ajuste la largeur des éléments de personnel */
-    height: auto; /* Ajuste la hauteur */
-    margin-bottom: 15px; /* Ajoute de l'espace entre les éléments */
+    width: 48%; /* Deux cartes par ligne sur mobile */
+    height: 8vh;
+  }
+
+  .perso-container-bottom {
+    order: 1; /* Assure que les cartes en bas restent bien positionnées */
+  }
+
+  .consultation th:nth-child(2),
+  .consultation th:nth-child(3),
+  .consultation th:nth-child(4),
+  .consultation td:nth-child(2),
+  .consultation td:nth-child(3),
+  .consultation td:nth-child(4) {
+    display: none; /* Cache Email, Poste, Numero CIN */
+  }
+  .consultation td:nth-child(5) {
+    display: table-cell !important;
+    text-align: center;
+  }
+  .consultation th:nth-child(5) {
+    display: table-cell !important;
+    text-align: center;
+  }
+
+}
+
+
+/* GRAND ÉCRAN - Alignement horizontal */
+@media (min-width: 769px) {
+  .mini {
+    flex-direction: row;
+    justify-content: center; /* Centrage des cartes */
+  }
+
+  .perso-container-bottom {
+    display: none; /* Masque la section du bas sur grand écran */
+  }
+  .ajoutPersonnel {
+    width: 30%; /* Garde 30% sur écran large */
+    height: 90vh;
+  }
+
+  .mini-stat {
+    width: 70%;
+    height: 90vh;
   }
 }

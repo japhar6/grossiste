@@ -46,13 +46,13 @@ button.btn-info:hover {
   margin-top: 20px;
 }
 
-.table-striped th, .table-striped td {
+.table th, .table td {
   padding: 10px;
   text-align: left;
   border-bottom: 1px solid #ddd;
 }
 
-.table-striped tr:nth-child(even) {
+.table tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
@@ -109,26 +109,26 @@ button.btn-info:hover {
     font-size: 0; /* Masque le texte original */
   }
 
-  .table-striped th:nth-child(2), 
-  .table-striped td:nth-child(2),
-  .table-striped th:nth-child(3), 
-  .table-striped td:nth-child(3),
-  .table-striped th:nth-child(4), 
-  .table-striped td:nth-child(4),
-  .table-striped th:nth-child(5), 
-  .table-striped td:nth-child(5),
-  .table-striped th:nth-child(8), 
-  .table-striped td:nth-child(8) {
+  .table th:nth-child(2), 
+  .table td:nth-child(2),
+  .table th:nth-child(3), 
+  .table td:nth-child(3),
+  .table th:nth-child(4), 
+  .table td:nth-child(4),
+  .table th:nth-child(5), 
+  .table td:nth-child(5),
+  .table th:nth-child(8), 
+  .table td:nth-child(8) {
     display: none; /* Masque les colonnes 2, 3, 4, 5 et 8 */
   }
 
-  .table-striped th, 
-  .table-striped td {
+  .table th, 
+  .table td {
     min-width: 120px; /* Largeur minimale pour les colonnes sur mobile */
     font-size: 12px; /* Taille de police ajustée pour mobile */
   }
 
-  .table-striped tr:nth-child(even) {
+  .table tr:nth-child(even) {
     background-color: #f9f9f9; /* Conserve le style de fond pour les lignes paires */
   }
 
