@@ -49,10 +49,10 @@ exports.validerPaiementCommerciale = async (req, res) => {
 
 exports.mettreAJourPaiementCommerciale = async (req, res) => {
     try {
-        const { referenceFacture  } = req.params;  
+        const { referenceFacture } = req.params;  
         const { produitsVendus } = req.body;  // Liste des produits vendus avec quantités
 
-        const paiementCommerciale = await PaiementCommerciale.findOne({referenceFacture} );
+        const paiementCommerciale = await PaiementCommerciale.findOne({referenceFacture});
         if (!paiementCommerciale) {
             return res.status(404).json({ message: "Paiement à crédit non trouvé" });
         }
@@ -76,33 +76,43 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         });
 
         paiementCommerciale.montantPaye += montantTotalVendu;
-        paiementCommerciale.montantRestant -= montantTotalVendu;
-         // Mettre à jour le statut de la commande
-         commande.modePaiement = "espèce";
-         await commande.save();
+        paiementCommerciale.montantRestant = paiementCommerciale.totalPaiement - paiementCommerciale.montantPaye;
+
+        // Mettre à jour le statut de la commande
+        commande.modePaiement = "espèce";
+        await commande.save();
  
 
         // Si le montant restant est 0, on marque le paiement comme complet
-        if (paiementCommerciale.montantRestant <= 0) {
+       
             paiementCommerciale.statut = "complet";
-            paiementCommerciale.montantRestant = 0;
-        }
 
         // Sauvegarder les mises à jour
         await paiementCommerciale.save();
 
-        // Enregistrer la vente
-    // Enregistrer la vente
-const vente = new VenteCom({
-    commercialId: commande.commercialId,
-    commandeId: commande._id,
-    produitsVendus: produitsVendus.map(produit => ({
-        produitId: produit.produitId, 
-        quantite: produit.quantite
-    })),
-    montantTotal: montantTotalVendu
-});
+        // Calculer les produits restants
+        const produitsRestants = produitsVendus.map(produit => {
+            const produitCommande = commande.produits.find(item => item.produit.toString() === produit.produitId.toString());
+            if (produitCommande) {
+                const quantiteRestante = produitCommande.quantite - produit.quantite;  // Calcul de la quantité restante
+                return {
+                    produitId: produit.produitId,
+                    quantiteRestante: quantiteRestante  // Quantité restante ajoutée
+                };
+            }
+        }).filter(produit => produit);  // Filtrer les valeurs nulles
 
+        // Enregistrer la vente
+        const vente = new VenteCom({
+            commercialId: commande.commercialId,
+            commandeId: commande._id,
+            produitsVendus: produitsVendus.map(produit => ({
+                produitId: produit.produitId, 
+                quantite: produit.quantite
+            })),
+            produitsRestants: produitsRestants,  // Ajouter les produits restants dans la vente
+            montantTotal: montantTotalVendu
+        });
 
         await vente.save();
 
@@ -115,7 +125,6 @@ const vente = new VenteCom({
         res.status(400).json({ message: error.message });
     }
 };
-
 exports.getVentesByCommercial = async (req, res) => {
     try {
         const { commercialId } = req.params;
@@ -131,4 +140,3 @@ exports.getVentesByCommercial = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-

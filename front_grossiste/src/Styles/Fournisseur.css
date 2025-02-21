@@ -1,102 +1,95 @@
-.ajoutPersonnel{
-    height: 90vh;
-    width: 30%;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
-}
-.mini-stat{
-    height: 90vh;
-    width: 70%;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
-    margin-right: 1%;
-}
-.ajoutPersonnel form label{
-    font-size: 0.8em;
-}
-.ajoutPersonnel form button{
-    width: 100%;
-}
-.perso{
-    height: 10vh;
-    width: 25%;
-    border-radius: 5px;
-    background: rgb(81,173,110);
-    background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
-    box-shadow: 0 0 5px gray;
-}
-.mini{
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
-    border-radius: 5px;
-}
-.filtrage{
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
-    border-radius: 5px;
-}
-.list{
-    height: 45vh;
-    width: 100%;
-    overflow-y: scroll;
-}
-.list table{
-    font-size: 0.8em;
+
+.tableX th,
+.tableX td {
+  padding: 8px; /* Réduire légèrement le padding */
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-/* Modal centré */
-.custom-modal .modal-dialog {
-    max-width: 500px;
-    margin: 1.75rem auto;
+.tableX {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  box-sizing: border-box; /* Assurez-vous d'inclure padding et bordure dans la largeur totale */
+}
+
+  
+  .consultationF {
+  
+    width: 100%; /* Assurez-vous qu'il utilise 100% de la largeur */
+    box-sizing: border-box; /* Pour inclure le padding et la bordure dans la largeur totale */
   }
   
-  /* Carte de personnel */
- 
- 
-  .filter-controls {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 20px;
-  }
-  
-  .filter-controls input,
-  .filter-controls select {
-    width: 45%; /* Donne un peu d'espace entre les éléments */
+
+  .tableX th, .tableX td {
     padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
   }
   
-  .filter-controls input:focus,
-  .filter-controls select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    outline: none;
+  .tableX tr:nth-child(even) {
+    background-color: #f9f9f9;
   }
   
-  .filter-controls input::placeholder,
-  .filter-controls select {
-    color: #6c757d; /* Couleur pour les placeholders et les options */
-  }
-  
-  .filter-controls select {
-    background-color: #fff;
-    cursor: pointer;
-  }
-  
-  /* Style pour les champs de filtre dans les petits écrans */
   @media (max-width: 768px) {
-    .filter-controls {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .filter-controls input,
-    .filter-controls select {
-      width: 100%;
-    }
-  }
+    .tableX {
+        width: calc(100% - 16px); /* Ajustez la largeur pour tenir compte des paddings ou marges */
+      }
   
+    .filtrage {
+      padding: 1rem;  /* Réduit le padding pour les petits écrans */
+    }
+    .form-control {
+      padding: 0.5rem;  /* Réduit le padding des champs de formulaire */
+      font-size: 0.9rem;  /* Réduit la taille de la police */
+    }
+    .mt-2 {
+      margin-top: 0.5rem;  /* Réduit la marge supérieure pour les petits écrans */
+    }
+    .m-1 {
+      margin: 0.25rem;  /* Réduit la marge pour les petits écrans */
+    }
+  
+   
+  
+    .tableX th:nth-child(2){
+      width: 8px !important;
+    }
+  
+    .tableX {
+      display: block; /* Utilise le défilement horizontal */
+  
+      white-space: nowrap;
+    /* Empêche le retour à la ligne dans les cellules */
+    }
+   
+  
+    .tableX td:nth-child(1),
+    .tableX th:nth-child(1),
+    .tableX th:nth-child(6), 
+    .tableX td:nth-child(6),
+    .tableX th:nth-child(4), 
+    .tableX td:nth-child(4),
+    .tableX th:nth-child(5), 
+    .tableX td:nth-child(5),
+    .tableX th:nth-child(7), 
+    .tableX td:nth-child(7) {
+      display: none; /* Masque les colonnes 2, 3, 4, 5 et 8 */
+    }
+  
+    .tableX th, 
+    .tableX td {
+      min-width: 10px !important; /* Largeur minimale pour les colonnes sur mobile */
+      font-size: 5px; /* Taille de police ajustée pour mobile */
+    }
+  
+    .tableX tr:nth-child(even) {
+      background-color: #f9f9f9; /* Conserve le style de fond pour les lignes paires */
+    }
+  
+    h6 {
+      font-size: 1.2rem; /* Ajustement de la taille des titres pour mobile */
+    }
+
+  }
   
