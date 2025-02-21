@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import "../Styles/Commade.css";
+import "../Styles/Caisse.css";
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);

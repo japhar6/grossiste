@@ -1,0 +1,59 @@
+/* === REFERENCE DE LA COMMANDE === */
+.refcli {
+    flex: 1;
+    padding: 10px; /* Padding réduit */
+    width: 30%; /* Utiliser width au lieu de max-width */
+}
+
+.refcli h6 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column; /* Aligne les éléments en colonne */
+    align-items: flex-start; /* Aligne les éléments à gauche */
+}
+
+.refcli input {
+    width: 100%; /* Prend toute la largeur */
+    padding: 10px;
+    margin-bottom: 10px; /* Espace entre l'input et le bouton */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: 0.3s ease-in-out;
+}
+
+.refcli button {
+    width: 100%; /* Le bouton prend toute la largeur */
+}
+
+.refcli input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
+.btn-primary {
+    background-color: #007bff; /* Couleur de fond du bouton */
+    color: white; /* Couleur du texte */
+    border: none; /* Supprime la bordure par défaut */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Couleur de fond au survol */
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .refcli {
+       width: 100%; 
+        padding: 15px;
+    }
+    
+    .paiement {
+        max-width: 100%;
+    }
+}

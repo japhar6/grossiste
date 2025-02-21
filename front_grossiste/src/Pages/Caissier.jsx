@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
-import "../Styles/Commade.css";
+import "../Styles/Caisse.css";
 
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
@@ -114,9 +114,9 @@ function Caisse() {
             </h6>
 
             <div className="commande-container d-flex justify-content-between">
-              <div className="client-info w-50 p-3">
+              <div className="refcli w-50 p-3">
                 <h6><i className="fa fa-user"></i> Référence de la commande</h6>
-                <div className="form-group">
+                <div className="form-group  ">
                   <input
                     type="text"
                     className="form-control"
@@ -124,14 +124,16 @@ function Caisse() {
                     value={referenceFacture}
                     onChange={(e) => setReferenceFacture(e.target.value)}
                   />
-                  <button className="btn btn-primary ms-2" onClick={handleSearch}>
+                  <button className="btno btn-primary ms-2" onClick={handleSearch}>
                     Rechercher
                   </button>
                 </div>
               </div>
 
-              <div className="produits p-3">
+              <div className="paiement p-3">
                 <h6><i className="fa fa-box"></i> Détails du paiement </h6>
+                <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+           
                 <table className="table mt-2">
                   <thead>
                     <tr>
@@ -166,7 +168,7 @@ function Caisse() {
                     </tr>
                   </tbody>
                 </table>
-
+                </div>
                 <button className="btn btn-secondary mt-2" onClick={calculerRemise}>
                   Appliquer Remise
                 </button>
@@ -174,7 +176,7 @@ function Caisse() {
             </div>
 
             {commande && (
-              <div className="commande mt-4">
+              <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
                 <table className="table table-bordered mt-2 text-center">
                   <thead>
