@@ -128,8 +128,8 @@ const filteredCommandes = commandes.filter((commande) => {
     />
   </form>
 </div>
-
-          <table className="table table-striped mt-3">
+<div className="table-container" style={{ overflowX: 'hidden',overflowY:'auto' }}>
+          <table className="tableMa table-striped mt-3">
             <thead>
               <tr>
               <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>
@@ -177,7 +177,7 @@ const filteredCommandes = commandes.filter((commande) => {
               ))}
             </tbody>
           </table>
-
+          </div>
           <div className="modal fade" id="DétailsCommande" tabIndex="-1" aria-labelledby="DétailsCommandeLabel" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered modal-md"> 
 

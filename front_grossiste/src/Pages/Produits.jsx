@@ -127,105 +127,78 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
                 </form>
               </div>
 
-              <div className="consultation">
-                <table className="table table-striped table-hover">
-                  <thead>
-                    <tr>
-                    <th>Code Produit</th>
-                      <th>
-                        <span
-                          style={{ cursor: "pointer" ,color: 'white'}}
-        
-                          onClick={() => {
-                            setOrderBy("nom");
-                            setOrder(order === "asc" ? "desc" : "asc");
-                          }}
-                        >
-                          Nom{" "}
-                          {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
-                        </span>
-                      </th>
-                      <th>Description</th>
-                      <th>Prix de Vente</th>
-                      <th>Prix d'Achat</th>
-                      <th>Catégorie</th>
-                     
-                      <th>
-                        <span
-                          style={{ cursor: "pointer" ,color: 'white'}}
-                          onClick={() => {
-                            setOrderBy("dateAjout");
-                            setOrder(order === "asc" ? "desc" : "asc");
-                          }}
-                        >
-                          Date d'Ajout{" "}
-                          {orderBy === "dateAjout" && (order === "asc" ? "↑" : "↓")}
-                        </span>
-                      </th>
-                      <th>Action</th> 
-                    </tr>
-                  </thead>
-                  <tbody>
-  {sortedProduits.map((produit) => (
-    <tr key={produit._id}>
-      <td>{produit.codeProduit}</td>
-      <td>{produit.nom}</td>
-      <td>{produit.description}</td>
-      <td>
-        {produitAModifier === produit._id ? (
-          <input
-            type="number"
-            className="form-control"
-            value={prixVenteModifier}
-            onChange={(e) => setPrixVenteModifier(e.target.value)}
-            placeholder={produit.prixdevente}
-          />
-        ) : (
-          <span style={{ color: 'black' }}>{produit.prixdevente} Ariary</span>
-        )}
-      </td>
-      <td>
-        {produitAModifier === produit._id ? (
-          <input
-            type="number"
-            className="form-control"
-            value={prixAchatModifier}
-            onChange={(e) => setPrixAchatModifier(e.target.value)}
-            placeholder={produit.prixDachat}
-          />
-        ) : (
-          <span style={{ color: 'black' }}>{produit.prixDachat} Ariary</span>
-        )}
-      </td>
-      <td>{produit.categorie}</td>
-      <td>{produit.dateAjout}</td>
-      <td>
-        {produitAModifier === produit._id ? (
-          <button
-            className="btn btn-success"
-            onClick={() => handleModifierPrix(produit._id)}
-          >
-            Enregistrer
-          </button>
-        ) : (
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setProduitAModifier(produit._id);
-              setPrixVenteModifier(produit.prixdevente); // Pré-remplir avec le prix de vente actuel
-              setPrixAchatModifier(produit.prixDachat); // Pré-remplir avec le prix d'achat actuel
-            }}
-          >
-            Modifier
-          </button>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
+              <div className="consultatiof">
+              <div className="  table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+              <div className="table-responsive table-striped">
+  <table className="tableSt mt-3">
+    <thead>
+      <tr>
+        <th>Code Produit</th>
+        <th>
+          <span style={{ cursor: "pointer", color: 'white' }} onClick={() => {
+            setOrderBy("nom");
+            setOrder(order === "asc" ? "desc" : "asc");
+          }}>
+            Nom{" "}
+            {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
+          </span>
+        </th>
+        <th>Description</th>
+        <th>Prix de Vente</th>
+        <th>Prix d'Achat</th>
+        <th>Catégorie</th>
+        <th>
+          <span style={{ cursor: "pointer", color: 'white' }} onClick={() => {
+            setOrderBy("dateAjout");
+            setOrder(order === "asc" ? "desc" : "asc");
+          }}>
+            Date d'Ajout{" "}
+            {orderBy === "dateAjout" && (order === "asc" ? "↑" : "↓")}
+          </span>
+        </th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {sortedProduits.map((produit) => (
+        <tr key={produit._id}>
+          <td>{produit.codeProduit}</td>
+          <td>{produit.nom}</td>
+          <td>{produit.description}</td>
+          <td>{produitAModifier === produit._id ? (
+            <input type="number" className="form-control" value={prixVenteModifier} onChange={(e) => setPrixVenteModifier(e.target.value)} placeholder={produit.prixdevente} />
+          ) : (
+            <span style={{ color: 'black' }}>{produit.prixdevente} Ariary</span>
+          )}</td>
+          <td>{produitAModifier === produit._id ? (
+            <input type="number" className="form-control" value={prixAchatModifier} onChange={(e) => setPrixAchatModifier(e.target.value)} placeholder={produit.prixDachat} />
+          ) : (
+            <span style={{ color: 'black' }}>{produit.prixDachat} Ariary</span>
+          )}</td>
+          <td>{produit.categorie}</td>
+          <td>{produit.dateAjout}</td>
+          <td>
+            {produitAModifier === produit._id ? (
+              <button className="btn btn-success" onClick={() => handleModifierPrix(produit._id)}>
+                Enregistrer
+              </button>
+            ) : (
+              <button className="btn btn-primary" onClick={() => {
+                setProduitAModifier(produit._id);
+                setPrixVenteModifier(produit.prixdevente);
+                setPrixAchatModifier(produit.prixDachat);
+              }}>
+                Modifier
+              </button>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
-
-                </table>
+              </div>
               </div>
             </div>
           </div>

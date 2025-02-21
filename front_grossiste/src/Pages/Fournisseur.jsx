@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef  } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import "../Styles/Fournisseur.css";
@@ -16,7 +16,7 @@ function Fournisseur() {
   const [ristourne, setRistourne] = useState("");
   const [logo, setLogo] = useState(null);
   const [editingId, setEditingId] = useState(null);
-
+  const nomRef = useRef(null);
   const [filterNom, setFilterNom] = useState("");  
   const [filterType, setFilterType] = useState(""); 
 
@@ -98,6 +98,10 @@ function Fournisseur() {
     setEmail(fournisseur.contact.email);
     setAdresse(fournisseur.contact.adresse);
     setRistourne(fournisseur.conditions.ristourne);
+    if (nomRef.current) {
+      nomRef.current.focus(); // Déplace le focus vers le champ
+      nomRef.current.scrollIntoView({ behavior: "smooth", block: "start" }); // Fait défiler vers le champ
+    }
   };
 
   const resetForm = () => {
@@ -164,8 +168,10 @@ function Fournisseur() {
                 </form>
               </div>
 
-              <div className="consultation">
-                <table className="table table-striped table-hover ">
+              <div className="consultationF">
+              <div className="table-responsive" style={{ overflowX: 'hidden',overflowY:'auto' }}>
+
+                <table className="tableX table-striped table-hover ">
                   <thead>
                     <tr>
                       <th>Logo</th>
@@ -206,10 +212,20 @@ function Fournisseur() {
                         </td>
                         <td>
                           <button className="btn btn-warning" onClick={() => handleEdit(f)}>
-                            Modifier
+                          <i
+    className="fas fa-pencil-alt" // Icône alternative pour modifier
+    style={{ cursor: "pointer", fontSize: "20px" }}
+    onClick={() => handleEdit(f)}
+    title="Modifier"
+  ></i>
                           </button>
                           <button className="btn btn-danger ms-2" onClick={() => handleDelete(f._id)}>
-                            Supprimer
+                          <i
+    className="fas fa-times" // Icône alternative pour supprimer
+    style={{ cursor: "pointer", fontSize: "20px", marginLeft: "10px" }}
+    onClick={() => handleDelete(f._id)}
+    title="Supprimer"
+  ></i>
                           </button>
                         </td>
                       </tr>
@@ -218,9 +234,10 @@ function Fournisseur() {
                 </table>
               </div>
             </div>
+            </div>
 
             {/* Formulaire d'ajout/modification du fournisseur */}
-            <div className="ajoutPersonnel p-3">
+            <div className="ajoutFournisseur p-3">
               <h6 className="alert alert-success  ">
                 <i className="fa fa-plus"></i> {editingId ? "Modifier un fournisseur" : "Ajouter un Fournisseur"}
               </h6>
@@ -234,6 +251,7 @@ function Fournisseur() {
                       required
                       value={nom}
                       onChange={(e) => setNom(e.target.value)}
+                      ref={nomRef}
                     />
                   </div>
                   <div className="mb-3">

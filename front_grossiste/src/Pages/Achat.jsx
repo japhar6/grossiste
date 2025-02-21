@@ -275,6 +275,7 @@ console.log("produit" ,produitId);
       });
   }, []);   
   
+  
   const handleEntrepotChange = (e) => {
     const selectedEntrepot = e.target.value;  
     setEntrepot(selectedEntrepot);  
@@ -396,34 +397,7 @@ console.log("produit" ,produitId);
   };
 
 
-  /*
-  const produitId = produit._id;
-  
-  const updatePrix = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/produits/modifier/${produitId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prixDachat: prixAchat,
-        }),
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Produit mis à jour avec succès', data);
-      } else {
-        console.error('Erreur lors de la mise à jour du produit');
-      }
-    } catch (error) {
-      console.error('Erreur réseau', error);
-    }
-  };
-
-  updatePrix();
-*/
   const validerPanier = async() => {
 
     try {
@@ -659,9 +633,10 @@ console.log("produit" ,produitId);
               )}
 
 {panierCreer && (
-  <div className="consultation mt-3">
+  <div className="consultationL mt-3">
     <h6><i className="fa fa-shopping-basket"></i> Panier</h6>
-    <table className="table table-striped">
+    <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+    <table className="tableSo table-striped">
       <thead>
         <tr>
           <th>Produit</th>
@@ -684,7 +659,7 @@ console.log("produit" ,produitId);
 </tbody>
 
     </table>
-    
+    </div>
     {/* Total et bouton à droite */}
     <div className="total-validation-container">
     <h6>Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
@@ -694,6 +669,13 @@ console.log("produit" ,produitId);
                     className="form-control mt-3"
                     value={entrepot}
                     onChange={handleEntrepotChange}
+                    styles={{
+                      menu: (provided) => ({
+                        ...provided,
+                        maxHeight: 200, // Définit une hauteur maximale pour le menu déroulant
+                        overflowY: 'auto', // Ajoute le défilement vertical si nécessaire
+                      }),
+                    }}
                   >
                     <option value="">Choisir un fournisseur</option>
                     {entrepots.map((entrepotItem) => (
@@ -710,6 +692,7 @@ console.log("produit" ,produitId);
 
             </div>
           </div>
+       
         </section>
       </main>
     </>

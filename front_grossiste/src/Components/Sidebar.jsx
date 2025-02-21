@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../Styles/Sidebar.css'; // Fichier CSS externe
+import '../Styles/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faChevronLeft, 
@@ -19,41 +19,67 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar() {
-    const [collapsed, setCollapsed] = useState(false); // Gestion du mode collapsed
-    const [hidden, setHidden] = useState(false); // Gestion de la disparition totale sur mobile
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768); // Détecter le mobile
+    const [collapsed, setCollapsed] = useState(false);
+    const [hidden, setHidden] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-    // Vérifier la taille de l'écran pour basculer en mode mobile
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Fonction pour gérer le collapse/déploiement
+    // Variables pour gérer le swipe
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    useEffect(() => {
+        const handleTouchStart = (e) => {
+            touchStartX = e.touches[0].clientX;
+            console.log("Touch Start:", touchStartX);
+        };
+
+        const handleTouchMove = (e) => {
+            touchEndX = e.touches[0].clientX;
+        };
+
+        const handleTouchEnd = () => {
+            const swipeDistance = touchEndX - touchStartX;
+            console.log("Swipe Distance:", swipeDistance);
+
+            // On vérifie que le swipe commence bien à gauche (moins de 30px)
+            if (touchStartX > 30) {
+                console.log("Swipe ignoré (pas assez à gauche)");
+                return;
+            }
+
+            if (swipeDistance > 50) {
+                console.log("Ouvrir sidebar");
+                setHidden(false);
+            } else if (swipeDistance < -50) {
+                console.log("Fermer sidebar");
+                setHidden(true);
+            }
+        };
+
+        document.addEventListener("touchstart", handleTouchStart);
+        document.addEventListener("touchmove", handleTouchMove);
+        document.addEventListener("touchend", handleTouchEnd);
+
+        return () => {
+            document.removeEventListener("touchstart", handleTouchStart);
+            document.removeEventListener("touchmove", handleTouchMove);
+            document.removeEventListener("touchend", handleTouchEnd);
+        };
+    }, []);
+
     const toggleSidebar = () => {
         if (isMobile) {
             setHidden(!hidden);
-            setCollapsed(false); // Toujours revenir à collapsed sur mobile
+            setCollapsed(false);
         } else {
             setCollapsed(!collapsed);
         }
-    };
-
-    // Gestion du swipe
-    const handleTouchStart = (e) => {
-        const touchStartX = e.touches[0].clientX;
-        const handleTouchMove = (e) => {
-            const touchEndX = e.touches[0].clientX;
-            if (touchEndX - touchStartX > 50) {
-                setHidden(false); // Ouvrir la sidebar si le mouvement est vers la droite
-                document.removeEventListener('touchmove', handleTouchMove);
-            } else if (touchStartX - touchEndX > 50) {
-                setHidden(true); // Fermer la sidebar si le mouvement est vers la gauche
-                document.removeEventListener('touchmove', handleTouchMove);
-            }
-        };
-        document.addEventListener('touchmove', handleTouchMove);
     };
 
     const buttons = [
@@ -72,10 +98,7 @@ function Sidebar() {
 
     return (
       <>
-          <aside 
-              className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`}
-              onTouchStart={handleTouchStart} // Ajouter le gestionnaire de touch
-          >
+          <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`}>
               <button 
                   className="btn btn-light collapse-btn" 
                   onClick={toggleSidebar}
