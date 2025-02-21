@@ -24,14 +24,3 @@ spec:
                 port:
                   number: 443
 
-    # 🗂 BACKEND
-    - host: back
-      http:
-        paths:
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: backend
-                port:
-                  number: 30002

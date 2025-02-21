@@ -10,7 +10,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Configuration CORS
 app.use(cors({
-  origin: ['http://front', 'https://front'], // 🔥 Ajoute le domaine de ton Ingress
+  origin: ['http://localhost:5173', 'https://localhost:5173', 'https://localhost:30003', 'http://front', 'https://front'], // Ajout du frontend local et des domaines de production
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
