@@ -129,7 +129,7 @@ const filteredCommandes = commandes.filter((commande) => {
   </form>
 </div>
 <div className="table-container" style={{ overflowX: 'hidden',overflowY:'auto' }}>
-          <table className="table table-striped mt-3">
+          <table className="tableMa table-striped mt-3">
             <thead>
               <tr>
               <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>

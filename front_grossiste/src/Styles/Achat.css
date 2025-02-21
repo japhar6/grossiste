@@ -1,10 +1,10 @@
 /* Styles pour la page Achat de Produits */
-
-
 .mini-stat {
   background: #ffffff;
   border-radius: 8px;
   padding: 20px;
+  overflow-x:hidden ;
+  overflow-y: scroll;
 }
 
 .filtrage,
@@ -13,7 +13,14 @@
   border-radius: 5px;
   padding: 15px;
 }
+.contenue {
+  overflow-y: scroll !important; /* Permet le défilement vertical */
+}
 
+.content
+{  overflow-y: scroll !important;
+
+}
 /* Uniformisation des champs de saisie et des selects */
 input.form-control, select.form-control, .react-select__control {
   width: 100%;
@@ -25,7 +32,6 @@ input.form-control, select.form-control, .react-select__control {
   transition: all 0.3s ease;
   font-size: 14px;
   color: #495057;
-  font-family: "Poppins", sans-serif;
 }
 
 input.form-control:focus,
@@ -36,7 +42,7 @@ select.form-control:focus,
   outline: none;
 }
 
-select.form-control {
+.select.form-control {
   appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-caret-down-fill' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14l-4.796-5.481A1 1 0 0 1 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.481a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -44,7 +50,7 @@ select.form-control {
   background-size: 12px;
 }
 
-select option {
+.select option {
   background-color: #ffffff;
   color: #495057;
 }
@@ -58,10 +64,6 @@ select option {
 
 .quantite-section input {
   flex: 1;
-}
-
-.react-select__control {
-  min-width: 160px;
 }
 
 /* Style des boutons */
@@ -96,31 +98,12 @@ button.btn-success:hover {
   background-color: #218838;
 }
 
-/* Style pour les labels */
-label {
-  font-size: 14px;
-  color: #333;
-  font-weight: bold;
-  margin-bottom: 5px;
-  display: block;
-}
-
 /* Style du tableau */
-.table {
+.tableSo {
   width: 100%;
   margin-top: 20px;
 }
 
-.table-striped {
-  border-collapse: collapse;
-}
-
-.table-striped th,
-.table-striped td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
 
 .table-striped tr:nth-child(even) {
   background-color: #f9f9f9;
@@ -128,16 +111,13 @@ label {
 
 /* Responsive pour petits écrans */
 @media (max-width: 768px) {
-  .achat-container {
-    flex-direction: column;
-  }
-
   .fournisseur-section,
-  .produit-section,
-  .consultation {
-    flex: 1 1 100%;
+  .produit-section {
+    flex: 1 1 100%; /* Utilise 100% de la largeur pour chaque section */
+    margin-bottom: 15px; /* Ajoute un espace entre les sections */
   }
 }
+
 
 .achat-container {
   display: flex;
@@ -150,45 +130,17 @@ label {
 .produit-section {
   flex: 1 1 48%;
   background: #ffffff;
-
   padding: 15px;
   box-sizing: border-box;
   border-radius: 10px;
-  box-shadow: 2px  10px 14px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 10px 14px 0 rgba(0, 0, 0, 0.1);
 }
 
 .consultation {
   flex: 1 1 48%;
   background: #ffffff;
-  border-radius: 5px;
+  border-radius: 10px;
   padding: 15px;
   box-sizing: border-box;
-  border-radius: 10px;
-  box-shadow:2px 10px 14px 8px rgba(0, 0, 0, 0.1);
-
-}
-.quantite-section {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.quantite-section input,
-.quantite-section .react-select__control {
-  flex: 1;
-  min-width: 350px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ced4da;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  font-size: 14px;
-  color: #495057;
-}
-
-.quantite-section input:focus,
-.quantite-section .react-select__control--is-focused {
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  outline: none;
+  box-shadow: 2px 10px 14px 8px rgba(0, 0, 0, 0.1);
 }

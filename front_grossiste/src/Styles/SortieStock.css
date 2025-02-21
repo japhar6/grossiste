@@ -96,7 +96,7 @@ button.btn-info:hover {
     margin-top: 10px; /* Espace entre les boutons */
   }
 
-  .table {
+  .tableMa {
     display: block; /* Utilise le défilement horizontal */
 
     white-space: nowrap;
@@ -109,26 +109,26 @@ button.btn-info:hover {
     font-size: 0; /* Masque le texte original */
   }
 
-  .table th:nth-child(2), 
-  .table td:nth-child(2),
-  .table th:nth-child(3), 
-  .table td:nth-child(3),
-  .table th:nth-child(4), 
-  .table td:nth-child(4),
-  .table th:nth-child(5), 
-  .table td:nth-child(5),
-  .table th:nth-child(8), 
-  .table td:nth-child(8) {
+  .tableMa th:nth-child(2), 
+  .tableMa td:nth-child(2),
+  .tableMa th:nth-child(3), 
+  .tableMa td:nth-child(3),
+  .tableMa th:nth-child(4), 
+  .tableMa td:nth-child(4),
+  .tableMa th:nth-child(5), 
+  .tableMa td:nth-child(5),
+  .tableMa th:nth-child(8), 
+  .tableMa td:nth-child(8) {
     display: none; /* Masque les colonnes 2, 3, 4, 5 et 8 */
   }
 
-  .table th, 
-  .table td {
+  .tableMa th, 
+  .tableMa td {
     min-width: 120px; /* Largeur minimale pour les colonnes sur mobile */
     font-size: 12px; /* Taille de police ajustée pour mobile */
   }
 
-  .table tr:nth-child(even) {
+  .tableMa tr:nth-child(even) {
     background-color: #f9f9f9; /* Conserve le style de fond pour les lignes paires */
   }
 

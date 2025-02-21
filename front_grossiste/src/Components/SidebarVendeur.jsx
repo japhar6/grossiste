@@ -31,21 +31,50 @@ function SidebarVendeur(){
                 }
             };
         
-            // Gestion du swipe
-            const handleTouchStart = (e) => {
-                const touchStartX = e.touches[0].clientX;
-                const handleTouchMove = (e) => {
-                    const touchEndX = e.touches[0].clientX;
-                    if (touchEndX - touchStartX > 50) {
-                        setHidden(false); // Ouvrir la sidebar si le mouvement est vers la droite
-                        document.removeEventListener('touchmove', handleTouchMove);
-                    } else if (touchStartX - touchEndX > 50) {
-                        setHidden(true); // Fermer la sidebar si le mouvement est vers la gauche
-                        document.removeEventListener('touchmove', handleTouchMove);
-                    }
-                };
-                document.addEventListener('touchmove', handleTouchMove);
-            };
+         // Variables pour gérer le swipe
+             let touchStartX = 0;
+             let touchEndX = 0;
+         
+             useEffect(() => {
+                 const handleTouchStart = (e) => {
+                     touchStartX = e.touches[0].clientX;
+                     console.log("Touch Start:", touchStartX);
+                 };
+         
+                 const handleTouchMove = (e) => {
+                     touchEndX = e.touches[0].clientX;
+                 };
+         
+                 const handleTouchEnd = () => {
+                     const swipeDistance = touchEndX - touchStartX;
+                     console.log("Swipe Distance:", swipeDistance);
+         
+                     // On vérifie que le swipe commence bien à gauche (moins de 30px)
+                     if (touchStartX > 30) {
+                         console.log("Swipe ignoré (pas assez à gauche)");
+                         return;
+                     }
+         
+                     if (swipeDistance > 50) {
+                         console.log("Ouvrir sidebar");
+                         setHidden(false);
+                     } else if (swipeDistance < -50) {
+                         console.log("Fermer sidebar");
+                         setHidden(true);
+                     }
+                 };
+         
+                 document.addEventListener("touchstart", handleTouchStart);
+                 document.addEventListener("touchmove", handleTouchMove);
+                 document.addEventListener("touchend", handleTouchEnd);
+         
+                 return () => {
+                     document.removeEventListener("touchstart", handleTouchStart);
+                     document.removeEventListener("touchmove", handleTouchMove);
+                     document.removeEventListener("touchend", handleTouchEnd);
+                 };
+             }, []);
+         
     const buttons = [
   
         { path: "/vendeur", icon: faCashRegister, text: "Vente et prise de commande" },
@@ -56,8 +85,7 @@ function SidebarVendeur(){
         <>
                       <aside 
                                   className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`}
-                                  onTouchStart={handleTouchStart} // Ajouter le gestionnaire de touch
-                              >
+    >
                                   <button 
                                       className="btn btn-light collapse-btn" 
                                       onClick={toggleSidebar}
@@ -68,7 +96,7 @@ function SidebarVendeur(){
                                   {!hidden && (
                                       <>
                                           <h1 className='gradient text-center'>
-                                              {collapsed ? "" : "GROSSISTE"}
+                                              {collapsed ? " " : "GROSSISTE"}
                                           </h1>
                     
                                           <div className="menu mt-2 p-2 pt-1">

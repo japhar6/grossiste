@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react"; // Ajoutez useRef ici
 import axios from "axios";
 import Swal from "sweetalert2";
 import "../Styles/Entrepot.css";
@@ -14,7 +14,9 @@ function Entrepot() {
     type: "",
     magasinier: "",
   });
-  
+  const [editingEntrepotId, setEditingEntrepotId] = useState(null); // État pour l'entrepôt à modifier
+  const nomInputRef = useRef(null); // Référence pour le champ de saisie "Nom"
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -56,35 +58,59 @@ function Entrepot() {
           });
         });
     }
-  }, []);
+  }, [token]);
 
-  const handleAddEntrepot = () => {
+  const handleAddOrUpdateEntrepot = () => {
     if (!newEntrepot.nom || !newEntrepot.localisation || !newEntrepot.type || !newEntrepot.magasinier) {
       Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez remplir tous les champs." });
       return;
     }
 
-    axios
-      .post("http://localhost:5000/api/entrepot", newEntrepot, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    const request = editingEntrepotId
+      ? axios.put(`http://localhost:5000/api/entrepot/${editingEntrepotId}`, newEntrepot, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      : axios.post("http://localhost:5000/api/entrepot", newEntrepot, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+    request
       .then((response) => {
-        setEntrepots([...entrepots, response.data]);
+        setEntrepots((prev) =>
+          editingEntrepotId
+            ? prev.map((entrepot) => (entrepot._id === editingEntrepotId ? response.data : entrepot))
+            : [...prev, response.data]
+        );
         setNewEntrepot({ nom: "", localisation: "", type: "", magasinier: "" });
-        Swal.fire({ icon: "success", title: "Entrepôt ajouté!", text: "L'entrepôt a été ajouté avec succès." });
-        window.location.reload();
+        setEditingEntrepotId(null); // Réinitialiser l'ID d'édition
+        Swal.fire({
+          icon: "success",
+          title: editingEntrepotId ? "Entrepôt modifié!" : "Entrepôt ajouté!",
+          text: "L'entrepôt a été " + (editingEntrepotId ? "modifié" : "ajouté") + " avec succès."
+        }).then(() => {
+          window.location.reload(); // Recharger la page après avoir cliqué sur OK
+        });
       })
       .catch((error) => {
-        Swal.fire({ icon: "error", title: "Erreur", text: "Une erreur est survenue lors de l'ajout de l'entrepôt." });
+        Swal.fire({ icon: "error", title: "Erreur", text: "Une erreur est survenue lors de l'ajout ou de la modification de l'entrepôt." });
       });
-
   };
-  
-  
+
+  const handleEdit = (entrepot) => {
+    setNewEntrepot({
+      nom: entrepot.nom,
+      localisation: entrepot.localisation,
+      type: entrepot.type,
+      magasinier: entrepot.magasinier ? entrepot.magasinier._id : "",
+    });
+    setEditingEntrepotId(entrepot._id); // Définir l'ID de l'entrepôt à modifier
+    nomInputRef.current.focus(); // Mettre le focus sur le champ "Nom"
+  };
+
   const handleSupprimer = async (id) => {
     const result = await Swal.fire({
       title: 'Êtes-vous sûr?',
-      text: "Vous allez Supprimer cette entrepot . Cette action est irréversible!",
+      text: "Vous allez Supprimer cet entrepôt. Cette action est irréversible!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Oui, Supprimer!',
@@ -93,17 +119,16 @@ function Entrepot() {
 
     if (result.isConfirmed) {
       try {
-        const token = localStorage.getItem("token");
-       
         await axios.delete(`http://localhost:5000/api/entrepot/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        Swal.fire('Supprimé!', 'L\'entrepot a été supprimé.', 'success').then(window.location.reload());
+        Swal.fire('Supprimé!', 'L\'entrepôt a été supprimé.', 'success').then(() => {
+          setEntrepots((prev) => prev.filter((entrepot) => entrepot._id !== id)); // Met à jour la liste des entrepôts
+        });
 
-    
       } catch (error) {
         console.error("Erreur de suppression", error);
         Swal.fire('Erreur', 'Une erreur s\'est produite lors de la suppression.', 'error');
@@ -111,44 +136,18 @@ function Entrepot() {
     }
   };
 
-
   return (
     <main className="center">
       <Sidebar />
       <section className="contenue">
         <Header />
         <div className="p-3 content center">
-          <div className="row">
-            <div className="col-md-4">
-              <div className="ajoutEntrepot p-3 border rounded">
-                <h6 className="alert alert-info">
-                  <i className="fa fa-plus"></i> Ajouter un Entrepôt
-                </h6>
-                <input type="text" placeholder="Nom de l'entrepôt" value={newEntrepot.nom} onChange={(e) => setNewEntrepot({ ...newEntrepot, nom: e.target.value })} className="form-control mb-3" />
-                <input type="text" placeholder="Localisation" value={newEntrepot.localisation} onChange={(e) => setNewEntrepot({ ...newEntrepot, localisation: e.target.value })} className="form-control mb-3" />
-                <select className="form-control mb-3" value={newEntrepot.type} onChange={(e) => setNewEntrepot({ ...newEntrepot, type: e.target.value })}>
-                  <option value="">Sélectionnez un type</option>
-                  <option value="principal">Principal</option>
-                  <option value="secondaire">Secondaire</option>
-                </select>
-                <select className="form-control mb-3" value={newEntrepot.magasinier} onChange={(e) => setNewEntrepot({ ...newEntrepot, magasinier: e.target.value })}>
-                  <option value="">Sélectionnez un magasinier</option>
-                  {magasiniersDisponibles.length === 0 ? (
-                    <option disabled>Aucun magasinier disponible</option>
-                  ) : (
-                    magasiniersDisponibles.map((magasinier) => (
-                      <option key={magasinier._id} value={magasinier._id}>{magasinier.nom}</option>
-                    ))
-                  )}
-                </select>
-                <button className="btn1 btn1-success" onClick={handleAddEntrepot}>Ajouter</button>
-              </div>
-            </div>
-            <div className="col-md-8">
-              <div className="mini-stat p-3">
-                <h6 className="alert alert-info">
-                  <i className="fa fa-warehouse"></i> Liste des Entrepôts
-                </h6>
+          <div className="mini-stat ">
+            <h6 className="alert alert-info">
+              <i className="fa fa-warehouse"></i> Liste des Entrepôts
+            </h6>
+            <div className="consultatio">
+              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                 <table className="table table-striped table-hover">
                   <thead>
                     <tr>
@@ -169,8 +168,8 @@ function Entrepot() {
                         <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
                         <td>{entrepot.dateCreation}</td>
                         <td>
-                          <button className="btn btn-warning ms-2">Modifier</button>
-                          <button className="btn btn-danger ms-2"  onClick={() => handleSupprimer(entrepot._id)} >Supprimer</button>
+                          <button className="btn btn-warning ms-2" onClick={() => handleEdit(entrepot)}>Modifier</button>
+                          <button className="btn btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>Supprimer</button>
                         </td>
                       </tr>
                     ))}
@@ -178,6 +177,50 @@ function Entrepot() {
                 </table>
               </div>
             </div>
+          </div>
+          <div className="ajoutPersonnel">
+            <h6 className="alert alert-info">
+              <i className="fa fa-plus"></i> {editingEntrepotId ? "Modifier un Entrepôt" : "Ajouter un Entrepôt"}
+            </h6>
+            <input 
+              type="text" 
+              placeholder="Nom de l'entrepôt" 
+              value={newEntrepot.nom} 
+              onChange={(e) => setNewEntrepot({ ...newEntrepot, nom: e.target.value })} 
+              className="form-control mb-3" 
+              ref={nomInputRef} // Ajoutez la référence ici
+            />
+            <input 
+              type="text" 
+              placeholder="Localisation" 
+              value={newEntrepot.localisation} 
+              onChange={(e) => setNewEntrepot({ ...newEntrepot, localisation: e.target.value })} 
+              className="form-control mb-3" 
+            />
+            <select 
+              className="form-control mb-3" 
+              value={newEntrepot.type} 
+              onChange={(e) => setNewEntrepot({ ...newEntrepot, type: e.target.value })}>
+              <option value="">Sélectionnez un type</option>
+              <option value="principal">Principal</option>
+              <option value="secondaire">Secondaire</option>
+            </select>
+            <select 
+              className="form-control mb-3" 
+              value={newEntrepot.magasinier} 
+              onChange={(e) => setNewEntrepot({ ...newEntrepot, magasinier: e.target.value })}>
+              <option value="">Sélectionnez un magasinier</option>
+              {magasiniersDisponibles.length === 0 ? (
+                <option disabled>Aucun magasinier disponible</option>
+              ) : (
+                magasiniersDisponibles.map((magasinier) => (
+                  <option key={magasinier._id} value={magasinier._id}>{magasinier.nom}</option>
+                ))
+              )}
+            </select>
+            <button className="btn1 btn1-success" onClick={handleAddOrUpdateEntrepot}>
+              {editingEntrepotId ? "Modifier" : "Ajouter"}
+            </button>
           </div>
         </div>
       </section>

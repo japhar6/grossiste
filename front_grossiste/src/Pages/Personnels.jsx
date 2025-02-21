@@ -272,35 +272,37 @@ function Personnels() {
                           {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
                 </button>
                 <div className="consultation">
-                <div className="table-container" style={{ overflowX: 'hidden',overflowY:'auto' }}>
-  <table className="table table-striped table-hover">
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Email</th>
-        <th>Poste</th>
-        <th>Numero CIN</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredUsers
-        .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
-        .map((user) => (
-          <tr key={user._id}>
-            <td>{user.nom}</td>
-            <td>{user.email}</td>
-            <td>{user.role}</td>
-            <td>{user.numero_cin}</td>
-            <td>
-              <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
-                <i className="fa fa-eye"></i>
-              </button>
-            </td>
-          </tr>
-        ))}
-    </tbody>
-  </table>
+                <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+                <table className="tablesa table-striped table-hover table-sm w-100">
+
+  <thead>
+    <tr>
+      <th className="p-1 text-nowrap">Nom</th>
+      <th className="p-1 text-nowrap">Email</th>
+      <th className="p-1 text-nowrap">Poste</th>
+      <th className="p-1 text-nowrap">Numero CIN</th>
+      <th className="p-1 text-nowrap">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredUsers
+      .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
+      .map((user) => (
+        <tr key={user._id}>
+          <td className="p-1 text-nowrap">{user.nom}</td>
+          <td className="p-1 text-nowrap">{user.email}</td>
+          <td className="p-1 text-nowrap">{user.role}</td>
+          <td className="p-1 text-nowrap">{user.numero_cin}</td>
+          <td className="p-1 text-nowrap">
+            <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
+              <i className="fa fa-eye"style={{fontSize:"15px"}}></i>
+            </button>
+          </td>
+        </tr>
+      ))}
+  </tbody>
+</table>
+
 </div></div>
 
             </div>
