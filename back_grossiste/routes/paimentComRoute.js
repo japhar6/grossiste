@@ -10,8 +10,9 @@ router.post('/commercial/:id', paiementController.validerPaiementCommerciale);
 // Mettre à jour le paiement après vente des produits
 router.put('/mettre-ajour/:referenceFacture', paiementController.mettreAJourPaiementCommerciale);
 
-
 router.get('/performance/commercial/:commercialId', paiementController.getVentesByCommercial);
+
+router.get("/info", paiementController.getPaiementsCommerciales);
 
 
 
