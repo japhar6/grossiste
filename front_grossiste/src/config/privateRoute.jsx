@@ -10,8 +10,7 @@ const PrivateRoute = ({ allowedRoles }) => {
     admin: ["/admin", "/produit", "/fournisseur", "/personnel", "/caisse", "/entrepot", "/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande"],
     vendeur: ["/vendeur", "/profilv", "/histov"],
     magasinier: ["/magasinier", "/profilm", "/histom"],
-    caissier: ["/caissier", "/profilc", "/histoc"],
-    gestion_prix:["/gestionprix","/profilg"]
+    caissier: ["/caissier", "/profilc", "/histoc","/PaiementCom"],
   };
 
   // Page d'accueil par rôle

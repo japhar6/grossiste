@@ -1,42 +1,94 @@
 
-.stats{
-    height: 30vh;
-    width: 100%;
-    background-color: white;
-    border-radius: 10px;
-}
-
-.one{
-    height: 12vh;
-    width: 28%;
-    margin: 1%;
-    color: white;
-    border-radius: 10px;
-    background: rgb(81,173,110);
-    background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); 
-}
-
-.chart{
-    width: 80%;
-    height: 50vh;
-    border-radius: 10px;
-    background-color: white;
-}
-.chart1{
-    height: 100%;
-    width: 40%;
-    
-
-}
-.chart2{
-    height: 100%;
-    width: 40%;
   
-}
-.profil{
-    width: 19%;
-    margin-left: 1%;
-    height: 50vh;
+  .dashboard-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh; /* Conserve la hauteur de la fenêtre */
+   
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f8f9fa;
+    position: relative;
+    overflow-y: auto;/* Permet le défilement vertical */
+  }
+  
+  /* Cartes des statistiques */
+  .stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     background-color: white;
+    padding: 20px;
     border-radius: 10px;
-}
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 200px;
+    height: 150px;
+    margin: 10px;
+  }
+  
+  .stat-card h1 {
+    font-size: 2rem;
+    color: #007bff;
+  }
+  
+  .stat-card h6 {
+    font-size: 1rem;
+    color: #6c757d;
+  }
+  
+  /* Conteneur des statistiques */
+  .stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  /* Section des graphiques */
+  .charts-wrapper {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 30px;
+  }
+  
+  .chart-box {
+    width: 45%;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  /* Styles pour les écrans plus petits (mobile) */
+@media (max-width: 768px) {
+    .dashboard-container {
+      flex-direction: column; /* Change la direction du flex en colonne */
+      height: auto; /* Permet au conteneur de s'ajuster à la taille du contenu */
+    }
+  
+    .main-content {
+      padding: 10px; /* Réduire le padding pour économiser de l'espace */
+    }
+  
+    .stat-card {
+      width: 100%; /* Les cartes prennent toute la largeur */
+      height: auto; /* Permet aux cartes de s'ajuster à leur contenu */
+      margin: 5px 0; /* Réduit l'espacement entre les cartes */
+    }
+  
+    .charts-wrapper {
+      flex-direction: column; /* Empile les graphiques verticalement */
+      align-items: stretch; /* Permet aux graphiques de prendre toute la largeur */
+    }
+  
+    .chart-box {
+      width: 100%; /* Les graphiques prennent toute la largeur */
+      margin-bottom: 20px; /* Espacement entre les graphiques */
+    }
+  }
+  

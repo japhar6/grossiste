@@ -23,12 +23,11 @@ import Commerciale from './Pages/Commerciale.jsx';
 import Vendeur from './Pages/Vendeur.jsx';
 import Magasinier from './Pages/Magasinier.jsx';
 import HistoV from './Pages/HistoventeVendeur.jsx';
-import HistoM from './Pages/Histopaiement.jsx';
+
 import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
-import GestionPrix from './Pages/Gestion_Prix.jsx';
-import ForbiddenPage from "./Pages/ForbiddenPage";
-
+import PaiementCom from './Pages/PaiementCom.jsx';
+import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -64,7 +63,7 @@ function App() {
         <Route element={<PrivateRoute allowedRoles={["magasinier"]} />}>
           <Route path='/magasinier' element={<Magasinier />} />
           <Route path='/profilm' element={<ProfilM />} />
-          <Route path='/histom' element={<HistoM />} />
+        
         </Route>
 
         {/* Routes CAISSIER */}
@@ -72,11 +71,8 @@ function App() {
           <Route path='/caissier' element={<Caissier />} />
           <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
-        </Route>
-        <Route element={<PrivateRoute allowedRoles={["gestion_prix"]} />}>
-        <Route path='/gestionprix' element={<GestionPrix />} />
-        <Route path='/profilg' element={<ProfilG />} />
-        </Route>
+          <Route path='/PaiementCom' element={<PaiementCom />} />
+          </Route>
       </Routes>
     </BrowserRouter>
   );

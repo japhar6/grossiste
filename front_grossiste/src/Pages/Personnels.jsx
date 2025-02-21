@@ -222,13 +222,15 @@ function Personnels() {
     <>
       <header></header>
       <main className="center">
+        
         <Sidebar />
         <section className="contenue">
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
-            <h6 className='alert alert-success'><i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
-                   <div className='center bg-light p-3 mini'>
+            <h6 className='alert alert-success'>
+              <i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
+             <div className='center bg-light p-3 mini'>
       {roleCounts.map((role, index) => (
         <div key={index} className="perso m-2">
           <div className="role-name font-weight-bold">{role._id}</div>
@@ -269,40 +271,43 @@ function Personnels() {
                         >
                           {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
                 </button>
-              <div className="consultation">
-                <table className="table table-striped table-hover ">
-                  <thead>
-                    <tr>
-                      <th>Nom</th>
-                      <th>Email</th>
-                      <th>Poste</th>
-                      <th>Numero CIN</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                        {filteredUsers
-                          .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
-                          .map((user) => (
-                            <tr key={user._id}>
-                              <td>{user.nom}</td>
-                              <td>{user.email}</td>
-                              <td>{user.role}</td>
-                              <td>{user.numero_cin}</td>
-                              <td>
-                                <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
-                                  <i className="fa fa-eye"></i>
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                    </tbody>
+                <div className="consultation">
+                <div className="table-container" style={{ overflowX: 'hidden',overflowY:'auto' }}>
+  <table className="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Poste</th>
+        <th>Numero CIN</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredUsers
+        .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
+        .map((user) => (
+          <tr key={user._id}>
+            <td>{user.nom}</td>
+            <td>{user.email}</td>
+            <td>{user.role}</td>
+            <td>{user.numero_cin}</td>
+            <td>
+              <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
+                <i className="fa fa-eye"></i>
+              </button>
+            </td>
+          </tr>
+        ))}
+    </tbody>
+  </table>
+</div></div>
 
-                </table>
-              </div>
             </div>
 
-            <div className="ajoutPersonnel p-3">
+      
+
+            <div className="ajoutPersonnel ">
               <h6 className="alert alert-success">
                 <i className="fa fa-users"></i> Ajouter un personnel
               </h6>

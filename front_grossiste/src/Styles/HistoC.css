@@ -16,5 +16,23 @@
     width: 100%; /* Prend toute la largeur */
     border-collapse: collapse; /* Supprime les espaces entre les cellules */
   }
+  .filter-container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
+  }
   
-
+  .filter-container label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    width: 48%; /* Équilibré entre les deux filtres */
+  }
+  
+  .large-input {
+    padding: 12px; /* Agrandir le champ */
+    font-size: 18px;
+    border-radius: 8px; /* Coins arrondis */
+  }
+  
