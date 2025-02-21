@@ -18,14 +18,50 @@
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
 }
 
-@keyframes gradientBG {
-  0% {
-    background-position: 0% 50%;
+/* CSS général pour la barre de navigation */
+.navbar {
+  padding: 10px 5%; /* Ajuster le padding pour de petites tailles d'écran */
+}
+
+/* Styles pour l'élément heure */
+.heure {
+  font-size: 1.2rem; /* Réduire la taille de la police */
+  padding: 5px;
+}
+
+/* Styles pour les icônes */
+.notification-icon i {
+  font-size: 1.5rem; /* Réduire la taille de l'icône */
+}
+
+.navbar-nav {
+  flex-direction: row; /* S'assurer que les éléments sont en ligne */
+  align-items: center; /* Aligner les éléments au centre */
+}
+
+/* Media query pour les écrans de moins de 430px */
+@media (max-width: 430px) {
+  .navbar {
+    flex-direction: column; 
+    align-items: flex-start; 
   }
-  50% {
-    background-position: 100% 50%;
+
+  .navbar-nav {
+    flex-direction: column; /* Aligner verticalement */
+    width: 100%; /* Prendre toute la largeur */
   }
-  100% {
-    background-position: 0% 50%;
+
+  .nav-item {
+    width: 100%; /* Prendre toute la largeur de la nav */
+    text-align: left; /* Alignement à gauche */
+  }
+
+  .heure {
+    font-size: 1rem; /* Réduire la taille de la police pour l'heure */
+    margin: 5px 0; /* Ajout d'une marge */
+  }
+
+  .navbar-toggler {
+    margin-left: auto; /* Alignement du bouton de menu à droite */
   }
 }
