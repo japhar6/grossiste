@@ -143,6 +143,27 @@ exports.getVentesByCommercial = async (req, res) => {
     }
 };
 
+exports.getVentesByInfo = async (req, res) => {
+    try {
+        const { commercialId, commandeId } = req.params;
+        
+        // Assurez-vous de filtrer par référence de facture (ou un autre critère unique)
+        const ventes = await VenteCom.find({ commercialId, commandeId })
+            .populate("produitsRestants.produitId", "nom")
+            .populate("produitsVendus.produitId", "nom");
+
+        if (!ventes || ventes.length === 0) {
+            return res.status(404).json({ message: "Aucune vente trouvée pour ce commercial et cette commande" });
+        }
+
+        res.status(200).json(ventes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+
 exports.getPaiementsCommerciales = async (req, res) => {
     try {
         const paiements = await PaiementCommerciale.find()
@@ -151,12 +172,13 @@ exports.getPaiementsCommerciales = async (req, res) => {
 
 
         const paiementsFormatted = paiements.map(paiement => ({
+            commande: paiement.commandeId?._id || "N/A",
             referenceFacture: paiement.commandeId?.referenceFacture || "N/A",
             caissier: paiement.idCaissier ? `${paiement.idCaissier.nom}` : "Inconnu",
             modePaiement: paiement.commandeId?.modePaiement || "Non défini",
             commercial: paiement.commandeId?.commercialId || "N/A",
             statut: paiement.statut,
-            date: paiement.createdAt.toISOString().split('T')[0] // Format YYYY-MM-DD
+            date: paiement.createdAt.toISOString().split('T')[0]
         }));
         
 

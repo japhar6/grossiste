@@ -38,49 +38,52 @@ function RetourStockCom() {
   }, []);
 
   // Fonction pour récupérer les ventes d'un commercial
-  const fetchVentesByCommercial = (commercialId) => {
-    if (!commercialId) {
-      console.error("Le commercialId est undefined ou invalide.");
-      return Promise.reject("Le commercialId est undefined ou invalide.");
-    }
+  // Fonction pour récupérer les ventes à partir de commercialId et commandeId
+const fetchVentesByInfo = (commercialId, commandeId) => {
+  if (!commercialId || !commandeId) {
+    console.error("Le commercialId ou commandeId est undefined ou invalide.");
+    return Promise.reject("Le commercialId ou commandeId est undefined ou invalide.");
+  }
 
-    return axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`)
-      .then(response => {
-        console.log("Ventes récupérées pour le commercial:", response.data);
-        setVentes(response.data);
-        setError(""); // Réinitialiser l'erreur en cas de succès
-        return response.data;
+  return axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
+    .then(response => {
+      console.log("Ventes récupérées pour le commercial et la commande:", response.data);
+      setVentes(response.data);
+      setError(""); // Réinitialiser l'erreur en cas de succès
+      return response.data;
+    })
+    .catch(error => {
+      console.error("Erreur lors de la récupération des ventes :", error);
+      setError("Erreur lors de la récupération des ventes.");
+      return Promise.reject(error);
+    });
+};
+
+// Ouverture du modal et récupération des ventes
+const openModal = (paiement) => {
+  if (paiement.commercial && paiement.commande) {
+    console.log("Paiement trouvé:", paiement);
+
+    // Récupérer les ventes avec commercialId et commandeId
+    fetchVentesByInfo(paiement.commercial, paiement.commande)
+      .then(ventes => {
+        // Une fois les ventes récupérées, on met à jour modalData
+        setModalData({
+          paiement: paiement,  // Données du paiement
+          ventes: ventes       // Données des ventes récupérées
+        });
+        console.log("Ventes récupérées:", ventes); // Vérifier que les ventes sont bien récupérées
       })
       .catch(error => {
-        console.error("Erreur lors de la récupération des ventes :", error);
-        setError("Erreur lors de la récupération des ventes.");
-        return Promise.reject(error);
+        console.error("Erreur lors de la récupération des ventes:", error);
+        setError("Impossible de récupérer les ventes.");
       });
-  };
+  } else {
+    console.error("Commercial ID ou Commande ID est indéfini pour paiement:", paiement);
+    setError("ID du commercial ou de la commande non trouvé.");
+  }
+};
 
-  const openModal = (paiement) => {
-    if (paiement.commercial) {
-      console.log("Paiement trouvé:", paiement);
-
-      // Récupérer les ventes en même temps
-      fetchVentesByCommercial(paiement.commercial)
-        .then(ventes => {
-          // Une fois les ventes récupérées, on met à jour modalData
-          setModalData({
-            paiement: paiement,  // Données du paiement
-            ventes: ventes       // Données des ventes récupérées
-          });
-          console.log("Ventes récupérées:", ventes); // Vérifier que les ventes sont bien récupérées
-        })
-        .catch(error => {
-          console.error("Erreur lors de la récupération des ventes:", error);
-          setError("Impossible de récupérer les ventes.");
-        });
-    } else {
-      console.error("Commercial ID est indéfini pour paiement:", paiement);
-      setError("ID du commercial non trouvé.");
-    }
-  };
 
   const handleReturnValidation = () => {
     const magasinierId = localStorage.getItem("userid"); // Récupérer magasinierId
