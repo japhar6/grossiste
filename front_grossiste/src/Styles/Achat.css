@@ -81,7 +81,8 @@ button.btn-primary {
 }
 .button-group button {
   padding: 5px 10px; /* Ajustez les valeurs selon vos besoins */
-  font-size: 0.875rem; /* Réduit la taille de la police */
+  font-size: 0.875rem;
+  /* Réduit la taille de la police */
 }
 .btn-spacing {
   margin-left: 10px; /* Ajustez la valeur selon vos besoins */
@@ -98,11 +99,19 @@ button.btn-primary {
 
   margin-top: 20px;
 }
+@media (max-width: 768px) {
+  .custom-select {
+      width: 100%; /* Assurez-vous que le select prend toute la largeur */
+      font-size: 10px !important; /* Ajustez la taille de la police si nécessaire */
+  }
+}
+
 
 @media (min-width: 768px) {
   .button-group {
     margin-left: 70%;
     margin-top: 20px;
+    
   }
   
 .btn7 {

@@ -19,6 +19,7 @@ import PriseCommande from './Pages/PriseCommande.jsx';
 import Caisse from './Pages/Caisse.jsx';
 import SortieCommande from './Pages/SortieCommande.jsx';
 import Stock from './Pages/Stock.jsx';
+import StockMaga from './Pages/Stockmaga.jsx';
 import Commerciale from './Pages/Commerciale.jsx';
 import Vendeur from './Pages/Vendeur.jsx';
 import Magasinier from './Pages/Magasinier.jsx';
@@ -66,6 +67,7 @@ function App() {
           <Route path='/magasinier' element={<Magasinier />} />
           <Route path='/profilm' element={<ProfilM />} />
           <Route path='/RetourStockCom' element={<RetourStockCom />} />
+          <Route path='/stockma' element={<StockMaga />} />
         
         </Route>
 

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
       faChevronLeft, 
     faChevronRight, 
-    faCashRegister, faRotateLeft
+    faCashRegister, faRotateLeft,faBoxes
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -82,6 +82,7 @@ function SidebarVendeur(){
         { path: "/magasinier", icon: faCashRegister, text: "Sortie des produits" },
         { path: "/RetourStockCom", icon: faRotateLeft, text: "Retour des produits" },
 
+        { path: "/stockma", icon: faBoxes, text: "Gestion de stock" },
     
       ];
     return(
