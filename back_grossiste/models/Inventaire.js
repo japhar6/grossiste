@@ -25,7 +25,12 @@ const inventaireSchema = new mongoose.Schema({
   },
   raisonAjustement: {
     type: String,
-    enum: ['perte', 'vol', 'erreur de comptage','vendu'],
+   
+    required: true,
+  },
+  personneId: { // Ajoutez cet attribut
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Assurez-vous de référencer le bon modèle
     required: true,
   },
 });

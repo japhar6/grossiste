@@ -132,6 +132,7 @@ console.log("produit" ,produitId);
           description: "",
           prixDachat: "",
           unite: "",
+          quantiteMinimum: "",
         
         });
         setNouvelleCategorie("");
@@ -635,13 +636,20 @@ console.log("produit" ,produitId);
                         value={nouveauProduit.unite}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, unite: e.target.value })}
                       />
+                      <input
+                        type="number"
+                        className="form-control mt-2"
+                        placeholder="Quantité minimum"
+                        value={nouveauProduit.quantiteMinimum}
+                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, quantiteMinimum: e.target.value })}
+                      />
+                      <button
+                        className="btn btn-primary mt-2"
+                        onClick={handleAjoutProduit}
+                      >
+                        Ajouter
+                      </button>
                          <div className="button-groupu" style={{ display: 'flex', gap: '10px' }}>
-    <button
-        className="btn btn-primary"
-        onClick={handleAjoutProduit}
-    >
-        Ajouter
-    </button>
     <button
         className="btn btn-primary"
         onClick={() => setAfficherFormulaireProduit(false)} // Définir à false sur clic

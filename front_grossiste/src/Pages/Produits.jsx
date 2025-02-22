@@ -13,17 +13,14 @@ function ListeProduits() {
   const [order, setOrder] = useState("asc"); 
   const [orderBy, setOrderBy] = useState("nom"); 
   const [prixVenteModifier, setPrixVenteModifier] = useState("");
-const [produitAModifier, setProduitAModifier] = useState(null); 
-const [prixAchatModifier, setPrixAchatModifier] = useState("");
- 
-
-
+  const [produitAModifier, setProduitAModifier] = useState(null); 
+  const [prixAchatModifier, setPrixAchatModifier] = useState("");
+  const [quantiteMinimumModifier, setQuantiteMinimumModifier] = useState("");
 
   useEffect(() => {
     fetchProduits();
   }, []);
 
- 
   const fetchProduits = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/produits/afficher");
@@ -38,7 +35,6 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
     }
   };
 
-  
   const filteredProduits = produits.filter((produit) => {
     const matchesRecherche = produit.nom.toLowerCase().includes(recherche.toLowerCase());
     const matchesCategorie = categorie ? produit.categorie === categorie : true;
@@ -49,18 +45,15 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
   const sortedProduits = filteredProduits.sort((a, b) => {
     let comparison = 0;
 
-
     if (orderBy === "nom") {
       comparison = a.nom.localeCompare(b.nom);
     }
 
-    // Tri par date d'ajout
     if (orderBy === "dateAjout") {
       const dateA = new Date(a.dateAjout); 
       const dateB = new Date(b.dateAjout);
       comparison = dateA - dateB; 
     }
-
 
     if (order === "desc") {
       comparison *= -1;
@@ -68,18 +61,20 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
 
     return comparison;
   });
+
   const handleModifierPrix = async (produitId) => {
     try {
       await axios.put(`http://localhost:5000/api/produits/modifier/${produitId}`, {
-        prixdevente: prixVenteModifier, prixDachat: prixAchatModifier,
+        prixdevente: prixVenteModifier,
+        prixDachat: prixAchatModifier,
+        quantiteMinimum: quantiteMinimumModifier,
       });
-      fetchProduits(); // Réinitialiser la liste des produits après la mise à jour
-      setProduitAModifier(null); // Réinitialiser le produit à modifier
+      fetchProduits();
+      setProduitAModifier(null);
     } catch (error) {
-      console.error("Erreur lors de la mise à jour du prix de vente", error);
+      console.error("Erreur lors de la mise à jour du produit", error);
     }
   };
-  
 
   return (
     <>
@@ -128,76 +123,66 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
               </div>
 
               <div className="consultatiof">
-              <div className="  table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-              <div className="table-responsive table-striped">
-  <table className="tableSt mt-3">
-    <thead>
-      <tr>
-        <th>Code Produit</th>
-        <th>
-          <span style={{ cursor: "pointer", color: 'white' }} onClick={() => {
-            setOrderBy("nom");
-            setOrder(order === "asc" ? "desc" : "asc");
-          }}>
-            Nom{" "}
-            {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
-          </span>
-        </th>
-        <th>Description</th>
-        <th>Prix de Vente</th>
-        <th>Prix d'Achat</th>
-        <th>Catégorie</th>
-        <th>
-          <span style={{ cursor: "pointer", color: 'white' }} onClick={() => {
-            setOrderBy("dateAjout");
-            setOrder(order === "asc" ? "desc" : "asc");
-          }}>
-            Date d'Ajout{" "}
-            {orderBy === "dateAjout" && (order === "asc" ? "↑" : "↓")}
-          </span>
-        </th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {sortedProduits.map((produit) => (
-        <tr key={produit._id}>
-          <td>{produit.codeProduit}</td>
-          <td>{produit.nom}</td>
-          <td>{produit.description}</td>
-          <td>{produitAModifier === produit._id ? (
-            <input type="number" className="form-control" value={prixVenteModifier} onChange={(e) => setPrixVenteModifier(e.target.value)} placeholder={produit.prixdevente} />
-          ) : (
-            <span style={{ color: 'black' }}>{produit.prixdevente} Ariary</span>
-          )}</td>
-          <td>{produitAModifier === produit._id ? (
-            <input type="number" className="form-control" value={prixAchatModifier} onChange={(e) => setPrixAchatModifier(e.target.value)} placeholder={produit.prixDachat} />
-          ) : (
-            <span style={{ color: 'black' }}>{produit.prixDachat} Ariary</span>
-          )}</td>
-          <td>{produit.categorie}</td>
-          <td>{produit.dateAjout}</td>
-          <td>
-            {produitAModifier === produit._id ? (
-              <button className="btn btn-success" onClick={() => handleModifierPrix(produit._id)}>
-                Enregistrer
-              </button>
-            ) : (
-              <button className="btn btn-primary" onClick={() => {
-                setProduitAModifier(produit._id);
-                setPrixVenteModifier(produit.prixdevente);
-                setPrixAchatModifier(produit.prixDachat);
-              }}>
-                Modifier
-              </button>
-            )}
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
+              <div className="table-container" style={{ overflowX: 'auto', overflowY:'auto' }}>
+                <div className="table-responsive table-striped">
+                  <table className="tableSt mt-3">
+                    <thead>
+                      <tr>
+                        <th>Code Produit</th>
+                        <th>Nom</th>
+                        <th>Description</th>
+                        <th>Quantité minimum</th>
+                        <th>Prix de Vente</th>
+                        <th>Prix d'Achat</th>
+                        <th>Catégorie</th>
+                        <th>Date d'Ajout</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedProduits.map((produit) => (
+                        <tr key={produit._id}>
+                          <td>{produit.codeProduit}</td>
+                          <td>{produit.nom}</td>
+                          <td>{produit.description}</td>
+                          <td>{produitAModifier === produit._id ? (
+                            <input type="number" className="form-control" value={quantiteMinimumModifier} onChange={(e) => setQuantiteMinimumModifier(e.target.value)} placeholder={produit.quantiteMinimum} />
+                          ) : (
+                            <span style={{ color: 'black' }}>{produit.quantiteMinimum}</span>
+                          )}</td>
+                          <td>{produitAModifier === produit._id ? (
+                            <input type="number" className="form-control" value={prixVenteModifier} onChange={(e) => setPrixVenteModifier(e.target.value)} placeholder={produit.prixdevente} />
+                          ) : (
+                            <span style={{ color: 'black' }}>{produit.prixdevente} Ariary</span>
+                          )}</td>
+                          <td>{produitAModifier === produit._id ? (
+                            <input type="number" className="form-control" value={prixAchatModifier} onChange={(e) => setPrixAchatModifier(e.target.value)} placeholder={produit.prixDachat} />
+                          ) : (
+                            <span style={{ color: 'black' }}>{produit.prixDachat} Ariary</span>
+                          )}</td>
+                          <td>{produit.categorie}</td>
+                          <td>{produit.dateAjout}</td>
+                          <td>
+                            {produitAModifier === produit._id ? (
+                              <button className="btn btn-success" onClick={() => handleModifierPrix(produit._id)}>
+                                Enregistrer
+                              </button>
+                            ) : (
+                              <button className="btn btn-primary" onClick={() => {
+                                setProduitAModifier(produit._id);
+                                setPrixVenteModifier(produit.prixdevente);
+                                setPrixAchatModifier(produit.prixDachat);
+                                setQuantiteMinimumModifier(produit.quantiteMinimum);
+                              }}>
+                                Modifier
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               </div>
             </div>

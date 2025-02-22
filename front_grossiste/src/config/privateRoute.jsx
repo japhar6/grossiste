@@ -9,7 +9,7 @@ const PrivateRoute = ({ allowedRoles }) => {
   const rolePaths = {
     admin: ["/admin", "/produit", "/fournisseur", "/personnel", "/caisse", "/entrepot", "/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande"],
     vendeur: ["/vendeur", "/profilv", "/histov"],
-    magasinier: ["/magasinier", "/profilm", "/histom","/RetourStockCom","/stockma"],
+    magasinier: ["/magasinier", "/profilm", "/histom","/RetourStockCom","/stockma","/inventaire","/creerinventaire"],
     caissier: ["/caissier", "/profilc", "/histoc","/PaiementCom"],
   };
 

@@ -1,0 +1,56 @@
+/* styles.css */
+
+/* Style pour le tableau sur mobile */
+.table {
+    font-size: 0.8rem; /* Réduit la taille de la police sur mobile */
+}
+
+.table th, .table td {
+    padding: 0.5rem; /* Réduit l'espacement interne des cellules */
+}
+h6 { text-align: center;
+    font-size: 1.5rem; /* Taille de police normale */
+    font-weight: bold;
+    margin: 1rem 0; /* Marge en haut et en bas */
+}
+
+@media (max-width: 576px) {
+    h6 {
+        font-size: 1.2rem; /* Réduire la taille de la police sur mobile */
+        margin: 0.5rem 0; /* Réduire la marge sur mobile */
+    }
+}
+
+/* Style pour les boutons */
+.btnay {
+    margin-top: -1px; /* Ajuste le remplissage pour les petits écrans */
+}
+
+@media (max-width: 768px) {
+    /* Style pour les grands écrans */
+    h6 {
+        font-size: 1.2rem; /* Réduire la taille de la police sur mobile */
+        margin: 0.5rem 0; /* Réduire la marge sur mobile */
+    }
+
+    .btnay {
+    
+        padding: 0.25rem 0.5rem; 
+        margin-bottom: 5px;
+        margin-top: -1px; /* Rendre les boutons plus grands sur les grands écrans */
+    }
+
+    /* Ajustement des marges pour les champs de formulaire */
+    .form-label {
+        margin-bottom: 0.5rem; /* Réduit la marge inférieure des labels */
+    }
+
+    .form-control {
+        width: 100%; /* S'assure que les champs de formulaire prennent 100% de la largeur */
+    }
+
+    /* Style pour le tableau sur grands écrans */
+    .table {
+        font-size: 1rem; /* Taille de police normale sur grands écrans */
+    }
+}

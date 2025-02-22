@@ -70,16 +70,18 @@ function Stock() {
   });
 
   const sortedStocks = [...filteredStocks].sort((a, b) => {
-    if (!a.produit || !b.produit) return 0;
     if (sortBy === 'nom') {
       return a.produit.nom.localeCompare(b.produit.nom);
     } else if (sortBy === 'quantité') {
       return a.quantité - b.quantité;
     } else if (sortBy === 'date') {
       return new Date(a.dateEntree) - new Date(b.dateEntree);
+    } else if (sortBy === 'rupture') {
+      return a.quantité < a.produit.quantiteMinimum ? -1 : 1;
     }
     return 0;
-  });
+  }).filter(stock => sortBy !== 'rupture' || stock.quantité < stock.produit.quantiteMinimum);
+
 
   return (
     <>
@@ -127,15 +129,16 @@ function Stock() {
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-              <select
-                className="form-control"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="nom">Trier par Nom</option>
-                <option value="quantité">Trier par Quantité</option>
-                <option value="date">Trier par Date d'Entrée</option>
-              </select>
+                <select
+                  className="form-control"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="nom">Trier par Nom</option>
+                  <option value="quantité">Trier par Quantité</option>
+                  <option value="date">Trier par Date d'Entrée</option>
+                  <option value="rupture">Produit en rupture</option>
+                </select>
             </div>
 
             {loading ? (
@@ -144,27 +147,29 @@ function Stock() {
               <p className="text-danger mt-3">{error}</p>
             ) : sortedStocks.length > 0 ? (
               <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                <table className="tableSt mt-3">
+                <table className="tableSt table-striped table-bordered mt-3">
                   <thead>
                     <tr>
-                      <th onClick={() => setSortBy('codeProduit')}>Référence</th>
-                      <th onClick={() => setSortBy('nom')}>Produit</th>
-                      <th onClick={() => setSortBy('quantité')}>Quantité</th>
-                      <th>Unité</th>
-                      <th>Catégorie</th>
-                      <th onClick={() => setSortBy('date')}>Date d'ajout</th>
+                    <th>Référence</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Unité</th>
+                    <th>Catégorie</th>
+                    <th>Quantite Minimum</th>
+                    <th>Date d'ajout</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedStocks.map(stock => (
-                      <tr key={stock._id}>
-                        <td>{stock.produit?.codeProduit || 'N/A'}</td>
-                        <td>{stock.produit?.nom || 'N/A'}</td>
-                        <td>{stock.quantité}</td>
-                        <td>{stock.produit?.unite || 'N/A'}</td>
-                        <td>{stock.produit?.categorie || 'N/A'}</td>
-                        <td>{stock.dateEntree ? new Date(stock.dateEntree).toLocaleDateString() : 'N/A'}</td>
-                      </tr>
+              <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
+              <td>{stock.produit.codeProduit}</td>
+              <td>{stock.produit.nom}</td>
+              <td>{stock.quantité}</td>
+              <td>{stock.produit.unite}</td>
+              <td>{stock.produit.categorie}</td>
+              <td>{stock.produit.quantiteMinimum}</td>
+              <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+            </tr>
                     ))}
                   </tbody>
                 </table>
@@ -175,6 +180,27 @@ function Stock() {
           </div>
         </section>
       </main>
+      <style>{`
+ .stock-low {
+  animation: blink 0.6s infinite alternate ease-in-out;
+  background-color: #f8d7da !important; /* Rose clair pour une alerte */
+  color: #721c24; /* Rouge foncé pour le texte */
+  font-weight: bold;
+  border-radius: 5px;
+  padding: 10px;
+  border: 1px solid #f5c6cb; /* Bordure rouge clair */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 10px 0; /* Espacement en haut et en bas */
+}
+
+@keyframes blink {
+  0% { background-color: #f8d7da; opacity: 1; }
+  50% { background-color: #f5c6cb; opacity: 0.8; }
+  100% { background-color: #f8d7da; opacity: 1; }
+}
+
+`}</style>
+
     </>
   );
 }

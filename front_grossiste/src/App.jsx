@@ -24,7 +24,8 @@ import Commerciale from './Pages/Commerciale.jsx';
 import Vendeur from './Pages/Vendeur.jsx';
 import Magasinier from './Pages/Magasinier.jsx';
 import HistoV from './Pages/HistoventeVendeur.jsx';
-
+import Invetaire from './Pages/Inventaire.jsx'
+import CreerInventaire from './Pages/CreerInvetaire.jsx';
 import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
@@ -68,7 +69,9 @@ function App() {
           <Route path='/profilm' element={<ProfilM />} />
           <Route path='/RetourStockCom' element={<RetourStockCom />} />
           <Route path='/stockma' element={<StockMaga />} />
-        
+          <Route path='/inventaire' element={<Invetaire />} />
+          <Route path='/creerinventaire' element={<CreerInventaire />} />
+   
         </Route>
 
         {/* Routes CAISSIER */}
