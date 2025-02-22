@@ -73,9 +73,11 @@ function Stock() {
       return a.quantité - b.quantité;
     } else if (sortBy === 'date') {
       return new Date(a.dateEntree) - new Date(b.dateEntree);
+    } else if (sortBy === 'rupture') {
+      return a.quantité < a.produit.quantiteMinimum ? -1 : 1;
     }
     return 0;
-  });
+  }).filter(stock => sortBy !== 'rupture' || stock.quantité < stock.produit.quantiteMinimum);
 
   return (
     <>
@@ -140,6 +142,7 @@ function Stock() {
                   <option value="nom">Trier par Nom</option>
                   <option value="quantité">Trier par Quantité</option>
                   <option value="date">Trier par Date d'Entrée</option>
+                  <option value="rupture">Produit en rupture</option>
                 </select>
               </div>
             )}
@@ -154,22 +157,24 @@ function Stock() {
               <table className="tableSt mt-3">
                 <thead>
                   <tr>
-                    <th onClick={() => setSortBy('codeProduit')}>Référence</th>
-                    <th onClick={() => setSortBy('nom')}>Produit</th>
-                    <th onClick={() => setSortBy('quantité')}>Quantité</th>
+                    <th>Référence</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
                     <th>Unité</th>
                     <th>Catégorie</th>
-                    <th onClick={() => setSortBy('date')}>Date d'ajout</th>
+                    <th>Quantite Minimum</th>
+                    <th>Date d'ajout</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedStocks.map(stock => (
-                    <tr key={stock._id}>
+                    <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
                       <td>{stock.produit.codeProduit}</td>
                       <td>{stock.produit.nom}</td>
                       <td>{stock.quantité}</td>
                       <td>{stock.produit.unite}</td>
                       <td>{stock.produit.categorie}</td>
+                      <td>{stock.produit.quantiteMinimum}</td>
                       <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
                     </tr>
                   ))}
@@ -182,6 +187,18 @@ function Stock() {
           </div>
         </section>
       </main>
+      <style>{`
+        .stock-low {
+          animation: blink 1s infinite;
+          background-color: #ffcccc;
+        }
+
+        @keyframes blink {
+          0% { opacity: 1; }
+          50% { opacity: 0.5; }
+          100% { opacity: 1; }
+        }
+      `}</style>
     </>
   );
 }

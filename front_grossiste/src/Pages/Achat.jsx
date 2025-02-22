@@ -121,6 +121,7 @@ console.log("produit" ,produitId);
           description: "",
           prixDachat: "",
           unite: "",
+          quantiteMinimum: "",
         
         });
         setNouvelleCategorie("");
@@ -617,6 +618,13 @@ console.log("produit" ,produitId);
                         placeholder="Unite du produit"
                         value={nouveauProduit.unite}
                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, unite: e.target.value })}
+                      />
+                      <input
+                        type="number"
+                        className="form-control mt-2"
+                        placeholder="Quantité minimum"
+                        value={nouveauProduit.quantiteMinimum}
+                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, quantiteMinimum: e.target.value })}
                       />
                       <button
                         className="btn btn-primary mt-2"
