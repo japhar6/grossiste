@@ -7,10 +7,7 @@
 
 
 /* Empêcher le débordement sur mobile */
-.consultation table {
-  width: 100%;
-  border-collapse: collapse;
-}
+
 .mini-stat{
     height: 90vh;
     width: 70%;
@@ -82,21 +79,7 @@
     box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
     border-radius: 5px;
 }
-.list{
-    height: 45vh;
-    width: 100%;
-    overflow-y: scroll;
 
-   
-}
-.list table{
-    font-size: 0.8em;
-  
-}
-.table{
-  overflow: scroll;
-
-}
 
 /* Modal centré */
 .custom-modal .modal-dialog {
@@ -212,17 +195,10 @@ button.variant-danger {
   .perso-container-bottom {
     order: 1; /* Assure que les cartes en bas restent bien positionnées */
   }
-
-  .consultation th:nth-child(2),
-  .consultation th:nth-child(3),
-  .consultation th:nth-child(4),
-  .consultation td:nth-child(2),
-  .consultation td:nth-child(3),
-  .consultation td:nth-child(4) {
-    display: none; /* Cache Email, Poste, Numero CIN */
-  }
+  
+  
   .consultation td:nth-child(5) {
-    display: table-cell !important;
+    display: table-cell ;
     text-align: center;
   }
   .consultation th:nth-child(5) {
@@ -239,6 +215,20 @@ button.variant-danger {
     flex-direction: row;
     justify-content: center; /* Centrage des cartes */
   }
+
+      .tablesa {
+        font-size: 10px; /* Réduit la taille du texte */
+      }
+      .tablesa th,
+      .tablesa td {
+        padding: 2px; /* Réduit l'espace dans les cellules */
+      }
+      .tablesa button {
+        font-size: 8px; /* Réduit la taille des boutons */
+        padding: 2px 5px; /* Réduit l'espace dans les boutons */
+      }
+    
+    
 
   .perso-container-bottom {
     display: none; /* Masque la section du bas sur grand écran */

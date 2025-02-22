@@ -2,7 +2,7 @@
 
 
 /* ---- Conteneur du tableau (Gauche) ---- */
-.consultation-container {
+.consultatio-container {
   flex: 2;
   background: white;
   padding: 20px;
@@ -10,32 +10,32 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.consultation h6 {
+.consultatio h6 {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 15px;
   color: #333;
 }
 
-.consultation table {
+.consultatio table {
   width: 100%;
   border-collapse: collapse;
   background: white;
 }
 
-.consultation th, .consultation td {
+.consultatio th, .consultatio td {
   padding: 12px;
   border: 1px solid #ddd;
   text-align: left;
 }
 
-.consultation th {
+.consultatio th {
   background: #ffffff;
   color: black;
   font-weight: bold;
 }
 
-.consultation tr:hover {
+.consultatio tr:hover {
   background: #f1f1f1;
 }
 
@@ -128,8 +128,11 @@
     flex-direction: column;
   }
 
-  .consultation-container, .ajoutEntrepot-container {
+  .consultatio-container, .ajoutEntrepot-container {
     width: 100%;
     max-width: 100%;
+  } 
+  .mini-stat{
+    height: auto;
   }
 }

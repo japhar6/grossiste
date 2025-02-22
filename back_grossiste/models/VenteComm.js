@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Produit = mongoose.model('Produit');
+
 const ventecomSchema = new mongoose.Schema({
     commercialId: { 
         type: mongoose.Schema.Types.ObjectId, 
@@ -21,6 +22,10 @@ const ventecomSchema = new mongoose.Schema({
             quantite: { 
                 type: Number, 
                 required: true 
+            },
+            unite: { 
+                type: String,  // Ajout de l'unité du produit
+                required: true 
             }
         }
     ],
@@ -34,9 +39,13 @@ const ventecomSchema = new mongoose.Schema({
             quantiteRestante: { 
                 type: Number, 
                 required: true 
+            },
+            unite: { 
+                type: String,  // Ajout de l'unité aussi dans les produits restants
+                required: true 
             }
         }
-    ], 
+    ],
     dateVente: { 
         type: Date, 
         default: Date.now 

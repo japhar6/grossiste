@@ -128,7 +128,9 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
               </div>
 
               <div className="consultation">
-                <table className="table table-striped table-hover">
+              <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+      
+                <table className="tableFR table-striped table-hover">
                   <thead>
                     <tr>
                     <th>Code Produit</th>
@@ -226,7 +228,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
 
 
                 </table>
-              </div>
+              </div> </div>
             </div>
           </div>
         </section>

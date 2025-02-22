@@ -12,7 +12,7 @@
     padding: 20px;
     background-color: #f8f9fa;
     position: relative;
-    overflow-y: auto;/* Permet le défilement vertical */
+    overflow-y: auto;
   }
   
   /* Cartes des statistiques */
@@ -68,7 +68,9 @@
 @media (max-width: 768px) {
     .dashboard-container {
       flex-direction: column; /* Change la direction du flex en colonne */
-      height: auto; /* Permet au conteneur de s'ajuster à la taille du contenu */
+      height: auto; 
+   
+      /* Permet au conteneur de s'ajuster à la taille du contenu */
     }
   
     .main-content {

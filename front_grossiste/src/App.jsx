@@ -28,6 +28,8 @@ import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
+import RetourStockCom from './Pages/RetourStockCom.jsx';
+
 function App() {
   return (
     <BrowserRouter>
@@ -63,6 +65,7 @@ function App() {
         <Route element={<PrivateRoute allowedRoles={["magasinier"]} />}>
           <Route path='/magasinier' element={<Magasinier />} />
           <Route path='/profilm' element={<ProfilM />} />
+          <Route path='/RetourStockCom' element={<RetourStockCom />} />
         
         </Route>
 

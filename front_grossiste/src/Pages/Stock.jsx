@@ -149,7 +149,9 @@ function Stock() {
             ) : error ? (
               <p className="text-danger mt-3">{error}</p>
             ) : selectedEntrepot && sortedStocks.length > 0 ? (
-              <table className="table mt-3">
+
+              <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+              <table className="tableSt mt-3">
                 <thead>
                   <tr>
                     <th onClick={() => setSortBy('codeProduit')}>Référence</th>
@@ -173,6 +175,7 @@ function Stock() {
                   ))}
                 </tbody>
               </table>
+              </div>
             ) : selectedEntrepot ? (
               <p className="text-center mt-3">Aucun stock trouvé.</p>
             ) : null}

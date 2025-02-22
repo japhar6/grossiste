@@ -50,7 +50,7 @@
       margin: 0.25rem;  /* Réduit la marge pour les petits écrans */
     }
   
-   
+
   
     .tableX th:nth-child(2){
       width: 8px !important;
@@ -89,6 +89,11 @@
   
     h6 {
       font-size: 1.2rem; /* Ajustement de la taille des titres pour mobile */
+    }
+       
+    .ajoutFournisseur{
+        margin-top: 40px !important;
+        margin-bottom: 60px;
     }
 
   }

@@ -10,7 +10,7 @@ function Dashboard() {
   const [produitCount, setproduitCount] = useState(0);
   const [clientCount, setclientCount] = useState(0);
   const [commandeCount, setcommandeCount] = useState(0);
-
+  
   useEffect(() => {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchFournisseursCount = async () => {
