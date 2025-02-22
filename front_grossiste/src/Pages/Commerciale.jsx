@@ -65,7 +65,7 @@ const GestionCommerciaux = () => {
       <section className="contenue">
         <Header />
         <div className="gestion-commerciaux">
-          <h2>Gestion des Commerciaux</h2>
+          <h6 className='alert alert-success'>Gestion des Commerciaux</h6>
           <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
           <table className="table-striped">
             <thead>

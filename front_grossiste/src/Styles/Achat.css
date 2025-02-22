@@ -68,7 +68,7 @@ select.form-control:focus,
 
 /* Style des boutons */
 button.btn-primary {
-  background-color: #4CAF50;
+  background-color: #5283cc;
   color: white;
   border: none;
   padding: 12px;
@@ -77,11 +77,54 @@ button.btn-primary {
   transition: background-color 0.3s ease;
   font-family: "Poppins", sans-serif;
   cursor: pointer;
-  width: 100%;
+  width: 50%;
+}
+.button-group button {
+  padding: 5px 10px; /* Ajustez les valeurs selon vos besoins */
+  font-size: 0.875rem; /* Réduit la taille de la police */
+}
+.btn-spacing {
+  margin-left: 10px; /* Ajustez la valeur selon vos besoins */
 }
 
+.total-text {
+  font-size: 1.25rem; /* Taille de police plus grande */
+  font-weight: bold; /* Mettre le texte en gras */
+  color: #333; /* Couleur du texte */
+  margin: 0; /* Supprimer la marge par défaut */
+  padding: 10px 0; /* Ajouter de l'espace en haut et en bas */
+
+  margin-right: 20px;
+
+  margin-top: 20px;
+}
+
+@media (min-width: 768px) {
+  .button-group {
+    margin-left: 70%;
+    margin-top: 20px;
+  }
+  
+.btn7 {
+  width: 300px;
+  }
+  
+  .total-text {
+
+ margin-left:86%;
+  }
+}
+.custom-select {
+  max-height: 50px !important; /* Ajustez la hauteur selon vos besoins */
+  overflow-y: auto; /* Active le défilement vertical */
+}
+
+
+.btn7 {
+height: 40px;
+}
 button.btn-primary:hover {
-  background-color: #45a049;
+  background-color: #2649aa;
 }
 
 button.btn-success {

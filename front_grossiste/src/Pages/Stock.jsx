@@ -84,7 +84,7 @@ function Stock() {
         <Sidebar />
         <section className='contenue'>
           <Header />
-          <div className="p-3 content">
+          <div className=" mini-statr p-3 content">
             <h5 className='alert alert-success'>
               <i className='fa fa-line-chart'></i> Stock
             </h5>
@@ -108,7 +108,7 @@ function Stock() {
             )}
 
             {selectedEntrepot && (
-              <div className="filters mt-3 d-flex justify-content-between">
+              <div className="filters mt-3 d-flex justify-content-between"  style={{ display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   className="form-control mr-2"
