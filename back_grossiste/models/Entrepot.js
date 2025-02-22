@@ -26,4 +26,4 @@ const entrepotSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Entrepot', entrepotSchema);
+module.exports = mongoose.models.Entrepot || mongoose.model('Entrepot', entrepotSchema);

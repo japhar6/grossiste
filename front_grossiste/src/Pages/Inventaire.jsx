@@ -47,8 +47,8 @@ function VisualiserInventaires() {
               <i className='fa fa-list'></i> Visualiser les Inventaires effectuer par {nom}
             </h5>
             <Link to="/creerinventaire" className="btn btn-primary">
-Effectuer un inventaire
-</Link>
+            Effectuer un inventaire
+            </Link>
 
             {loading ? (
               <p>Chargement des inventaires...</p>

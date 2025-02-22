@@ -15,7 +15,7 @@ function PriseCommande() {
 
               // Définir l'état pour les produits sélectionnés
               const [selectedProducts, setSelectedProducts] = useState([]);
-
+              const [quantiteDispo, setQuantiteDispo] = useState([]); 
                 const [commande, setCommande] = useState([]);
                 const [typeQuantite, setTypeQuantite] = useState("");
                 const [modePaiement, setModePaiement] = useState("");
@@ -33,6 +33,9 @@ function PriseCommande() {
 
               const [selectedProduit, setSelectedProduit] = useState(null); 
 
+
+
+          
 
                                 const handleSelectChange = (e) => {
                                   const id = e.target.value;
@@ -175,27 +178,53 @@ function PriseCommande() {
                                 });
 
                                 const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
+                                  // Ne rien faire si la quantité demandée est inférieure ou égale à 0
                                   if (quantite <= 0) return;
-
-                                  setCheckedProduits((prev) => ({ ...prev, [produit._id]: isChecked }));
-
-                                  setCommande((prevCommande) => {
-                                    if (isChecked) {
-                                      const existant = prevCommande.find((item) => item._id === produit._id);
-                                      if (existant) {
-                                        return prevCommande.map((item) =>
-                                          item._id === produit._id
-                                            ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                                            : item
-                                        );
+                                
+                                  const fetchQuantite = async () => {
+                                    try {
+                                      // Récupérer la quantité disponible pour le produit
+                                      const response = await axios.get(`http://localhost:5000/api/stocks/produits/quantite/${produit._id}`);
+                                      const quantiteDisponible = response.data.quantiteDisponible;
+                                
+                                      // Comparer la quantité demandée avec la quantité disponible
+                                      if (isChecked) {
+                                        if (quantite > quantiteDisponible) {
+                                          await Swal.fire({
+                                            title: 'Quantité Insuffisante',
+                                            text: `Quantité demandée (${quantite}) supérieure à la quantité disponible (${quantiteDisponible}).`,
+                                            icon: 'warning',
+                                            confirmButtonText: 'OK',
+                                          });
+                                        }
+                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                
+                                        // Mettre à jour la commande
+                                        setCommande((prevCommande) => {
+                                          const existant = prevCommande.find((item) => item._id === produit._id);
+                                          if (existant) {
+                                            return prevCommande.map((item) =>
+                                              item._id === produit._id
+                                                ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                                : item
+                                            );
+                                          } else {
+                                            return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                          }
+                                        });
                                       } else {
-                                        return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                        // Si la case à cocher est désactivée, retirer le produit de la commande
+                                        setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
+                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
                                       }
-                                    } else {
-                                      return prevCommande.filter((item) => item._id !== produit._id);
+                                    } catch (error) {
+                                      console.error("Erreur lors de la récupération de la quantité disponible", error);
                                     }
-                                  });
+                                  };
+                                
+                                  fetchQuantite(); // Appeler la fonction pour récupérer la quantité
                                 };
+                                
 
 
 

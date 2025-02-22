@@ -63,7 +63,10 @@ function SortieStock() {
         icon: 'success',
         title: 'Succès',
         text: response.data.message,
-      });
+      }).then(() => {
+        window.location.reload();
+        
+    });
       
       setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id));
       setCommandeSelectionnee(null);
@@ -72,10 +75,10 @@ function SortieStock() {
       Swal.fire({
         icon: 'error',
         title: 'Erreur',
-        text: 'Échec de la validation de la vente.',
+        text: error.response?.data.message || 'Échec de la validation de la vente.',
       });
     }
-  };
+};
 
   // Effect pour suivre les changements de taille de la fenêtre
   useEffect(() => {

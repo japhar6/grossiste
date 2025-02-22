@@ -41,7 +41,12 @@ exports.validerVente = async (req, res) => {
         await Promise.all(commande.produits.map(async (item) => {
             const stock = await Stock.findOne({ produit: item.produit._id, statut: 'actif' });
             if (!stock) {
-                throw new Error(`Produit ${item.produit.nom} non trouvé dans le stock`);
+                throw new Error(`Le produit ${item.produit.nom} est epuisé dans le stock`);
+            }
+
+            // Vérifier si la quantité en stock est suffisante
+            if (stock.quantité < item.quantite) {
+                throw new Error(`Quantité insuffisante pour le produit ${item.produit.nom}. Disponible: ${stock.quantité}, Demandée: ${item.quantite}`);
             }
 
             // Réduction de la quantité de stock
