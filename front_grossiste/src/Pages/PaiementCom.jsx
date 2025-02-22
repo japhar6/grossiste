@@ -15,7 +15,7 @@ function PaiementCom() {
   const handleSearch = async () => {
     if (!referenceFacture) return; // Validation si la référence est vide
     try {
-      const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
+      const response = await fetch(`http://10.152.183.99/api/commandes/reference/${referenceFacture}`);
       if (!response.ok) throw new Error("Commande non trouvée");
       const data = await response.json();
 
@@ -85,7 +85,7 @@ function PaiementCom() {
         quantite: produit.quantite,
       }));
 
-      const response = await fetch(`http://localhost:5000/api/paiementCom/mettre-ajour/${referenceFacture}`, {
+      const response = await fetch(`http://10.152.183.99/api/paiementCom/mettre-ajour/${referenceFacture}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

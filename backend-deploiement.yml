@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: eddyrakotonirina/inoov-t:backend  # Remplace par ton image
+          image: eddyrakotonirina/inoov-t:backend # Remplace par ton image
           env:
             - name: PORT
               value: "5000"
@@ -44,5 +44,4 @@ spec:
     - protocol: TCP
       port: 5000
       targetPort: 5000
-      nodePort : 30002
-  type: NodePort  # Modifie en LoadBalancer si besoin d'un accès externe
+  type: ClusterIP  # Utilisation de ClusterIP pour un accès interne au cluster

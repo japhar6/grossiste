@@ -15,7 +15,7 @@ function Caisse() {
   const idCaissier = localStorage.getItem("userid"); 
   const handleSearch = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
+      const response = await fetch(`http://10.152.183.99/api/commandes/reference/${referenceFacture}`);
       if (!response.ok) {
         throw new Error("Commande non trouvée");
       }
@@ -77,9 +77,9 @@ function Caisse() {
     };
 
     try {
-      let url = `http://localhost:5000/api/paiement/ajouter/${commande._id}`;
+      let url = `http://10.152.183.99/api/paiement/ajouter/${commande._id}`;
       if (commande.typeClient === "Commercial") {
-        url = `http://localhost:5000/api/paiementCom/commercial/${commande._id}`;
+        url = `http://10.152.183.99/api/paiementCom/commercial/${commande._id}`;
       }
 
       const response = await fetch(url, {

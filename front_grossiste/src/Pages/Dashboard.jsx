@@ -15,7 +15,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchFournisseursCount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/fournisseurs/count');
+        const response = await fetch('http://10.152.183.99/api/fournisseurs/count');
         const data = await response.json();
         setFournisseursCount(data.totalFournisseurs);
       } catch (error) {
@@ -32,7 +32,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchCommandecount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/commandes/count');
+        const response = await fetch('http://10.152.183.99/api/commandes/count');
         const data = await response.json();
         setcommandeCount(data.totalcommande);
       } catch (error) {
@@ -47,7 +47,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchClientCount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/client/count');
+        const response = await fetch('http://10.152.183.99/api/client/count');
         const data = await response.json();
         setclientCount(data.totalclient);
         console.log("countcli",data.totalclient);
@@ -63,7 +63,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchproduitCount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/produits/count');
+        const response = await fetch('http://10.152.183.99/api/produits/count');
         const data = await response.json();
         setproduitCount(data.totalProduits);
       } catch (error) {

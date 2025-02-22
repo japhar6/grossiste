@@ -26,7 +26,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
  
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("/api/produits/afficher");
+      const response = await axios.get("http://10.152.183.99/api/produits/afficher");
       setProduits(response.data);
 
       const categoriesUniq = [
@@ -70,7 +70,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
   });
   const handleModifierPrix = async (produitId) => {
     try {
-      await axios.put(`http://localhost:5000/api/produits/modifier/${produitId}`, {
+      await axios.put(`http://10.152.183.99/api/produits/modifier/${produitId}`, {
         prixdevente: prixVenteModifier, prixDachat: prixAchatModifier,
       });
       fetchProduits(); // Réinitialiser la liste des produits après la mise à jour

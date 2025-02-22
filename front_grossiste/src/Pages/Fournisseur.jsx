@@ -26,7 +26,7 @@ function Fournisseur() {
 
   const fetchFournisseurs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fournisseurs/tous");
+      const response = await axios.get("http://10.152.183.99/api/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  
     } catch (error) {
@@ -51,12 +51,12 @@ function Fournisseur() {
 
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/fournisseurs/${editingId}`, formData, {
+        await axios.put(`http://10.152.183.99/api/fournisseurs/${editingId}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Modifié!", "Le fournisseur a été modifié avec succès.", "success");
       } else {
-        await axios.post("http://localhost:5000/api/fournisseurs", formData, {
+        await axios.post("http://10.152.183.99/api/fournisseurs", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Ajouté!", "Le fournisseur a été ajouté avec succès.", "success");
@@ -80,7 +80,7 @@ function Fournisseur() {
     });
     if (confirmDelete.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/fournisseurs/${id}`);
+        await axios.delete(`http://10.152.183.99/api/fournisseurs/${id}`);
         Swal.fire("Supprimé!", "Le fournisseur a été supprimé avec succès.", "success");
         fetchFournisseurs();
       } catch (error) {
@@ -190,7 +190,7 @@ function Fournisseur() {
                         <td>
                           {f.logo ? (
                             <img
-                              src={`http://localhost:5000${f.logo}`}
+                              src={`http://10.152.183.99${f.logo}`}
                               alt="Logo fournisseur"
                               width="50"
                               height="50"

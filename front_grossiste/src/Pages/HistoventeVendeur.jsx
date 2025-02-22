@@ -14,7 +14,7 @@ function HistoV() {
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/commandes/vendeur/${vendeurId}`);
+        const response = await axios.get(`http://10.152.183.99/api/commandes/vendeur/${vendeurId}`);
         // Trier les commandes par date décroissante (les plus récentes en premier)
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setCommandes(sortedCommandes);
