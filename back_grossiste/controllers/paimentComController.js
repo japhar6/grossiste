@@ -167,18 +167,18 @@ exports.getVentesByInfo = async (req, res) => {
 exports.getPaiementsCommerciales = async (req, res) => {
     try {
         const paiements = await PaiementCommerciale.find()
-            .populate("commandeId", "referenceFacture modePaiement statut date commercialId commandeId")
+            .populate("commandeId", "referenceFacture modePaiement statut date commercialId")
             .populate("idCaissier", "nom")
 
 
         const paiementsFormatted = paiements.map(paiement => ({
-            commandeId: paiement.commandeId || "N/A",
+            commande: paiement.commandeId?._id || "N/A",
             referenceFacture: paiement.commandeId?.referenceFacture || "N/A",
             caissier: paiement.idCaissier ? `${paiement.idCaissier.nom}` : "Inconnu",
             modePaiement: paiement.commandeId?.modePaiement || "Non défini",
             commercial: paiement.commandeId?.commercialId || "N/A",
             statut: paiement.statut,
-            date: paiement.createdAt.toISOString().split('T')[0] // Format YYYY-MM-DD
+            date: paiement.createdAt.toISOString().split('T')[0]
         }));
         
 
