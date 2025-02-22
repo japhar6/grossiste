@@ -496,7 +496,7 @@ console.log("produit" ,produitId);
               </h6>
               {!panierCreer && (
                 <div className="filtrage bg-light p-3 mt-3">
-                  <button className="btn1 btn1-success" onClick={creerNouveauPanier}>
+                  <button className="btn3 btn3-success" onClick={creerNouveauPanier}>
                     Créer un Nouveau Panier
                   </button>
                 </div>
@@ -677,7 +677,7 @@ console.log("produit" ,produitId);
                       }),
                     }}
                   >
-                    <option value="">Choisir un fournisseur</option>
+                    <option value="">Choisir un entrepot</option>
                     {entrepots.map((entrepotItem) => (
                       <option key={entrepotItem._id} value={entrepotItem._id}>
                         {entrepotItem.nom}

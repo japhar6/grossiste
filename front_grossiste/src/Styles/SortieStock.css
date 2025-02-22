@@ -2,7 +2,7 @@
   background: #ffffff;
   border-radius: 8px;
   padding: 20px;
-  max-height: 750px; /* Ajuste selon tes besoins */
+  max-height: auto; /* Ajuste selon tes besoins */
   overflow-y: auto; /* Ajoute le défilement vertical */
   -webkit-overflow-scrolling: touch;
 }

@@ -20,7 +20,7 @@ const paiementCommercialeSchema = new mongoose.Schema({
     },
     statut: {
         type: String,
-        enum: ["partiel", "complet"],
+        enum: ["partiel", "complet","Produits retourner"],
         default: "partiel"
     },
     idCaissier: { // Champ pour stocker l'ID du caissier

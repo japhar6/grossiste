@@ -1,9 +1,64 @@
 /* === REFERENCE DE LA COMMANDE === */
-.refcli {
-    flex: 1;
-    padding: 10px; /* Padding réduit */
-    width: 30%; /* Utiliser width au lieu de max-width */
+.commande-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+
+  /* Grand écran */
+  .refcli,
+  .paiement {
+    flex: 1;  /* Chaque section prend 50% */
+
+    padding: 20px;
+  }
+  
+
+  .refcli {
+    flex: 0 0 30%; /* Permet à la section de prendre 30% de l'espace disponible sur grand écran */
+   
+    padding: 20px; /* Ajoute du padding si nécessaire */
 }
+
+.btnVA {
+  width: auto; /* Par défaut, la largeur du bouton est automatique */
+}
+.btnAO {
+
+ margin-bottom: 20px; /* Par défaut, la largeur du bouton est automatique */
+}
+
+.total {
+  font-size: 1.25rem; /* Taille de police plus grande pour une meilleure lisibilité */
+  font-weight: bold; /* Met le texte en gras */
+  color: #333; /* Couleur du texte, sombre pour un bon contraste */
+  margin: 10px 0; /* Espace au-dessus et en dessous pour séparer les éléments */
+  padding: 10px; /* Ajoute du padding pour un effet de remplissage */
+  background-color: #f8f9fa; /* Couleur de fond claire */
+  border: 1px solid #dee2e6; /* Bordure légère pour délimiter le texte */
+  border-radius: 5px; /* Bords arrondis pour un aspect plus doux */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+  text-align: left;/* Ombre légère pour donner du relief */
+}
+
+@media (min-width: 768px) { /* Styles appliqués sur les écrans de 768 pixels et plus */
+  .btnVA {
+      width: 200px; /* Ajuste la largeur à 200 pixels ou la taille que tu préfères */
+      margin: 0 auto;
+      margin-left: 85%; /* Centre le bouton */
+  }
+  .total{
+    width: 500px;
+    text-align: left;
+    margin-left: 67%;
+    margin-top: 20px;
+  }
+}
+
 
 .refcli h6 {
     font-size: 18px;
@@ -11,11 +66,7 @@
     margin-bottom: 10px;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column; /* Aligne les éléments en colonne */
-    align-items: flex-start; /* Aligne les éléments à gauche */
-}
+
 
 .refcli input {
     width: 100%; /* Prend toute la largeur */
@@ -27,7 +78,7 @@
 }
 
 .refcli button {
-    width: 100%; /* Le bouton prend toute la largeur */
+    width: 100%; 
 }
 
 .refcli input:focus {
@@ -45,15 +96,51 @@
 .btn-primary:hover {
     background-color: #0056b3; /* Couleur de fond au survol */
 }
-
-/* Media Queries */
-@media (max-width: 768px) {
-    .refcli {
-       width: 100%; 
-        padding: 15px;
-    }
-    
-    .paiement {
-        max-width: 100%;
-    }
+.tableCS {
+  width: 100%; /* Par défaut, le tableau prend 100% de la largeur de son conteneur */
+  overflow-x: auto; /* Permet le défilement horizontal si nécessaire */
 }
+/* Media Queries */
+
+    @media (max-width: 768px) {
+        .commande-container {
+            flex-direction: column;
+            width: 90vw !important; /* Prend toute la largeur de l'écran */
+            padding: 20px; /* Ajoute de l'espace autour */
+          }
+          .refcli,
+          .paiement {
+            width: 100%; /* Chaque bloc occupe toute la largeur */
+            padding: 30px; /* Augmente l'espace interne */
+            font-size: 1.2rem; /* Agrandit le texte */
+          }
+        
+          .refcli {
+            flex: 1; /* Prend toute la largeur sur mobile */
+            max-width: 100%; /* Assure que la section ne dépasse pas 100% */
+        }
+          .form-control {
+            height: 55px; /* Champs plus grands */
+            font-size: 1.1rem;
+          }
+        
+          .btn {
+            height: 55px;
+            font-size: 1.2rem;
+          }
+        
+          h6 {
+            font-size: 1.5rem; /* Titres plus grands */
+          }
+          .tableCS {
+            width: 90%; /* Réduit la largeur à 90% sur mobile */
+            margin: 0 auto; /* Centre le tableau */
+        }
+    
+        .tableCS th, .tableCS td {
+            padding: 10px; /* Réduit le padding pour que le tableau soit moins large */
+            font-size: 14px; /* Réduit la taille de la police pour économiser de l'espace */
+        }
+    }
+      
+  

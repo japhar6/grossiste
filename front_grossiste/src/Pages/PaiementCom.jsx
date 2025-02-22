@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
-import "../Styles/Commade.css";
+import "../Styles/Caisse.css";
 
 function PaiementCom() {
   const [referenceFacture, setReferenceFacture] = useState("");
@@ -117,7 +117,7 @@ function PaiementCom() {
             </h6>
 
             <div className="commande-container d-flex justify-content-between">
-              <div className="client-info w-50 p-3">
+            <div className="refcli ">
                 <h6><i className="fa fa-user"></i> Référence de la commande du commercial</h6>
                 <div className="form-group">
                   <input
@@ -127,7 +127,7 @@ function PaiementCom() {
                     value={referenceFacture}
                     onChange={(e) => setReferenceFacture(e.target.value)}
                   />
-                  <button className="btn btn-primary ms-2" onClick={handleSearch}>
+                  <button className="btn btn-primary " onClick={handleSearch}>
                     Rechercher
                   </button>
                 </div>
@@ -135,7 +135,7 @@ function PaiementCom() {
 
               <div className="produits p-3">
                 <h6><i className="fa fa-box"></i> Détails du paiement </h6>
-                <table className="table mt-2">
+                <table className="tableCS mt-2">
                   <thead>
                     <tr>
                       <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
@@ -155,9 +155,11 @@ function PaiementCom() {
             </div>
 
             {commande && (
-              <div className="commande mt-4">
+              <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-                <table className="table table-bordered mt-2 text-center">
+                <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+      
+                <table className="tableCS table-bordered mt-2 text-center">
                   <thead>
                     <tr>
                       <th>Nom du produit</th>
@@ -184,13 +186,14 @@ function PaiementCom() {
                             />
                           </td>
                           <td>
-                            <button className="btn btn-info" onClick={handleValidation}>Valider</button>
+                            <button className="btnAO btn-info" onClick={handleValidation}>Valider</button>
                           </td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
+                </div>
                 <h6 className="total">Montant restant:  Ariary</h6>
                 <h6 className="total">Total à payer: {calculerTotalApresRetour()} Ariary</h6>
               </div>
