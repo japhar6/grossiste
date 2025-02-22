@@ -49,7 +49,7 @@ function HistoV() {
         <section className="contenue">
           <Header />
           <div className="profil-container p-4">
-            <h2 className='alert alert-success'>Historique des Commandes faites par {nom}</h2>
+            <h6 className="alert alert-info text-start">Historique des Commandes faites par {nom}</h6>
 
             {/* Filtres */}
             <div className="filters mb-4">

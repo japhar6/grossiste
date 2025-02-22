@@ -183,35 +183,78 @@ function PriseCommande() {
                                 
                                   const fetchQuantite = async () => {
                                     try {
-                                      // Récupérer la quantité disponible pour le produit
+                                      // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
                                       const response = await axios.get(`http://localhost:5000/api/stocks/produits/quantite/${produit._id}`);
                                       const quantiteDisponible = response.data.quantiteDisponible;
                                 
                                       // Comparer la quantité demandée avec la quantité disponible
                                       if (isChecked) {
                                         if (quantite > quantiteDisponible) {
-                                          await Swal.fire({
+                                          const result = await Swal.fire({
                                             title: 'Quantité Insuffisante',
-                                            text: `Quantité demandée (${quantite}) supérieure à la quantité disponible (${quantiteDisponible}).`,
+                                            text: `Il n'en reste que (${quantiteDisponible}) dans l'entrepôt principal.`,
                                             icon: 'warning',
+                                            showCancelButton: true,
                                             confirmButtonText: 'OK',
+                                            cancelButtonText: 'Choisir un autre entrepôt',
+                                            customClass: {
+                                              confirmButton: 'btn btn-success', // Ajoutez une classe CSS pour le bouton de confirmation
+                                              cancelButton: 'btn btn-danger' // Ajoutez une classe CSS pour le bouton d'annulation
+                                            },
+                                            buttonsStyling: false, 
+                                          });
+                                
+                                          if (result.isConfirmed) {
+                                            // L'utilisateur a cliqué sur "OK"
+                                            return; // Ne pas ajouter à la commande
+                                          } else if (result.isDismissed) {
+                                            // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
+                                            const responseSecondaire = await axios.get(`http://localhost:5000/api/stocks/produits/quantita/${produit._id}`);
+                                            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
+                                
+                                            // Logique pour traiter la disponibilité dans les autres entrepôts
+                                            // Vous pouvez ici ajouter une alerte ou d'autres actions si nécessaire
+                                            if (quantite > quantiteDisponibleSecondaire) {
+                                              Swal.fire({
+                                                title: 'Quantité Insuffisante',
+                                                text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans les autres entrepôts.`,
+                                                icon: 'warning',
+                                                confirmButtonText: 'OK',
+                                              });
+                                              return; // Ne pas ajouter à la commande
+                                            } else {
+                                              // Ajoutez à la commande si la quantité est disponible dans les autres entrepôts
+                                              setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                              setCommande((prevCommande) => {
+                                                const existant = prevCommande.find((item) => item._id === produit._id);
+                                                if (existant) {
+                                                  return prevCommande.map((item) =>
+                                                    item._id === produit._id
+                                                      ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                                      : item
+                                                  );
+                                                } else {
+                                                  return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                                }
+                                              });
+                                            }
+                                          }
+                                        } else {
+                                          // Si la quantité est suffisante dans l'entrepôt principal
+                                          setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                          setCommande((prevCommande) => {
+                                            const existant = prevCommande.find((item) => item._id === produit._id);
+                                            if (existant) {
+                                              return prevCommande.map((item) =>
+                                                item._id === produit._id
+                                                  ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                                  : item
+                                              );
+                                            } else {
+                                              return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                            }
                                           });
                                         }
-                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-                                
-                                        // Mettre à jour la commande
-                                        setCommande((prevCommande) => {
-                                          const existant = prevCommande.find((item) => item._id === produit._id);
-                                          if (existant) {
-                                            return prevCommande.map((item) =>
-                                              item._id === produit._id
-                                                ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                                                : item
-                                            );
-                                          } else {
-                                            return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
-                                          }
-                                        });
                                       } else {
                                         // Si la case à cocher est désactivée, retirer le produit de la commande
                                         setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
@@ -225,7 +268,6 @@ function PriseCommande() {
                                   fetchQuantite(); // Appeler la fonction pour récupérer la quantité
                                 };
                                 
-
 
 
                                     const handleKeyDown = (produit, e) => {
