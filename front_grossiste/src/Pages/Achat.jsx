@@ -30,17 +30,25 @@ const [achats, setAchats] = useState([]);
   const [nouveauProduit, setNouveauProduit] = useState({ nom: "", categorie: "" ,description :"",prixDachat: "",unite:"",fournisseur: fourID});
   const [afficherFormulaireProduit, setAfficherFormulaireProduit] = useState(false);
   const [produitId, setProduitId] = useState(""); 
-
+  const [fournisseurInfo, setFournisseurInfo] = useState(null);
 
   
   const handleFournisseurChange = (e) => {
-    const selectedFournisseur = e.target.value;  
-    setFournisseur(selectedFournisseur);  
-    setFourID(selectedFournisseur);
-    console.log("id du fournisseur ",selectedFournisseur);
-    setNouveauProduit({ ...nouveauProduit, fournisseur: selectedFournisseur });  
-  };
-  
+    const selectedFournisseurId = e.target.value;
+    setFournisseur(selectedFournisseurId);
+    setFourID(selectedFournisseurId);
+    console.log("id du fournisseur ", selectedFournisseurId);
+
+    // Trouver les informations du fournisseur sélectionné
+    const selectedFournisseur = fournisseurs.find(item => item._id === selectedFournisseurId);
+    setFournisseurInfo(selectedFournisseur); // Mettre à jour l'état avec les informations du fournisseur
+
+    setNouveauProduit({ ...nouveauProduit, fournisseur: selectedFournisseurId });
+};
+const quantiteNumerique = Number(quantite); // Assure-toi que quantite est un nombre
+const produitsOfferts = fournisseurInfo && fournisseurInfo.type === "ristourne" ? Math.floor((quantiteNumerique * fournisseurInfo.conditions.ristourne) / 100) : 0;
+const quantiteTotale = quantiteNumerique + produitsOfferts; // Utiliser quantiteNumerique ici
+
   
   const handleProduitChange = (selectedOption) => {
     if (!selectedOption) return; 
@@ -328,73 +336,79 @@ console.log("produit" ,produitId);
   };
 
   const ajouterAuPanier = async () => {
-   
     const quantiteNumerique = Number(quantite);
-  
+
     if (isNaN(quantiteNumerique)) {
-      Swal.fire({
-        title: "Erreur",
-        text: "La quantité doit être un nombre valide.",
-        icon: "warning",
-        confirmButtonText: "OK",
-      });
-      return;
+        Swal.fire({
+            title: "Erreur",
+            text: "La quantité doit être un nombre valide.",
+            icon: "warning",
+            confirmButtonText: "OK",
+        });
+        return;
     }
-  
-  
+
     console.log("ID du panier avant envoi :", panierId); 
 
-    const total = quantiteNumerique * prixAchat;
-  
     const achatData = {
-      fournisseur: fournisseur,
-      panierId: panierId, 
-      produit: produitId, 
-      quantite: quantiteNumerique, 
-      prixAchat: prixAchat,  
-      total: total,  
-      dateAchat: new Date().toISOString(), 
+        fournisseur: fournisseur,
+        panierId: panierId, 
+        produit: produitId, 
+        quantite: quantiteNumerique, 
+        prixAchat: prixAchat,  
+        dateAchat: new Date().toISOString(), 
     };
-  
-    console.log("Données envoyées pour création de l'achat :", achatData);
-  
+
     try {
-      const response = await fetch("http://localhost:5000/api/achats/ajouter", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(achatData),
-      });
-  
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Erreur lors de la création de l'achat");
-      }
-  
-      Swal.fire({
-        title: "Succès",
-        text: "Achat ajouté avec succès.",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-      fetchAchats();
-      // Réinitialisation des champs après succès
-      setFournisseur(""); 
-    
-      setQuantite("");    
-      setPrixAchat("");    
-      setProduit("");      
+        const response = await fetch("http://localhost:5000/api/achats/ajouter", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(achatData),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || "Erreur lors de la création de l'achat");
+        }
+
+        console.log("Données envoyées pour création de l'achat :", data);
+        
+        // Afficher les produits offerts si disponible
+        if (data.achat.produitsOfferts > 0) {
+            Swal.fire({
+                title: "Succès",
+                text: `Achat ajouté avec succès. 🎁 Vous avez reçu ${data.achat.produitsOfferts} produits offerts !`,
+                icon: "success",
+                confirmButtonText: "OK",
+            });
+        } else {
+            Swal.fire({
+                title: "Succès",
+                text: "Achat ajouté avec succès.",
+                icon: "success",
+                confirmButtonText: "OK",
+            });
+        }
+
+        fetchAchats();
+        
+        // Réinitialisation des champs après succès
+        setFournisseur(""); 
+        setQuantite("");    
+        setPrixAchat("");    
+        setProduit("");      
     } catch (error) {
-      console.error("Erreur lors de la création de l'achat :", error);
-      Swal.fire({
-        title: "Erreur",
-        text: error.message || "Une erreur est survenue.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
+        console.error("Erreur lors de la création de l'achat :", error);
+        Swal.fire({
+            title: "Erreur",
+            text: error.message || "Une erreur est survenue.",
+            icon: "error",
+            confirmButtonText: "OK",
+        });
     }
-  };
+};
 
 
 
@@ -513,21 +527,42 @@ console.log("produit" ,produitId);
 
               {panierCreer && (
                 <div className="achat-container">
-                  <div className="fournisseur-section">
-                    <h6><i className="fa fa-truck"></i> Sélection du Fournisseur</h6>
-                    <select
-                    className="form-control mt-3"
-                    value={fournisseur}
-                    onChange={handleFournisseurChange}
-                  >
-                    <option value="">Choisir un fournisseur</option>
-                    {fournisseurs.map((fournisseurItem) => (
-                      <option key={fournisseurItem._id} value={fournisseurItem._id}>
+                   <div className="fournisseur-section">
+            <h6><i className="fa fa-truck"></i> Sélection du Fournisseur</h6>
+            <select
+                className="form-control mt-3"
+                value={fournisseur}
+                onChange={handleFournisseurChange}
+            >
+                <option value="">Choisir un fournisseur</option>
+                {fournisseurs.map((fournisseurItem) => (
+                    <option key={fournisseurItem._id} value={fournisseurItem._id}>
                         {fournisseurItem.nom}
-                      </option>
-                    ))}
-                  </select>
-                  </div>
+                    </option>
+                ))}
+            </select>
+
+            {fournisseurInfo && (
+                <div className="fournisseur-info mt-3">
+                    {fournisseurInfo.type === "ristourne" ? (
+                        <>
+                            <p className="alert alert-info">Fournisseur avec ristourne disponible</p>
+                            <p>Pourcentage de Ristourne : <strong>{fournisseurInfo.conditions.ristourne} %</strong></p>
+                            
+                            {quantiteNumerique > 0 && (
+                                <>
+                                    <p>Quantité achetée : <strong>{quantiteNumerique}</strong></p>
+                                    <p>Produits offerts : <strong>{produitsOfferts}</strong></p>
+                                    <p>Quantité totale : <strong>{quantiteTotale}</strong></p>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        <p className="alert alert-warning">Fournisseur sans ristourne</p>
+                    )}
+                </div>
+            )}
+        </div>
 
                   {/* Formulaire d'ajout de produit visible après avoir cliqué sur "Ajouter un Nouveau Produit" */}
                   {afficherFormulaireProduit ? (
@@ -637,28 +672,40 @@ console.log("produit" ,produitId);
     <h6><i className="fa fa-shopping-basket"></i> Panier</h6>
     <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
     <table className="tableSo table-striped">
-      <thead>
-        <tr>
-          <th>Produit</th>
-          <th>Quantité</th>
-          <th>Unité</th>
-          <th>Prix d'Achat</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-  {achats.map((achat) => (
-    <tr key={achat._id}>
-      <td>{achat.produit?.nom || "Produit inconnu"}</td>
-      <td>{achat.quantite}</td>
-      <td>{achat.produit?.unite || "Unité"}</td>
-      <td>{achat.prixAchat} Ar</td>
-      <td>{achat.total} Ar</td>
+  <thead>
+    <tr>
+      <th>Produit</th>
+      <th>Quantité Initiale</th>
+      {fournisseurInfo?.type === "ristourne" && (
+        <>
+          <th>Produits offerts</th>
+          <th>Quantité Finale</th>
+        </>
+      )}
+      <th>Unité</th>
+      <th>Prix d'Achat</th>
+      <th>Total</th>
     </tr>
-  ))}
-</tbody>
+  </thead>
+  <tbody>
+    {achats.map((achat) => (
+      <tr key={achat._id}>
+        <td>{achat.produit?.nom || "Produit inconnu"}</td>
+        <td>{achat.quantite}</td>
+        {fournisseurInfo?.type === "ristourne" && (
+          <>
+            <td>{achat.quantiteTotale - achat.quantite}</td>
+            <td>{achat.quantiteTotale}</td>
+          </>
+        )}
+        <td>{achat.produit?.unite || "Unité"}</td>
+        <td>{achat.prixAchat} Ar</td>
+        <td>{achat.total} Ar</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
-    </table>
     </div>
     {/* Total et bouton à droite */}
     <div className="total-validation-container">
