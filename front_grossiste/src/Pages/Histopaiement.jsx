@@ -52,39 +52,40 @@ function HistoC() {
   return (
     <>
       <header></header>
-      <main className="d-flex">
+      <main className="center">
         <Sidebar />
-        <section className="contenue flex-grow-1 p-4">
+        <section className="contenue">  
           <Header />
-          <div className="histoC">
-            <h2 className='alert alert-success'>Historique des Paiement fait par {nom}</h2>
+          <div className="p-3 content center">
+          <div className="mini-stat p-3">
+          <h6 className="alert alert-info text-start">Historique des Paiement fait par {nom}</h6>
 
-            <div className="filter-container mb-3">
-  <label>
-    Filtrer par type:
-    <select className="form-select" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
-      <option value="both">Les deux</option>
-      <option value="client">Paiements Clients</option>
-      <option value="commercial">Paiements Commerciaux</option>
-    </select>
-  </label>
+               <div className="filter-container mb-3">
+                      <label>
+                        Filtrer par type:
+                        <select className="form-select" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
+                          <option value="both">Les deux</option>
+                          <option value="client">Paiements Clients</option>
+                          <option value="commercial">Paiements Commerciaux</option>
+                        </select>
+                      </label>
 
-  <label>
-    Filtrer par date:
-    <input 
-      type="date" 
-      className="form-control" 
-      value={date} 
-      onChange={e => setDate(e.target.value)} 
-    />
-  </label>
-</div>
+                      <label>
+                        Filtrer par date:
+                        <input 
+                          type="date" 
+                          className="form-control" 
+                          value={date} 
+                          onChange={e => setDate(e.target.value)} 
+                        />
+                      </label>
+                    </div>
 
 
             {filteredPaiements.length === 0 ? (
               <p>Aucun paiement trouvé.</p>
-            ) : (
-              <table className="table table-striped">
+            ) : ( <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+              <table className="tableZA table-striped">
                 <thead className="table-light">
                   <tr>
                     <th>Reference Facture</th>
@@ -106,7 +107,9 @@ function HistoC() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
+          </div>
           </div>
         </section>
       </main>

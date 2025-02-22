@@ -169,7 +169,7 @@ function Fournisseur() {
               </div>
 
               <div className="consultationF">
-              <div className="table-responsive" style={{ overflowX: 'hidden',overflowY:'auto' }}>
+              <div className="table-responsives" style={{ overflowX: 'hidden',overflowY:'auto' }}>
 
                 <table className="tableX table-striped table-hover ">
                   <thead>
@@ -211,7 +211,7 @@ function Fournisseur() {
                             : "Aucune"}
                         </td>
                         <td>
-                          <button className="btn btn-warning" onClick={() => handleEdit(f)}>
+                          <button className="btn1 btn-warning" onClick={() => handleEdit(f)}>
                           <i
     className="fas fa-pencil-alt" // Icône alternative pour modifier
     style={{ cursor: "pointer", fontSize: "20px" }}
@@ -219,10 +219,10 @@ function Fournisseur() {
     title="Modifier"
   ></i>
                           </button>
-                          <button className="btn btn-danger ms-2" onClick={() => handleDelete(f._id)}>
+                          <button className="btn1 btn-danger ms-2" onClick={() => handleDelete(f._id)}>
                           <i
     className="fas fa-times" // Icône alternative pour supprimer
-    style={{ cursor: "pointer", fontSize: "20px", marginLeft: "10px" }}
+    style={{ cursor: "pointer", fontSize: "20px",  }}
     onClick={() => handleDelete(f._id)}
     title="Supprimer"
   ></i>
@@ -315,7 +315,7 @@ function Fournisseur() {
                       onChange={(e) => setLogo(e.target.files[0])}
                     />
                   </div>
-                  <button className="btn1 btn1  -success" type="submit">
+                  <button className="btn12 btn1-success" type="submit">
                     {editingId ? "Modifier" : "Enregistrer"}
                   </button>
                 </div>

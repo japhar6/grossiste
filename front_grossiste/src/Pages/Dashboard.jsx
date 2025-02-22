@@ -79,9 +79,9 @@ function Dashboard() {
   return (
     <>
       <header></header>
-      <main className='dashboard-container'>
+      <main className='center'>
         <Sidebar />
-        <section className='main-content scrollable'>
+        <section className='contenue'>
           <Header />
           <div className='stats-container'>
             <div className='stat-card'>

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
-import "../Styles/Commade.css";
-
+import "../Styles/Caisse.css";
+import Swal from 'sweetalert2';
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -60,7 +60,17 @@ function Caisse() {
 
   const validerPaiement = async () => {
     if (!commande) return;
-
+  
+    console.log("Statut de la commande:", commande.statut); // Vérification du statut
+  
+    if (commande.statut !== "en attente") {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Alerte',
+        text: 'Le paiement ne peut pas être validé car  la commande est deja terminée.',
+      });
+      return; // Arrête la fonction si le statut n'est pas "en attente"
+    }
     const data = {
       statut: "complet",
       remiseGlobale: typeRemise === "total" ? valeurRemise : 0,
@@ -75,13 +85,15 @@ function Caisse() {
       totalPaye: totalApresRemise,
       idCaissier
     };
-
+  
+    console.log("Données de paiement à envoyer:", data); // Vérification des données
+  
     try {
       let url = `http://localhost:5000/api/paiement/ajouter/${commande._id}`;
       if (commande.typeClient === "Commercial") {
         url = `http://localhost:5000/api/paiementCom/commercial/${commande._id}`;
       }
-
+  
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -89,18 +101,36 @@ function Caisse() {
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
         throw new Error("Échec du paiement");
       }
-
+  
       const result = await response.json();
-      alert(result.message);
+      Swal.fire({
+        icon: 'success',
+        title: 'Succès',
+        text: result.message,
+
+      })
+      setReferenceFacture("");
+      setCommande(null);
+      setClient(null);
+      setCommercial(null);
+      setTypeRemise("aucune");
+      setValeurRemise(0);
+      setTotalApresRemise(0);
     } catch (error) {
       console.error(error);
-      alert("Erreur lors du paiement");
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Erreur lors du paiement',
+      });
     }
   };
+  
+  
 
   return (
     <main className="center">
@@ -114,25 +144,27 @@ function Caisse() {
             </h6>
 
             <div className="commande-container d-flex justify-content-between">
-              <div className="client-info w-50 p-3">
+              <div className="refcli ">
                 <h6><i className="fa fa-user"></i> Référence de la commande</h6>
-                <div className="form-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Entrer la référence"
-                    value={referenceFacture}
-                    onChange={(e) => setReferenceFacture(e.target.value)}
-                  />
-                  <button className="btn btn-primary ms-2" onClick={handleSearch}>
-                    Rechercher
-                  </button>
-                </div>
+                  <div className="form-group ">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Entrer la référence"
+                      value={referenceFacture}
+                      onChange={(e) => setReferenceFacture(e.target.value)}
+                    />
+                    <button className="btno btn-primary " onClick={handleSearch}>
+                      Rechercher
+                    </button>
+                  </div>
               </div>
 
               <div className="produits p-3">
                 <h6><i className="fa fa-box"></i> Détails du paiement </h6>
-                <table className="table mt-2">
+                <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+           
+                <table className="tableCS mt-2">
                   <thead>
                     <tr>
                       <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
@@ -166,17 +198,17 @@ function Caisse() {
                     </tr>
                   </tbody>
                 </table>
-
-                <button className="btn btn-secondary mt-2" onClick={calculerRemise}>
+                </div>
+                <button className="btna btn-secondary mt-2" onClick={calculerRemise}>
                   Appliquer Remise
                 </button>
               </div>
             </div>
 
             {commande && (
-              <div className="commande mt-4">
+              <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-                <table className="table table-bordered mt-2 text-center">
+                <table className="tableCS table-bordered mt-2 text-center">
                   <thead>
                     <tr>
                       <th>Nom du produit</th>
@@ -199,7 +231,7 @@ function Caisse() {
                 <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
                 <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
 
-                <button className="btn btn-success mt-3" onClick={validerPaiement}>
+                <button className="btnVA btn-success mt-3" onClick={validerPaiement}>
                   Valider le paiement
                 </button>
               </div>

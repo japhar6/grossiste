@@ -285,26 +285,27 @@ function PriseCommande() {
       <section className="contenue">
         <Header />
         <div className="p-3 content center">
-          <div className="mini-stat p-3">
+          <div className="mini-star p-3">
+            
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Prise de Commande
             </h6>
             <div className="form-group mt-3">
-  <label>Type :</label>
-  <select
-    className="form-control"
-    value={type}
-    onChange={(e) => {
-      setType(e.target.value);
-      setIsNew(false);
-      setSelectedPerson("");
-    }}
-  >
-    <option value="">Choisir un type</option>
-    <option value="client">Client</option>
-    <option value="commercial">Commercial</option>
-  </select>
-</div>
+              <label>Type :</label>
+              <select
+                className="form-control"
+                value={type}
+                onChange={(e) => {
+                  setType(e.target.value);
+                  setIsNew(false);
+                  setSelectedPerson("");
+                }}
+              >
+                <option value="">Choisir un type</option>
+                <option value="client">Client</option>
+                <option value="commercial">Commercial</option>
+              </select>
+            </div>
     
             <div className="commande-container d-flex justify-content-between">
               {/* Informations Client (colonne gauche) */}
@@ -407,29 +408,31 @@ function PriseCommande() {
               {/* Liste des Produits (colonne droite) */}
               <div className="produits w-50 p-3">
                 <h6><i className="fa fa-box"></i> Produits Disponibles</h6>
-            <div className="d-flex">
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          placeholder="Rechercher un produit..."
-                                          value={searchTerm}
-                                          onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        <select
-                                          className="form-control mt-3 m-2 p-2"
-                                          value={categorie}
-                                          onChange={(e) => setCategorie(e.target.value)}
-                                        >
-                                          <option value="">Toutes les catégories</option>
-                                          {categories.map((cat, index) => (
-                                            <option key={index} value={cat}>
-                                              {cat}
-                                            </option>
-                                          ))}
-                                        </select>
-            </div>
+                <div className="d-flex">
+  <input
+    type="text"
+    className="form-control"
+    placeholder="Rechercher un produit..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+  <select
+    className="form-control"
+    value={categorie}
+    onChange={(e) => setCategorie(e.target.value)}
+  >
+    <option value="">Toutes les catégories</option>
+    {categories.map((cat, index) => (
+      <option key={index} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
+</div>
 
-                                                            <table className="table mt-2">
+
+            <div className="table-container">
+              <table className="tablepro mt-2">
                                                         <thead>
                                                           <tr>
                                                             <th>Nom</th>
@@ -451,9 +454,9 @@ function PriseCommande() {
                                                             ) : (
                                                               produitsFiltres.map((p) => (
                                                                 <tr key={p._id}>
-                                                                  <td>{p.nom}</td>
-                                                                  <td>{p.categorie}</td>
-                                                                  <td>{p.prixdevente} Ariary</td>
+                                                                <td className="margin-left-mobile">{p.nom}</td>
+                                                                <td className="margin-left-mobile">{p.categorie}</td>
+                                                                <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
                                                                   <td>
                                                                     <input
                                                                       type="number"
@@ -503,13 +506,16 @@ function PriseCommande() {
                                                           )}
                                                         </tbody>
                                                       </table>
-
+                                                      </div>     
                                              </div>
                                         </div>
-
+                                       
                                           {/* Récapitulatif de la Commande */}
                                           <div className="commande mt-4">
                                             <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+                                            
+                                            <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+            
                                             <table className="table table-bordered mt-2">
                                               <thead>
                                                 <tr>
@@ -525,7 +531,7 @@ function PriseCommande() {
                                                   <tr key={index}>
                                                         <td>{item.nom}</td>
                                                         <td>{item.quantite}</td>
-                                                        <td>{item.typeQuantite}</td>
+                                                        <td>{item.unite}</td>
                                                         <td>{item.prix} Ariary</td> 
                                                         <td>{item.quantite * item.prix} Ariary</td>
 
@@ -533,6 +539,8 @@ function PriseCommande() {
                                                 ))}
                                               </tbody>
                                             </table>
+                                            </div>
+                                         
                                               <h6 className="total">
                                                          Total: {totalCommande} Ariary
                                                </h6>
@@ -540,7 +548,7 @@ function PriseCommande() {
                                             <button className="btn btn-success  mt-3" onClick={validerCommande}>
                                               Enregistrer la Commande
                                             </button>
-                                          </div>
+                                            </div>
                                         </div>
                                       </div>
                                     </section>

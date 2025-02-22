@@ -168,8 +168,18 @@ function Entrepot() {
                         <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
                         <td>{entrepot.dateCreation}</td>
                         <td>
-                          <button className="btn btn-warning ms-2" onClick={() => handleEdit(entrepot)}>Modifier</button>
-                          <button className="btn btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>Supprimer</button>
+                          <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>      <i
+    className="fas fa-pencil-alt" // Icône alternative pour modifier
+    style={{ cursor: "pointer", fontSize: "20px" }}
+    onClick={() => handleEdit(f)}
+    title="Modifier"
+  ></i></button>
+                          <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>     <i
+    className="fas fa-times" // Icône alternative pour supprimer
+    style={{ cursor: "pointer", fontSize: "20px",  }}
+    onClick={() => handleDelete(f._id)}
+    title="Supprimer"
+  ></i></button>
                         </td>
                       </tr>
                     ))}
@@ -218,7 +228,7 @@ function Entrepot() {
                 ))
               )}
             </select>
-            <button className="btn1 btn1-success" onClick={handleAddOrUpdateEntrepot}>
+            <button className="btn15 btn1-success" onClick={handleAddOrUpdateEntrepot}>
               {editingEntrepotId ? "Modifier" : "Ajouter"}
             </button>
           </div>

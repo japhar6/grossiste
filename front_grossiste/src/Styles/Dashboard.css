@@ -28,6 +28,8 @@
     width: 200px;
     height: 150px;
     margin: 10px;
+    margin-left: 20px !important;
+    margin-right: 20px !important;
   }
   
   .stat-card h1 {

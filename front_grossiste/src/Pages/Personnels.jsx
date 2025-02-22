@@ -385,40 +385,40 @@ function Personnels() {
         onHide={() => setShowModal(false)} 
         centered 
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Détails de l'utilisateur</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedUser && (
-            <div className="user-card">
-              <div className="photo-cont">
-                <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
-              </div>
-              <div className="user-info">
-                <p><strong>Nom:</strong> {selectedUser.nom}</p>
-               
-                <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Poste:</strong> {selectedUser.role}</p>       
-                 <p><strong>Numero_cin:</strong> {selectedUser.numero_cin}</p>
-                <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
-                
-                <div className="d-flex justify-content-between w-100">
-                        {selectedUser.status !== "licencié" && (
-                          <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
-                            <i className="fa fa-edit"></i> Modifier
-                          </Button>
-                        )}
-
-                        {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
-                          <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
-                            <i className="fa fa-trash"></i> Licencier
-                          </Button>
-                        )}
-                      </div>
-              </div>
-            </div>
+       <Modal.Header closeButton>
+  <Modal.Title>Détails de l'utilisateur</Modal.Title>
+</Modal.Header>
+<Modal.Body>
+  {selectedUser && (
+    <div className="user-card">
+      <div className="photo-cont">
+        <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
+      </div>
+      <div className="user-info">
+        <p><strong>Nom:</strong> {selectedUser.nom}</p>
+        <p><strong>Email:</strong> {selectedUser.email}</p>
+        <p><strong>Poste:</strong> {selectedUser.role}</p>       
+        <p><strong>Numero CIN:</strong> {selectedUser.numero_cin}</p>
+        <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
+        
+        <div className="d-flex justify-content-between w-100">
+          {selectedUser.status !== "licencié" && (
+            <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
+              <i className="fa fa-edit"></i> Modifier
+            </Button>
           )}
-        </Modal.Body>
+
+          {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
+            <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
+              <i className="fa fa-trash"></i> Licencier
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
+</Modal.Body>
+
       </Modal>
 
       {/* Modal Modification de l'utilisateur */}
