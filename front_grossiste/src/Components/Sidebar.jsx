@@ -112,7 +112,7 @@ function Sidebar() {
                           {collapsed ? "" : "GROSSISTE"}
                       </h1>
 
-                      <div className="menu mt-2 p-2 pt-1">
+                      <div className="menu ">
                           {buttons.map((button, index) => (
                               <Link 
                                   to={button.path} 

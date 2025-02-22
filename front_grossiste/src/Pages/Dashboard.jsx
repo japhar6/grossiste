@@ -108,6 +108,7 @@ function Dashboard() {
             <div className='chart-box'>
               <DonutChart />
             </div>
+            
           </div>
         </section>
       </main>

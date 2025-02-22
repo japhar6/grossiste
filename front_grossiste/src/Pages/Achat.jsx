@@ -7,6 +7,8 @@ import Swal from "sweetalert2";
 import Select from 'react-select'; 
 import HistoriqueAchats from "../Components/HistoriqueAchats";
 
+import ExportPDF from '../PDF/exportpdfAchat';
+
 function AchatProduits() {
   const [fournisseur, setFournisseur] = useState("");
   const [fournisseurs, setFournisseurs] = useState([]);
@@ -32,7 +34,12 @@ const [achats, setAchats] = useState([]);
   const [produitId, setProduitId] = useState(""); 
   const [fournisseurInfo, setFournisseurInfo] = useState(null);
 
-  
+ 
+  const handleExportPDF = () => {
+    console.log("Données à exporter:", achats);
+    ExportPDF.export();
+};
+
   const handleFournisseurChange = (e) => {
     const selectedFournisseurId = e.target.value;
     setFournisseur(selectedFournisseurId);
@@ -52,7 +59,11 @@ const quantiteTotale = quantiteNumerique + produitsOfferts; // Utiliser quantite
   
   const handleProduitChange = (selectedOption) => {
     if (!selectedOption) return; 
-
+    if (selectedOption.value === 'add-new-product') {
+      // Logique pour afficher le formulaire pour ajouter un nouveau produit
+      setAfficherFormulaireProduit(true);
+      return;
+  }
     
     const produitId = selectedOption.value; // Récupérer l'ID du produit
 console.log("produit" ,produitId);
@@ -493,6 +504,12 @@ console.log("produit" ,produitId);
       Ajouter un Nouveau Produit
     </button>
   );
+  const produitsOptionsWithAddOption = [
+    ...produitsOptions,
+    { label: 'Ajouter un Nouveau Produit', value: 'add-new-product' } 
+];
+
+
 
     
   
@@ -632,20 +649,30 @@ console.log("produit" ,produitId);
                       >
                         Ajouter
                       </button>
+                         <div className="button-groupu" style={{ display: 'flex', gap: '10px' }}>
+    <button
+        className="btn btn-primary"
+        onClick={() => setAfficherFormulaireProduit(false)} // Définir à false sur clic
+    >
+        Annuler
+    </button>
+</div>
+
                     </div>
                   ) : (
                     <div className="produit-section mt-3">
                       <h6><i className="fa fa-box"></i> Choisir un Produit</h6>
-                     <Select
-                          className="form-control mt-3"
-                          value={produit ? { label: produit.label, value: produit.label } : null} 
-                          onChange={handleProduitChange}
-                          options={produitsOptions}
-                          placeholder="Choisir un produit"
-                          isSearchable
-                          noOptionsMessage={() => customNoOptionMessage}
-                          isDisabled={!fournisseur}
-                        />
+                      <Select
+    className="form-control mt-3"
+    value={produit ? { label: produit.label, value: produit.label } : null}
+    onChange={handleProduitChange}
+    options={produitsOptionsWithAddOption}
+    placeholder="Choisir un produit"
+    isSearchable
+    noOptionsMessage={() => customNoOptionMessage}
+    isDisabled={!fournisseur}
+/>
+
                           <div className="quantite-section mt-3 d-flex align-items-center">
  
                         <input
@@ -676,73 +703,69 @@ console.log("produit" ,produitId);
               )}
 
 {panierCreer && (
-  <div className="consultationL mt-3">
-    <h6><i className="fa fa-shopping-basket"></i> Panier</h6>
-    <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-    <table className="tableSo table-striped">
-  <thead>
-    <tr>
-      <th>Produit</th>
-      <th>Quantité Initiale</th>
-      {fournisseurInfo?.type === "ristourne" && (
-        <>
-          <th>Produits offerts</th>
-          <th>Quantité Finale</th>
-        </>
-      )}
-      <th>Unité</th>
-      <th>Prix d'Achat</th>
-      <th>Total</th>
-    </tr>
-  </thead>
-  <tbody>
-    {achats.map((achat) => (
-      <tr key={achat._id}>
-        <td>{achat.produit?.nom || "Produit inconnu"}</td>
-        <td>{achat.quantite}</td>
-        {fournisseurInfo?.type === "ristourne" && (
-          <>
-            <td>{achat.quantiteTotale - achat.quantite}</td>
-            <td>{achat.quantiteTotale}</td>
-          </>
-        )}
-        <td>{achat.produit?.unite || "Unité"}</td>
-        <td>{achat.prixAchat} Ar</td>
-        <td>{achat.total} Ar</td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
+   <div className="consultationL mt-3">
+   <h6><i className="fa fa-shopping-basket"></i> Panier</h6>
+   <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+       <table id="table-to-export" className="tableSo table-striped">
+           <thead>
+               <tr>
+                   <th>Produit</th>
+                   <th>Quantité Initiale</th>
+                   {fournisseurInfo?.type === "ristourne" && (
+                       <>
+                           <th>Produits offerts</th>
+                           <th>Quantité Finale</th>
+                       </>
+                   )}
+                   <th>Unité</th>
+                   <th>Prix d'Achat</th>
+                   <th>Total</th>
+               </tr>
+           </thead>
+           <tbody>
+               {achats.map((achat) => (
+                   <tr key={achat._id}>
+                       <td>{achat.produit?.nom || "Produit inconnu"}</td>
+                       <td>{achat.quantite}</td>
+                       {fournisseurInfo?.type === "ristourne" && (
+                           <>
+                               <td>{achat.quantiteTotale - achat.quantite}</td>
+                               <td>{achat.quantiteTotale}</td>
+                           </>
+                       )}
+                       <td>{achat.produit?.unite || "Unité"}</td>
+                       <td>{achat.prixAchat} Ar</td>
+                       <td>{achat.total} Ar</td>
+                   </tr>
+               ))}
+           </tbody>
+       </table>
+   </div>
+   <div className="total-validation-container">
+     <h6 className="total-text" >Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
+ <div className="fournisseur-section">
+           <h6><i className="fa fa-truck"></i> Sélection de l'entrepôt</h6>
+           <select
+                 className="form-control custom-select"
+               value={entrepot}
+               onChange={handleEntrepotChange}
+           >
+               <option value="">Choisir un entrepôt</option>
+               {entrepots.map((entrepotItem) => (
+                   <option key={entrepotItem._id} value={entrepotItem._id}>
+                       {entrepotItem.nom}
+                   </option>
+               ))}
+           </select>
+       </div>
+       <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
+                    <ExportPDF tableId="table-to-export" />
+                    <button className="btn7 " onClick={validerPanier}>
+                        Valider l'Achat
+                    </button>
+                </div>
     </div>
-    {/* Total et bouton à droite */}
-    <div className="total-validation-container">
-    <h6>Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
-    <div className="fournisseur-section">
-                    <h6><i className="fa fa-truck"></i> Sélection de l'entrepot</h6>
-                    <select
-                    className="form-control mt-3"
-                    value={entrepot}
-                    onChange={handleEntrepotChange}
-                    styles={{
-                      menu: (provided) => ({
-                        ...provided,
-                        maxHeight: 200, // Définit une hauteur maximale pour le menu déroulant
-                        overflowY: 'auto', // Ajoute le défilement vertical si nécessaire
-                      }),
-                    }}
-                  >
-                    <option value="">Choisir un entrepot</option>
-                    {entrepots.map((entrepotItem) => (
-                      <option key={entrepotItem._id} value={entrepotItem._id}>
-                        {entrepotItem.nom}
-                      </option>
-                    ))}
-                  </select>
-                  </div>
-    <button className="btn btn-success" onClick={validerPanier}>Valider l'Achat</button>
-    </div>
-  </div>
+</div>
 )}
 
             </div>
