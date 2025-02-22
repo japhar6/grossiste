@@ -31,7 +31,9 @@ import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
-
+import HistoCA from './Pages/HistoC.jsx';
+import HistoVA from './Pages/HistoV.jsx';
+import Transfert from './Pages/Transfert.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -54,6 +56,8 @@ function App() {
           <Route path='/commande' element={<PriseCommande />} />
           <Route path='/achat' element={<AchatProduits />} />
           <Route path='/SortieCommande' element={<SortieCommande />} />
+          <Route path='/histovad' element={<HistoVA />} />
+          <Route path='/histocad' element={<HistoCA />} />
         </Route>
 
         {/* Routes VENDEUR */}
@@ -71,6 +75,7 @@ function App() {
           <Route path='/stockma' element={<StockMaga />} />
           <Route path='/inventaire' element={<Invetaire />} />
           <Route path='/creerinventaire' element={<CreerInventaire />} />
+          <Route path='/transfert' element={<Transfert />} />
    
         </Route>
 

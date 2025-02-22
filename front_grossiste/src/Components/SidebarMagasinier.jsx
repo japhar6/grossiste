@@ -4,7 +4,7 @@ import '../Styles/Sidebar.css'; // Fichier CSS externe
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
       faChevronLeft, 
-    faChevronRight, 
+    faChevronRight, faTruck,
     faCashRegister, faRotateLeft,faBoxes ,faBox 
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -84,6 +84,7 @@ function SidebarVendeur(){
 
         { path: "/stockma", icon: faBoxes, text: "Gestion de stock" },
         { path: "/inventaire", icon: faBox , text: "Inventaire" },
+        { path: "/transfert", icon: faTruck , text: "Transfert" },
     
       ];
     return(

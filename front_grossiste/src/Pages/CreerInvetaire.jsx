@@ -119,12 +119,13 @@ function CreerInventaire() {
   <Sidebar />
   <section className='contenue'>
     <Header />
-    <div className="mini-stat p-3 content">
+    <div className="p-3 content center">
+    <div className="mini-stat p-3 bg-light shadow rounded">
       <h5 className='alert alert-success'>
-        <i className='fa fa-line-chart'></i> Stock
+        <i className='fa fa-line-chart'></i> Effectuer un Inventaire
       </h5>
-      <div className="container">
-        <h6 className="my-4">Effectuer un Inventaire</h6>
+
+
         <div>
           <h6>Entrepôt : {entrepot ? entrepot.nom : "Aucun entrepôt"}</h6>
         </div>
@@ -133,7 +134,7 @@ function CreerInventaire() {
           <p>Chargement des stocks...</p>
         ) : (
             <div className="table-responsive">
-            <table className="table table-striped table-sm">
+            <table className="table table-striped table-bordered">
               <thead>
                 <tr>
                   <th>Référence</th>
@@ -169,42 +170,44 @@ function CreerInventaire() {
           </div>
           
         )}
+      </div>
+         <div className="ajoutPersonnel ">
         <form onSubmit={handleSubmit} className="mt-4">
-    
-  <div className="row mb-3">
-    <div className="col-lg-4 col-md-6">
-      <label className="form-label">Quantité Initiale</label>
-      <input
-        type="number"
-        className="form-control"
-        value={quantiteInitiale}
-        readOnly
-      />
-    </div>
-    <div className="col-lg-4 col-md-6">
-      <label className="form-label">Quantité Finale</label>
-      <input
-        type="number"
-        className="form-control"
-        value={quantiteFinale}
-        onChange={(e) => setQuantiteFinale(e.target.value)}
-      />
-    </div>
-    <div className="col-lg-4 col-md-12">
-      <label className="form-label">Raison d'Ajustement</label>
-      <textarea
-        className="form-control"
-        value={raisonAjustement}
-        onChange={(e) => setRaisonAjustement(e.target.value)}
-      />
-    </div>
+<div className="d-flex mb-4">
+  <div className="flex-fill me-2">
+    <label className="form-label">Quantité Initiale</label>
+    <input
+      type="number"
+      className="form-control"
+      value={quantiteInitiale}
+      readOnly
+    />
   </div>
+  <div className="flex-fill me-2">
+    <label className="form-label">Quantité Finale</label>
+    <input
+      type="number"
+      className="form-control"
+      value={quantiteFinale}
+      onChange={(e) => setQuantiteFinale(e.target.value)}
+    />
+  </div>
+  <div className="flex-fill">
+    <label className="form-label">Raison d'Ajustement</label>
+    <textarea
+      className="form-control"
+      value={raisonAjustement}
+      onChange={(e) => setRaisonAjustement(e.target.value)}
+    />
+  </div>
+</div>
+
  
 
-          <button type="submit" className="btn btn-success">Enregistrer l'Inventaire</button>
-        </form>
+          <button type="submit" className="btn15 btn-success">Enregistrer l'Inventaire</button>
+        </form>  
+        </div>
       </div>
-    </div>
   </section>
 </main>
 
