@@ -76,7 +76,8 @@ exports.ajouterCommande = async (req, res) => {
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
     try {
-        const commandes = await Commande.find();
+        const commandes = await Commande.find().populate('produits.produit', 'nom prixDachat')
+        .populate('vendeurId', 'nom');
         res.status(200).json(commandes);
     } catch (error) {
         res.status(400).json({ message: error.message });

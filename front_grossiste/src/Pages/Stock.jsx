@@ -188,16 +188,24 @@ function Stock() {
         </section>
       </main>
       <style>{`
-        .stock-low {
-          animation: blink 1s infinite;
-          background-color: #ffcccc;
-        }
+.stock-low {
+  animation: blink 0.6s infinite alternate ease-in-out;
+  background-color: #f8d7da !important; /* Rose clair pour une alerte */
+  color: #721c24; /* Rouge foncé pour le texte */
+  font-weight: bold;
+  border-radius: 5px;
+  padding: 10px;
+  border: 1px solid #f5c6cb; /* Bordure rouge clair */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 10px 0; /* Espacement en haut et en bas */
+}
 
-        @keyframes blink {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
+@keyframes blink {
+  0% { background-color: #f8d7da; opacity: 1; }
+  50% { background-color: #f5c6cb; opacity: 0.8; }
+  100% { background-color: #f8d7da; opacity: 1; }
+}
+
       `}</style>
     </>
   );

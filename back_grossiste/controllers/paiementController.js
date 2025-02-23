@@ -106,12 +106,51 @@ if (montanApres === montantFinalPaye) {
 // Récupérer tous les paiements des client 
 exports.getPaiements = async (req, res) => {
     try {
-        const paiements = await Paiement.find();
+        // Récupérer les paiements clients
+        const paiementsClients = await Paiement.find().populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path:'idCaissier',select:'nom'
+        });
+
+        // Récupérer les paiements commerciaux
+        const paiementsCommerciaux = await PaiementCommerciale.find()
+        .populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path:'idCaissier',select:'nom'
+        });
+
+        // Combiner les deux résultats
+        const paiements = {
+            clients: paiementsClients.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu', // Nom du client
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu' // Nom du commercial
+            })),
+            commerciaux: paiementsCommerciaux.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu'
+            }))
+        };
+
+
         res.status(200).json(paiements);
     } catch (error) {
+        console.error("Erreur lors de la récupération des paiements:", error);
         res.status(400).json({ message: error.message });
     }
 };
+
 
 // Récupérer un paiement par son ID
 exports.getPaiementById = async (req, res) => {
@@ -125,6 +164,16 @@ exports.getPaiementById = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
+
+
+
+
+
+
+
+
 exports.getPaiementsParCaissier = async (req, res) => {
     try {
         const { idCaissier } = req.params;
@@ -151,7 +200,7 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     { path: 'produits.produit', select: 'nom prixUnitaire' },
                     { path: 'modePaiement', select: 'modePaiement' }
                 ]
-            });
+            })   ;
 
         // Combiner les deux résultats
         const paiements = {

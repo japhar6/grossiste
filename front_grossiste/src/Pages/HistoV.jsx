@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import "../Styles/Histov.css"; // Assurez-vous que le chemin est correct
-import Sidebar from "../Components/SidebarVendeur";
-import Header from "../Components/NavbarV";
+import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Navbar";
 
 function HistoV() {
   const [commandes, setCommandes] = useState([]);
@@ -13,11 +13,13 @@ function HistoV() {
   const [statutFilter, setStatutFilter] = useState("");
   const vendeurId = localStorage.getItem('userid');
   const nom = localStorage.getItem('nom'); 
+ const [filtreNomCaissier, setFiltreNomCaissier] = useState("");
 
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/commandes/vendeur/${vendeurId}`);
+        const response = await axios.get(`http://localhost:5000/api/commandes/`);
+        console.log("la repose",response.data);
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setCommandes(sortedCommandes);
       } catch (error) {
@@ -38,8 +40,9 @@ function HistoV() {
     const dateMatch = dateFilter ? new Date(commande.createdAt).toISOString().slice(0, 10) === dateFilter : true;
     const modePaiementMatch = modePaiementFilter ? commande.modePaiement === modePaiementFilter : true;
     const statutMatch = statutFilter ? commande.statut === statutFilter : true;
-
-    return dateMatch && modePaiementMatch && statutMatch;
+ const matchesNomCaissier = !filtreNomCaissier || (commande.vendeurId && commande.vendeurId.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
+    
+    return dateMatch && modePaiementMatch && statutMatch && matchesNomCaissier;
   });
 
   return (
@@ -48,8 +51,9 @@ function HistoV() {
         <Sidebar />
         <section className="contenue">
           <Header />
-          <div className="profil-container p-4">
-            <h6 className="alert alert-info text-start">Historique des Commandes faites par {nom}</h6>
+          <div className="p-3 content center">
+          <div className="mini-stat p-3">
+            <h2 className='alert alert-success'>Historique des Commandes </h2>
 
             {/* Filtres */}
             <div className="filters mb-4">
@@ -89,6 +93,17 @@ function HistoV() {
         <option value="terminée">Terminé</option>
       </select>
     </div>
+    <div className="col-md-4 mb-3">
+  <label className="form-label">
+    Filtrer par nom de vendeur:
+    <input 
+      type="text" 
+      className="form-control" 
+      value={filtreNomCaissier} 
+      onChange={e => setFiltreNomCaissier(e.target.value)} 
+    />
+  </label>
+</div>
   </div>
 </div>
 
@@ -105,6 +120,7 @@ function HistoV() {
                       <th>Produits</th>
                       <th>Mode de Paiement</th>
                       <th>Statut</th>
+                      <th>Fait par :</th>
                       <th>Montant Total</th>
                     </tr>
                   </thead>
@@ -124,6 +140,7 @@ function HistoV() {
                         </td>
                         <td>{commande.modePaiement}</td>
                         <td>{commande.statut}</td>
+                        <td>{commande.vendeurId.nom}</td>
                         <td>{commande.totalGeneral} ariary</td>
                       </tr>
                     ))}
@@ -131,7 +148,7 @@ function HistoV() {
                 </table>
               </div>
             )}
-          </div>
+          </div>  </div>    
         </section>
       </main>
     </>

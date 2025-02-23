@@ -13,6 +13,38 @@
   min-width: 600px; /* Assure un minimum pour éviter le défilement horizontal */
 }
 
+.entrepot-magasinier-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.entrepot-info, .magasinier-info {
+  background: #e3f2fd; /* Bleu clair */
+   /* Bleu foncé */
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  flex: 1 1 48%; /* Prend 48% sur grand écran */
+  min-width: 250px;
+}
+
+
+/* Sur mobile, on met en colonne */
+@media (max-width: 768px) {
+  .entrepot-magasinier-container {
+    flex-direction: column;
+  }
+
+  .entrepot-info, .magasinier-info {
+    flex: 1 1 100%; /* Prend toute la largeur */
+  }
+}
+
 .filtrage {
   background: #f1f1f1;
   border-radius: 5px;

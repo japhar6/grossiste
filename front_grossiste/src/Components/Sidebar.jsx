@@ -94,11 +94,13 @@ function Sidebar() {
         { path: "/clients", icon: faUserFriends, text: "Client particulier (cousine)" },
         { path: "/livraisons", icon: faTruckLoading, text: "Gestion des Livraisons" },
         { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
+                { path: "/histovad", icon: faTags, text: "Historique des commandes" },
+                { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
     ];
 
     return (
       <>
-          <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`}>
+          <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`} >
               <button 
                   className="btn btn-light collapse-btn" 
                   onClick={toggleSidebar}

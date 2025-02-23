@@ -249,9 +249,12 @@ const openModal = (paiement) => {
                 </div>
 
                 <div className="modal-footer center">
-                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                  <button className="btn btn-info" onClick={handleReturnValidation}>Valider le retour</button>
-                </div>
+  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+  {modalData && modalData.paiement.statut !== "Produits retourner" && ( // Condition pour afficher le bouton
+    <button className="btn btn-info" onClick={handleReturnValidation}>Valider le retour</button>
+  )}
+</div>
+
               </div>
             </div>
           </div>

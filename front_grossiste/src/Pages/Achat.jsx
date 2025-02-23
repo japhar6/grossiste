@@ -746,17 +746,18 @@ console.log("produit" ,produitId);
  <div className="fournisseur-section">
            <h6><i className="fa fa-truck"></i> Sélection de l'entrepôt</h6>
            <select
-                 className="form-control custom-select"
-               value={entrepot}
-               onChange={handleEntrepotChange}
-           >
-               <option value="">Choisir un entrepôt</option>
-               {entrepots.map((entrepotItem) => (
-                   <option key={entrepotItem._id} value={entrepotItem._id}>
-                       {entrepotItem.nom}
-                   </option>
-               ))}
-           </select>
+    className="form-control custom-select"
+    value={entrepot}
+    onChange={handleEntrepotChange}
+>
+    <option value="">Choisir un entrepôt</option>
+    {entrepots.map((entrepotItem) => (
+        <option key={entrepotItem._id} value={entrepotItem._id}>
+            {entrepotItem.nom}
+        </option>
+    ))}
+</select>
+
        </div>
        <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
                     <ExportPDF tableId="table-to-export" />

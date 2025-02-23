@@ -19,19 +19,27 @@ import PriseCommande from './Pages/PriseCommande.jsx';
 import Caisse from './Pages/Caisse.jsx';
 import SortieCommande from './Pages/SortieCommande.jsx';
 import Stock from './Pages/Stock.jsx';
+import StockMaga from './Pages/Stockmaga.jsx';
 import Commerciale from './Pages/Commerciale.jsx';
 import Vendeur from './Pages/Vendeur.jsx';
 import Magasinier from './Pages/Magasinier.jsx';
 import HistoV from './Pages/HistoventeVendeur.jsx';
-
+import Invetaire from './Pages/Inventaire.jsx'
+import CreerInventaire from './Pages/CreerInvetaire.jsx';
 import HistoC from './Pages/Histopaiement.jsx';
 import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
+<<<<<<< HEAD
 import FactureNormal from './Components/FactureNormal.jsx';
 import FactureRemise from './Pages/FactureRemise.jsx';
 
+=======
+import HistoCA from './Pages/HistoC.jsx';
+import HistoVA from './Pages/HistoV.jsx';
+import Transfert from './Pages/Transfert.jsx';
+>>>>>>> 1d4e0065c99acc3b7b8f29ecaca90a22e8ae454b
 function App() {
   return (
     <BrowserRouter>
@@ -54,6 +62,8 @@ function App() {
           <Route path='/commande' element={<PriseCommande />} />
           <Route path='/achat' element={<AchatProduits />} />
           <Route path='/SortieCommande' element={<SortieCommande />} />
+          <Route path='/histovad' element={<HistoVA />} />
+          <Route path='/histocad' element={<HistoCA />} />
         </Route>
 
         {/* Routes VENDEUR */}
@@ -68,7 +78,11 @@ function App() {
           <Route path='/magasinier' element={<Magasinier />} />
           <Route path='/profilm' element={<ProfilM />} />
           <Route path='/RetourStockCom' element={<RetourStockCom />} />
-        
+          <Route path='/stockma' element={<StockMaga />} />
+          <Route path='/inventaire' element={<Invetaire />} />
+          <Route path='/creerinventaire' element={<CreerInventaire />} />
+          <Route path='/transfert' element={<Transfert />} />
+   
         </Route>
 
         {/* Routes CAISSIER */}

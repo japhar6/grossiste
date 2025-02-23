@@ -2,7 +2,7 @@ const Stock = require('../models/Stock');
 const Commande = require('../models/Commandes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Produit = require("../models/Produits"); 
-
+const Entrepot = require('../models/entrepot');
 // Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
   try {
@@ -25,6 +25,74 @@ exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUni
     return stock;
   } catch (error) {
     throw new Error('Erreur lors de la mise à jour du stock: ' + error.message);
+  }
+};
+exports.getQuantiteProduitById = async (req, res) => {
+  const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
+
+  try {
+    // Récupérer l'entrepôt "principal"
+    const entrepotPrincipale = await Entrepot.findOne({ type: 'principal' });
+    if (!entrepotPrincipale) {
+      return res.status(404).json({ message: "Entrepôt 'principal' non trouvé" });
+    }
+
+    // Récupérer le produit par ID
+    const produit = await Produit.findById(id);
+    if (!produit) {
+      return res.status(404).json({ message: "Produit non trouvé" });
+    }
+
+    // Récupérer les données de stock pour l'entrepôt "principal"
+    const stockData = await Stock.findOne({ entrepot: entrepotPrincipale._id, produit: id });
+    const quantiteDisponible = stockData ? stockData.quantité : 0; // Si aucun stock, mettre 0
+
+    // Ajouter la quantité disponible au produit
+    const produitAvecQuantite = {
+      ...produit.toObject(),
+      quantiteDisponible
+    };
+
+    res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité
+  } catch (error) {
+    console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+} ;
+exports.getQuantiteProduitByIde = async (req, res) => {
+  const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
+
+  try {
+    // Récupérer le produit par ID
+    const produit = await Produit.findById(id);
+    if (!produit) {
+      return res.status(404).json({ message: "Produit non trouvé" });
+    }
+
+    // Récupérer l'entrepôt "principal"
+    const entrepotPrincipale = await Entrepot.findOne({ type: 'principal' });
+    if (!entrepotPrincipale) {
+      return res.status(404).json({ message: "Entrepôt 'principal' non trouvé" });
+    }
+
+    // Récupérer les stocks pour le produit dans tous les entrepôts sauf l'entrepôt principal
+    const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } });
+
+    // Trouver la quantité maximale parmi les stocks secondaires
+    const quantiteMaximale = stockData.reduce((max, stock) => {
+      return Math.max(max, stock.quantité);
+    }, 0);
+
+    // Ajouter la quantité maximale au produit
+    const produitAvecQuantite = {
+      ...produit.toObject(),
+      quantiteDisponible: quantiteMaximale
+    };
+
+    res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité maximale
+  } catch (error) {
+    console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
 
