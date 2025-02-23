@@ -13,7 +13,7 @@ function HistoV() {
   const [statutFilter, setStatutFilter] = useState("");
   const vendeurId = localStorage.getItem('userid');
   const nom = localStorage.getItem('nom'); 
-
+  const [commissions, setCommissions] = useState([]);
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
@@ -129,7 +129,36 @@ function HistoV() {
                     ))}
                   </tbody>
                 </table>
+                {commissions.length > 0 ? (
+  <div className="commission-section">
+    <h4>Commissions</h4>
+    <table className="table-striped">
+      <thead>
+        <tr>
+          <th>Période</th>
+          <th>Type</th>
+          <th>Montant</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        {commissions.map((commission) => (
+          <tr key={commission._id}>
+            <td>{commission.periode}</td>
+            <td>{commission.typeCommission}</td>
+            <td>{commission.montant} €</td>
+            <td>{commission.statut}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+) : (
+  <p>Aucune commission enregistrée pour ce commercial.</p>
+)}
+
               </div>
+              
             )}
           </div>
         </section>

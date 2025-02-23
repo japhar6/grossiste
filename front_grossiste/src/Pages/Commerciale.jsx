@@ -10,8 +10,9 @@ const GestionCommerciaux = () => {
   const [commerciaux, setCommerciaux] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [ventesDetails, setVentesDetails] = useState([]);
-
+  const [commissionsDetails, setCommissionsDetails] = useState([]);
   const [commercialNom, setCommercialNom] = useState('');
+
   useEffect(() => {
     const fetchCommerciauxAvecVentes = async () => {
       try {
@@ -26,11 +27,11 @@ const GestionCommerciaux = () => {
   }, []);
 
   const handleRowClick = async (commercialId, commercialNom) => {
-    setCommercialNom(commercialNom); // Mettre à jour le nom du commercial sélectionné
+    setCommercialNom(commercialNom);
     try {
       const response = await axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`);
-      
-      // Vérifiez si la réponse contient des ventes
+      const responseCommissions = await axios.get(`http://localhost:5000/api/commission/commercial/${commercialId}`);
+
       if (Array.isArray(response.data) && response.data.length === 0) {
         Swal.fire({
           title: 'Aucune Vente',
@@ -40,6 +41,7 @@ const GestionCommerciaux = () => {
         });
       } else {
         setVentesDetails(response.data);
+        setCommissionsDetails(responseCommissions.data);
         setModalOpen(true);
       }
     } catch (error) {
@@ -50,13 +52,17 @@ const GestionCommerciaux = () => {
           icon: 'info',
           confirmButtonText: 'OK'
         }).then(() => {
-          // Reload la page après avoir cliqué sur OK
           window.location.reload();
         });
       } else {
         console.error("Erreur lors de la récupération des ventes :", error);
       }
     }
+  };
+
+  const handleAddCommission = (commissionData) => {
+    // Ajouter la logique pour traiter la commission ici
+    console.log("Ajouter commission:", commissionData);
   };
 
   return (
@@ -66,33 +72,40 @@ const GestionCommerciaux = () => {
         <Header />
         <div className="gestion-commerciaux">
           <h6 className='alert alert-success'>Gestion des Commerciaux</h6>
-          <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-          <table className="table-striped">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Statut</th>
-                <th>Date d'Inscription</th>
-                <th>Ventes Réalisées</th>
-              </tr>
-            </thead>
-            <tbody>
-              {commerciaux.map((commercial) => (
-              <tr key={commercial._id} onClick={() => handleRowClick(commercial._id, commercial.nom)} style={{ cursor: 'pointer' }}>
-       <td>{commercial.nom}</td>
-                  <td>{commercial.email}</td>
-                  <td>{commercial.telephone}</td>
-                  <td>{commercial.statut}</td>
-                  <td>{new Date(commercial.dateInscription).toLocaleDateString()}</td>
-                  <td>{commercial.ventes ? commercial.ventes.length : 0}</td>
+          <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+            <table className="table-striped">
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
+                  <th>Statut</th>
+                  <th>Date d'Inscription</th>
+                  <th>Ventes Réalisées</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {commerciaux.map((commercial) => (
+                  <tr key={commercial._id} onClick={() => handleRowClick(commercial._id, commercial.nom)} style={{ cursor: 'pointer' }}>
+                    <td>{commercial.nom}</td>
+                    <td>{commercial.email}</td>
+                    <td>{commercial.telephone}</td>
+                    <td>{commercial.statut}</td>
+                    <td>{new Date(commercial.dateInscription).toLocaleDateString()}</td>
+                    <td>{commercial.ventes ? commercial.ventes.length : 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} ventes={ventesDetails} commercialNom={commercialNom}  />
+          <Modal 
+            isOpen={modalOpen} 
+            onClose={() => setModalOpen(false)} 
+            ventes={ventesDetails} 
+            commercialNom={commercialNom}  
+            commissions={commissionsDetails} 
+            onAddCommission={handleAddCommission}
+          />
         </div>
       </section>
     </main>
