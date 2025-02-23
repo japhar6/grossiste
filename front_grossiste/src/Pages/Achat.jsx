@@ -57,7 +57,7 @@ console.log("produit" ,produitId);
     setProduit(selectedOption);
 
     // Faire une requête pour récupérer les détails du produit
-    fetch(`http://localhost:5000/api/produits/recuperer/${produitId}`)
+    fetch(`http://10.152.183.99/api/produits/recuperer/${produitId}`)
       .then((response) => response.json())
       .then((data) => {
         if (data) {
@@ -71,7 +71,7 @@ console.log("produit" ,produitId);
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/produits/categories")
+    fetch("http://10.152.183.99/api/produits/categories")
       .then((response) => response.json())
       .then((data) => setCategories(data))
       .catch((error) => console.error("Erreur lors de la récupération des catégories", error));
@@ -96,7 +96,7 @@ console.log("produit" ,produitId);
     console.log("poruidg",produit);
   
     // Envoi du produit à l'API pour ajout
-    fetch("http://localhost:5000/api/produits/ajouter", {
+    fetch("http://10.152.183.99/api/produits/ajouter", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -121,7 +121,7 @@ console.log("produit" ,produitId);
   
        
         if (fournisseur) {
-          fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
+          fetch(`http://10.152.183.99/api/produits/fournisseur/${fournisseur}`)
             .then((response) => response.json())
             .then((data) => {
               if (Array.isArray(data) && data.length > 0) {
@@ -173,7 +173,7 @@ console.log("produit" ,produitId);
 
   const fetchAchats = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/achats/panier/${panierId}`);
+      const response = await fetch(`http://10.152.183.99/api/achats/panier/${panierId}`);
       const data = await response.json();
   
       if (!response.ok) {
@@ -188,7 +188,7 @@ console.log("produit" ,produitId);
   
   useEffect(() => {
     if (fournisseur) {
-      fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
+      fetch(`http://10.152.183.99/api/produits/fournisseur/${fournisseur}`)
         .then((response) => response.json())
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
@@ -225,7 +225,7 @@ console.log("produit" ,produitId);
 
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/fournisseurs/tous")
+    fetch("http://10.152.183.99/api/fournisseurs/tous")
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -251,7 +251,7 @@ console.log("produit" ,produitId);
   
   
   useEffect(() => {
-    fetch("http://localhost:5000/api/entrepot")
+    fetch("http://10.152.183.99/api/entrepot")
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -290,7 +290,7 @@ console.log("produit" ,produitId);
     };
   
     try {
-      const response = await fetch("http://localhost:5000/api/paniers/ajouter", {
+      const response = await fetch("http://10.152.183.99/api/paniers/ajouter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -359,7 +359,7 @@ console.log("produit" ,produitId);
     console.log("Données envoyées pour création de l'achat :", achatData);
   
     try {
-      const response = await fetch("http://localhost:5000/api/achats/ajouter", {
+      const response = await fetch("http://10.152.183.99/api/achats/ajouter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -397,11 +397,28 @@ console.log("produit" ,produitId);
   };
 
 
+<<<<<<< HEAD
+=======
+  /*
+  const produitId = produit._id;
+  
+  const updatePrix = async () => {
+    try {
+      const response = await fetch(`http://10.152.183.99/api/produits/modifier/${produitId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prixDachat: prixAchat,
+        }),
+      });
+>>>>>>> ac520e2f66be30f733312591e89f94b8b1f61b05
 
   const validerPanier = async() => {
 
     try {
-      const response = await fetch(`http://localhost:5000/api/achats/valider/${panierId}`, {
+      const response = await fetch(`http://10.152.183.99/api/achats/valider/${panierId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

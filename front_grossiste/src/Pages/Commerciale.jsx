@@ -15,7 +15,7 @@ const GestionCommerciaux = () => {
   useEffect(() => {
     const fetchCommerciauxAvecVentes = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/comercial/');
+        const response = await axios.get('http://10.152.183.99/api/comercial/');
         setCommerciaux(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des commerciaux :", error);
@@ -28,7 +28,7 @@ const GestionCommerciaux = () => {
   const handleRowClick = async (commercialId, commercialNom) => {
     setCommercialNom(commercialNom); // Mettre à jour le nom du commercial sélectionné
     try {
-      const response = await axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`);
+      const response = await axios.get(`http://10.152.183.99/api/paiementCom/performance/commercial/${commercialId}`);
       
       // Vérifiez si la réponse contient des ventes
       if (Array.isArray(response.data) && response.data.length === 0) {

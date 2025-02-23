@@ -22,7 +22,7 @@ function Entrepot() {
   useEffect(() => {
     if (token) {
       axios
-        .get("http://localhost:5000/api/entrepot", {
+        .get("http://10.152.183.99/api/entrepot", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -32,7 +32,7 @@ function Entrepot() {
             .filter((magasinier) => magasinier !== null);
 
           axios
-            .get("http://localhost:5000/api/users/tout", {
+            .get("http://10.152.183.99/api/users/tout", {
               headers: { Authorization: `Bearer ${token}` },
             })
             .then((userResponse) => {
@@ -119,7 +119,9 @@ function Entrepot() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/entrepot/${id}`, {
+        const token = localStorage.getItem("token");
+       
+        await axios.delete(`http://10.152.183.99/api/entrepot/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
