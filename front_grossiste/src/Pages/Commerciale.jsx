@@ -66,7 +66,7 @@ const GestionCommerciaux = () => {
         <Header />
         <div className="gestion-commerciaux">
           <h2>Gestion des Commerciaux</h2>
-
+          <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
           <table className="table-striped">
             <thead>
               <tr>
@@ -91,7 +91,7 @@ const GestionCommerciaux = () => {
               ))}
             </tbody>
           </table>
-
+          </div>
           <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} ventes={ventesDetails} commercialNom={commercialNom}  />
         </div>
       </section>

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Produit = mongoose.model('Produit');
+
 const ventecomSchema = new mongoose.Schema({
     commercialId: { 
         type: mongoose.Schema.Types.ObjectId, 
@@ -21,6 +22,27 @@ const ventecomSchema = new mongoose.Schema({
             quantite: { 
                 type: Number, 
                 required: true 
+            },
+            unite: { 
+                type: String,  // Ajout de l'unité du produit
+                required: true 
+            }
+        }
+    ],
+    produitsRestants: [
+        {
+            produitId: { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: "Produit", 
+                required: true 
+            },
+            quantiteRestante: { 
+                type: Number, 
+                required: true 
+            },
+            unite: { 
+                type: String,  // Ajout de l'unité aussi dans les produits restants
+                required: true 
             }
         }
     ],
@@ -34,5 +56,5 @@ const ventecomSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-const VenteCom = mongoose.model("VenteCom", ventecomSchema); // Changer "Vente" en "VenteCom"
+const VenteCom = mongoose.model("VenteCom", ventecomSchema);
 module.exports = VenteCom;

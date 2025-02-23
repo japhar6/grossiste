@@ -1,60 +1,73 @@
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%; /* Utiliser un pourcentage pour rendre le modal flexible */
+  max-width: 600px; /* Limite la largeur maximale pour les grands écrans */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow-x: auto; /* Ajoute un défilement horizontal si nécessaire */
+}
+
+.ventes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.ventes-table th,
+.ventes-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.ventes-table th {
+  background-color: #f2f2f2;
+}
+
+.ventes-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.ventes-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Media Queries pour adapter le style sur différents écrans */
+@media (max-width: 768px) {
   .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 600px; /* Augmente la largeur pour accueillir plus d'informations */
-    max-width: 100%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 15px; /* Réduit le padding sur les petits écrans */
   }
-  
-  .ventes-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .ventes-table th, .ventes-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .ventes-table th {
-    background-color: #f2f2f2;
-  }
-  
-  .ventes-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  .ventes-table tr:hover {
-    background-color: #f1f1f1;
-  }
-  
+
   button {
-    margin-top: 20px;
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    width: 100%; /* Bouton prend toute la largeur sur mobile */
+    padding: 12px; /* Augmente le padding pour un meilleur look */
   }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
+}

@@ -9,8 +9,8 @@ function Dashboard() {
   const [fournisseursCount, setFournisseursCount] = useState(0);
   const [produitCount, setproduitCount] = useState(0);
   const [clientCount, setclientCount] = useState(0);
-  const [commandecount, setcommandeCount] = useState(0);
-
+  const [commandeCount, setcommandeCount] = useState(0);
+  
   useEffect(() => {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchFournisseursCount = async () => {
@@ -75,65 +75,38 @@ function Dashboard() {
   }, []);
 
 
+
   return (
     <>
       <header></header>
-      <main className='center'>
+      <main className='dashboard-container'>
         <Sidebar />
-        <section className='contenue'>
+        <section className='main-content scrollable'>
           <Header />
-          <div className="p-3 content">
-            <div className="stats p-3">
-              <h5 className='alert alert-success'>
-                <i className='fa fa-line-chart'></i> Statistique générale
-              </h5>
-              <div className='center'>
-                <div className="one p-4 center">
-                  <div>
-                    <h1><i className='fa fa-bar-chart'></i> {clientCount}</h1>
-                  </div>
-                  <div>
-                    <h6>Clients</h6>
-                  </div>
-                </div>
-                <div className="one center">
-                  <div>
-                    <h1><i className='fa fa-bar-chart'></i> {fournisseursCount}</h1>
-                  </div>
-                  <div>
-                    <h6>Fournisseurs</h6>
-                  </div>
-                </div>
-                <div className="one center">
-                  <div>
-                    <h1><i className='fa fa-bar-chart'></i> {commandecount}</h1>
-                  </div>
-                  <div>
-                    <h6>Commandes</h6>
-                  </div>
-                </div>
-                <div className="one center">
-                  <div>
-                    <h1><i className='fa fa-bar-chart'></i> {produitCount}</h1>
-                  </div>
-                  <div>
-                    <h6>Articles</h6>
-                  </div>
-                </div>
-              </div>
+          <div className='stats-container'>
+            <div className='stat-card'>
+              <h1><i className='fa fa-users'></i> {clientCount}</h1>
+              <h6>Clients</h6>
             </div>
-            <div className='mt-3 center'>
-              <div className="chart center p-3">
-                <div className="chart1">
-                  <LineChart />
-                </div>
-                <div className="chart2">
-                  <DonutChart />
-                </div>
-              </div>
-              <div className="profil">
-
-              </div>
+            <div className='stat-card'>
+              <h1><i className='fa fa-truck'></i> {fournisseursCount}</h1>
+              <h6>Fournisseurs</h6>
+            </div>
+            <div className='stat-card'>
+              <h1><i className='fa fa-shopping-cart'></i> {commandeCount}</h1>
+              <h6>Commandes</h6>
+            </div>
+            <div className='stat-card'>  
+              <h1><i className='fa fa-box'></i> {produitCount}</h1>
+              <h6>Articles</h6>
+            </div>
+          </div>
+          <div className='charts-wrapper'>
+            <div className='chart-box'>
+              <LineChart />
+            </div>
+            <div className='chart-box'>
+              <DonutChart />
             </div>
           </div>
         </section>
@@ -143,3 +116,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+

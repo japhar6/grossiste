@@ -57,28 +57,29 @@ function HistoC() {
         <section className="contenue flex-grow-1 p-4">
           <Header />
           <div className="histoC">
-            <h2 className="mb-4">Historique des Paiement fait par {nom}</h2>
+            <h2 className='alert alert-success'>Historique des Paiement fait par {nom}</h2>
 
-            <div className="mb-3">
-              <label className="me-2">
-                Filtrer par type:
-                <select className="form-select" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
-                  <option value="both">Les deux</option>
-                  <option value="client">Paiements Clients</option>
-                  <option value="commercial">Paiements Commerciaux</option>
-                </select>
-              </label>
-              
-              <label className="me-2">
-                Filtrer par date:
-                <input 
-                  type="date" 
-                  className="form-control d-inline" 
-                  value={date} 
-                  onChange={e => setDate(e.target.value)} 
-                />
-              </label>
-            </div>
+            <div className="filter-container mb-3">
+  <label>
+    Filtrer par type:
+    <select className="form-select" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
+      <option value="both">Les deux</option>
+      <option value="client">Paiements Clients</option>
+      <option value="commercial">Paiements Commerciaux</option>
+    </select>
+  </label>
+
+  <label>
+    Filtrer par date:
+    <input 
+      type="date" 
+      className="form-control" 
+      value={date} 
+      onChange={e => setDate(e.target.value)} 
+    />
+  </label>
+</div>
+
 
             {filteredPaiements.length === 0 ? (
               <p>Aucun paiement trouvé.</p>
