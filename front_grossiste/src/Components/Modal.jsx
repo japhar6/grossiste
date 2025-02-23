@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import '../Styles/Modal.css'; // Assure-toi d'avoir ce fichier pour les styles
+import '../Styles/Modal.css'; // Assurez-vous d'avoir ce fichier pour les styles
 import AddCommissionModal from './AddcomModal'; // Importer le modal d'ajout de commission
 
 const Modal = ({ isOpen, onClose, ventes, commercialNom, commissions, onAddCommission }) => {
   const [isAddCommissionOpen, setAddCommissionOpen] = useState(false);
 
   const handleAddCommission = (commissionData) => {
-    // Appeler la fonction pour ajouter la commission ici
     onAddCommission(commissionData);
+    setAddCommissionOpen(false); // Fermer le modal d'ajout après avoir ajouté la commission
   };
 
   if (!isOpen) return null;
@@ -78,7 +78,6 @@ const Modal = ({ isOpen, onClose, ventes, commercialNom, commissions, onAddCommi
 
         {/* Bouton pour ouvrir le modal d'ajout de commission */}
         <button onClick={() => setAddCommissionOpen(true)}>Ajouter Commission</button>
-
         <button onClick={onClose}>Fermer</button>
 
         {/* Modal d'ajout de commission */}

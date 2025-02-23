@@ -60,10 +60,24 @@ const GestionCommerciaux = () => {
     }
   };
 
-  const handleAddCommission = (commissionData) => {
-    // Ajouter la logique pour traiter la commission ici
-    console.log("Ajouter commission:", commissionData);
+  const handleAddCommission = async (commissionData) => {
+    try {
+      // Ajouter la logique pour envoyer la commission au backend
+      const response = await axios.post('http://localhost:5000/api/commission/commissions/calculer', commissionData);
+      
+      // Mettre à jour l'état avec la nouvelle commission ajoutée
+      setCommissionsDetails((prevCommissions) => [
+        ...prevCommissions,
+        response.data // Assurez-vous que le backend renvoie la commission ajoutée
+      ]);
+  
+      Swal.fire('Succès', 'Commission ajoutée avec succès.', 'success');
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la commission :", error);
+      Swal.fire('Erreur', 'Erreur lors de l\'ajout de la commission.', 'error');
+    }
   };
+  
 
   return (
     <main className="center">
