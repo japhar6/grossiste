@@ -4,6 +4,8 @@ import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 import axios from "axios";
+ 
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
               const [newPerson, setNewPerson] = useState({
@@ -11,7 +13,11 @@ function PriseCommande() {
                 telephone: "",
                 adresse: "",
               });
-
+              const playSound = () => {
+                const audio = new Audio(Sound); 
+                audio.play();
+            };
+            
 
               // Définir l'état pour les produits sélectionnés
               const [selectedProducts, setSelectedProducts] = useState([]);
@@ -319,6 +325,8 @@ function PriseCommande() {
                                     
                                             if (response.data) {
                                                 const referenceFacture = response.data.commande.referenceFacture; 
+                                                  // Jouer le son
+    playSound();
                                                 Swal.fire({
                                                     title: "Commande validée",
                                                     text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
@@ -401,60 +409,75 @@ function PriseCommande() {
 
 
 {/* Affichage du formulaire si "Nouveau client" est sélectionné */}{isNew && (
-    <div className="form-group mt-3">
-    <input
-      type="text"
-      className="form-control"
-      placeholder={`Nom du ${type}`}
-      value={newPerson.nom}
-      onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
-    />
-    <input
-      type="text"
-      className="form-control mt-2"
-      placeholder="Téléphone"
-      value={newPerson.telephone}
-      onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
-    />
-    
-    {type === "client" && (
-      <input
-        type="text"
-        className="form-control mt-2"
-        placeholder="Adresse"
-        value={newPerson.adresse}
-        onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
-      />
-    )}
+   <div className="container mt-3" style={{ marginLeft:'-25px', padding: '20px', overflow: 'hidden' }}>
+   <div className="form-group">
+       <div className="row">
+           <div className="col-12">
+               <input
+                   type="text"
+                   className="form-control"
+                   placeholder={`Nom du ${type}`}
+                   value={newPerson.nom}
+                   onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
+               />
+           </div>
 
+           <div className="col-12 mt-2">
+               <input
+                   type="text"
+                   className="form-control"
+                   placeholder="Téléphone"
+                   value={newPerson.telephone}
+                   onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
+               />
+           </div>
 
-  {type === "commercial" && (
-    <>
-      <input
-        type="email"
-        className="form-control mt-2"
-        placeholder="Email"
-        value={newPerson.email}
-        onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
-      />
-      <input
-        type="text"
-        className="form-control mt-2"
-        placeholder="Type (commercial)"
-        value={newPerson.type}
-        onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
-      />
-    </>
-  )}
+           {type === "client" && (
+               <div className="col-12 mt-2">
+                   <input
+                       type="text"
+                       className="form-control"
+                       placeholder="Adresse"
+                       value={newPerson.adresse}
+                       onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
+                   />
+               </div>
+           )}
 
+           {type === "commercial" && (
+               <>
+                   <div className="col-12 mt-2">
+                       <input
+                           type="email"
+                           className="form-control"
+                           placeholder="Email"
+                           value={newPerson.email}
+                           onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                       />
+                   </div>
+                   <div className="col-12 mt-2">
+                       <input
+                           type="text"
+                           className="form-control"
+                           placeholder="Type (commercial)"
+                           value={newPerson.type}
+                           onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
+                       />
+                   </div>
+               </>
+           )}
 
-    <button
-      className="btn btn-success mt-3"
-      onClick={creerPersonne}
-    >
-      Créer {type === "client" ? "Client" : "Commercial"}
-    </button>
-  </div>
+           <div className="col-12 mt-3">
+               <button
+                   className="btn btn-success"
+                   onClick={creerPersonne}
+               >
+                   Créer {type === "client" ? "Client" : "Commercial"}
+               </button>
+           </div>
+       </div>
+   </div>
+</div>
 
 
   )}

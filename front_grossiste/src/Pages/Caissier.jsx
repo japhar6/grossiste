@@ -3,12 +3,17 @@ import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import "../Styles/Caisse.css";
 import Swal from 'sweetalert2';
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
-
+  const playSound = () => {
+                const audio = new Audio(Sound); 
+                audio.play();
+            };
+            
   const [typeRemise, setTypeRemise] = useState("aucune");
   const [valeurRemise, setValeurRemise] = useState(0);
   const [totalApresRemise, setTotalApresRemise] = useState(0);
@@ -113,6 +118,7 @@ function Caisse() {
         text: result.message,
 
       })
+      playSound();
       setReferenceFacture("");
       setCommande(null);
       setClient(null);
