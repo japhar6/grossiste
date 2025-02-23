@@ -29,6 +29,8 @@ import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
+import FactureNormal from './Components/FactureNormal.jsx';
+import FactureRemise from './Pages/FactureRemise.jsx';
 
 function App() {
   return (
@@ -75,7 +77,10 @@ function App() {
           <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
           <Route path='/PaiementCom' element={<PaiementCom />} />
+          <Route path='/FactureNormal' element={<FactureNormal />} />
+          <Route path='/FactureRemise' element={<FactureRemise />} />
           </Route>
+
       </Routes>
     </BrowserRouter>
   );
