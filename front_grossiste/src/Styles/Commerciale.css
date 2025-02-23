@@ -12,6 +12,18 @@
 
   }
   
+  .filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Espacement entre les éléments */
+  }
+  
+  .filter-container .form-control, 
+  .filter-container .form-select {
+    flex: 1; /* Prend toute la largeur disponible */
+    min-width: 200px; /* Largeur minimale pour chaque élément */
+  }
+  
   .gestion-commerciaux h2 {
     font-size: 24px;
     margin-bottom: 20px;

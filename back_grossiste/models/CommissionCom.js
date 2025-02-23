@@ -16,7 +16,7 @@ const commissioncomSchema = new mongoose.Schema({
   },
   typeCommission: {
     type: String,
-    enum: ['pourcentage', 'montant_fixe'],
+    enum: ['pourcentage', 'montantFixe'],
     required: true
   },
   periode: {
