@@ -91,8 +91,7 @@ function Sidebar() {
         { path: "/stock", icon: faBoxes, text: "Gestion de stock" },
         { path: "/entrepot", icon: faHome, text: "Gestion des entrepôts" },
         { path: "/commerciale", icon: faBriefcase, text: "Gestion des commerciaux" },
-        { path: "/clients", icon: faUserFriends, text: "Client particulier (cousine)" },
-        { path: "/livraisons", icon: faTruckLoading, text: "Gestion des Livraisons" },
+      
         { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
                 { path: "/histovad", icon: faTags, text: "Historique des commandes" },
                 { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },

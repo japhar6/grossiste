@@ -55,37 +55,45 @@ const GestionCommerciaux = () => {
     setCommercialNom(commercialNom);
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`);
-      if (Array.isArray(response.data) && response.data.length === 0) {
-        Swal.fire({
-          title: 'Aucune Vente',
-          text: `Le commercial ${commercialNom} n'a pas encore effectué de ventes.`,
-          icon: 'info',
-          confirmButtonText: 'OK'
-        });
-        return;
-      }
+        const response = await axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`);
+        
+        // Vérifiez si des ventes sont présentes
+        if (Array.isArray(response.data) && response.data.length === 0) {
+            Swal.fire({
+                title: 'Aucune Vente',
+                text: `Le commercial ${commercialNom} n'a pas encore effectué de ventes.`,
+                icon: 'info',
+                confirmButtonText: 'OK'
+            });
+        }
 
-      setVentesDetails(response.data);
-      setModalOpen(true);
+        setVentesDetails(response.data);
+        setModalOpen(true); // Ouvre le modal même s'il n'y a pas de vente
 
-      const responseCommissions = await axios.get(`http://localhost:5000/api/commission/commercial/${commercialId}`);
-      setCommissionsDetails(responseCommissions.data);
+        // Récupérez les commissions
+        try {
+            const responseCommissions = await axios.get(`http://localhost:5000/api/commission/commercial/${commercialId}`);
+            if (responseCommissions.data && Array.isArray(responseCommissions.data)) {
+                setCommissionsDetails(responseCommissions.data); // Met à jour uniquement si des commissions sont trouvées
+            } else {
+                setCommissionsDetails([]); // Aucune commission trouvée, videz l'état des commissions
+            }
+        } catch (commissionError) {
+            console.error(`Erreur lors de la récupération des commissions pour le commercial ID: ${commercialId}`, commissionError);
+            setCommissionsDetails([]); // Aucune commission trouvée, videz l'état des commissions
+        }
     } catch (error) {
-      if (error.response && error.response.status === 404) {
+        console.error(`Erreur lors de la récupération des données pour le commercial ID: ${commercialId}`, error);
         Swal.fire({
-          title: 'Erreur',
-          text: `Aucune performance trouvée pour le commercial ${commercialNom}.`,
-          icon: 'info',
-          confirmButtonText: 'OK'
-        }).then(() => {
-          window.location.reload();
+            title: 'Erreur',
+            text: error.response ? error.response.data.message : error.message || "Une erreur s'est produite lors de la récupération des données.",
+            icon: 'error',
+            confirmButtonText: 'OK'
         });
-      } else {
-        console.error("Erreur lors de la récupération des ventes :", error);
-      }
     }
-  };
+};
+
+
 
   const handleAddCommission = async (commissionData) => {
     try {
