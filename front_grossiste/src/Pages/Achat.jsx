@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import Select from 'react-select'; 
 import HistoriqueAchats from "../Components/HistoriqueAchats";
 
-import ExportPDF from '../PDF/exportpdfAchat';
+
 
 function AchatProduits() {
   const [fournisseur, setFournisseur] = useState("");
@@ -35,10 +35,7 @@ const [achats, setAchats] = useState([]);
   const [fournisseurInfo, setFournisseurInfo] = useState(null);
 
  
-  const handleExportPDF = () => {
-    console.log("Données à exporter:", achats);
-    ExportPDF.export();
-};
+
 
   const handleFournisseurChange = (e) => {
     const selectedFournisseurId = e.target.value;
@@ -100,9 +97,6 @@ console.log("produit" ,produitId);
   const handleAjoutProduit = (e) => {
     e.preventDefault();
   
- 
-   
-  
     // Ajouter la nouvelle catégorie si nécessaire
     const categorieFinale = ajouterCategorie ? nouvelleCategorie : nouveauProduit.categorie;
   
@@ -110,9 +104,9 @@ console.log("produit" ,produitId);
       ...nouveauProduit,
       categorie: categorieFinale,
       prixDachat: parseFloat(nouveauProduit.prixDachat),
-      fournisseur: fourID
+      fournisseur: fourID,
     };
-    console.log("poruidg",produit);
+    console.log("produit", produit);
   
     // Envoi du produit à l'API pour ajout
     fetch("http://localhost:5000/api/produits/ajouter", {
@@ -124,22 +118,26 @@ console.log("produit" ,produitId);
     })
       .then((response) => response.json())
       .then((data) => {
-        alert("Produit ajouté avec succès");
+        Swal.fire({
+          icon: 'success',
+          title: 'Produit ajouté avec succès',
+          showConfirmButton: true,
+          timer: 2000 // Optionnel, pour fermer l'alerte après 2 secondes
+        });
   
-        // Réinitialiser le formulaire
+        // Réinitialiser le formulaire ici
         setNouveauProduit({
           nom: "",
           description: "",
           prixDachat: "",
           unite: "",
           quantiteMinimum: "",
-        
         });
         setNouvelleCategorie("");
         setAjouterCategorie(false);
         setAfficherFormulaireProduit(false);
   
-       
+        // Récupérer les produits du fournisseur
         if (fournisseur) {
           fetch(`http://localhost:5000/api/produits/fournisseur/${fournisseur}`)
             .then((response) => response.json())
@@ -173,7 +171,11 @@ console.log("produit" ,produitId);
         }
       })
       .catch((error) => {
-        alert("Erreur lors de l'ajout du produit");
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: 'Une erreur est survenue lors de l\'ajout du produit',
+        });
         console.error(error);
       });
   };
@@ -760,7 +762,7 @@ console.log("produit" ,produitId);
 
        </div>
        <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
-                    <ExportPDF tableId="table-to-export" />
+                   
                     <button className="btn7 " onClick={validerPanier}>
                         Valider l'Achat
                     </button>

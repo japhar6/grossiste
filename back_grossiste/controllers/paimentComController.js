@@ -54,16 +54,20 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
 
         const paiementCommerciale = await PaiementCommerciale.findOne({ referenceFacture });
         if (!paiementCommerciale) {
+            console.error(`Paiement à crédit non trouvé pour la référence: ${referenceFacture}`);
             return res.status(404).json({ message: "Paiement à crédit non trouvé" });
         }
 
         const commande = await Commande.findById(paiementCommerciale.commandeId);
         if (!commande) {
+            console.error(`Commande non trouvée pour l'ID: ${paiementCommerciale.commandeId}`);
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        if (paiementCommerciale.statut === "complet") {
-            return res.status(400).json({ message: "Le paiement est déjà complet." });
+        // Vérifier si le statut est "partiel"
+        if (paiementCommerciale.statut !== "partiel") {
+            console.error("Tentative de mise à jour d'un paiement qui n'est pas partiel.");
+            return res.status(400).json({ message: "Le paiement doit être partiel pour pouvoir être mis à jour." });
         }
 
         let montantTotalVendu = 0;
@@ -78,6 +82,7 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
                 // Récupérer l'unité du produit depuis la base de données
                 const produitDB = await Produit.findById(produit.produitId);
                 if (!produitDB) {
+                    console.error(`Produit non trouvé : ${produit.produitId}`);
                     return res.status(404).json({ message: `Produit non trouvé : ${produit.produitId}` });
                 }
 
@@ -86,6 +91,8 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
                     quantiteRestante: produitCommande.quantite - produit.quantite, // Calcul de la quantité restante
                     unite: produitDB.unite  // Ajout de l'unité
                 });
+            } else {
+                console.error(`Produit ${produit.produitId} non trouvé dans la commande.`);
             }
         }
 
@@ -94,7 +101,11 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         commande.modePaiement = "espèce";
         await commande.save();
 
-        paiementCommerciale.statut = "complet";
+        // Si le paiement est complet après la mise à jour
+        if (paiementCommerciale.montantRestant === 0) {
+            paiementCommerciale.statut = "complet";
+        }
+
         await paiementCommerciale.save();
 
         const vente = new VenteCom({
@@ -120,9 +131,12 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
             vente
         });
     } catch (error) {
+        console.error(`Erreur lors de la mise à jour du paiement : ${error.message}`);
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 
 exports.getVentesByCommercial = async (req, res) => {
