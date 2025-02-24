@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import "../Styles/Caisse.css";
@@ -12,11 +12,45 @@ function PaiementCom() {
   const [commercial, setCommercial] = useState(null);
   const [produitsRetournes, setProduitsRetournes] = useState({});
   const [produitsVendus, setProduitsVendus] = useState([]);
+  const [allReferences, setAllReferences] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+  
+
   const playSound = () => {
                 const audio = new Audio(Sound); 
                 audio.play();
             };
+            useEffect(() => {
+              const fetchReferences = async () => {
+                try {
+                  const response = await axios.get('/commandes/factmo'); // Votre route pour récupérer toutes les références
+                  setAllReferences(response.data);
+                } catch (error) {
+                  console.error("Erreur lors de la récupération des références :", error);
+                }
+              };
+          
+              fetchReferences();
+            }, []);
+            const handleInputChange = (e) => {
+              const value = e.target.value;
+              setReferenceFacture(value);
+          
+              if (value) {
+                const filteredSuggestions = allReferences.filter(ref =>
+                  ref.toLowerCase().includes(value.toLowerCase())
+                );
+                setSuggestions(filteredSuggestions);
+              } else {
+                setSuggestions([]); // Réinitialisez les suggestions si l'input est vide
+              }
+            };
             
+            const handleSuggestionClick = (suggestion) => {
+              setReferenceFacture(suggestion); // Mettez à jour l'input avec la suggestion choisie
+              setSuggestions([]); // Réinitialisez les suggestions après la sélection
+            };
+          
   // Recherche de la commande en fonction de la référence
   const handleSearch = async () => {
     if (!referenceFacture) return; // Validation si la référence est vide
@@ -180,15 +214,24 @@ function PaiementCom() {
             <div className="commande-container d-flex justify-content-between">
               <div className="refcli">
                 <h6><i className="fa fa-user"></i> Référence de la commande du commercial</h6>
-                <div className="form-group">
+                <div className="form-group ">
                   <input
                     type="text"
                     className="form-control"
                     placeholder="Entrer la référence"
                     value={referenceFacture}
-                    onChange={(e) => setReferenceFacture(e.target.value)}
+                    onChange={handleInputChange} // Changez ici
                   />
-                  <button className="btn btn-primary" onClick={handleSearch}>
+                  {suggestions.length > 0 && (
+                    <ul className="suggestions-list">
+                      {suggestions.map((suggestion) => (
+                        <li key={suggestion} onClick={() => handleSuggestionClick(suggestion)}>
+                          {suggestion}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button className="btno btn-primary " onClick={handleSearch}>
                     Rechercher
                   </button>
                 </div>

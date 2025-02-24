@@ -163,6 +163,9 @@ function Caisse() {
         icon: 'success',
         title: 'Succès',
         text: result.message,
+      }).then(() => {
+   
+        window.location.reload();
       });
       playSound();
       setReferenceFacture("");

@@ -574,9 +574,10 @@ const validerPanier = async () => {
               </h6>
               {!panierCreer && (
                 <div className="filtrage bg-light p-3 mt-3">
-                  <button className="btn3 btn3-success" onClick={creerNouveauPanier}>
-                    Créer un Nouveau Panier
-                  </button>
+              <button className="btn btn-success btn-lg" onClick={creerNouveauPanier}>
+  Créer un Nouveau Panier
+</button>
+
                 </div>
               )}
 

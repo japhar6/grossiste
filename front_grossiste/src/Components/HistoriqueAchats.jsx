@@ -27,11 +27,14 @@ const HistoriqueAchats = () => {
             <h2>Historique des Achats</h2>
             <input
                 type="text"
+                  className="form-control p-2 mt-3 m-2"
                 placeholder="Rechercher par fournisseur"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <table border="1">
+         <div className="table-container" style={{ overflowX: 'auto', overflowY:'auto' }}>
+                <div className="table-responsive table-striped">
+                  <table className="tableSt mt-3">
                 <thead>
                     <tr>
                         <th>Produit</th>
@@ -59,7 +62,7 @@ const HistoriqueAchats = () => {
                     )}
                 </tbody>
             </table>
-        </div>
+        </div>  </div>  </div>
     );
 };
 

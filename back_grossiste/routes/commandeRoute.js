@@ -27,4 +27,5 @@ router.get('/TermineeLivree', commandeController.getCommandesTermineesEtLivrees)
 router.get('/vendeur/:vendeurId', commandeController.getCommandesByVendeur);
 
 router.get('/suggestions', commandeController.getSuggestions);
+router.get('/factmo', commandeController.getSuggestionscom);
 module.exports = router;
