@@ -20,6 +20,9 @@ const fournisseurRoutes = require("./routes/fournisseurRoute");
 const produitRoutes = require("./routes/produitRoute");
 const userRoutes = require("./routes/userRoute");
 const achatsRoutes = require("./routes/achatRoute");
+const commissionRoutes = require("./routes/commissionRoute");
+
+
 const entrepotRoutes = require("./routes/entrepotRoute");
 const clientRoutes = require('./routes/clientRoute');
 const stockRoutes = require('./routes/stockRoute');
@@ -56,7 +59,7 @@ app.use('/api/paiement', paiementRoute);
 app.use("/api/commandes", commandeRoutes);
 app.use("/api/comercial", comercialeRoutes);
 app.use("/api/ventes", venteRoutes);
-
+app.use('/api/commission', commissionRoutes); 
 // Route de test
 app.get("/", (req, res) => {
     res.send("API Grossiste en cours d'exécution...");

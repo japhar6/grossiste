@@ -3,6 +3,25 @@
     padding: 20px;
     background-color: #f4f7fc; /* Fond légèrement gris clair */
     border-radius: 10px;
+    height: 90vh;
+    width: 100%;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
+    margin-right: 1%;
+
+  }
+  
+  .filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Espacement entre les éléments */
+  }
+  
+  .filter-container .form-control, 
+  .filter-container .form-select {
+    flex: 1; /* Prend toute la largeur disponible */
+    min-width: 200px; /* Largeur minimale pour chaque élément */
   }
   
   .gestion-commerciaux h2 {
@@ -10,7 +29,11 @@
     margin-bottom: 20px;
     font-weight: bold;
     color: #2c3e50; /* Titre en couleur foncée */
+  
+  
   }
+  
+  
   
   /* Tableau des commerciaux */
   table {

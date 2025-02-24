@@ -48,6 +48,21 @@ exports.getEntrepotById = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la récupération de l'entrepôt.", error });
   }
 };
+exports.getEntrepotBym = async (req, res) => {
+  try {
+    const { magasinier } = req.params; // Extraire directement l'ID du magasinier
+    const entrepot = await Entrepot.findOne({ magasinier }).populate("magasinier", "nom email");
+
+    if (!entrepot) {
+      return res.status(404).json({ message: "❌ Entrepôt non trouvé." });
+    }
+
+    res.status(200).json(entrepot);
+  } catch (error) {
+    res.status(500).json({ message: "❌ Erreur lors de la récupération de l'entrepôt.", error });
+  }
+};
+
 
 // 🔹 Mettre à jour un entrepôt
 exports.updateEntrepot = async (req, res) => {

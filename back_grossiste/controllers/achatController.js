@@ -4,73 +4,106 @@ const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
 const { ajouterOuMettreAJourStock } = require('./stockController'); 
 const Stock = require('../models/Stock');
-const Entrepot = require('../models/Entrepot');
-const { ObjectId } = require('mongodb');
+const Entrepot = require('../models/entrepot');
 
+const { ObjectId } = require('mongodb');
 exports.ajouterAchat = async (req, res) => {
     try {
-        const { produit, fournisseur, quantite, prixAchat, panierId } = req.body;
-  
-    
-        // Vérifier que la quantité est un nombre positif
+        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee } = req.body;
+
+        // Vérification de la validité des entrées
         if (isNaN(quantite) || quantite <= 0) {
             return res.status(400).json({ message: "La quantité doit être un nombre positif valide." });
         }
-  
-        // Vérifier que le prixAchat est un nombre valide
         if (isNaN(prixAchat) || prixAchat <= 0) {
             return res.status(400).json({ message: "Le prix d'achat doit être un nombre valide supérieur à zéro." });
         }
-  
+
         // Vérifier si le produit et le fournisseur existent
         const produitExistant = await Produit.findById(produit);
         if (!produitExistant) {
             return res.status(404).json({ message: "Produit non trouvé" });
         }
-  
+
         const fournisseurExistant = await Fournisseur.findById(fournisseur);
         if (!fournisseurExistant) {
             return res.status(404).json({ message: "Fournisseur non trouvé" });
         }
+
+        // Vérification de l'ID du panier
         console.log("ID du panier reçu dans le back-end :", panierId);
         const mongoose = require("mongoose");
         if (!mongoose.Types.ObjectId.isValid(panierId)) {
             return res.status(400).json({ message: "L'ID du panier est invalide" });
         }
-        
-        // Trouver le panier correspondant à l'achat
+
+        // Trouver le panier existant
         let panierExistant = await Panier.findById(panierId);
         if (!panierExistant) {
             return res.status(404).json({ message: "Panier non trouvé" });
         }
 
-
-        // Calculer le total de l'achat
+        // Calculer le total de l'achat basé uniquement sur la quantité achetée
         const total = quantite * prixAchat;
-  
-        // Création de l'achat
+
+        // Déterminer la quantité totale de produits offerts par la ristourne
+        let produitsOfferts = 0;
+        let quantiteTotale = quantite; // Initialiser avec la quantité d'origine
+
+        if (fournisseurExistant.type === "ristourne") {
+            if (fournisseurExistant.conditions.typeRistourne === "par_produit") {
+                // Récupérer le pourcentage de ristourne à appliquer
+                const ristournePourcentage = req.body.ristourneAppliquee;
+
+                console.log('Ristourne appliquée:', ristournePourcentage);
+                if (ristournePourcentage && !isNaN(ristournePourcentage) && ristournePourcentage > 0) {
+                    produitsOfferts = Math.floor((quantite * ristournePourcentage) / 100);
+                    console.log(`✅ Ristourne appliquée par ce produit : ${ristournePourcentage}% -> Produits offerts : ${produitsOfferts}`);
+                }
+            } else {
+                // Logique pour le type "générale"
+                const ristournePourcentage = fournisseurExistant.conditions.ristourne;
+                produitsOfferts = Math.floor((quantite * ristournePourcentage) / 100);
+                console.log(`✅ Ristourne générale appliquée : ${ristournePourcentage}% -> Produits offerts : ${produitsOfferts}`);
+            }
+            quantiteTotale += produitsOfferts; // Ajouter les produits offerts à la quantité totale
+        }
+
+        // Création de l'achat après le calcul de la ristourne
         const nouvelAchat = new Achat({
             produit,
             fournisseur,
             quantite,
+            quantiteTotale,
             prixAchat,
             total,
-            panier: panierExistant._id  
+            panier: panierExistant._id,
+            ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false
         });
-  
+
         await nouvelAchat.save();
-  
+
         // Ajouter l'achat au panier et mettre à jour le total général du panier
         panierExistant.achats.push(nouvelAchat._id);
-        panierExistant.totalGeneral += total;
+        panierExistant.totalGeneral += total; // Mettre à jour le total général uniquement avec le montant de l'achat
         await panierExistant.save();
-  
-        res.status(201).json({ message: "✅ Achat ajouté avec succès", achat: nouvelAchat, panier: panierExistant });
+
+        // Envoyer la réponse
+        res.status(201).json({ 
+            message: "✅ Achat ajouté avec succès",
+            achat: nouvelAchat,
+            panier: panierExistant
+        });
+
     } catch (error) {
         console.error("❌ Erreur lors de l'ajout de l'achat:", error);
         res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
     }
-  };
+};
+
+
+
+
   
 
 

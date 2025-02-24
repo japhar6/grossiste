@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Personnels.css";
 import Sidebar from "../Components/Sidebar";
@@ -29,7 +29,7 @@ function Personnels() {
     // Fonction pour récupérer le comptage des utilisateurs par rôle
     const fetchRoleCounts = async () => {
       try {
-        const response = await axios.get("https://api.bazariko.duckdns.org/api/users/count-users-by-role");
+        const response = await axios.get("/users/count-users-by-role");
         setRoleCounts(response.data); // Stocker les données dans l'état
      
       } catch (error) {
@@ -50,7 +50,7 @@ function Personnels() {
           return;
         }
   
-        const response = await axios.get("https://api.bazariko.duckdns.org/api/users/tout/", {
+        const response = await axios.get("/users/tout/", {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -93,7 +93,7 @@ function Personnels() {
 
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("https://api.bazariko.duckdns.org/api/users/register", formData, {
+      const response = await axios.post("/users/register", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -143,7 +143,7 @@ function Personnels() {
       try {
         const token = localStorage.getItem("token");
        
-        await axios.put(`https://api.bazariko.duckdns.org/api/users/licencier/${selectedUser._id}`, {
+        await axios.put(`/users/licencier/${selectedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -185,7 +185,7 @@ function Personnels() {
   
     try {
       const response = await axios.put(
-        `https://api.bazariko.duckdns.org/api/users/${selectedUser._id}`,
+        `/users/${selectedUser._id}`,
         formData,
         {
           headers: {
@@ -385,40 +385,40 @@ function Personnels() {
         onHide={() => setShowModal(false)} 
         centered 
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Détails de l'utilisateur</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedUser && (
-            <div className="user-card">
-              <div className="photo-cont">
-                <img src={`https://api.bazariko.duckdns.org${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
-              </div>
-              <div className="user-info">
-                <p><strong>Nom:</strong> {selectedUser.nom}</p>
-               
-                <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Poste:</strong> {selectedUser.role}</p>       
-                 <p><strong>Numero_cin:</strong> {selectedUser.numero_cin}</p>
-                <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
-                
-                <div className="d-flex justify-content-between w-100">
-                        {selectedUser.status !== "licencié" && (
-                          <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
-                            <i className="fa fa-edit"></i> Modifier
-                          </Button>
-                        )}
-
-                        {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
-                          <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
-                            <i className="fa fa-trash"></i> Licencier
-                          </Button>
-                        )}
-                      </div>
-              </div>
-            </div>
+       <Modal.Header closeButton>
+  <Modal.Title>Détails de l'utilisateur</Modal.Title>
+</Modal.Header>
+<Modal.Body>
+  {selectedUser && (
+    <div className="user-card">
+      <div className="photo-cont">
+        <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
+      </div>
+      <div className="user-info">
+        <p><strong>Nom:</strong> {selectedUser.nom}</p>
+        <p><strong>Email:</strong> {selectedUser.email}</p>
+        <p><strong>Poste:</strong> {selectedUser.role}</p>       
+        <p><strong>Numero CIN:</strong> {selectedUser.numero_cin}</p>
+        <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
+        
+        <div className="d-flex justify-content-between w-100">
+          {selectedUser.status !== "licencié" && (
+            <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
+              <i className="fa fa-edit"></i> Modifier
+            </Button>
           )}
-        </Modal.Body>
+
+          {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
+            <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
+              <i className="fa fa-trash"></i> Licencier
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
+</Modal.Body>
+
       </Modal>
 
       {/* Modal Modification de l'utilisateur */}

@@ -1,12 +1,12 @@
 import React, { useState, useEffect,useRef  } from "react";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Fournisseur.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 
 function Fournisseur() {
-  const [fournisseurs, setFournisseurs] = useState([]);
+  const [fournisseurs, setFournisseurs] = useState([]); 
   const [filteredFournisseurs, setFilteredFournisseurs] = useState([]);
   const [nom, setNom] = useState("");
   const [type, setType] = useState("");
@@ -18,6 +18,8 @@ function Fournisseur() {
   const [editingId, setEditingId] = useState(null);
   const nomRef = useRef(null);
   const [filterNom, setFilterNom] = useState("");  
+  const [typeRistourne, setTypeRistourne] = useState(""); // Nouveau champ pour le type de ristourne
+
   const [filterType, setFilterType] = useState(""); 
 
   useEffect(() => {
@@ -26,7 +28,7 @@ function Fournisseur() {
 
   const fetchFournisseurs = async () => {
     try {
-      const response = await axios.get("https://api.bazariko.duckdns.org/api/fournisseurs/tous");
+      const response = await axios.get("/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  
     } catch (error) {
@@ -42,21 +44,26 @@ function Fournisseur() {
     formData.append("contact[telephone]", telephone);
     formData.append("contact[email]", email);
     formData.append("contact[adresse]", adresse);
+    
     if (type === "ristourne") {
       formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
+      formData.append("conditions[typeRistourne]", typeRistourne); // Corriger ici
     }
+    
     if (logo) {
       formData.append("logo", logo);
     }
-
+  
+    console.log("FormData à soumettre : ", formData); // Ajoute ceci
+  
     try {
       if (editingId) {
-        await axios.put(`https://api.bazariko.duckdns.org/api/fournisseurs/${editingId}`, formData, {
+        await axios.put(`/fournisseurs/${editingId}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Modifié!", "Le fournisseur a été modifié avec succès.", "success");
       } else {
-        await axios.post("https://api.bazariko.duckdns.org/api/fournisseurs", formData, {
+        await axios.post("/fournisseurs", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Ajouté!", "Le fournisseur a été ajouté avec succès.", "success");
@@ -68,6 +75,7 @@ function Fournisseur() {
       Swal.fire("Erreur", "Une erreur est survenue lors de l'enregistrement du fournisseur.", "error");
     }
   };
+  
 
   const handleDelete = async (id) => {
     const confirmDelete = await Swal.fire({
@@ -80,7 +88,7 @@ function Fournisseur() {
     });
     if (confirmDelete.isConfirmed) {
       try {
-        await axios.delete(`https://api.bazariko.duckdns.org/api/fournisseurs/${id}`);
+        await axios.delete(`/fournisseurs/${id}`);
         Swal.fire("Supprimé!", "Le fournisseur a été supprimé avec succès.", "success");
         fetchFournisseurs();
       } catch (error) {
@@ -169,7 +177,7 @@ function Fournisseur() {
               </div>
 
               <div className="consultationF">
-              <div className="table-responsive" style={{ overflowX: 'hidden',overflowY:'auto' }}>
+              <div className="table-responsives" style={{ overflowX: 'hidden',overflowY:'auto' }}>
 
                 <table className="tableX table-striped table-hover ">
                   <thead>
@@ -211,7 +219,7 @@ function Fournisseur() {
                             : "Aucune"}
                         </td>
                         <td>
-                          <button className="btn btn-warning" onClick={() => handleEdit(f)}>
+                          <button className="btn1 btn-warning" onClick={() => handleEdit(f)}>
                           <i
     className="fas fa-pencil-alt" // Icône alternative pour modifier
     style={{ cursor: "pointer", fontSize: "20px" }}
@@ -219,10 +227,10 @@ function Fournisseur() {
     title="Modifier"
   ></i>
                           </button>
-                          <button className="btn btn-danger ms-2" onClick={() => handleDelete(f._id)}>
+                          <button className="btn1 btn-danger ms-2" onClick={() => handleDelete(f._id)}>
                           <i
     className="fas fa-times" // Icône alternative pour supprimer
-    style={{ cursor: "pointer", fontSize: "20px", marginLeft: "10px" }}
+    style={{ cursor: "pointer", fontSize: "20px",  }}
     onClick={() => handleDelete(f._id)}
     title="Supprimer"
   ></i>
@@ -238,7 +246,7 @@ function Fournisseur() {
 
             {/* Formulaire d'ajout/modification du fournisseur */}
             <div className="ajoutFournisseur p-3">
-              <h6 className="alert alert-success  ">
+              <h6 className="alert alert-success">
                 <i className="fa fa-plus"></i> {editingId ? "Modifier un fournisseur" : "Ajouter un Fournisseur"}
               </h6>
               <form onSubmit={handleSubmit}>
@@ -260,24 +268,43 @@ function Fournisseur() {
                       className="form-control"
                       required
                       value={type}
-                      onChange={(e) => setType(e.target.value)}
+                      onChange={(e) => {
+                        setType(e.target.value);
+                        setTypeRistourne("");
+                      }}
                     >
                       <option value="">Sélectionner un type</option>
                       <option value="prix_libre">Prix Libre</option>
                       <option value="ristourne">Ristourne</option>
                     </select>
                   </div>
-                  {type === "ristourne" && (
-                    <div className="mb-3">
-                      <label>Ristourne (%)</label>
-                      <input
-                        type="number"
-                        className="form-control"
-                        value={ristourne}
-                        onChange={(e) => setRistourne(e.target.value)}
-                      />
-                    </div>
-                  )}
+                                  {type === "ristourne" && (
+                  <div className="mb-3">
+                    <label>Type de Ristourne</label>
+                    <select
+                      className="form-control"
+                      required
+                      value={typeRistourne}
+                      onChange={(e) => setTypeRistourne(e.target.value)}
+                    >
+                      <option value="">Sélectionner le type de ristourne</option>
+                      <option value="générale">Générale</option>
+                      <option value="par_produit">Par Produit</option>
+                    </select>
+                  </div>
+                )}
+                {type === "ristourne" && typeRistourne === "générale" && (
+                  <div className="mb-3">
+                    <label>Ristourne (%)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={ristourne}
+                      onChange={(e) => setRistourne(e.target.value)}
+                    />
+                  </div>
+                )}
+
                   <div className="mb-3">
                     <label>Téléphone</label>
                     <input
@@ -315,7 +342,7 @@ function Fournisseur() {
                       onChange={(e) => setLogo(e.target.files[0])}
                     />
                   </div>
-                  <button className="btn1 btn1  -success" type="submit">
+                  <button className="btn12 btn1-success" type="submit">
                     {editingId ? "Modifier" : "Enregistrer"}
                   </button>
                 </div>

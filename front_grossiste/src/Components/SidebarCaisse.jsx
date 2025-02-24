@@ -49,7 +49,7 @@ function SidebarVendeur(){
                     console.log("Swipe Distance:", swipeDistance);
         
                     // On vérifie que le swipe commence bien à gauche (moins de 30px)
-                    if (touchStartX > 30) {
+                    if (touchStartX > 40) {
                         console.log("Swipe ignoré (pas assez à gauche)");
                         return;
                     }
@@ -75,11 +75,6 @@ function SidebarVendeur(){
             }, []);
         
     const buttons = [
-  
-        { path: "/caissier", icon: faCashRegister, text: "Caisse" },
-        { path: "/histoc", icon: faTags, text: "Historique des paiements" },
-       
-
 
         { path: "/caissier", icon: "fa-cash-register", text: "Caisse" },
         { path: "/histoc", icon: "fa-tags", text: "Historique des paiements" },

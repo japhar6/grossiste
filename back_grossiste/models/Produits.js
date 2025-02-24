@@ -3,15 +3,16 @@ const slugify = require('slugify'); // Utilisation de slugify pour générer un 
 
 const produitSchema = new mongoose.Schema({
    nom: { type: String, required: true },
-  description: { type: String },
-  prixdevente: { type: Number, required: false,default :'0' },
-  prixDachat: { type: Number, required: false },
-  categorie: { type: String, required: true },
-  unite: { type: String, required: true },
-  fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur', required: true },
-  dateAjout: { type: Date, default: Date.now },
-  statut: { type: String, enum: ['actif', 'inactif'], default: 'actif' },
-  codeProduit: { type: String, unique: true }  
+   description: { type: String },
+   prixdevente: { type: Number, required: false, default: '0' },
+   prixDachat: { type: Number, required: false },
+   categorie: { type: String, required: true },
+   unite: { type: String, required: true },
+   fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur', required: true },
+   dateAjout: { type: Date, default: Date.now },
+   statut: { type: String, enum: ['actif', 'inactif'], default: 'actif' },
+   codeProduit: { type: String, unique: true },
+   quantiteMinimum: { type: Number, default: 0 }
 });
 
 // Avant de sauvegarder, générer un code produit unique

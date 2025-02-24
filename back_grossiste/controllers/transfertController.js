@@ -81,3 +81,29 @@ exports.terminerTransfert = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la mise à jour du statut', error });
   }
 };
+
+
+exports.recuperer =async (req, res) => {
+  try {
+    const { entrepotSource } = req.query;
+
+    let filtre = {};
+    if (entrepotSource) {
+      filtre.entrepotSource = entrepotSource;
+    }
+
+    // Exclure les transferts sans produit ou sans entrepôt de destination
+    filtre.produit = { $ne: null };
+    filtre.entrepotDestination = { $ne: null };
+
+    const transferts = await Transfert.find(filtre)
+      .populate("produit")
+      .populate("entrepotSource")
+      .populate("entrepotDestination");
+
+    res.status(200).json(transferts);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des transferts :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};

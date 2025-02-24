@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faChevronLeft, 
   faChevronRight, 
-  faCashRegister, faTags 
+  faCashRegister, faTags ,faBoxes,
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -50,7 +50,7 @@ function SidebarVendeur(){
                      console.log("Swipe Distance:", swipeDistance);
          
                      // On vérifie que le swipe commence bien à gauche (moins de 30px)
-                     if (touchStartX > 30) {
+                     if (touchStartX > 40) {
                          console.log("Swipe ignoré (pas assez à gauche)");
                          return;
                      }

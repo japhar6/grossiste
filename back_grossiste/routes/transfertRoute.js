@@ -6,4 +6,11 @@ const transfertController = require('../controllers/transfertController');
 router.post('/transfert', transfertController.transfertProduit);
 router.put('/terminer/:id', transfertController.terminerTransfert);
 
+router.get("/recup", transfertController.recuperer);
+    
+    
+    
+    
+    
+
 module.exports = router;

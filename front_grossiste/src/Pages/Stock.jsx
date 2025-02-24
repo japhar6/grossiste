@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import '../Styles/Stock.css';
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
@@ -24,7 +24,7 @@ function Stock() {
   useEffect(() => {
     const fetchEntrepots = async () => {
       try {
-        const response = await axios.get('https://api.bazariko.duckdns.org/api/entrepot', {
+        const response = await axios.get('/entrepot', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepots(response.data);
@@ -47,7 +47,7 @@ function Stock() {
     setError(null);
 
     try {
-      const response = await axios.get(`https://api.bazariko.duckdns.org/api/stocks/stocks/${entrepotId}`);
+      const response = await axios.get(`/stocks/stocks/${entrepotId}`);
       setStocks(response.data);
     } catch (err) {
       toast.error('Erreur lors du chargement des stocks.');
@@ -73,9 +73,11 @@ function Stock() {
       return a.quantité - b.quantité;
     } else if (sortBy === 'date') {
       return new Date(a.dateEntree) - new Date(b.dateEntree);
+    } else if (sortBy === 'rupture') {
+      return a.quantité < a.produit.quantiteMinimum ? -1 : 1;
     }
     return 0;
-  });
+  }).filter(stock => sortBy !== 'rupture' || stock.quantité < stock.produit.quantiteMinimum);
 
   return (
     <>
@@ -84,7 +86,7 @@ function Stock() {
         <Sidebar />
         <section className='contenue'>
           <Header />
-          <div className="p-3 content">
+          <div className=" mini-statr p-3 content">
             <h5 className='alert alert-success'>
               <i className='fa fa-line-chart'></i> Stock
             </h5>
@@ -103,12 +105,12 @@ function Stock() {
 
             {selectedEntrepot && (
               <div className="alert alert-info mt-3">
-                <strong>Magasinier :</strong> {magasinier || 'Aucun'}
+                <strong>Gere par le Magasinier :</strong> {magasinier || 'Aucun'}
               </div>
             )}
 
             {selectedEntrepot && (
-              <div className="filters mt-3 d-flex justify-content-between">
+              <div className="filters mt-3 d-flex justify-content-between"  style={{ display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   className="form-control mr-2"
@@ -140,6 +142,7 @@ function Stock() {
                   <option value="nom">Trier par Nom</option>
                   <option value="quantité">Trier par Quantité</option>
                   <option value="date">Trier par Date d'Entrée</option>
+                  <option value="rupture">Produit en rupture</option>
                 </select>
               </div>
             )}
@@ -154,22 +157,24 @@ function Stock() {
               <table className="tableSt mt-3">
                 <thead>
                   <tr>
-                    <th onClick={() => setSortBy('codeProduit')}>Référence</th>
-                    <th onClick={() => setSortBy('nom')}>Produit</th>
-                    <th onClick={() => setSortBy('quantité')}>Quantité</th>
+                    <th>Référence</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
                     <th>Unité</th>
                     <th>Catégorie</th>
-                    <th onClick={() => setSortBy('date')}>Date d'ajout</th>
+                    <th>Quantite Minimum</th>
+                    <th>Date d'ajout</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedStocks.map(stock => (
-                    <tr key={stock._id}>
+                    <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
                       <td>{stock.produit.codeProduit}</td>
                       <td>{stock.produit.nom}</td>
                       <td>{stock.quantité}</td>
                       <td>{stock.produit.unite}</td>
                       <td>{stock.produit.categorie}</td>
+                      <td>{stock.produit.quantiteMinimum}</td>
                       <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
                     </tr>
                   ))}
@@ -182,6 +187,26 @@ function Stock() {
           </div>
         </section>
       </main>
+      <style>{`
+.stock-low {
+  animation: blink 0.6s infinite alternate ease-in-out;
+  background-color: #f8d7da !important; /* Rose clair pour une alerte */
+  color: #721c24; /* Rouge foncé pour le texte */
+  font-weight: bold;
+  border-radius: 5px;
+  padding: 10px;
+  border: 1px solid #f5c6cb; /* Bordure rouge clair */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 10px 0; /* Espacement en haut et en bas */
+}
+
+@keyframes blink {
+  0% { background-color: #f8d7da; opacity: 1; }
+  50% { background-color: #f5c6cb; opacity: 0.8; }
+  100% { background-color: #f8d7da; opacity: 1; }
+}
+
+      `}</style>
     </>
   );
 }

@@ -12,8 +12,8 @@ const paiementSchema = new mongoose.Schema({
     },
     statut: { 
         type: String, 
-        enum: ["partiel", "complet", "annulé"], 
-        default: "partiel"
+        enum: ["payé complet", "payé partielle", "annulé"], 
+        default: "payé complet"
     },
     remiseGlobale: { 
         type: Number, 

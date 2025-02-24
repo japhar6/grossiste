@@ -3,7 +3,9 @@ import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
-import axios from "axios";
+import axios from '../api/axios';
+ 
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
               const [newPerson, setNewPerson] = useState({
@@ -11,11 +13,15 @@ function PriseCommande() {
                 telephone: "",
                 adresse: "",
               });
-
+              const playSound = () => {
+                const audio = new Audio(Sound); 
+                audio.play();
+            };
+            
 
               // Définir l'état pour les produits sélectionnés
               const [selectedProducts, setSelectedProducts] = useState([]);
-
+              const [quantiteDispo, setQuantiteDispo] = useState([]); 
                 const [commande, setCommande] = useState([]);
                 const [typeQuantite, setTypeQuantite] = useState("");
                 const [modePaiement, setModePaiement] = useState("");
@@ -33,6 +39,9 @@ function PriseCommande() {
 
               const [selectedProduit, setSelectedProduit] = useState(null); 
 
+
+
+          
 
                                 const handleSelectChange = (e) => {
                                   const id = e.target.value;
@@ -53,7 +62,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("https://api.bazariko.duckdns.org/api/client");
+                                    const response = await axios.get("/client");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);
@@ -62,7 +71,7 @@ function PriseCommande() {
 
                                 const fetchCommerciaux = async () => {
                                   try {
-                                    const response = await axios.get("https://api.bazariko.duckdns.org/api/comercial");
+                                    const response = await axios.get("/comercial");
                                     setCommerciaux(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des commerciaux", error);
@@ -91,7 +100,7 @@ function PriseCommande() {
                                     }
 
                                     // Déterminer l'URL selon le type (client ou commercial)
-                                    const url = type === "client" ? "https://api.bazariko.duckdns.org/api/client" : "https://api.bazariko.duckdns.org/api/comercial/";
+                                    const url = type === "client" ? "/client" : "/comercial/";
                                     
                                     // Envoi de la requête POST
                                     const response = await axios.post(url, newPerson);
@@ -154,7 +163,7 @@ function PriseCommande() {
                                 
                                 const fetchProduits = async () => {
                                   try {
-                                    const response = await axios.get("https://api.bazariko.duckdns.org/api/produits/afficher");
+                                    const response = await axios.get("/produits/afficher");
                                     setProduits(response.data);
 
                                     // Extraire les catégories uniques
@@ -175,28 +184,96 @@ function PriseCommande() {
                                 });
 
                                 const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
+                                  // Ne rien faire si la quantité demandée est inférieure ou égale à 0
                                   if (quantite <= 0) return;
-
-                                  setCheckedProduits((prev) => ({ ...prev, [produit._id]: isChecked }));
-
-                                  setCommande((prevCommande) => {
-                                    if (isChecked) {
-                                      const existant = prevCommande.find((item) => item._id === produit._id);
-                                      if (existant) {
-                                        return prevCommande.map((item) =>
-                                          item._id === produit._id
-                                            ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                                            : item
-                                        );
+                                
+                                  const fetchQuantite = async () => {
+                                    try {
+                                      // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
+                                      const response = await axios.get(`/stocks/produits/quantite/${produit._id}`);
+                                      const quantiteDisponible = response.data.quantiteDisponible;
+                                
+                                      // Comparer la quantité demandée avec la quantité disponible
+                                      if (isChecked) {
+                                        if (quantite > quantiteDisponible) {
+                                          const result = await Swal.fire({
+                                            title: 'Quantité Insuffisante',
+                                            text: `Il n'en reste que (${quantiteDisponible}) dans l'entrepôt principal.`,
+                                            icon: 'warning',
+                                            showCancelButton: true,
+                                            confirmButtonText: 'OK',
+                                            cancelButtonText: 'Choisir un autre entrepôt',
+                                            customClass: {
+                                              confirmButton: 'btn btn-success', // Ajoutez une classe CSS pour le bouton de confirmation
+                                              cancelButton: 'btn btn-danger' // Ajoutez une classe CSS pour le bouton d'annulation
+                                            },
+                                            buttonsStyling: false, 
+                                          });
+                                
+                                          if (result.isConfirmed) {
+                                            // L'utilisateur a cliqué sur "OK"
+                                            return; // Ne pas ajouter à la commande
+                                          } else if (result.isDismissed) {
+                                            // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
+                                            const responseSecondaire = await axios.get(`/stocks/produits/quantita/${produit._id}`);
+                                            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
+                                
+                                            // Logique pour traiter la disponibilité dans les autres entrepôts
+                                            // Vous pouvez ici ajouter une alerte ou d'autres actions si nécessaire
+                                            if (quantite > quantiteDisponibleSecondaire) {
+                                              Swal.fire({
+                                                title: 'Quantité Insuffisante',
+                                                text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans les autres entrepôts.`,
+                                                icon: 'warning',
+                                                confirmButtonText: 'OK',
+                                              });
+                                              return; // Ne pas ajouter à la commande
+                                            } else {
+                                              // Ajoutez à la commande si la quantité est disponible dans les autres entrepôts
+                                              setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                              setCommande((prevCommande) => {
+                                                const existant = prevCommande.find((item) => item._id === produit._id);
+                                                if (existant) {
+                                                  return prevCommande.map((item) =>
+                                                    item._id === produit._id
+                                                      ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                                      : item
+                                                  );
+                                                } else {
+                                                  return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                                }
+                                              });
+                                            }
+                                          }
+                                        } else {
+                                          // Si la quantité est suffisante dans l'entrepôt principal
+                                          setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                          setCommande((prevCommande) => {
+                                            const existant = prevCommande.find((item) => item._id === produit._id);
+                                            if (existant) {
+                                              return prevCommande.map((item) =>
+                                                item._id === produit._id
+                                                  ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                                  : item
+                                              );
+                                            } else {
+                                              return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                            }
+                                          });
+                                        }
                                       } else {
-                                        return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                        // Si la case à cocher est désactivée, retirer le produit de la commande
+                                        setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
+                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
                                       }
-                                    } else {
-                                      return prevCommande.filter((item) => item._id !== produit._id);
+                                    } catch (error) {
+                                      console.error("Erreur lors de la récupération de la quantité disponible", error);
                                     }
-                                  });
+                                  };
+                                
+                                  fetchQuantite(); // Appeler la fonction pour récupérer la quantité
                                 };
-
+                                
 
 
                                     const handleKeyDown = (produit, e) => {
@@ -206,69 +283,71 @@ function PriseCommande() {
                                     };
 
                                     const validerCommande = async () => {
-                                        if (!selectedPerson || commande.length === 0) {
-                                            Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
-                                            return;
-                                        }
-                                    
-                                        // Ne pas imposer la sélection du mode de paiement si c'est un commercial
-                                        if (!modePaiement && type !== "commercial") {
-                                            Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
-                                            return;
-                                        }
-                                    
-                                        // Récupérer l'ID du vendeur depuis LocalStorage
-                                        const vendeurId = localStorage.getItem("userid"); 
-                                        if (!vendeurId) {
-                                            Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
-                                            return;
-                                        }
-                                    
-                                        // Vérifie si c'est un commercial ou un client
-                                        const isCommercial = type === "commercial"; 
-                                        const typeClient = isCommercial ? "Commercial" : "Client";
-                                    
-                                        const nouvelleCommande = {
-                                            typeClient,
-                                            commercialId: isCommercial ? selectedPerson : null, 
-                                            clientId: !isCommercial ? selectedPerson : null, 
-                                            vendeurId,
-                                            produits: commande.map(prod => ({
-                                                produit: prod._id, 
-                                                quantite: prod.quantite,
-                                            })),
-                                            modePaiement: isCommercial ? "à crédit" : modePaiement,
-                                            statut: "en attente",
-                                        };
-                                    
-                                        console.log("Commande prête à être envoyée :", nouvelleCommande);
-                                    
-                                        try {
-                                            const response = await axios.post("https://api.bazariko.duckdns.org/api/commandes/ajouter", nouvelleCommande);
-                                    
-                                            if (response.data) {
-                                                const referenceFacture = response.data.commande.referenceFacture; 
-                                                Swal.fire({
-                                                    title: "Commande validée",
-                                                    text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
-                                                    icon: "success",
-                                                    confirmButtonText: "OK"
-                                                }).then(() => {
-                                                    // Réinitialisation complète après validation
-                                                    setCommande([]); 
-                                                    setSelectedPerson(""); 
-                                                    setModePaiement(""); 
-                                                    setSearchTerm(""); 
-                                                    setSelectedProducts([]); 
-                                                    setCheckedProduits({}); 
-                                                });
-                                            }
-                                        } catch (error) {
-                                            console.error("Erreur lors de l'enregistrement de la commande", error);
-                                            Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
-                                        }
-                                    };
-                                    
+                                      if (!selectedPerson || commande.length === 0) {
+                                          Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
+                                          return;
+                                      }
+                                  
+                                      if (!modePaiement && type !== "commercial") {
+                                          Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
+                                          return;
+                                      }
+                                  
+                                      const vendeurId = localStorage.getItem("userid"); 
+                                      if (!vendeurId) {
+                                          Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
+                                          return;
+                                      }
+                                  
+                                      const isCommercial = type === "commercial"; 
+                                      const typeClient = isCommercial ? "Commercial" : "Client";
+                                  
+                                      const produitsInvalides = commande.filter(prod => !prod._id || prod.quantite <= 0);
+                                      if (produitsInvalides.length > 0) {
+                                          Swal.fire("Erreur", "Tous les produits doivent avoir un ID valide et une quantité positive.", "error");
+                                          return;
+                                      }
+                                  
+                                      const nouvelleCommande = {
+                                          typeClient,
+                                          commercialId: isCommercial ? selectedPerson : null, 
+                                          clientId: !isCommercial ? selectedPerson : null, 
+                                          vendeurId,
+                                          produits: commande.map(prod => ({
+                                              produit: prod._id, 
+                                              quantite: prod.quantite,
+                                          })),
+                                          modePaiement: isCommercial ? "à crédit" : modePaiement,
+                                          statut: "en cours",
+                                      };
+                                  
+                                      console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                  
+                                      try {
+                                          const response = await axios.post("/commandes/ajouter", nouvelleCommande);
+                                  
+                                          if (response.data) {
+                                              const referenceFacture = response.data.commande.referenceFacture; 
+                                              playSound();
+                                              Swal.fire({
+                                                  title: "Commande validée",
+                                                  text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
+                                                  icon: "success",
+                                                  confirmButtonText: "OK"
+                                              }).then(() => {
+                                                  setCommande([]); 
+                                                  setSelectedPerson(""); 
+                                                  setModePaiement(""); 
+                                                  setSearchTerm(""); 
+                                                  setSelectedProducts([]); 
+                                                  setCheckedProduits({}); 
+                                              });
+                                          }
+                                      } catch (error) {
+                                          console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
+                                          Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                                      }
+                                  };
                                   
                                   
                                   
@@ -285,26 +364,27 @@ function PriseCommande() {
       <section className="contenue">
         <Header />
         <div className="p-3 content center">
-          <div className="mini-stat p-3">
+          <div className="mini-star p-3">
+            
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Prise de Commande
             </h6>
             <div className="form-group mt-3">
-  <label>Type :</label>
-  <select
-    className="form-control"
-    value={type}
-    onChange={(e) => {
-      setType(e.target.value);
-      setIsNew(false);
-      setSelectedPerson("");
-    }}
-  >
-    <option value="">Choisir un type</option>
-    <option value="client">Client</option>
-    <option value="commercial">Commercial</option>
-  </select>
-</div>
+              <label>Type :</label>
+              <select
+                className="form-control"
+                value={type}
+                onChange={(e) => {
+                  setType(e.target.value);
+                  setIsNew(false);
+                  setSelectedPerson("");
+                }}
+              >
+                <option value="">Choisir un type</option>
+                <option value="client">Client</option>
+                <option value="commercial">Commercial</option>
+              </select>
+            </div>
     
             <div className="commande-container d-flex justify-content-between">
               {/* Informations Client (colonne gauche) */}
@@ -329,60 +409,75 @@ function PriseCommande() {
 
 
 {/* Affichage du formulaire si "Nouveau client" est sélectionné */}{isNew && (
-    <div className="form-group mt-3">
-    <input
-      type="text"
-      className="form-control"
-      placeholder={`Nom du ${type}`}
-      value={newPerson.nom}
-      onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
-    />
-    <input
-      type="text"
-      className="form-control mt-2"
-      placeholder="Téléphone"
-      value={newPerson.telephone}
-      onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
-    />
-    
-    {type === "client" && (
-      <input
-        type="text"
-        className="form-control mt-2"
-        placeholder="Adresse"
-        value={newPerson.adresse}
-        onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
-      />
-    )}
+   <div className="container mt-3" style={{ marginLeft:'-25px', padding: '20px', overflow: 'hidden' }}>
+   <div className="form-group">
+       <div className="row">
+           <div className="col-12">
+               <input
+                   type="text"
+                   className="form-control"
+                   placeholder={`Nom du ${type}`}
+                   value={newPerson.nom}
+                   onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
+               />
+           </div>
 
+           <div className="col-12 mt-2">
+               <input
+                   type="text"
+                   className="form-control"
+                   placeholder="Téléphone"
+                   value={newPerson.telephone}
+                   onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
+               />
+           </div>
 
-  {type === "commercial" && (
-    <>
-      <input
-        type="email"
-        className="form-control mt-2"
-        placeholder="Email"
-        value={newPerson.email}
-        onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
-      />
-      <input
-        type="text"
-        className="form-control mt-2"
-        placeholder="Type (commercial)"
-        value={newPerson.type}
-        onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
-      />
-    </>
-  )}
+           {type === "client" && (
+               <div className="col-12 mt-2">
+                   <input
+                       type="text"
+                       className="form-control"
+                       placeholder="Adresse"
+                       value={newPerson.adresse}
+                       onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
+                   />
+               </div>
+           )}
 
+           {type === "commercial" && (
+               <>
+                   <div className="col-12 mt-2">
+                       <input
+                           type="email"
+                           className="form-control"
+                           placeholder="Email"
+                           value={newPerson.email}
+                           onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                       />
+                   </div>
+                   <div className="col-12 mt-2">
+                       <input
+                           type="text"
+                           className="form-control"
+                           placeholder="Type (commercial)"
+                           value={newPerson.type}
+                           onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
+                       />
+                   </div>
+               </>
+           )}
 
-    <button
-      className="btn btn-success mt-3"
-      onClick={creerPersonne}
-    >
-      Créer {type === "client" ? "Client" : "Commercial"}
-    </button>
-  </div>
+           <div className="col-12 mt-3">
+               <button
+                   className="btn btn-success"
+                   onClick={creerPersonne}
+               >
+                   Créer {type === "client" ? "Client" : "Commercial"}
+               </button>
+           </div>
+       </div>
+   </div>
+</div>
 
 
   )}
@@ -407,29 +502,31 @@ function PriseCommande() {
               {/* Liste des Produits (colonne droite) */}
               <div className="produits w-50 p-3">
                 <h6><i className="fa fa-box"></i> Produits Disponibles</h6>
-            <div className="d-flex">
-                                        <input
-                                          type="text"
-                                          className="form-control"
-                                          placeholder="Rechercher un produit..."
-                                          value={searchTerm}
-                                          onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        <select
-                                          className="form-control mt-3 m-2 p-2"
-                                          value={categorie}
-                                          onChange={(e) => setCategorie(e.target.value)}
-                                        >
-                                          <option value="">Toutes les catégories</option>
-                                          {categories.map((cat, index) => (
-                                            <option key={index} value={cat}>
-                                              {cat}
-                                            </option>
-                                          ))}
-                                        </select>
-            </div>
+                <div className="d-flex">
+  <input
+    type="text"
+    className="form-control"
+    placeholder="Rechercher un produit..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+  <select
+    className="form-control"
+    value={categorie}
+    onChange={(e) => setCategorie(e.target.value)}
+  >
+    <option value="">Toutes les catégories</option>
+    {categories.map((cat, index) => (
+      <option key={index} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
+</div>
 
-                                                            <table className="table mt-2">
+
+            <div className="table-container">
+              <table className="tablepro mt-2">
                                                         <thead>
                                                           <tr>
                                                             <th>Nom</th>
@@ -451,9 +548,9 @@ function PriseCommande() {
                                                             ) : (
                                                               produitsFiltres.map((p) => (
                                                                 <tr key={p._id}>
-                                                                  <td>{p.nom}</td>
-                                                                  <td>{p.categorie}</td>
-                                                                  <td>{p.prixdevente} Ariary</td>
+                                                                <td className="margin-left-mobile">{p.nom}</td>
+                                                                <td className="margin-left-mobile">{p.categorie}</td>
+                                                                <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
                                                                   <td>
                                                                     <input
                                                                       type="number"
@@ -503,13 +600,16 @@ function PriseCommande() {
                                                           )}
                                                         </tbody>
                                                       </table>
-
+                                                      </div>     
                                              </div>
                                         </div>
-
+                                       
                                           {/* Récapitulatif de la Commande */}
                                           <div className="commande mt-4">
                                             <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+                                            
+                                            <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+            
                                             <table className="table table-bordered mt-2">
                                               <thead>
                                                 <tr>
@@ -525,7 +625,7 @@ function PriseCommande() {
                                                   <tr key={index}>
                                                         <td>{item.nom}</td>
                                                         <td>{item.quantite}</td>
-                                                        <td>{item.typeQuantite}</td>
+                                                        <td>{item.unite}</td>
                                                         <td>{item.prix} Ariary</td> 
                                                         <td>{item.quantite * item.prix} Ariary</td>
 
@@ -533,6 +633,8 @@ function PriseCommande() {
                                                 ))}
                                               </tbody>
                                             </table>
+                                            </div>
+                                         
                                               <h6 className="total">
                                                          Total: {totalCommande} Ariary
                                                </h6>
@@ -540,7 +642,7 @@ function PriseCommande() {
                                             <button className="btn btn-success  mt-3" onClick={validerCommande}>
                                               Enregistrer la Commande
                                             </button>
-                                          </div>
+                                            </div>
                                         </div>
                                       </div>
                                     </section>

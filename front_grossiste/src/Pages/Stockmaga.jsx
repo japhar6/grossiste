@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import '../Styles/Stock.css';
 import Sidebar from '../Components/SidebarMagasinier';
 import Header from '../Components/NavbarM';
@@ -24,7 +24,7 @@ function Stock() {
   useEffect(() => {
     const fetchEntrepot = async () => {
       try {
-        const response = await axios.get(`https://api.bazariko.duckdns.org/api/entrepot/recuperer/${userId}`, {
+        const response = await axios.get(`/entrepot/recuperer/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -46,7 +46,7 @@ function Stock() {
       setError(null);
 
       try {
-        const response = await axios.get(`https://api.bazariko.duckdns.org/api/stocks/stocks/${entrepot._id}`);
+        const response = await axios.get(`/stocks/stocks/${entrepot._id}`);
         setStocks(response.data);
       } catch (err) {
         toast.error('Erreur lors du chargement des stocks.');

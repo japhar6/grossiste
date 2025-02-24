@@ -20,7 +20,8 @@
 
 /* CSS général pour la barre de navigation */
 .navbar {
-  padding: 10px 5%; /* Ajuster le padding pour de petites tailles d'écran */
+  padding: 10px 5%; 
+  background-color: #f8f9fa;/* Ajuster le padding pour de petites tailles d'écran */
 }
 
 /* Styles pour l'élément heure */

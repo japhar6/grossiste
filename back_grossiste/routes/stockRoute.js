@@ -24,4 +24,6 @@ router.post('/retour/:id', stockController.retournerProduits);
 router.put('/sortir/:commandeId', stockController.sortirProduitsStock);
 
 router.get('/stocks/:entrepotId', stockController.getStocksByEntrepot);
+router.get('/produits/quantite/:id', stockController.getQuantiteProduitById);
+router.get('/produits/quantita/:id', stockController.getQuantiteProduitByIde);
 module.exports = router;

@@ -1,132 +1,66 @@
-import React, { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css"; // Assurez-vous d'importer le CSS de Bootstrap
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const HistoriqueAchats = () => {
-  const [historique, setHistorique] = useState([]);
-  const [filteredHistorique, setFilteredHistorique] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFiltre, setTypeFiltre] = useState("");
-  const [dateFiltre, setDateFiltre] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [fournisseurs, setFournisseurs] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedFournisseur, setSelectedFournisseur] = useState("");
+    const [achats, setAchats] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    const fetchHistorique = async () => {
-      const response = await fetch("http://localhost:5000/api/achats/afficher");
-      const data = await response.json();
-      setHistorique(data);
-      setFilteredHistorique(data);
+    useEffect(() => {
+        const fetchAchats = async () => {
+            try {
+                const response = await axios.get("http://localhost:5000/api/achats/afficher");
+                setAchats(response.data);
+            } catch (error) {
+                console.error("Erreur lors de la récupération des achats :", error);
+            }
+        };
+        fetchAchats();
+    }, []);
 
-      // Extraire les catégories et les fournisseurs
-      const uniqueCategories = [...new Set(data.map((achat) => achat.produit.categorie))];
-      const uniqueFournisseurs = [...new Set(data.map((achat) => achat.fournisseur.nom))];
+    // Vérification de sécurité pour éviter les erreurs
+    const filteredAchats = achats.filter(achat => 
+        achat.fournisseur?.nom?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-      setCategories(uniqueCategories);
-      setFournisseurs(uniqueFournisseurs);
-    };
-
-    fetchHistorique();
-  }, []);
-
-  useEffect(() => {
-    const filteredData = historique.filter((achat) => {
-      const matchesSearchTerm = achat.produit.nom.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesTypeFiltre = typeFiltre ? achat.produit.categorie === typeFiltre : true;
-      const matchesDateFiltre = dateFiltre ? new Date(achat.dateAchat).toLocaleDateString() === new Date(dateFiltre).toLocaleDateString() : true;
-      const matchesCategory = selectedCategory ? achat.produit.categorie === selectedCategory : true;
-      const matchesFournisseur = selectedFournisseur ? achat.fournisseur.nom === selectedFournisseur : true;
-
-      return matchesSearchTerm && matchesTypeFiltre && matchesDateFiltre && matchesCategory && matchesFournisseur;
-    });
-
-    setFilteredHistorique(filteredData);
-  }, [searchTerm, typeFiltre, dateFiltre, selectedCategory, selectedFournisseur, historique]);
-
-  return (
-    <div className="container mt-5">
-      <h1 className="text-center mb-4">Historique des Achats</h1>
-      <div className="mb-3 row">
-  
-  <div className="col-12 col-md-3 mb-2">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Rechercher par nom de produit"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-  </div>
-  <div className="col-12 col-md-3 mb-2">
-    <select
-      className="form-select"
-      onChange={(e) => setSelectedCategory(e.target.value)}
-      value={selectedCategory}
-    >
-      <option value="">Sélectionner une catégorie</option>
-      {categories.map((category, index) => (
-        <option key={index} value={category}>
-          {category}
-        </option>
-      ))}
-    </select>
-  </div>
-  <div className="col-12 col-md-3 mb-2">
-    <select
-      className="form-select"
-      onChange={(e) => setSelectedFournisseur(e.target.value)}
-      value={selectedFournisseur}
-    >
-      <option value="">Sélectionner un fournisseur</option>
-      {fournisseurs.map((fournisseur, index) => (
-        <option key={index} value={fournisseur}>
-          {fournisseur}
-        </option>
-      ))}
-    </select>
-  </div>
-  <div className="col-12 col-md-3 mb-2">
-    <input
-      type="date"
-      className="form-control"
-      value={dateFiltre}
-      onChange={(e) => setDateFiltre(e.target.value)}
-    />
-  </div>
-</div>
-
-
-      <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-      <table className="tableA table-striped">
-        <thead>
-          <tr>
-  
-            <th>Produit</th>
-            <th>Fournisseur</th>
-            <th>Quantité</th>
-            <th>Prix d'Achat</th>
-            <th>Total</th>
-            <th>Date d'Achat</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredHistorique.map((achat) => (
-            <tr key={achat._id}>
-    
-              <td>{achat.produit.nom}</td>
-              <td>{achat.fournisseur.nom}</td>
-              <td>{achat.quantite}</td>
-              <td>{achat.prixAchat}</td>
-              <td>{achat.total}</td>
-              <td>{new Date(achat.dateAchat).toLocaleDateString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    </div>
-  );
+    return (
+        <div>
+            <h2>Historique des Achats</h2>
+            <input
+                type="text"
+                placeholder="Rechercher par fournisseur"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Fournisseur</th>
+                        <th>Quantité</th>
+                        <th>Prix</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredAchats.length > 0 ? (
+                        filteredAchats.map((achat) => (
+                            <tr key={achat._id}>
+                                <td>{achat.produit?.nom || "Inconnu"}</td>
+                                <td>{achat.fournisseur?.nom || "Non spécifié"}</td>
+                                <td>{achat.quantite}</td>
+                                <td>{achat.prixAchat} Ariary</td>
+                                <td>{new Date(achat.dateAchat).toLocaleDateString()}</td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="5">Aucun achat trouvé</td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
 };
 
 export default HistoriqueAchats;

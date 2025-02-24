@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import { toast } from 'react-toastify';
 import Sidebar from "../Components/SidebarMagasinier";
 import Header from "../Components/NavbarM";
@@ -21,7 +21,7 @@ const [filtreDate, setFiltreDate] = useState('');
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userid");
-    axios.get(`https://api.bazariko.duckdns.org/api/entrepot/recuperer/${userId}`, {
+    axios.get(`/entrepot/recuperer/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(response => setEntrepot(response.data))
       .catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
@@ -29,19 +29,19 @@ const [filtreDate, setFiltreDate] = useState('');
 
   useEffect(() => {
     if (!entrepot) return;
-    axios.get(`https://api.bazariko.duckdns.org/api/stocks/stocks/${entrepot._id}`)
+    axios.get(`/stocks/stocks/${entrepot._id}`)
       .then(response => setStocks(response.data))
       .catch(() => toast.error("Erreur lors du chargement des stocks."));
   }, [entrepot]);
 
   useEffect(() => {
-    axios.get('https://api.bazariko.duckdns.org/api/entrepot')
+    axios.get('/entrepot')
       .then(response => setEntrepots(response.data));
     fetchHistoriqueTransferts();
   }, []);
 
   const fetchHistoriqueTransferts = () => {
-    axios.get('https://api.bazariko.duckdns.org/api/transfert/recup')
+    axios.get('/transfert/recup')
       .then(response => setHistoriqueTransferts(response.data));
   };
 
@@ -54,7 +54,7 @@ const [filtreDate, setFiltreDate] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('https://api.bazariko.duckdns.org/api/transfert/transfert', {
+    axios.post('/transfert/transfert', {
       entrepotSource: entrepot._id,
       entrepotDestination,
       produit,

@@ -4,8 +4,8 @@ import '../Styles/Sidebar.css'; // Fichier CSS externe
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
       faChevronLeft, 
-    faChevronRight, 
-    faCashRegister, faRotateLeft
+    faChevronRight, faTruck,
+    faCashRegister, faRotateLeft,faBoxes ,faBox 
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -51,7 +51,7 @@ function SidebarVendeur(){
                      console.log("Swipe Distance:", swipeDistance);
          
                      // On vérifie que le swipe commence bien à gauche (moins de 30px)
-                     if (touchStartX > 30) {
+                     if (touchStartX > 40) {
                          console.log("Swipe ignoré (pas assez à gauche)");
                          return;
                      }
@@ -82,6 +82,9 @@ function SidebarVendeur(){
         { path: "/magasinier", icon: faCashRegister, text: "Sortie des produits" },
         { path: "/RetourStockCom", icon: faRotateLeft, text: "Retour des produits" },
 
+        { path: "/stockma", icon: faBoxes, text: "Gestion de stock" },
+
+        { path: "/transfert", icon: faTruck , text: "Transfert" },
     
       ];
     return(
