@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from '../api/axios';
 import "../Styles/SortieStock.css";
 import Sidebar from "../Components/SidebarMagasinier";
 import Header from "../Components/NavbarM";
@@ -27,7 +27,7 @@ function RetourStockCom() {
 
   // Récupération des paiements commerciaux depuis l'API
   useEffect(() => {
-    axios.get("http://localhost:5000/api/paiementCom/info")
+    axios.get("/paiementCom/info")
       .then(response => {
         setPaiements(response.data);
       })
@@ -45,7 +45,7 @@ const fetchVentesByInfo = (commercialId, commandeId) => {
     return Promise.reject("Le commercialId ou commandeId est undefined ou invalide.");
   }
 
-  return axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
+  return axios.get(`/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
     .then(response => {
       console.log("Ventes récupérées pour le commercial et la commande:", response.data);
       setVentes(response.data);
@@ -103,7 +103,7 @@ const openModal = (paiement) => {
       venteComId: venteComId,
     };
 
-    axios.post("http://localhost:5000/api/ventes/retour", returnData)
+    axios.post("/ventes/retour", returnData)
       .then(response => {
         console.log("Retour validé avec succès", response.data);
         // Mettre à jour l'UI ou notifier l'utilisateur si nécessaire

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Histov.css"; // Assurez-vous que le chemin est correct
 import Sidebar from "../Components/SidebarVendeur";
@@ -13,11 +13,11 @@ function HistoV() {
   const [statutFilter, setStatutFilter] = useState("");
   const vendeurId = localStorage.getItem('userid');
   const nom = localStorage.getItem('nom'); 
-
+  const [commissions, setCommissions] = useState([]);
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/commandes/vendeur/${vendeurId}`);
+        const response = await axios.get(`/commandes/vendeur/${vendeurId}`);
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setCommandes(sortedCommandes);
       } catch (error) {
@@ -129,7 +129,10 @@ function HistoV() {
                     ))}
                   </tbody>
                 </table>
+               
+
               </div>
+              
             )}
           </div>
         </section>

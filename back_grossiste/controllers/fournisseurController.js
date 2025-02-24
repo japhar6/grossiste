@@ -2,13 +2,21 @@ const Fournisseur = require("../models/Fournisseurs");
 const path = require("path");
 const fs = require("fs");
 
-// Ajouter un fournisseur
 exports.ajouterFournisseur = async (req, res) => {
   try {
-    const { nom, type, contact, conditions } = req.body;
+    const { nom, type, contact, conditions, typeRistourne } = req.body;  // Ajouter 'typeRistourne' dans les paramètres de la requête
     const logo = req.file ? `/uploads/logo/${req.file.filename}` : null; 
 
-    const nouveauFournisseur = new Fournisseur({ nom, type, contact, conditions, logo });
+    // Création du fournisseur avec le nouveau champ 'typeRistourne'
+    const nouveauFournisseur = new Fournisseur({
+      nom, 
+      type, 
+      contact, 
+      conditions, 
+      typeRistourne,  // Inclure le type de ristourne
+      logo
+    });
+    
     await nouveauFournisseur.save();
 
     res.status(201).json({ message: "✅ Fournisseur ajouté avec succès", fournisseur: nouveauFournisseur });

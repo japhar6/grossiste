@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import "../Styles/Caisse.css";
+import Swal from "sweetalert2";
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -59,7 +60,7 @@ function Caisse() {
 
   const validerPaiement = async () => {
     if (!commande) return;
-
+  
     const data = {
       statut: "complet",
       remiseGlobale: typeRemise === "total" ? valeurRemise : 0,
@@ -74,13 +75,13 @@ function Caisse() {
       totalPaye: totalApresRemise,
       idCaissier
     };
-
+  
     try {
       let url = `http://localhost:5000/api/paiement/ajouter/${commande._id}`;
       if (commande.typeClient === "Commercial") {
         url = `http://localhost:5000/api/paiementCom/commercial/${commande._id}`;
       }
-
+  
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -88,18 +89,29 @@ function Caisse() {
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
         throw new Error("Échec du paiement");
       }
-
+  
       const result = await response.json();
-      alert(result.message);
+      Swal.fire({
+        icon: 'success',
+        title: 'Paiement réussi',
+        text: result.message,
+        confirmButtonText: 'OK',
+      });
     } catch (error) {
       console.error(error);
-      alert("Erreur lors du paiement");
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Erreur lors du paiement',
+        confirmButtonText: 'OK',
+      });
     }
   };
+  
 
   return (
     <main className="center">

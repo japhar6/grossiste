@@ -64,6 +64,8 @@ function App() {
           <Route path='/histocad' element={<HistoCA />} />
           <Route path='/PersonnelsList' element={<PersonnelsList />} />
           <Route path='/Client' element={<Client />} />
+          <Route path='/inventaire' element={<Invetaire />} />
+          <Route path='/creerinventaire' element={<CreerInventaire />} />
         </Route>
 
         {/* Routes VENDEUR */}
@@ -79,8 +81,7 @@ function App() {
           <Route path='/profilm' element={<ProfilM />} />
           <Route path='/RetourStockCom' element={<RetourStockCom />} />
           <Route path='/stockma' element={<StockMaga />} />
-          <Route path='/inventaire' element={<Invetaire />} />
-          <Route path='/creerinventaire' element={<CreerInventaire />} />
+         
           <Route path='/transfert' element={<Transfert />} />
    
         </Route>

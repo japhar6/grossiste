@@ -3,7 +3,9 @@ import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
-import axios from "axios";
+import axios from '../api/axios';
+ 
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
               const [newPerson, setNewPerson] = useState({
@@ -11,7 +13,11 @@ function PriseCommande() {
                 telephone: "",
                 adresse: "",
               });
-
+              const playSound = () => {
+                const audio = new Audio(Sound); 
+                audio.play();
+            };
+            
 
               // Définir l'état pour les produits sélectionnés
               const [selectedProducts, setSelectedProducts] = useState([]);
@@ -56,7 +62,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("http://localhost:5000/api/client");
+                                    const response = await axios.get("/client");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);
@@ -65,7 +71,7 @@ function PriseCommande() {
 
                                 const fetchCommerciaux = async () => {
                                   try {
-                                    const response = await axios.get("http://localhost:5000/api/comercial");
+                                    const response = await axios.get("/comercial");
                                     setCommerciaux(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des commerciaux", error);
@@ -94,7 +100,7 @@ function PriseCommande() {
                                     }
 
                                     // Déterminer l'URL selon le type (client ou commercial)
-                                    const url = type === "client" ? "http://localhost:5000/api/client" : "http://localhost:5000/api/comercial/";
+                                    const url = type === "client" ? "/client" : "/comercial/";
                                     
                                     // Envoi de la requête POST
                                     const response = await axios.post(url, newPerson);
@@ -157,7 +163,7 @@ function PriseCommande() {
                                 
                                 const fetchProduits = async () => {
                                   try {
-                                    const response = await axios.get("http://localhost:5000/api/produits/afficher");
+                                    const response = await axios.get("/produits/afficher");
                                     setProduits(response.data);
 
                                     // Extraire les catégories uniques
@@ -184,7 +190,7 @@ function PriseCommande() {
                                   const fetchQuantite = async () => {
                                     try {
                                       // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
-                                      const response = await axios.get(`http://localhost:5000/api/stocks/produits/quantite/${produit._id}`);
+                                      const response = await axios.get(`/stocks/produits/quantite/${produit._id}`);
                                       const quantiteDisponible = response.data.quantiteDisponible;
                                 
                                       // Comparer la quantité demandée avec la quantité disponible
@@ -209,7 +215,7 @@ function PriseCommande() {
                                             return; // Ne pas ajouter à la commande
                                           } else if (result.isDismissed) {
                                             // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
-                                            const responseSecondaire = await axios.get(`http://localhost:5000/api/stocks/produits/quantita/${produit._id}`);
+                                            const responseSecondaire = await axios.get(`/stocks/produits/quantita/${produit._id}`);
                                             const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
                                 
                                             // Logique pour traiter la disponibilité dans les autres entrepôts
@@ -277,69 +283,71 @@ function PriseCommande() {
                                     };
 
                                     const validerCommande = async () => {
-                                        if (!selectedPerson || commande.length === 0) {
-                                            Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
-                                            return;
-                                        }
-                                    
-                                        // Ne pas imposer la sélection du mode de paiement si c'est un commercial
-                                        if (!modePaiement && type !== "commercial") {
-                                            Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
-                                            return;
-                                        }
-                                    
-                                        // Récupérer l'ID du vendeur depuis LocalStorage
-                                        const vendeurId = localStorage.getItem("userid"); 
-                                        if (!vendeurId) {
-                                            Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
-                                            return;
-                                        }
-                                    
-                                        // Vérifie si c'est un commercial ou un client
-                                        const isCommercial = type === "commercial"; 
-                                        const typeClient = isCommercial ? "Commercial" : "Client";
-                                    
-                                        const nouvelleCommande = {
-                                            typeClient,
-                                            commercialId: isCommercial ? selectedPerson : null, 
-                                            clientId: !isCommercial ? selectedPerson : null, 
-                                            vendeurId,
-                                            produits: commande.map(prod => ({
-                                                produit: prod._id, 
-                                                quantite: prod.quantite,
-                                            })),
-                                            modePaiement: isCommercial ? "à crédit" : modePaiement,
-                                            statut: "en attente",
-                                        };
-                                    
-                                        console.log("Commande prête à être envoyée :", nouvelleCommande);
-                                    
-                                        try {
-                                            const response = await axios.post("http://localhost:5000/api/commandes/ajouter", nouvelleCommande);
-                                    
-                                            if (response.data) {
-                                                const referenceFacture = response.data.commande.referenceFacture; 
-                                                Swal.fire({
-                                                    title: "Commande validée",
-                                                    text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
-                                                    icon: "success",
-                                                    confirmButtonText: "OK"
-                                                }).then(() => {
-                                                    // Réinitialisation complète après validation
-                                                    setCommande([]); 
-                                                    setSelectedPerson(""); 
-                                                    setModePaiement(""); 
-                                                    setSearchTerm(""); 
-                                                    setSelectedProducts([]); 
-                                                    setCheckedProduits({}); 
-                                                });
-                                            }
-                                        } catch (error) {
-                                            console.error("Erreur lors de l'enregistrement de la commande", error);
-                                            Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
-                                        }
-                                    };
-                                    
+                                      if (!selectedPerson || commande.length === 0) {
+                                          Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
+                                          return;
+                                      }
+                                  
+                                      if (!modePaiement && type !== "commercial") {
+                                          Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
+                                          return;
+                                      }
+                                  
+                                      const vendeurId = localStorage.getItem("userid"); 
+                                      if (!vendeurId) {
+                                          Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
+                                          return;
+                                      }
+                                  
+                                      const isCommercial = type === "commercial"; 
+                                      const typeClient = isCommercial ? "Commercial" : "Client";
+                                  
+                                      const produitsInvalides = commande.filter(prod => !prod._id || prod.quantite <= 0);
+                                      if (produitsInvalides.length > 0) {
+                                          Swal.fire("Erreur", "Tous les produits doivent avoir un ID valide et une quantité positive.", "error");
+                                          return;
+                                      }
+                                  
+                                      const nouvelleCommande = {
+                                          typeClient,
+                                          commercialId: isCommercial ? selectedPerson : null, 
+                                          clientId: !isCommercial ? selectedPerson : null, 
+                                          vendeurId,
+                                          produits: commande.map(prod => ({
+                                              produit: prod._id, 
+                                              quantite: prod.quantite,
+                                          })),
+                                          modePaiement: isCommercial ? "à crédit" : modePaiement,
+                                          statut: "en cours",
+                                      };
+                                  
+                                      console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                  
+                                      try {
+                                          const response = await axios.post("/commandes/ajouter", nouvelleCommande);
+                                  
+                                          if (response.data) {
+                                              const referenceFacture = response.data.commande.referenceFacture; 
+                                              playSound();
+                                              Swal.fire({
+                                                  title: "Commande validée",
+                                                  text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
+                                                  icon: "success",
+                                                  confirmButtonText: "OK"
+                                              }).then(() => {
+                                                  setCommande([]); 
+                                                  setSelectedPerson(""); 
+                                                  setModePaiement(""); 
+                                                  setSearchTerm(""); 
+                                                  setSelectedProducts([]); 
+                                                  setCheckedProduits({}); 
+                                              });
+                                          }
+                                      } catch (error) {
+                                          console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
+                                          Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                                      }
+                                  };
                                   
                                   
                                   
@@ -401,60 +409,75 @@ function PriseCommande() {
 
 
 {/* Affichage du formulaire si "Nouveau client" est sélectionné */}{isNew && (
-    <div className="form-group mt-3">
-    <input
-      type="text"
-      className="form-control"
-      placeholder={`Nom du ${type}`}
-      value={newPerson.nom}
-      onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
-    />
-    <input
-      type="text"
-      className="form-control mt-2"
-      placeholder="Téléphone"
-      value={newPerson.telephone}
-      onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
-    />
-    
-    {type === "client" && (
-      <input
-        type="text"
-        className="form-control mt-2"
-        placeholder="Adresse"
-        value={newPerson.adresse}
-        onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
-      />
-    )}
+   <div className="container mt-3" style={{ marginLeft:'-25px', padding: '20px', overflow: 'hidden' }}>
+   <div className="form-group">
+       <div className="row">
+           <div className="col-12">
+               <input
+                   type="text"
+                   className="form-control"
+                   placeholder={`Nom du ${type}`}
+                   value={newPerson.nom}
+                   onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
+               />
+           </div>
 
+           <div className="col-12 mt-2">
+               <input
+                   type="text"
+                   className="form-control"
+                   placeholder="Téléphone"
+                   value={newPerson.telephone}
+                   onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
+               />
+           </div>
 
-  {type === "commercial" && (
-    <>
-      <input
-        type="email"
-        className="form-control mt-2"
-        placeholder="Email"
-        value={newPerson.email}
-        onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
-      />
-      <input
-        type="text"
-        className="form-control mt-2"
-        placeholder="Type (commercial)"
-        value={newPerson.type}
-        onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
-      />
-    </>
-  )}
+           {type === "client" && (
+               <div className="col-12 mt-2">
+                   <input
+                       type="text"
+                       className="form-control"
+                       placeholder="Adresse"
+                       value={newPerson.adresse}
+                       onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
+                   />
+               </div>
+           )}
 
+           {type === "commercial" && (
+               <>
+                   <div className="col-12 mt-2">
+                       <input
+                           type="email"
+                           className="form-control"
+                           placeholder="Email"
+                           value={newPerson.email}
+                           onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                       />
+                   </div>
+                   <div className="col-12 mt-2">
+                       <input
+                           type="text"
+                           className="form-control"
+                           placeholder="Type (commercial)"
+                           value={newPerson.type}
+                           onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
+                       />
+                   </div>
+               </>
+           )}
 
-    <button
-      className="btn btn-success mt-3"
-      onClick={creerPersonne}
-    >
-      Créer {type === "client" ? "Client" : "Commercial"}
-    </button>
-  </div>
+           <div className="col-12 mt-3">
+               <button
+                   className="btn btn-success"
+                   onClick={creerPersonne}
+               >
+                   Créer {type === "client" ? "Client" : "Commercial"}
+               </button>
+           </div>
+       </div>
+   </div>
+</div>
 
 
   )}

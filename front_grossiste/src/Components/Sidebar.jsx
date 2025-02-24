@@ -11,6 +11,7 @@ import {
   faTags,
   faShoppingCart,
   faBoxes,
+  faBox,
   faHome,
   faBriefcase,
   faUserFriends,
@@ -48,7 +49,7 @@ function Sidebar() {
             console.log("Swipe Distance:", swipeDistance);
 
             // On vérifie que le swipe commence bien à gauche (moins de 30px)
-            if (touchStartX > 30) {
+            if (touchStartX > 40) {
                 console.log("Swipe ignoré (pas assez à gauche)");
                 return;
             }
@@ -93,9 +94,11 @@ function Sidebar() {
         { path: "/commerciale", icon: faBriefcase, text: "Gestion des commerciaux" },
         { path: "/Client", icon: faUserFriends, text: "Client particulier" },
         { path: "/livraisons", icon: faTruckLoading, text: "Gestion des Livraisons" },
+      
         { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
                 { path: "/histovad", icon: faTags, text: "Historique des commandes" },
                 { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
+                        { path: "/inventaire", icon: faBox , text: "Inventaire" },
     ];
 
     return (

@@ -4,6 +4,7 @@ const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Produit = require("../models/Produits"); 
 const Entrepot = require('../models/entrepot');
 // Fonction réutilisable pour créer ou mettre à jour un stock
+// Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
   try {
     if (quantité <= 0 || prixUnitaire <= 0) {
@@ -14,13 +15,13 @@ exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUni
 
     if (stock) {
       stock.quantité += quantité;
-      stock.valeurTotale = stock.quantité * stock.prixUnitaire;
-      await stock.save();
     } else {
-      const valeurTotale = quantité * prixUnitaire;
-      stock = new Stock({ entrepot, produit, quantité, prixUnitaire, valeurTotale });
-      await stock.save();
+      stock = new Stock({ entrepot, produit, quantité, prixUnitaire });
     }
+
+    // Calculer la valeur totale
+    stock.valeurTotale = stock.quantité * stock.prixUnitaire;
+    await stock.save();
 
     return stock;
   } catch (error) {

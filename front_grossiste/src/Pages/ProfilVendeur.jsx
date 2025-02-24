@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import  React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2"; 
 import "../Styles/Profile.css";
 import Sidebar from "../Components/SidebarVendeur";
@@ -26,7 +26,7 @@ function Profil() {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5000/api/users/seul/${usId}`, {
+        const response = await axios.get(`/users/seul/${usId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -73,7 +73,7 @@ function Profil() {
         formData.append("photo", selectedFile);
       }
 
-      const response = await axios.put(`http://localhost:5000/api/users/${usId}`, formData, {
+      const response = await axios.put(`/users/${usId}`, formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 

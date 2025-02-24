@@ -19,10 +19,13 @@ router.delete('/:id', commandeController.deleteCommande);
 
 router.get("/count", commandeController.countCommande);
 // Route pour récupérer une commande par référence de facture
-router.get('/reference/:referenceFacture', commandeController.getCommandeById);
+router.get('/reference/:referenceFacture', commandeController.getCommandeByref);
 
 // Route pour récupérer les commandes avec les statuts "terminée" et "livrée"
 router.get('/TermineeLivree', commandeController.getCommandesTermineesEtLivrees);
 
 router.get('/vendeur/:vendeurId', commandeController.getCommandesByVendeur);
+
+router.get('/suggestions', commandeController.getSuggestions);
+router.get('/factmo', commandeController.getSuggestionscom);
 module.exports = router;

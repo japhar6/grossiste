@@ -10,6 +10,98 @@
   justify-content: center;
   z-index: 1000;
 }
+.modal-footer {
+  display: flex;
+  flex-direction: row; /* Affiche les boutons côte à côte par défaut */
+  justify-content: space-between; /* Espace entre les boutons */
+  margin-top: 20px;
+}
+
+.modal-footer .btn {
+  margin-left: 10px; /* Espacement entre les boutons */
+}
+
+/* Styles pour mobile */
+@media (max-width: 768px) { /* Ajustez la largeur selon vos besoins */
+  .modal-footer {
+    flex-direction: column; /* Superpose les boutons sur mobile */
+    align-items: stretch; /* Pour que les boutons prennent toute la largeur */
+  }
+  .modal-footer .btn {
+    margin-left: 0; /* Supprime l'espacement gauche sur mobile */
+    margin-top: 10px; /* Ajoute un espacement vertical entre les boutons */
+    padding: 5px 10px; /* Réduit la taille des boutons sur mobile */
+    font-size: 14px; /* Réduit la taille de la police sur mobile */
+  }
+
+  .modal-footer .btn {
+    margin-left: 0; /* Supprime l'espacement gauche sur mobile */
+    margin-top: 10px; /* Ajoute un espacement vertical entre les boutons */
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050; /* S'assurer que le modal est au-dessus des autres éléments */
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 600px;
+  padding: 20px;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+}
+
+.modal-body {
+  margin-top: 10px;
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+.table th, .table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-footer .btn {
+  margin-left: 10px;
+}
 
 .modal-content {
   background: white;

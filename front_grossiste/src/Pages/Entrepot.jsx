@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"; // Ajoutez useRef ici
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Entrepot.css";
 import Sidebar from "../Components/Sidebar";
@@ -22,7 +22,7 @@ function Entrepot() {
   useEffect(() => {
     if (token) {
       axios
-        .get("http://localhost:5000/api/entrepot", {
+        .get("/entrepot", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -32,7 +32,7 @@ function Entrepot() {
             .filter((magasinier) => magasinier !== null);
 
           axios
-            .get("http://localhost:5000/api/users/tout", {
+            .get("/users/tout", {
               headers: { Authorization: `Bearer ${token}` },
             })
             .then((userResponse) => {
@@ -67,10 +67,10 @@ function Entrepot() {
     }
 
     const request = editingEntrepotId
-      ? axios.put(`http://localhost:5000/api/entrepot/${editingEntrepotId}`, newEntrepot, {
+      ? axios.put(`/entrepot/${editingEntrepotId}`, newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
         })
-      : axios.post("http://localhost:5000/api/entrepot", newEntrepot, {
+      : axios.post("/entrepot", newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -119,7 +119,7 @@ function Entrepot() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/entrepot/${id}`, {
+        await axios.delete(`/entrepot/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

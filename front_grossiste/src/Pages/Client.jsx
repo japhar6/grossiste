@@ -198,9 +198,9 @@ function ClientsList() {
                                                 <td>{client.telephone}</td>
                                                 <td>{client.adresse}</td>
                                                 <td>{new Date(client.dateInscription).toLocaleDateString()}</td>
-                                                <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}</td>
-                                                <td>{client.remises ? client.remises.remiseParProduit : 'Pas de remise'}</td>
-                                                <td>{client.remises ? client.remises.remiseGlobale : 'Pas de remise'}</td>
+                                                <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}%</td>
+                                                <td>{client.remises ? client.remises.remiseParProduit : 'Pas de remise'}%</td>
+                                                <td>{client.remises ? client.remises.remiseGlobale : 'Pas de remise'}Ariary</td>
                                                 <td>
                                                     <button className="btn btn-warning m-1"  onClick={() => handleEditShow(client)}>
                                                         <i className="fas fa-edit"></i>

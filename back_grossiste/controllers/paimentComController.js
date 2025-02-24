@@ -24,7 +24,7 @@ exports.validerPaiementCommerciale = async (req, res) => {
         const montantFinalPaye = commande.totalGeneral;
         
         // Mettre à jour le statut de la commande
-        commande.statut = "terminée";
+        commande.statut = "payé";
         await commande.save();
 
         // Créer un paiement à crédit pour le commercial
@@ -33,7 +33,7 @@ exports.validerPaiementCommerciale = async (req, res) => {
             montantPaye: 0,  // Pas encore payé
             montantRestant: montantFinalPaye,  // Le montant restant à payer
             totalPaiement: montantFinalPaye,  // Le montant total à payer
-            statut: "partiel", // Statut initial à "partiel"
+            statut: "non payé", // Statut initial à "partiel"
             idCaissier, // ID du caissier
             referenceFacture: commande.referenceFacture // Ajout de la référence de facture
         });
@@ -54,16 +54,20 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
 
         const paiementCommerciale = await PaiementCommerciale.findOne({ referenceFacture });
         if (!paiementCommerciale) {
+            console.error(`Paiement à crédit non trouvé pour la référence: ${referenceFacture}`);
             return res.status(404).json({ message: "Paiement à crédit non trouvé" });
         }
 
         const commande = await Commande.findById(paiementCommerciale.commandeId);
         if (!commande) {
+            console.error(`Commande non trouvée pour l'ID: ${paiementCommerciale.commandeId}`);
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        if (paiementCommerciale.statut === "complet") {
-            return res.status(400).json({ message: "Le paiement est déjà complet." });
+        // Vérifier si le statut est "partiel"
+        if (paiementCommerciale.statut !== "non payé") {
+            console.error("Tentative de mise à jour d'un paiement qui n'est pas non payé.");
+            return res.status(400).json({ message: "Le paiement doit être non payé pour pouvoir être mis à jour." });
         }
 
         let montantTotalVendu = 0;
@@ -78,6 +82,7 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
                 // Récupérer l'unité du produit depuis la base de données
                 const produitDB = await Produit.findById(produit.produitId);
                 if (!produitDB) {
+                    console.error(`Produit non trouvé : ${produit.produitId}`);
                     return res.status(404).json({ message: `Produit non trouvé : ${produit.produitId}` });
                 }
 
@@ -86,6 +91,8 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
                     quantiteRestante: produitCommande.quantite - produit.quantite, // Calcul de la quantité restante
                     unite: produitDB.unite  // Ajout de l'unité
                 });
+            } else {
+                console.error(`Produit ${produit.produitId} non trouvé dans la commande.`);
             }
         }
 
@@ -93,8 +100,14 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         paiementCommerciale.montantRestant = paiementCommerciale.totalPaiement - paiementCommerciale.montantPaye;
         commande.modePaiement = "espèce";
         await commande.save();
+        
+       
+if (paiementCommerciale.montantRestant === 0) {
+    paiementCommerciale.statut = "payé complet"; 
+} else {
+    paiementCommerciale.statut = "payé partiel"; 
+}
 
-        paiementCommerciale.statut = "complet";
         await paiementCommerciale.save();
 
         const vente = new VenteCom({
@@ -120,9 +133,12 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
             vente
         });
     } catch (error) {
+        console.error(`Erreur lors de la mise à jour du paiement : ${error.message}`);
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 
 exports.getVentesByCommercial = async (req, res) => {

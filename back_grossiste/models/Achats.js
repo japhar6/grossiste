@@ -9,7 +9,7 @@ const achatSchema = new mongoose.Schema({
   dateAchat: { type: Date, default: Date.now },
   total: { type: Number, required: true },
   panier: { type: mongoose.Schema.Types.ObjectId, ref: "Panier" },
-  ristourneAppliquee: { type: Boolean, default: false } // Indiquer si la ristourne a été appliquée
+  ristourneAppliquee: { type: Number, default: 0 } // Indiquer si la ristourne a été appliquée
 });
 
 

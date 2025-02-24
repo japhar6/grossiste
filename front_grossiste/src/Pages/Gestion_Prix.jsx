@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../Styles/Produit.css";
 import Sidebar from "../Components/SidebarGestion";
 import Header from "../Components/NavbarG";
-import axios from "axios";
+import axios from '../api/axios';
 
 function ListeProduits() {
   const [produits, setProduits] = useState([]);
@@ -26,7 +26,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
  
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/produits/afficher");
+      const response = await axios.get("/produits/afficher");
       setProduits(response.data);
 
       const categoriesUniq = [
@@ -70,7 +70,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
   });
   const handleModifierPrix = async (produitId) => {
     try {
-      await axios.put(`http://localhost:5000/api/produits/modifier/${produitId}`, {
+      await axios.put(`/produits/modifier/${produitId}`, {
         prixdevente: prixVenteModifier, prixDachat: prixAchatModifier,
       });
       fetchProduits(); // Réinitialiser la liste des produits après la mise à jour
