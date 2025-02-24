@@ -34,7 +34,7 @@ const [achats, setAchats] = useState([]);
   const [produitId, setProduitId] = useState(""); 
   const [fournisseurInfo, setFournisseurInfo] = useState(null);
 
- 
+  const [pourcentageManuel, setPourcentageManuel] = useState(0); 
 
 
   const handleFournisseurChange = (e) => {
@@ -50,7 +50,13 @@ const [achats, setAchats] = useState([]);
     setNouveauProduit({ ...nouveauProduit, fournisseur: selectedFournisseurId });
 };
 const quantiteNumerique = Number(quantite); // Assure-toi que quantite est un nombre
-const produitsOfferts = fournisseurInfo && fournisseurInfo.type === "ristourne" ? Math.floor((quantiteNumerique * fournisseurInfo.conditions.ristourne) / 100) : 0;
+const produitsOfferts = fournisseurInfo && fournisseurInfo.type === "ristourne" 
+    ? fournisseurInfo.conditions.typeRistourne === "par_produit" 
+        ? Math.floor((quantiteNumerique * pourcentageManuel) / 100) // Utilise le pourcentage manuel
+        : Math.floor((quantiteNumerique * fournisseurInfo.conditions.ristourne) / 100) 
+    : 0;
+
+
 const quantiteTotale = quantiteNumerique + produitsOfferts; // Utiliser quantiteNumerique ici
 
   
@@ -371,6 +377,7 @@ console.log("produit" ,produitId);
         quantite: quantiteNumerique, 
         prixAchat: prixAchat,  
         dateAchat: new Date().toISOString(), 
+        ristourneAppliquee:pourcentageManuel
     };
 
     try {
@@ -547,42 +554,63 @@ console.log("produit" ,produitId);
 
               {panierCreer && (
                 <div className="achat-container">
-                   <div className="fournisseur-section">
-            <h6><i className="fa fa-truck"></i> Sélection du Fournisseur</h6>
-            <select
-                className="form-control mt-3"
-                value={fournisseur}
-                onChange={handleFournisseurChange}
-            >
-                <option value="">Choisir un fournisseur</option>
-                {fournisseurs.map((fournisseurItem) => (
-                    <option key={fournisseurItem._id} value={fournisseurItem._id}>
-                        {fournisseurItem.nom}
-                    </option>
-                ))}
-            </select>
+             <div className="fournisseur-section">
+    <h6><i className="fa fa-truck"></i> Sélection du Fournisseur</h6>
+    <select
+        className="form-control mt-3"
+        value={fournisseur}
+        onChange={handleFournisseurChange}
+    >
+        <option value="">Choisir un fournisseur</option>
+        {fournisseurs.map((fournisseurItem) => (
+            <option key={fournisseurItem._id} value={fournisseurItem._id}>
+                {fournisseurItem.nom}
+            </option>
+        ))}
+    </select>
 
-            {fournisseurInfo && (
-                <div className="fournisseur-info mt-3">
-                    {fournisseurInfo.type === "ristourne" ? (
-                        <>
-                            <p className="alert alert-info">Fournisseur avec ristourne disponible</p>
-                            <p>Pourcentage de Ristourne : <strong>{fournisseurInfo.conditions.ristourne} %</strong></p>
-                            
-                            {quantiteNumerique > 0 && (
-                                <>
-                                    <p>Quantité achetée : <strong>{quantiteNumerique}</strong></p>
-                                    <p>Produits offerts : <strong>{produitsOfferts}</strong></p>
-                                    <p>Quantité totale : <strong>{quantiteTotale}</strong></p>
-                                </>
-                            )}
-                        </>
-                    ) : (
-                        <p className="alert alert-warning">Fournisseur sans ristourne</p>
+    {fournisseurInfo && (
+        <div className="fournisseur-info mt-3">
+            {fournisseurInfo.type === "ristourne" ? (
+                <>
+                    <p className="alert alert-info">Fournisseur avec ristourne disponible</p>
+                    <p>
+                        Type de Ristourne : <strong>{fournisseurInfo.conditions.typeRistourne === "par_produit" ? "Ristourne par produit" : fournisseurInfo.conditions.typeRistourne === "générale" ? "Ristourne Générale" : fournisseurInfo.conditions.typeRistourne}</strong>
+                    </p>
+
+                    {fournisseurInfo.conditions.typeRistourne === "par_produit" && (
+                        <div className="input-pourcentage">
+                            <label>Pourcentage de Ristourne Manuelle :</label>
+                            <input
+    type="number"
+    className="form-control mt-2 small-input" // Ajoute une classe CSS personnalisée
+    value={pourcentageManuel}
+    onChange={(e) => setPourcentageManuel(Number(e.target.value))}
+    placeholder="%"
+/>
+
+                        </div>
                     )}
-                </div>
+
+                    {fournisseurInfo.conditions.ristourne > 0 && (
+                        <p>Pourcentage de Ristourne : <strong>{fournisseurInfo.conditions.ristourne} %</strong></p>
+                    )}
+
+                    {quantiteNumerique > 0 && (
+                        <>
+                            <p>Quantité achetée : <strong>{quantiteNumerique}</strong></p>
+                            <p>Produits offerts : <strong>{produitsOfferts}</strong></p>
+                            <p>Quantité totale : <strong>{quantiteTotale}</strong></p>
+                        </>
+                    )}
+                </>
+            ) : (
+                <p className="alert alert-warning">Fournisseur sans ristourne</p>
             )}
         </div>
+    )}
+</div>
+
 
                   {/* Formulaire d'ajout de produit visible après avoir cliqué sur "Ajouter un Nouveau Produit" */}
                   {afficherFormulaireProduit ? (
