@@ -18,7 +18,7 @@ function HistoV() {
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/commandes/`);
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/commandes/`);
         console.log("la repose",response.data);
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setCommandes(sortedCommandes);

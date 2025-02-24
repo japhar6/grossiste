@@ -18,7 +18,7 @@ function VisualiserInventaires() {
   useEffect(() => {
     const fetchInventaires = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/inventaire/recuperer/${userId}`, {
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/inventaire/recuperer/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response.data); 

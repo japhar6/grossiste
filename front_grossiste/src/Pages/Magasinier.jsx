@@ -46,7 +46,7 @@ function SortieStock() {
     }
   
     try {
-      const response = await axios.post("http://10.152.183.99/api/ventes/valider", {
+      const response = await axios.post("https://api.bazariko.duckdns.org/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
         magasinierId: magasinierId,
       });

@@ -29,7 +29,7 @@ function Personnels() {
     // Fonction pour récupérer le comptage des utilisateurs par rôle
     const fetchRoleCounts = async () => {
       try {
-        const response = await axios.get("http://10.152.183.99/api/users/count-users-by-role");
+        const response = await axios.get("https://api.bazariko.duckdns.org/api/users/count-users-by-role");
         setRoleCounts(response.data); // Stocker les données dans l'état
      
       } catch (error) {
@@ -50,7 +50,7 @@ function Personnels() {
           return;
         }
   
-        const response = await axios.get("http://10.152.183.99/api/users/tout/", {
+        const response = await axios.get("https://api.bazariko.duckdns.org/api/users/tout/", {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -93,7 +93,7 @@ function Personnels() {
 
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("http://10.152.183.99/api/users/register", formData, {
+      const response = await axios.post("https://api.bazariko.duckdns.org/api/users/register", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -143,7 +143,7 @@ function Personnels() {
       try {
         const token = localStorage.getItem("token");
        
-        await axios.put(`http://10.152.183.99/api/users/licencier/${selectedUser._id}`, {
+        await axios.put(`https://api.bazariko.duckdns.org/api/users/licencier/${selectedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -185,7 +185,7 @@ function Personnels() {
   
     try {
       const response = await axios.put(
-        `http://10.152.183.99/api/users/${selectedUser._id}`,
+        `https://api.bazariko.duckdns.org/api/users/${selectedUser._id}`,
         formData,
         {
           headers: {
@@ -392,7 +392,7 @@ function Personnels() {
           {selectedUser && (
             <div className="user-card">
               <div className="photo-cont">
-                <img src={`http://10.152.183.99${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
+                <img src={`https://api.bazariko.duckdns.org${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
               </div>
               <div className="user-info">
                 <p><strong>Nom:</strong> {selectedUser.nom}</p>

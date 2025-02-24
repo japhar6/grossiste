@@ -21,7 +21,7 @@ const [filtreDate, setFiltreDate] = useState('');
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userid");
-    axios.get(`http://localhost:5000/api/entrepot/recuperer/${userId}`, {
+    axios.get(`https://api.bazariko.duckdns.org/api/entrepot/recuperer/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(response => setEntrepot(response.data))
       .catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
@@ -29,19 +29,19 @@ const [filtreDate, setFiltreDate] = useState('');
 
   useEffect(() => {
     if (!entrepot) return;
-    axios.get(`http://localhost:5000/api/stocks/stocks/${entrepot._id}`)
+    axios.get(`https://api.bazariko.duckdns.org/api/stocks/stocks/${entrepot._id}`)
       .then(response => setStocks(response.data))
       .catch(() => toast.error("Erreur lors du chargement des stocks."));
   }, [entrepot]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/entrepot')
+    axios.get('https://api.bazariko.duckdns.org/api/entrepot')
       .then(response => setEntrepots(response.data));
     fetchHistoriqueTransferts();
   }, []);
 
   const fetchHistoriqueTransferts = () => {
-    axios.get('http://localhost:5000/api/transfert/recup')
+    axios.get('https://api.bazariko.duckdns.org/api/transfert/recup')
       .then(response => setHistoriqueTransferts(response.data));
   };
 
@@ -54,7 +54,7 @@ const [filtreDate, setFiltreDate] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:5000/api/transfert/transfert', {
+    axios.post('https://api.bazariko.duckdns.org/api/transfert/transfert', {
       entrepotSource: entrepot._id,
       entrepotDestination,
       produit,

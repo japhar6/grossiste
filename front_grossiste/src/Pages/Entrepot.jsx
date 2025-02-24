@@ -22,7 +22,7 @@ function Entrepot() {
   useEffect(() => {
     if (token) {
       axios
-        .get("http://10.152.183.99/api/entrepot", {
+        .get("https://api.bazariko.duckdns.org/api/entrepot", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -32,7 +32,7 @@ function Entrepot() {
             .filter((magasinier) => magasinier !== null);
 
           axios
-            .get("http://10.152.183.99/api/users/tout", {
+            .get("https://api.bazariko.duckdns.org/api/users/tout", {
               headers: { Authorization: `Bearer ${token}` },
             })
             .then((userResponse) => {
@@ -67,10 +67,10 @@ function Entrepot() {
     }
 
     const request = editingEntrepotId
-      ? axios.put(`http://localhost:5000/api/entrepot/${editingEntrepotId}`, newEntrepot, {
+      ? axios.put(`https://api.bazariko.duckdns.org/api/entrepot/${editingEntrepotId}`, newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
         })
-      : axios.post("http://localhost:5000/api/entrepot", newEntrepot, {
+      : axios.post("https://api.bazariko.duckdns.org/api/entrepot", newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -121,7 +121,7 @@ function Entrepot() {
       try {
         const token = localStorage.getItem("token");
        
-        await axios.delete(`http://10.152.183.99/api/entrepot/${id}`, {
+        await axios.delete(`https://api.bazariko.duckdns.org/api/entrepot/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

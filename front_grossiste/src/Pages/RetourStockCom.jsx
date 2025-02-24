@@ -24,7 +24,7 @@ function RetourStockCom() {
 
   // Récupération des paiements commerciaux depuis l'API
   useEffect(() => {
-    axios.get("http://localhost:5000/api/paiementCom/info")
+    axios.get("https://api.bazariko.duckdns.org/api/paiementCom/info")
       .then(response => {
         setPaiements(response.data);
       })
@@ -41,7 +41,7 @@ function RetourStockCom() {
       return Promise.reject("Le commercialId est undefined ou invalide.");
     }
 
-    return axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`)
+    return axios.get(`https://api.bazariko.duckdns.org/api/paiementCom/performance/commercial/${commercialId}`)
       .then(response => {
         console.log("Ventes récupérées pour le commercial:", response.data);
         setVentes(response.data);
@@ -98,7 +98,7 @@ function RetourStockCom() {
       venteComId: venteComId,
     };
   
-    axios.post("http://localhost:5000/api/ventes/retour", returnData)
+    axios.post("https://api.bazariko.duckdns.org/api/ventes/retour", returnData)
       .then(response => {
         console.log("Retour validé avec succès", response.data);
         // Mettre à jour l'UI ou notifier l'utilisateur si nécessaire

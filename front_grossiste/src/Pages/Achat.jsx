@@ -57,7 +57,7 @@ console.log("produit" ,produitId);
     setProduit(selectedOption);
 
     // Faire une requête pour récupérer les détails du produit
-    fetch(`http://10.152.183.99/api/produits/recuperer/${produitId}`)
+    fetch(`https://api.bazariko.duckdns.org/api/produits/recuperer/${produitId}`)
       .then((response) => response.json())
       .then((data) => {
         if (data) {
@@ -71,7 +71,7 @@ console.log("produit" ,produitId);
   };
 
   useEffect(() => {
-    fetch("http://10.152.183.99/api/produits/categories")
+    fetch("https://api.bazariko.duckdns.org/api/produits/categories")
       .then((response) => response.json())
       .then((data) => setCategories(data))
       .catch((error) => console.error("Erreur lors de la récupération des catégories", error));
@@ -96,7 +96,7 @@ console.log("produit" ,produitId);
     console.log("poruidg",produit);
   
     // Envoi du produit à l'API pour ajout
-    fetch("http://10.152.183.99/api/produits/ajouter", {
+    fetch("https://api.bazariko.duckdns.org/api/produits/ajouter", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -121,7 +121,7 @@ console.log("produit" ,produitId);
   
        
         if (fournisseur) {
-          fetch(`http://10.152.183.99/api/produits/fournisseur/${fournisseur}`)
+          fetch(`https://api.bazariko.duckdns.org/api/produits/fournisseur/${fournisseur}`)
             .then((response) => response.json())
             .then((data) => {
               if (Array.isArray(data) && data.length > 0) {
@@ -173,7 +173,7 @@ console.log("produit" ,produitId);
 
   const fetchAchats = async () => {
     try {
-      const response = await fetch(`http://10.152.183.99/api/achats/panier/${panierId}`);
+      const response = await fetch(`https://api.bazariko.duckdns.org/api/achats/panier/${panierId}`);
       const data = await response.json();
   
       if (!response.ok) {
@@ -188,7 +188,7 @@ console.log("produit" ,produitId);
   
   useEffect(() => {
     if (fournisseur) {
-      fetch(`http://10.152.183.99/api/produits/fournisseur/${fournisseur}`)
+      fetch(`https://api.bazariko.duckdns.org/api/produits/fournisseur/${fournisseur}`)
         .then((response) => response.json())
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
@@ -225,7 +225,7 @@ console.log("produit" ,produitId);
 
 
   useEffect(() => {
-    fetch("http://10.152.183.99/api/fournisseurs/tous")
+    fetch("https://api.bazariko.duckdns.org/api/fournisseurs/tous")
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -251,7 +251,7 @@ console.log("produit" ,produitId);
   
   
   useEffect(() => {
-    fetch("http://10.152.183.99/api/entrepot")
+    fetch("https://api.bazariko.duckdns.org/api/entrepot")
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -290,7 +290,7 @@ console.log("produit" ,produitId);
     };
   
     try {
-      const response = await fetch("http://10.152.183.99/api/paniers/ajouter", {
+      const response = await fetch("https://api.bazariko.duckdns.org/api/paniers/ajouter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -359,7 +359,7 @@ console.log("produit" ,produitId);
     console.log("Données envoyées pour création de l'achat :", achatData);
   
     try {
-      const response = await fetch("http://10.152.183.99/api/achats/ajouter", {
+      const response = await fetch("https://api.bazariko.duckdns.org/api/achats/ajouter", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -401,7 +401,7 @@ console.log("produit" ,produitId);
   const validerPanier = async() => {
 
     try {
-      const response = await fetch(`http://10.152.183.99/api/achats/valider/${panierId}`, {
+      const response = await fetch(`https://api.bazariko.duckdns.org/api/achats/valider/${panierId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

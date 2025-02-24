@@ -24,7 +24,7 @@ function Stock() {
   useEffect(() => {
     const fetchEntrepot = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/entrepot/recuperer/${userId}`, {
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/entrepot/recuperer/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -46,7 +46,7 @@ function Stock() {
       setError(null);
 
       try {
-        const response = await axios.get(`http://localhost:5000/api/stocks/stocks/${entrepot._id}`);
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/stocks/stocks/${entrepot._id}`);
         setStocks(response.data);
       } catch (err) {
         toast.error('Erreur lors du chargement des stocks.');

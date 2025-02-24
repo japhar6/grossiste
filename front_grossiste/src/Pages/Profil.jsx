@@ -26,7 +26,7 @@ function Profil() {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5000/api/users/seul/${usId}`, {
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/users/seul/${usId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -73,7 +73,7 @@ function Profil() {
         formData.append("photo", selectedFile);
       }
 
-      const response = await axios.put(`https://api.magasin-bazariko.duckdns.org/api/users/${usId}`, formData, {
+      const response = await axios.put(`https://api.bazariko.duckdns.org/api/users/${usId}`, formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 

@@ -19,7 +19,7 @@ function HistoC() {
   useEffect(() => {
     const fetchPaiements = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/paiement`);
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/paiement`);
         console.log(response.data); // Vérifiez la structure de la réponse
         setPaiements(response.data);
       } catch (error) {

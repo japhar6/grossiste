@@ -24,13 +24,13 @@ const navigate = useNavigate();
     const fetchEntrepotAndStocks = async () => {
       try {
         // Récupérer l'entrepôt
-        const entrepotResponse = await axios.get(`http://localhost:5000/api/entrepot/recuperer/${userId}`, {
+        const entrepotResponse = await axios.get(`https://api.bazariko.duckdns.org/api/entrepot/recuperer/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepot(entrepotResponse.data);
 
         // Récupérer les stocks de l'entrepôt
-        const stocksResponse = await axios.get(`http://localhost:5000/api/stocks/stocks/${entrepotResponse.data._id}`);
+        const stocksResponse = await axios.get(`https://api.bazariko.duckdns.org/api/stocks/stocks/${entrepotResponse.data._id}`);
         setStocks(stocksResponse.data);
         setLoading(false); // Fin du chargement
       } catch (error) {
@@ -73,7 +73,7 @@ const navigate = useNavigate();
     console.log('Données envoyées:', inventaireData);  // Ajoutez ce log pour vérifier les données
 
     try {
-        const response = await axios.post('http://localhost:5000/api/inventaire/ajouter', inventaireData, {
+        const response = await axios.post('https://api.bazariko.duckdns.org/api/inventaire/ajouter', inventaireData, {
             headers: { Authorization: `Bearer ${token}` },
         });
 

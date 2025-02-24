@@ -16,7 +16,7 @@ function HistoC() {
   useEffect(() => {
     const fetchPaiements = async () => {
       try {
-        const response = await axios.get(`http://10.152.183.99/api/paiement/caissier/${caissierId}`);
+        const response = await axios.get(`https://api.bazariko.duckdns.org/api/paiement/caissier/${caissierId}`);
         console.log(response.data); // Vérifiez la structure de la réponse
         setPaiements(response.data);
       } catch (error) {
