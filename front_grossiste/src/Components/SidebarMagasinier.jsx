@@ -51,7 +51,7 @@ function SidebarVendeur(){
                      console.log("Swipe Distance:", swipeDistance);
          
                      // On vérifie que le swipe commence bien à gauche (moins de 30px)
-                     if (touchStartX > 30) {
+                     if (touchStartX > 40) {
                          console.log("Swipe ignoré (pas assez à gauche)");
                          return;
                      }
@@ -83,7 +83,7 @@ function SidebarVendeur(){
         { path: "/RetourStockCom", icon: faRotateLeft, text: "Retour des produits" },
 
         { path: "/stockma", icon: faBoxes, text: "Gestion de stock" },
-        { path: "/inventaire", icon: faBox , text: "Inventaire" },
+
         { path: "/transfert", icon: faTruck , text: "Transfert" },
     
       ];

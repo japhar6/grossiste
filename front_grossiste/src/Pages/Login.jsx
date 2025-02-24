@@ -5,7 +5,7 @@ import '../Styles/Login.css';
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
+import axios from '../api/axios';
 
 
 function Login() {
@@ -25,28 +25,30 @@ function Login() {
         e.preventDefault();
         setError('');
         setLoading(true);
-
+    
         try {
-            const response = await fetch('http://localhost:5000/api/users/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+            const response = await axios.post('/users/login', {
+                email,
+                password
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erreur de connexion');
-            }
-           
+    
+            // Pas besoin de faire await response.json()
+            const data = response.data; // Récupère directement les données
+    
+            // Pas besoin de vérifier response.ok, Axios lancera une erreur si la réponse n'est pas 2xx
+            // Donc, tu peux supprimer ce bloc :
+            // if (!response.ok) {
+            //     throw new Error(data.message || 'Erreur de connexion');
+            // }
+    
+            // Stocke les informations dans le localStorage
             localStorage.setItem('token', data.token);
-             localStorage.setItem('email', data.user.email);
+            localStorage.setItem('email', data.user.email);
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('userid', data.user._id);
             localStorage.setItem('nom', data.user.nom);
-            
-
-            setSuccess(true);  
+    
+            setSuccess(true);
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':
@@ -61,31 +63,28 @@ function Login() {
                     case 'caissier':
                         navigate('/caissier');
                         break;
-                        case 'gestion_prix':
-                            navigate('/gestionprix');
-                            break;
-                    
+                    case 'gestion_prix':
+                        navigate('/gestionprix');
+                        break;
                     default:
                         navigate('/dashboard');
                 }
             }, 1000);
-
+    
         } catch (error) {
-          
             console.log("Erreur de connexion:", error);
-        
+    
             Swal.fire({
                 title: "Erreur!",
-                text: error,
+                text: error.response?.data?.message || 'Une erreur est survenue',
                 icon: "error",
                 confirmButtonText: "Réessayer",
             });
-        
+    
             setLoading(false);
         }
-        
-        
     };
+    
 
     return (
         <main className='mainLogin center'>

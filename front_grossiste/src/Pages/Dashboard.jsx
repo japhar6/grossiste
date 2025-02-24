@@ -4,6 +4,7 @@ import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
 import LineChart from '../Components/LineChart';
 import DonutChart from '../Components/DonutChart';
+import axios from '../api/axios';
 
 function Dashboard() {
   const [fournisseursCount, setFournisseursCount] = useState(0);
@@ -15,8 +16,8 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchFournisseursCount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/fournisseurs/count');
-        const data = await response.json();
+        const response = await axios.get('/fournisseurs/count');
+        const data = response.data;
         setFournisseursCount(data.totalFournisseurs);
       } catch (error) {
         console.error('Erreur lors du chargement des fournisseurs:', error);
@@ -32,8 +33,8 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchCommandecount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/commandes/count');
-        const data = await response.json();
+        const response = await axios.get('/commandes/count');
+        const data = response.data;
         setcommandeCount(data.totalcommande);
       } catch (error) {
         console.error('Erreur lors du chargement des fournisseurs:', error);
@@ -47,8 +48,8 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchClientCount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/client/count');
-        const data = await response.json();
+        const response = await axios.get('/client/count');
+        const data = response.data;
         setclientCount(data.totalclient);
         console.log("countcli",data.totalclient);
       } catch (error) {
@@ -63,8 +64,8 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchproduitCount = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/produits/count');
-        const data = await response.json();
+        const response = await axios.get('/produits/count');
+        const data = response.data;
         setproduitCount(data.totalProduits);
       } catch (error) {
         console.error('Erreur lors du chargement des fournisseurs:', error);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Histov.css"; // Assurez-vous que le chemin est correct
 import Sidebar from "../Components/SidebarVendeur";
@@ -17,7 +17,7 @@ function HistoV() {
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/commandes/vendeur/${vendeurId}`);
+        const response = await axios.get(`/commandes/vendeur/${vendeurId}`);
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setCommandes(sortedCommandes);
       } catch (error) {
@@ -129,33 +129,7 @@ function HistoV() {
                     ))}
                   </tbody>
                 </table>
-                {commissions.length > 0 ? (
-  <div className="commission-section">
-    <h4>Commissions</h4>
-    <table className="table-striped">
-      <thead>
-        <tr>
-          <th>Période</th>
-          <th>Type</th>
-          <th>Montant</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        {commissions.map((commission) => (
-          <tr key={commission._id}>
-            <td>{commission.periode}</td>
-            <td>{commission.typeCommission}</td>
-            <td>{commission.montant} €</td>
-            <td>{commission.statut}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-) : (
-  <p>Aucune commission enregistrée pour ce commercial.</p>
-)}
+               
 
               </div>
               

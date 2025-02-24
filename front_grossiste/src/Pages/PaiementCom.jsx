@@ -3,6 +3,7 @@ import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import "../Styles/Caisse.css";
 import Swal from 'sweetalert2';
+import axios from '../api/axios';
 function PaiementCom() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -13,37 +14,50 @@ function PaiementCom() {
   // Recherche de la commande en fonction de la référence
   const handleSearch = async () => {
     if (!referenceFacture) return; // Validation si la référence est vide
+
     try {
-      const response = await fetch(`http://localhost:5000/api/commandes/reference/${referenceFacture}`);
-      if (!response.ok) throw new Error("Commande non trouvée");
-      const data = await response.json();
-  
-      // Vérifie si le type de client est Commercial
-      if (data.typeClient === "Commercial") {
-        setCommercial(data.commercialId);
-      } else {
-        // Affiche une alerte si le type n'est pas Commercial
+        const response = await axios.get(`/commandes/reference/${referenceFacture}`);
+
+        // Vérifie si la réponse est un succès
+        if (response.status !== 200) throw new Error("Commande non trouvée");
+
+        const data = response.data;
+
+        // Vérifie si le type de client est Commercial
+        if (data.typeClient === "Commercial") {
+            setCommercial(data.commercialId);
+        } else {
+            // Affiche une alerte si le type n'est pas Commercial
+            Swal.fire({
+                icon: 'warning',
+                title: 'Alerte',
+                text: 'Seules les références de facture de type commercial peuvent être traitées ici.',
+            });
+            setCommande(null);
+            setCommercial(null);
+            return; // Arrête le traitement si ce n'est pas commercial
+        }
+
+        // Mise à jour de l'état des commandes et des produits
+        setCommande(data);
+        setProduitsRetournes({});
+        setProduitsVendus([]);
+    } catch (error) {
+        console.error("Erreur lors de la recherche de la commande :", error);
+        
+        // Affiche un message d'erreur spécifique si la commande n'est pas trouvée
         Swal.fire({
-          icon: 'warning',
-          title: 'Alerte',
-          text: 'Seules les références de facture de type commercial peuvent être traitées ici.',
+            icon: 'error',
+            title: 'Erreur',
+            text: error.response && error.response.status === 404 ? "Référence non trouvée." : "Erreur lors de la recherche de la commande",
         });
+
         setCommande(null);
         setCommercial(null);
-        return; // Arrête le traitement si ce n'est pas commercial
-      }
-  
-      // Mise à jour de l'état des commandes et des produits
-      setCommande(data);
-      setProduitsRetournes({});
-      setProduitsVendus([]);
-    } catch (error) {
-      console.error(error);
-      alert("Erreur lors de la recherche de la commande");
-      setCommande(null);
-      setCommercial(null);
     }
-  };
+};
+
+
 
   const handleQuantiteChange = (produitId, quantiteDisponible, e) => {
     const quantite = parseInt(e.target.value) || 0; // Convertit en nombre, ou 0 si vide
@@ -90,65 +104,54 @@ function PaiementCom() {
   const handleValidation = async () => {
     const produitsInvalides = produitsVendus.filter(p => !p.produitId || p.quantite <= 0);
     if (produitsInvalides.length > 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Alerte',
-        text: "Certains produits sont invalides, assurez-vous que chaque produit a un ID valide et une quantité positive.",
-      });
-      return;
+        Swal.fire({
+            icon: 'warning',
+            title: 'Alerte',
+            text: "Certains produits sont invalides, assurez-vous que chaque produit a un ID valide et une quantité positive.",
+        });
+        return;
     }
-  
+
     try {
-      // Prépare les données à envoyer
-      const produitsVendusToSend = produitsVendus.map(produit => ({
-        produitId: produit.produitId,
-        quantite: produit.quantite,
-      }));
-  
-      const response = await fetch(`http://localhost:5000/api/paiementCom/mettre-ajour/${referenceFacture}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          produitsVendus: produitsVendusToSend,
-        }),
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-  
-        // Vérifiez le statut du paiement
-        if (data.message === "Le paiement doit être partiel pour pouvoir être mis à jour.") {
-          Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: "Le paiement est déjà complet.",
-          });
-          return; // Arrêtez l'exécution si le paiement est complet
-        }
-  
-        Swal.fire({
-          icon: 'success',
-          title: 'Succès',
-          text: "Paiement et vente mis à jour avec succès",
+        // Prépare les données à envoyer
+        const produitsVendusToSend = produitsVendus.map(produit => ({
+            produitId: produit.produitId,
+            quantite: produit.quantite,
+        }));
+
+        const response = await axios.put(`/paiementCom/mettre-ajour/${referenceFacture}`, {
+            produitsVendus: produitsVendusToSend,
         });
-      } else {
-        const errorData = await response.json(); // Récupère les données d'erreur
+
+        // Vérifiez le statut du paiement
+        if (response.data.message === "Le paiement doit être partiel pour pouvoir être mis à jour.") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: "Le paiement est déjà complet.",
+            });
+            return; // Arrêtez l'exécution si le paiement est complet
+        }
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Succès',
+            text: "Paiement et vente mis à jour avec succès",
+        });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du paiement :", error);
+
+        // Vérifiez si l'erreur contient une réponse
+        const errorMessage = error.response && error.response.data ? error.response.data.message : "Une erreur s'est produite lors de la mise à jour du paiement";
+        
         Swal.fire({
             icon: 'error',
             title: 'Erreur',
-            text: errorData.message || "Une erreur s'est produite lors de la mise à jour du paiement",
+            text: errorMessage,
         });
     }
-} catch (error) {
-    console.error(error);
-    Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: "Une erreur s'est produite lors de la mise à jour du paiement",
-    });
-}
-  };
-  
+};
+
 
   return (
     <main className="center">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../Styles/Produit.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import axios from "axios";
+import axios from '../api/axios';
 
 function ListeProduits() {
   const [produits, setProduits] = useState([]);
@@ -23,7 +23,7 @@ function ListeProduits() {
 
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/produits/afficher");
+      const response = await axios.get("/produits/afficher");
       setProduits(response.data);
 
       const categoriesUniq = [
@@ -64,7 +64,7 @@ function ListeProduits() {
 
   const handleModifierPrix = async (produitId) => {
     try {
-      await axios.put(`http://localhost:5000/api/produits/modifier/${produitId}`, {
+      await axios.put(`/produits/modifier/${produitId}`, {
         prixdevente: prixVenteModifier,
         prixDachat: prixAchatModifier,
         quantiteMinimum: quantiteMinimumModifier,
@@ -164,11 +164,11 @@ function ListeProduits() {
                           <td>{produit.dateAjout}</td>
                           <td>
                             {produitAModifier === produit._id ? (
-                              <button className="btn btn-success" onClick={() => handleModifierPrix(produit._id)}>
+                              <button className="btnpro btn-success" onClick={() => handleModifierPrix(produit._id)}>
                                 Enregistrer
                               </button>
                             ) : (
-                              <button className="btn btn-primary" onClick={() => {
+                              <button className="btnpro btn-primary" onClick={() => {
                                 setProduitAModifier(produit._id);
                                 setPrixVenteModifier(produit.prixdevente);
                                 setPrixAchatModifier(produit.prixDachat);

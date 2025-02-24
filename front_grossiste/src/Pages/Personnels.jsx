@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Personnels.css";
 import Sidebar from "../Components/Sidebar";
@@ -29,7 +29,7 @@ function Personnels() {
     // Fonction pour récupérer le comptage des utilisateurs par rôle
     const fetchRoleCounts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/users/count-users-by-role");
+        const response = await axios.get("/users/count-users-by-role");
         setRoleCounts(response.data); // Stocker les données dans l'état
      
       } catch (error) {
@@ -50,7 +50,7 @@ function Personnels() {
           return;
         }
   
-        const response = await axios.get("http://localhost:5000/api/users/tout/", {
+        const response = await axios.get("/users/tout/", {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -93,7 +93,7 @@ function Personnels() {
 
       const token = localStorage.getItem("token");
 
-      const response = await axios.post("http://localhost:5000/api/users/register", formData, {
+      const response = await axios.post("/users/register", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -143,7 +143,7 @@ function Personnels() {
       try {
         const token = localStorage.getItem("token");
        
-        await axios.put(`http://localhost:5000/api/users/licencier/${selectedUser._id}`, {
+        await axios.put(`/users/licencier/${selectedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -185,7 +185,7 @@ function Personnels() {
   
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/users/${selectedUser._id}`,
+        `/users/${selectedUser._id}`,
         formData,
         {
           headers: {

@@ -3,7 +3,7 @@ import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
-import axios from "axios";
+import axios from '../api/axios';
  
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
@@ -62,7 +62,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("http://localhost:5000/api/client");
+                                    const response = await axios.get("/client");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);
@@ -71,7 +71,7 @@ function PriseCommande() {
 
                                 const fetchCommerciaux = async () => {
                                   try {
-                                    const response = await axios.get("http://localhost:5000/api/comercial");
+                                    const response = await axios.get("/comercial");
                                     setCommerciaux(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des commerciaux", error);
@@ -100,7 +100,7 @@ function PriseCommande() {
                                     }
 
                                     // Déterminer l'URL selon le type (client ou commercial)
-                                    const url = type === "client" ? "http://localhost:5000/api/client" : "http://localhost:5000/api/comercial/";
+                                    const url = type === "client" ? "/client" : "/comercial/";
                                     
                                     // Envoi de la requête POST
                                     const response = await axios.post(url, newPerson);
@@ -163,7 +163,7 @@ function PriseCommande() {
                                 
                                 const fetchProduits = async () => {
                                   try {
-                                    const response = await axios.get("http://localhost:5000/api/produits/afficher");
+                                    const response = await axios.get("/produits/afficher");
                                     setProduits(response.data);
 
                                     // Extraire les catégories uniques
@@ -190,7 +190,7 @@ function PriseCommande() {
                                   const fetchQuantite = async () => {
                                     try {
                                       // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
-                                      const response = await axios.get(`http://localhost:5000/api/stocks/produits/quantite/${produit._id}`);
+                                      const response = await axios.get(`/stocks/produits/quantite/${produit._id}`);
                                       const quantiteDisponible = response.data.quantiteDisponible;
                                 
                                       // Comparer la quantité demandée avec la quantité disponible
@@ -215,7 +215,7 @@ function PriseCommande() {
                                             return; // Ne pas ajouter à la commande
                                           } else if (result.isDismissed) {
                                             // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
-                                            const responseSecondaire = await axios.get(`http://localhost:5000/api/stocks/produits/quantita/${produit._id}`);
+                                            const responseSecondaire = await axios.get(`/stocks/produits/quantita/${produit._id}`);
                                             const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
                                 
                                             // Logique pour traiter la disponibilité dans les autres entrepôts
@@ -321,7 +321,7 @@ function PriseCommande() {
                                         console.log("Commande prête à être envoyée :", nouvelleCommande);
                                     
                                         try {
-                                            const response = await axios.post("http://localhost:5000/api/commandes/ajouter", nouvelleCommande);
+                                            const response = await axios.post("/commandes/ajouter", nouvelleCommande);
                                     
                                             if (response.data) {
                                                 const referenceFacture = response.data.commande.referenceFacture; 

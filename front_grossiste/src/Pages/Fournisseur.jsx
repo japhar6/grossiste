@@ -1,12 +1,12 @@
 import React, { useState, useEffect,useRef  } from "react";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Fournisseur.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 
 function Fournisseur() {
-  const [fournisseurs, setFournisseurs] = useState([]);
+  const [fournisseurs, setFournisseurs] = useState([]); 
   const [filteredFournisseurs, setFilteredFournisseurs] = useState([]);
   const [nom, setNom] = useState("");
   const [type, setType] = useState("");
@@ -28,7 +28,7 @@ function Fournisseur() {
 
   const fetchFournisseurs = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fournisseurs/tous");
+      const response = await axios.get("/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  
     } catch (error) {
@@ -58,12 +58,12 @@ function Fournisseur() {
   
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/fournisseurs/${editingId}`, formData, {
+        await axios.put(`/fournisseurs/${editingId}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Modifié!", "Le fournisseur a été modifié avec succès.", "success");
       } else {
-        await axios.post("http://localhost:5000/api/fournisseurs", formData, {
+        await axios.post("/fournisseurs", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Ajouté!", "Le fournisseur a été ajouté avec succès.", "success");
@@ -88,7 +88,7 @@ function Fournisseur() {
     });
     if (confirmDelete.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:5000/api/fournisseurs/${id}`);
+        await axios.delete(`/fournisseurs/${id}`);
         Swal.fire("Supprimé!", "Le fournisseur a été supprimé avec succès.", "success");
         fetchFournisseurs();
       } catch (error) {

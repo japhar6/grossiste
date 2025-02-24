@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from '../api/axios';
 import Swal from "sweetalert2"; 
 import "../Styles/HistoC.css";
 import Sidebar from "../Components/SidebarCaisse";
@@ -17,7 +17,7 @@ function HistoC() {
   useEffect(() => {
     const fetchPaiements = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/paiement/caissier/${caissierId}`);
+        const response = await axios.get(`/paiement/caissier/${caissierId}`);
         console.log(response.data);
         setPaiements(response.data);
       } catch (error) {

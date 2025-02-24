@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import Swal from 'sweetalert2';
 import "../Styles/Commerciale.css";
 import Sidebar from '../Components/Sidebar';
@@ -24,7 +24,7 @@ const GestionCommerciaux = () => {
   useEffect(() => {
     const fetchCommerciauxAvecVentes = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/comercial/');
+        const response = await axios.get('/comercial/');
         setCommerciaux(response.data);
         setFilteredCommerciaux(response.data); // Initialiser le tableau filtré
       } catch (error) {
@@ -55,7 +55,7 @@ const GestionCommerciaux = () => {
     setCommercialNom(commercialNom);
     
     try {
-        const response = await axios.get(`http://localhost:5000/api/paiementCom/performance/commercial/${commercialId}`);
+        const response = await axios.get(`/paiementCom/performance/commercial/${commercialId}`);
         
         // Vérifiez si des ventes sont présentes
         if (Array.isArray(response.data) && response.data.length === 0) {
@@ -72,7 +72,7 @@ const GestionCommerciaux = () => {
 
         // Récupérez les commissions
         try {
-            const responseCommissions = await axios.get(`http://localhost:5000/api/commission/commercial/${commercialId}`);
+            const responseCommissions = await axios.get(`/commission/commercial/${commercialId}`);
             if (responseCommissions.data && Array.isArray(responseCommissions.data)) {
                 setCommissionsDetails(responseCommissions.data); // Met à jour uniquement si des commissions sont trouvées
             } else {
@@ -97,7 +97,7 @@ const GestionCommerciaux = () => {
 
   const handleAddCommission = async (commissionData) => {
     try {
-      await axios.post('http://localhost:5000/api/commission/commissions/calculer', commissionData);
+      await axios.post('/commission/commissions/calculer', commissionData);
       Swal.fire('Succès', 'Commission ajoutée avec succès', 'success');
       setModalOpen(false);
     } catch (error) {

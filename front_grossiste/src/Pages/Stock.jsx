@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import '../Styles/Stock.css';
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
@@ -24,7 +24,7 @@ function Stock() {
   useEffect(() => {
     const fetchEntrepots = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/entrepot', {
+        const response = await axios.get('/entrepot', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepots(response.data);
@@ -47,7 +47,7 @@ function Stock() {
     setError(null);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/stocks/stocks/${entrepotId}`);
+      const response = await axios.get(`/stocks/stocks/${entrepotId}`);
       setStocks(response.data);
     } catch (err) {
       toast.error('Erreur lors du chargement des stocks.');
@@ -105,7 +105,7 @@ function Stock() {
 
             {selectedEntrepot && (
               <div className="alert alert-info mt-3">
-                <strong>Magasinier :</strong> {magasinier || 'Aucun'}
+                <strong>Gere par le Magasinier :</strong> {magasinier || 'Aucun'}
               </div>
             )}
 
