@@ -125,7 +125,25 @@ const [triMontant, setTriMontant] = useState("desc"); // État pour trier par mo
               </div>
 
               {filteredCommandes.length === 0 ? (
-                <p>Aucune commande trouvée .</p>
+              <table className="table-striped">
+              <thead>
+                <tr>  
+                  <th>Reference du Commande</th>
+                  <th>Date de Commande</th>
+                  <th>Produits</th>
+                  <th>Nom du client/commerciale</th>
+                  <th>Mode de Paiement</th>
+                  
+                  <th>Statut</th>
+                  <th>Fait par :</th>
+                  <th>Montant Total</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>    <tr>
+               <td colSpan={8} style={{ textAlign: 'center' }}>Aucunne commande trouvé.</td>
+           </tr>     
+           </table>
               ) : (
                 <div className="scrollable-container">
                   <table className="table-striped">

@@ -28,7 +28,7 @@ function CreerInventaire() {
   useEffect(() => {
     const fetchEntrepots = async () => {
       try {
-        const response = await axios.get("/entrepot");
+        const response = await axios.get("/api/entrepot");
         const data = response.data;
   
         if (Array.isArray(data) && data.length > 0) {

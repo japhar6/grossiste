@@ -56,7 +56,7 @@
         },
         statut: { 
             type: String,  
-            enum: [ "en cours", "payé", "payé et livrée"], 
+            enum: [ "en cours", "payé","payé et livrée"], 
             default: "en cours" 
         }
     }, { timestamps: true });

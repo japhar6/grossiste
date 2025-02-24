@@ -124,7 +124,7 @@ function HistoV() {
                </thead>
                <tbody>
                </tbody>    <tr>
-                <td colSpan={6} style={{ textAlign: 'center' }}>Aucunne commande trouvé.</td>
+                <td colSpan={8} style={{ textAlign: 'center' }}>Aucunne commande trouvé.</td>
             </tr>     </table>
            
             ) : (
