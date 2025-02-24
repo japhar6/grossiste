@@ -1,0 +1,28 @@
+@media (min-width: 768px) {
+    form div {
+      display: flex;
+      flex-direction: column;
+      max-width: 300px; /* Réduit la largeur des inputs */
+    }
+  
+    input,
+    select {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+    }
+  
+    button {
+      max-width: 200px;
+    }
+  }
+  .filtre-container {
+    display: flex;
+    flex-wrap: wrap; /* Permet de passer à la ligne si l'espace est insuffisant */
+    gap: 15px; /* Ajoute un espacement entre les filtres */
+  }
+  
+  .form-group {
+    flex: 1; /* Permet à chaque groupe de prendre une largeur égale */
+  }
+  
