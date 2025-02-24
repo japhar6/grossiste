@@ -4,10 +4,10 @@ const Fournisseur = require("../models/Fournisseurs");
 // ✅ Ajouter un produit
 exports.ajouterProduit = async (req, res) => {
     try {
-        const { nom, description, prixdevente, prixDachat, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, prixDachat, categorie, unite, fournisseur, quantiteMinimum } = req.body;
 
         // Vérification des champs obligatoires
-        if (!nom || !prixDachat  || !categorie || !unite) {
+        if (!nom || !prixDachat || !categorie || !unite) { 
             return res.status(400).json({ message: "❌ Veuillez remplir tous les champs obligatoires." });
         }
 
@@ -19,8 +19,18 @@ exports.ajouterProduit = async (req, res) => {
             }
         }
 
-        // Création du produit
-        const nouveauProduit = new Produit({ nom, description, prixdevente, prixDachat, categorie, unite, fournisseur });
+        // Création du produit avec quantiteMinimum (si fourni)
+        const nouveauProduit = new Produit({
+            nom,
+            description,
+            prixdevente,
+            prixDachat,
+            categorie,
+            unite,
+            fournisseur,
+            quantiteMinimum: quantiteMinimum || null
+        });
+
         await nouveauProduit.save();
 
         res.status(201).json({ message: "✅ Produit ajouté avec succès", produit: nouveauProduit });
@@ -30,6 +40,8 @@ exports.ajouterProduit = async (req, res) => {
         res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
     }
 };
+
+
 
 
 exports.getProduitsParFournisseur = async (req, res) => {
@@ -71,7 +83,7 @@ exports.countProduits = async (req, res) => {
 exports.modifierProduit = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nom, description, prixdevente, prixDachat, categorie, unite, fournisseur } = req.body;
+        const { nom, description, prixdevente, prixDachat, categorie, unite, fournisseur, quantiteMinimum } = req.body;
 
         // Vérifier si le produit existe
         const produitExistant = await Produit.findById(id);
@@ -99,6 +111,7 @@ exports.modifierProduit = async (req, res) => {
                 categorie: categorie || produitExistant.categorie,
                 unite: unite || produitExistant.unite,
                 fournisseur: fournisseur || produitExistant.fournisseur,
+                quantiteMinimum: quantiteMinimum || produitExistant.quantiteMinimum
             },
             { new: true }
         ).populate("fournisseur", "nom contact");

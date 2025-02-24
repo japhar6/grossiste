@@ -11,6 +11,7 @@ import {
   faTags,
   faShoppingCart,
   faBoxes,
+  faBox,
   faHome,
   faBriefcase,
   faUserFriends,
@@ -48,7 +49,7 @@ function Sidebar() {
             console.log("Swipe Distance:", swipeDistance);
 
             // On vérifie que le swipe commence bien à gauche (moins de 30px)
-            if (touchStartX > 30) {
+            if (touchStartX > 40) {
                 console.log("Swipe ignoré (pas assez à gauche)");
                 return;
             }
@@ -91,14 +92,16 @@ function Sidebar() {
         { path: "/stock", icon: faBoxes, text: "Gestion de stock" },
         { path: "/entrepot", icon: faHome, text: "Gestion des entrepôts" },
         { path: "/commerciale", icon: faBriefcase, text: "Gestion des commerciaux" },
-        { path: "/clients", icon: faUserFriends, text: "Client particulier (cousine)" },
-        { path: "/livraisons", icon: faTruckLoading, text: "Gestion des Livraisons" },
+      
         { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
+                { path: "/histovad", icon: faTags, text: "Historique des commandes" },
+                { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
+                        { path: "/inventaire", icon: faBox , text: "Inventaire" },
     ];
 
     return (
       <>
-          <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`}>
+          <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`} >
               <button 
                   className="btn btn-light collapse-btn" 
                   onClick={toggleSidebar}
@@ -112,7 +115,7 @@ function Sidebar() {
                           {collapsed ? "" : "GROSSISTE"}
                       </h1>
 
-                      <div className="menu mt-2 p-2 pt-1">
+                      <div className="menu ">
                           {buttons.map((button, index) => (
                               <Link 
                                   to={button.path} 

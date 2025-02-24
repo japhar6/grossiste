@@ -12,6 +12,9 @@ router.put('/mettre-ajour/:referenceFacture', paiementController.mettreAJourPaie
 
 router.get('/performance/commercial/:commercialId', paiementController.getVentesByCommercial);
 
+router.get('/performance/commercial/:commercialId/commande/:commandeId', paiementController.getVentesByInfo);
+
+
 router.get("/info", paiementController.getPaiementsCommerciales);
 
 

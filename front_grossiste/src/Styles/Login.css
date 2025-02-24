@@ -23,7 +23,7 @@ background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 1
 }
 .formulaire{
     width: 35%;
-    height: 60vh;
+    height: auto;
 }
 .form{
     height: 100%;
@@ -78,6 +78,12 @@ background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 1
         width: 100%;
         height: auto !important;
         padding-top: 30vh !important;
+   
+    }
+    .login {
+        width: 100%; /* Prend toute la largeur */
+        max-width: 600px; /* Limite la largeur pour les grands écrans */
+        padding: 20px; /* Ajoute un remplissage */
     }
     .gradient{
         font-size: 1rem;
@@ -110,6 +116,7 @@ background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 1
 }
     .description{
         top:100px;
+        text-align: center;
     }
     .gradient {
         font-size: 2rem; /* Réduit encore plus pour les très petits écrans */

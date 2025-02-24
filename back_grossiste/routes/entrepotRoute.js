@@ -10,8 +10,10 @@ router.post("/", authenticateJWT, authenticateAdmin, entrepotController.createEn
 
     router.get("/",entrepotController.getAllEntrepots);
 
+    router.get("/recuperer/:magasinier",entrepotController.getEntrepotBym);
+
 // 🔹 Récupérer un entrepôt par ID (admin + magasinier)
-router.get("/:id", authenticateJWT, authenticateMagasinier, entrepotController.getEntrepotById);
+router.get("/:id", entrepotController.getEntrepotById);
 
 // 🔹 Mettre à jour un entrepôt (admin + magasinier)
 router.put("/:id", authenticateJWT, authenticateMagasinier, entrepotController.updateEntrepot);

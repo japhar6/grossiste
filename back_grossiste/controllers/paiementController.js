@@ -66,7 +66,7 @@ if (montanApres === montantFinalPaye) {
     montanApres = montantFinalPaye;
 }
         // Mettre à jour le statut de la commande
-        commande.statut = "terminée";
+        commande.statut = "payé";
         await commande.save();
   
         // Créer un paiement avec le montant correctement mis à jour
@@ -75,7 +75,7 @@ if (montanApres === montantFinalPaye) {
             montantPaye: montanApres,  // Montant final après remise
         
             totalPaiement: montanApres,  // Le même montant ici aussi
-            statut: "complet",
+            statut: "payé complet",
             remiseGlobale: remiseGlobale || 0,
             remiseParProduit: remiseParProduit || [],
             remiseFixe: remiseFixe || 0 ,
@@ -106,48 +106,28 @@ if (montanApres === montantFinalPaye) {
 // Récupérer tous les paiements des client 
 exports.getPaiements = async (req, res) => {
     try {
-        const paiements = await Paiement.find();
-        res.status(200).json(paiements);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
+        // Récupérer les paiements clients
+        const paiementsClients = await Paiement.find().populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path:'idCaissier',select:'nom'
+        });
 
-// Récupérer un paiement par son ID
-exports.getPaiementById = async (req, res) => {
-    try {
-        const paiement = await Paiement.findById(req.params.id);
-        if (!paiement) {
-            return res.status(404).json({ message: "Paiement non trouvé" });
-        }
-        res.status(200).json(paiement);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
-};
-exports.getPaiementsParCaissier = async (req, res) => {
-    try {
-        const { idCaissier } = req.params;
-
-        // Récupérer les paiements clients avec les détails des commandes
-        const paiementsClients = await Paiement.find({ idCaissier: idCaissier })
-            .populate({
-                path: 'commandeId',
-                populate: [
-                    { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
-                    { path: 'commercialId', select: 'nom' } // Récupérer le nom du commercial
-                ]
-            });
-
-        // Récupérer les paiements commerciaux avec les détails des commandes
-        const paiementsCommerciaux = await PaiementCommerciale.find({ idCaissier: idCaissier })
-            .populate({
-                path: 'commandeId',
-                populate: [
-                    { path: 'clientId', select: 'nom' },
-                    { path: 'commercialId', select: 'nom' }
-                ]
-            });
+        // Récupérer les paiements commerciaux
+        const paiementsCommerciaux = await PaiementCommerciale.find()
+        .populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path:'idCaissier',select:'nom'
+        });
 
         // Combiner les deux résultats
         const paiements = {
@@ -163,11 +143,100 @@ exports.getPaiementsParCaissier = async (req, res) => {
             }))
         };
 
+
+        res.status(200).json(paiements);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des paiements:", error);
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+// Récupérer un paiement par son ID
+exports.getPaiementById = async (req, res) => {
+    try {
+        const paiement = await Paiement.findById(req.params.id);
+        if (!paiement) {
+            return res.status(404).json({ message: "Paiement non trouvé" });
+        }
+        res.status(200).json(paiement);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+exports.getPaiementsParCaissier = async (req, res) => {
+    try {
+        const { idCaissier } = req.params;
+
+        // Récupérer les paiements clients avec les détails des commandes
+        const paiementsClients = await Paiement.find({ idCaissier: idCaissier })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
+                    { path: 'commercialId', select: 'nom' }, // Récupérer le nom du commercial
+                    { path: 'produits.produit', select: 'nom prixUnitaire' }, // Nom et prix unitaire des produits
+                    { path: 'modePaiement', select: 'modePaiement' } // Récupérer le mode de paiement
+                ]
+            });
+
+        // Récupérer les paiements commerciaux avec les détails des commandes
+        const paiementsCommerciaux = await PaiementCommerciale.find({ idCaissier: idCaissier })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' },
+                    { path: 'commercialId', select: 'nom' },
+                    { path: 'produits.produit', select: 'nom prixUnitaire' },
+                    { path: 'modePaiement', select: 'modePaiement' }
+                ]
+            })   ;
+
+        // Combiner les deux résultats
+        const paiements = {
+            clients: paiementsClients.map(paiement => {
+                const modePaiementClient = paiement.commandeId?.modePaiement || 'Inconnu';
+                return {
+                    ...paiement.toObject(),
+                    clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                    produits: paiement.commandeId?.produits?.map(produit => ({
+                        nom: produit.produit.nom,
+                        prixUnitaire: produit.produit.prixUnitaire
+                    })) || [],
+                    modePaiement: modePaiementClient
+                };
+            }),
+            commerciaux: paiementsCommerciaux.map(paiement => {
+                const modePaiementCommercial = paiement.commandeId?.modePaiement || 'Inconnu';
+                return {
+                    ...paiement.toObject(),
+                    commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu',
+                    produits: paiement.commandeId?.produits?.map(produit => ({
+                        nom: produit.produit.nom,
+                        prixUnitaire: produit.produit.prixUnitaire
+                    })) || [],
+                    modePaiement: modePaiementCommercial
+                };
+            })
+        };
+
         res.status(200).json(paiements);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 exports.getPerformanceVenteParMois = async (req, res) => {
     try {
@@ -198,3 +267,81 @@ exports.getPerformanceVenteParMois = async (req, res) => {
         });
     }
 };
+
+exports.getPaiementAvecCommande = async (req, res) => {
+    try {
+        const { paiementId } = req.params;
+
+        // Récupérer les paiements clients avec les détails des commandes
+        const paiementsClients = await Paiement.find({ paiementId: paiementId })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
+                    { path: 'commercialId', select: 'nom' }, // Récupérer le nom du commercial
+                    { path: 'produits.produit', select: 'nom' }, // Nom et prix unitaire des produits
+                    { path: 'modePaiement', select: 'modePaiement' } 
+                ]
+            });
+
+        // Récupérer les paiements commerciaux avec les détails des commandes
+        const paiementsCommerciaux = await PaiementCommerciale.find({ paiementId: paiementId })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
+                    { path: 'commercialId', select: 'nom' }, // Récupérer le nom du commercial
+                    { path: 'produits.produit', select: 'nom' }, // Nom et prix unitaire des produits
+                    { path: 'modePaiement', select: 'modePaiement' } 
+                ]
+            });
+
+        // Ajout du type pour indiquer si c'est un client ou un commercial
+        const paiements = {
+            clients: paiementsClients.map(paiement => {
+                const modePaiementClient = paiement.commandeId?.modePaiement || 'Inconnu';
+                return {
+                    type: 'client',
+                    ...paiement.toObject(),
+                    clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                    produits: paiement.commandeId?.produits?.map(produit => ({
+                        nom: produit.produit.nom,
+                        prixUnitaire: produit.prixUnitaire,
+                        quantite: produit.quantite // Correction ici : accès à quantite directement sur produit
+                    })) || [],
+                    remiseFixe: paiement.remiseFixe || 0, // Remise fixe sur le paiement
+                    remiseGlobale: paiement.remiseGlobale || 0, // Remise globale sur le paiement
+                    remiseParProduit: paiement.remiseParProduit || [],
+                    modePaiement: modePaiementClient
+                };
+            }),
+            commerciaux: paiementsCommerciaux.map(paiement => {
+                const modePaiementCommercial = paiement.commandeId?.modePaiement || 'Inconnu';
+                return {
+                    type: 'commercial',
+                    ...paiement.toObject(),
+                    commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu',
+                    produits: paiement.commandeId?.produits?.map(produit => ({
+                        nom: produit.produit.nom,
+                        prixUnitaire: produit.prixUnitaire,
+                        quantite: produit.quantite // Correction ici : accès à quantite directement sur produit
+                    })) || [],
+                    remiseFixe: paiement.remiseFixe || 0, // Remise fixe sur le paiement
+                    remiseGlobale: paiement.remiseGlobale || 0, // Remise globale sur le paiement
+                    remiseParProduit: paiement.remiseParProduit || [],
+                    modePaiement: modePaiementCommercial
+                };
+            })
+        };
+
+        res.status(200).json(paiements);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+
+
+
+

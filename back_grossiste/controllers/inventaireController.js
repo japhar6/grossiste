@@ -1,40 +1,40 @@
 const Inventaire = require('../models/Inventaire');
 const Stock = require('../models/Stock');
-
 exports.createInventaire = async (req, res) => {
   try {
-    const { entrepot, produit, quantitéInitiale, quantitéFinale, raisonAjustement } = req.body;
+      const { entrepot, produit, quantiteInitiale, quantiteFinale, raisonAjustement,personneId } = req.body;
 
-    // Validation des données d'entrée
-    if (quantitéInitiale < 0 || quantitéFinale < 0) {
-      return res.status(400).json({ message: 'Les quantités doivent être supérieures ou égales à zéro.' });
-    }
+      
+      // Création de l'inventaire
+      const inventaire = new Inventaire({
+          entrepot,
+          produit,
+          quantitéInitiale: quantiteInitiale,
+          quantitéFinale: quantiteFinale,
+          raisonAjustement,
+          personneId
+      });
 
-    // Création de l'inventaire
-    const inventaire = new Inventaire({
-      entrepot,
-      produit,
-      quantitéInitiale,
-      quantitéFinale,
-      raisonAjustement,
-    });
+      await inventaire.save();
 
-    await inventaire.save();
-
-    // Si la quantité finale est inférieure à la quantité initiale, ajuster le stock
-    if (quantitéFinale < quantitéInitiale) {
-      const stock = await Stock.findOne({ entrepot, produit });
-      if (stock) {
-        stock.quantité -= (quantitéInitiale - quantitéFinale); // Réduire le stock
-        await stock.save();
+      // Logique d'ajustement du stock
+      if (quantiteFinale < quantiteInitiale) {
+          const stock = await Stock.findOne({ entrepot, produit });
+          if (stock) {
+              stock.quantité -= (quantiteInitiale - quantiteFinale);
+              await stock.save();
+          } else {
+             
+          }
       }
-    }
 
-    res.status(201).json({ message: 'Inventaire enregistré et stock ajusté', inventaire });
+      res.status(201).json({ success: true, message: 'Inventaire enregistré et stock ajusté', inventaire });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de l\'enregistrement de l\'inventaire', error });
+      console.error('Erreur lors de l\'enregistrement de l\'inventaire:', error);
+      res.status(500).json({ success: false, message: 'Erreur lors de l\'enregistrement de l\'inventaire', error });
   }
 };
+
 
 // Récupérer tous les inventaires
 exports.getAllInventaires = async (req, res) => {
@@ -45,6 +45,23 @@ exports.getAllInventaires = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la récupération des inventaires', error });
   }
 };
+exports.getEntrepotBym = async (req, res) => {
+  try {
+    const { personneId } = req.params;
+    const inventaires = await Inventaire.find({ personneId })
+      .populate("personneId", "nom email")
+      .populate("produit"); // Ajoutez ceci pour peupler le produit
+
+    if (inventaires.length === 0) {
+      return res.status(404).json({ message: "❌ Aucun inventaire trouvé." });
+    }
+
+    res.status(200).json(inventaires);
+  } catch (error) {
+    res.status(500).json({ message: "❌ Erreur lors de la récupération des inventaires.", error });
+  }
+};
+
 
 // Récupérer un inventaire par ID
 exports.getInventaireById = async (req, res) => {

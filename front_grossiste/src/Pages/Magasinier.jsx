@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from '../api/axios';
 import "../Styles/SortieStock.css";
 import Sidebar from "../Components/SidebarMagasinier"; // Assurez-vous que ces imports sont corrects
 import Header from "../Components/NavbarM"; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
-
+import Swal from 'sweetalert2';
 
 function SortieStock() {
   const [commandes, setCommandes] = useState([]);
@@ -19,7 +19,7 @@ function SortieStock() {
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/commandes/TermineeLivree");
+        const response = await axios.get("/commandes/TermineeLivree");
         setCommandes(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des commandes", error);
@@ -35,30 +35,50 @@ function SortieStock() {
 
   const validerVente = async () => {
     if (!commandeSelectionnee) {
-      alert("Veuillez sélectionner une commande à valider.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Attention',
+        text: 'Veuillez sélectionner une commande à valider.',
+      });
       return;
     }
   
     const magasinierId = localStorage.getItem("userid");
     if (!magasinierId) {
-      alert("Magasinier non identifié.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Erreur',
+        text: 'Magasinier non identifié.',
+      });
       return;
     }
   
     try {
-      const response = await axios.post("http://localhost:5000/api/ventes/valider", {
+      const response = await axios.post("/ventes/valider", {
         commandeId: commandeSelectionnee._id,
         magasinierId: magasinierId,
       });
   
-      alert(response.data.message);
+      Swal.fire({
+        icon: 'success',
+        title: 'Succès',
+        text: response.data.message,
+      }).then(() => {
+        window.location.reload();
+        
+    });
+      
       setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id));
       setCommandeSelectionnee(null);
     } catch (error) {
       console.error("Erreur lors de la validation de la vente:", error);
-      alert("Échec de la validation de la vente.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: error.response?.data.message || 'Échec de la validation de la vente.',
+      });
     }
-  };
+};
 
   // Effect pour suivre les changements de taille de la fenêtre
   useEffect(() => {
@@ -187,36 +207,46 @@ const filteredCommandes = commandes.filter((commande) => {
         <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div className="modal-body">
-        {commandeSelectionnee ? (
-          <table className="modaltable ">
-          <thead>
-            <tr>
-              <th className="w-20">Produit</th>
-              <th className="w-25">Quantité</th>
-              <th className="w-25">Unité</th>
+  {commandeSelectionnee ? (
+    <>
+     <p>
+  <strong>{commandeSelectionnee.clientId ? "Client" : "Commercial"}:</strong> 
+  {commandeSelectionnee.clientId ? commandeSelectionnee.clientId.nom : commandeSelectionnee.commercialId ? commandeSelectionnee.commercialId.nom : "N/A"}
+</p>
+ <p><strong>Date:</strong> {commandeSelectionnee.updatedAt ? new Date(commandeSelectionnee.updatedAt).toLocaleDateString() : "N/A"}</p>
+      <p><strong>Type de Client:</strong> {commandeSelectionnee.clientId ? "Client" : commandeSelectionnee.commercialId ? "Commercial" : "N/A"}</p>
+      <table className="modaltable ">
+        <thead>
+          <tr>
+            <th className="w-20">Produit</th>
+            <th className="w-25">Quantité</th>
+            <th className="w-25">Unité</th>
+          </tr>
+        </thead>
+        <tbody>
+          {commandeSelectionnee.produits.map((produit, index) => (
+            <tr key={index}>
+              <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
+              <td className="w-25">{produit.quantite}</td>
+              <td className="w-25">{produit.produit ? produit.produit.unite : "N/A"}</td>
             </tr>
-          </thead>
-          <tbody>
-            {commandeSelectionnee.produits.map((produit, index) => (
-              <tr key={index}>
-                <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
-                <td className="w-25">{produit.quantite}</td>
-                <td className="w-25">{produit.produit ? produit.produit.unite : "N/A"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        
-        ) : (
-          <p>Aucune commande sélectionnée</p>
-        )}
-      </div>
-      <div className="modal-footer center">
-        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-        <button className="btn btn-info" onClick={validerVente}>
-          Valider la vente
-        </button>
-      </div>
+          ))}
+        </tbody>
+      </table>
+    </>
+  ) : (
+    <p>Aucune commande sélectionnée</p>
+  )}
+</div>
+
+<div className="modal-footer center">
+  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+  {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "terminée" && ( // Affiche le bouton seulement si la commande est terminée
+    <button className="btn btn-info" onClick={validerVente}>
+      Valider la vente
+    </button>
+  )}
+</div>
     </div>
   </div>
 </div>

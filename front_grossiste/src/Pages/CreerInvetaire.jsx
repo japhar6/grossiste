@@ -1,42 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
-import Sidebar from '../Components/SidebarMagasinier';
-import Header from '../Components/NavbarM';
+import Sidebar from '../Components/Sidebar';
+import Header from '../Components/Navbar';
 import '../Styles/CreerInventaire.css';
+import axios from '../api/axios';
+
 function CreerInventaire() {
-  const [entrepot, setEntrepot] = useState(null);
   const [stocks, setStocks] = useState([]);
   const [quantiteInitiale, setQuantiteInitiale] = useState(0);
-  const [quantiteFinale, setQuantiteFinale] = useState(0);
+  const [quantiteFinale, setQuantiteFinale] = useState('');
   const [raisonAjustement, setRaisonAjustement] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null); // État pour le produit sélectionné
-  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-const navigate = useNavigate();
+  const [entrepots, setEntrepots] = useState([]);
+  const [selectedEntrepot, setSelectedEntrepot] = useState('');
+  const [entrepot, setEntrepot] = useState(null);
+
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userid");
 
   useEffect(() => {
-    const fetchEntrepotAndStocks = async () => {
+    const fetchEntrepots = async () => {
       try {
-        // Récupérer l'entrepôt
-        const entrepotResponse = await axios.get(`http://localhost:5000/api/entrepot/recuperer/${userId}`, {
+        const response = await axios.get("/entrepot");
+        const data = response.data;
+  
+        if (Array.isArray(data) && data.length > 0) {
+          setEntrepots(data);
+        } else {
+          toast.error("Impossible de récupérer les entrepôts.");
+        }
+      } catch (error) {
+        toast.error("Erreur lors de la récupération des entrepôts.");
+      }
+    };
+  
+    fetchEntrepots();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedEntrepot) return;
+
+    const fetchEntrepotAndStocks = async () => {
+      setLoading(true);
+      try {
+        const entrepotResponse = await axios.get(`/entrepot/${selectedEntrepot}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepot(entrepotResponse.data);
 
-        // Récupérer les stocks de l'entrepôt
-        const stocksResponse = await axios.get(`http://localhost:5000/api/stocks/stocks/${entrepotResponse.data._id}`);
+        const stocksResponse = await axios.get(`/stocks/stocks/${selectedEntrepot}`);
         setStocks(stocksResponse.data);
-        setLoading(false); // Fin du chargement
+        setLoading(false);
       } catch (error) {
         toast.error('Erreur lors du chargement des données.');
         setError('Erreur lors du chargement des données.');
-        setLoading(false); // Fin du chargement
+        setLoading(false);
       }
     };
 
@@ -46,134 +70,122 @@ const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (quantiteFinale === '') {
-        Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: 'Veuillez entrer la quantité finale.',
-        });
-        return;
+    if (!selectedProduct) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Veuillez sélectionner un produit avant d’enregistrer l’inventaire.',
+      });
+      return;
     }
 
-    // Calcul des produits perdus ou périmés
-    const quantitePerdue = quantiteInitiale - quantiteFinale;
+    if (!quantiteFinale || isNaN(quantiteFinale)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Veuillez entrer une quantité finale valide.',
+      });
+      return;
+    }
 
-    // Créer l'objet d'inventaire à envoyer au serveur
+    const quantiteFinaleNum = parseInt(quantiteFinale, 10);
+    const quantitePerdue = quantiteInitiale - quantiteFinaleNum;
+
     const inventaireData = {
-        entrepot: entrepot._id,  // Vous envoyez l'ID de l'entrepôt ici
-        produit: selectedProduct.produit._id, // Vous envoyez l'ID du produit ici
-        quantiteInitiale,
-        quantiteFinale,
-        quantitePerdue,
-        raisonAjustement,
-        personneId:userId,
-        date: new Date(),
+      entrepot: entrepot._id,
+      produit: selectedProduct.produit._id,
+      quantiteInitiale,
+      quantiteFinale: quantiteFinaleNum,
+      quantitePerdue,
+      raisonAjustement,
+      personneId: userId,
+      date: new Date(),
     };
 
-    console.log('Données envoyées:', inventaireData);  // Ajoutez ce log pour vérifier les données
-
     try {
-        const response = await axios.post('http://localhost:5000/api/inventaire/ajouter', inventaireData, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+      const response = await axios.post('http://localhost:5000/api/inventaire/ajouter', inventaireData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  
-
-        if (response.data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Succès',
-                text: 'Inventaire enregistré avec succès !',
-            }).then(() => {
-                window.location.reload();
-                
-            });
-            navigate('/inventaire');
-            // Réinitialiser les champs du formulaire
-            setQuantiteInitiale(0);
-            setQuantiteFinale(0);
-            setRaisonAjustement('');
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: 'Erreur lors de l\'enregistrement de l\'inventaire.',
-            });
-        }
-    } catch (error) {
-        // Log de l'erreur détaillée
-        console.error('Erreur lors de la communication avec le serveur:', error.response ? error.response.data : error.message);
+      if (response.data.success) {
         Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: 'Erreur lors de la communication avec le serveur.',
+          icon: 'success',
+          title: 'Succès',
+          text: 'Inventaire enregistré avec succès !',
+        }).then(() => {
+          navigate('/inventaire');
+          window.location.reload();
         });
+      } else {
+        toast.error('Erreur lors de l\'enregistrement de l\'inventaire.');
+      }
+    } catch (error) {
+      console.error('Erreur:', error.response ? error.response.data : error.message);
+      toast.error('Erreur lors de la communication avec le serveur.');
     }
-};
-
-
-  
+  };
 
   return (
     <>
       <ToastContainer />
       <main className='center'>
-  <Sidebar />
-  <section className='contenue'>
-    <Header />
-    <div className="p-3 content center">
-    <div className="mini-stat p-3 bg-light shadow rounded">
-      <h5 className='alert alert-success'>
-        <i className='fa fa-line-chart'></i> Effectuer un Inventaire
-      </h5>
+        <Sidebar />
+        <section className='contenue'>
+          <Header />
+          <div className="p-3 content center">
+            <div className="mini-stat p-3 bg-light shadow rounded">
+              <h5 className='alert alert-success'>
+                <i className='fa fa-line-chart'></i> Effectuer un Inventaire
+              </h5>
+              <div className="fournisseur-section">
+                <h6><i className="fa fa-truck"></i> Sélection de l'entrepôt</h6>
+                <select className="form-control custom-select" value={selectedEntrepot} onChange={handleEntrepotChange}>
+                  <option value="">Choisir un entrepôt</option>
+                  {entrepots.map(entrepotItem => (
+                    <option key={entrepotItem._id} value={entrepotItem._id}>
+                      {entrepotItem.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              {loading ? <p>Chargement des stocks...</p> : (
+                <table className="table table-striped table-bordered mt-3">
+                  <thead>
+                    <tr>
+                      <th>Référence</th>
+                      <th>Produit</th>
+                      <th>Quantité</th>
+                      <th>Unité</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stocks.map(stock => (
+                      <tr key={stock._id}>
+                        <td>{stock.produit.codeProduit}</td>
+                        <td>{stock.produit.nom}</td>
+                        <td>{stock.quantité}</td>
+                        <td>{stock.produit.unite}</td>
+                        <td>
+                          <button 
+                            className="btn btn-primary btn-sm"
+                            onClick={() => {
+                              setQuantiteInitiale(stock.quantité);
+                              setSelectedProduct(stock);
+                            }}
+                          >
+                            Sélectionner
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
-        <div>
-          <h6>Entrepôt : {entrepot ? entrepot.nom : "Aucun entrepôt"}</h6>
-        </div>
-        {error && <p className="text-danger">{error}</p>}
-        {loading ? (
-          <p>Chargement des stocks...</p>
-        ) : (
-            <div className="table-responsive">
-            <table className="table table-striped table-bordered">
-              <thead>
-                <tr>
-                  <th>Référence</th>
-                  <th>Produit</th>
-                  <th>Quantité</th>
-                  <th>Unité</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stocks.map(stock => (
-                  <tr key={stock._id}>
-                    <td>{stock.produit.codeProduit}</td>
-                    <td>{stock.produit.nom}</td>
-                    <td>{stock.quantité}</td>
-                    <td>{stock.produit.unite}</td>
-                    <td>
-                    <button 
-    className="btnay btn-primary btn-lg btn-sm d-block d-md-inline" // 'btn-lg' pour les grands écrans et 'btn-sm' pour les petits écrans
-    onClick={() => {
-        setQuantiteInitiale(stock.quantité);
-        setSelectedProduct(stock); // Mettez à jour le produit sélectionné
-    }}>
-    Sélectionner
-</button>
-
-
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-        )}
-      </div>
-         <div className="ajoutPersonnel ">
+            <div className="ajoutPersonnel ">
         <form onSubmit={handleSubmit} className="mt-4">
 <div className="d-flex mb-4">
   <div className="flex-fill me-2">
@@ -207,12 +219,18 @@ const navigate = useNavigate();
  
 
           <button type="submit" className="btn15 btn-success">Enregistrer l'Inventaire</button>
-        </form>  
-        </div>
-      </div>
-  </section>
-</main>
+          <button 
+  type="button" 
+  className="btn15 btn-warning" 
+  onClick={() => navigate('/inventaire')}
+>
+  Annuler
+</button>
 
+        </form>  
+          </div>    </div>
+        </section>
+      </main>
     </>
   );
 }

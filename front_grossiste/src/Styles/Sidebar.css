@@ -2,9 +2,10 @@
 .aside {
     width: 250px;
     transition: width 0.3s ease-in-out;
-    background-color: #f8f9fa;
+    background-color: #f8faf8;
     height: 100vh;
     position: relative; /* Pour un meilleur positionnement */
+
 }
 
 /* Sidebar en mode réduit */
@@ -22,6 +23,8 @@
     display: flex;
     flex-direction: column;
     height: 82vh !important;
+
+    overflow-y: scroll !important;
 }
 
 .sidebar-item {

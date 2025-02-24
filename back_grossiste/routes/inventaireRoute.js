@@ -10,7 +10,7 @@ router.get('/inventaires', inventaireController.getAllInventaires);
 
 // Route pour obtenir un inventaire spécifique par ID
 router.get('/inventaire/:id', inventaireController.getInventaireById);
-
+router.get("/recuperer/:personneId",inventaireController.getEntrepotBym);
 // Route pour mettre à jour un inventaire par ID
 router.put('/inventaire/:id', inventaireController.updateInventaire);  // Ajouter cette route
 

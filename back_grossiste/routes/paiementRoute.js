@@ -14,4 +14,7 @@ router.get('/recuperer/:id', paiementController.getPaiementById);
 router.get("/caissier/:idCaissier", paiementController.getPaiementsParCaissier);
 
 router.get('/performance-vente', paiementController.getPerformanceVenteParMois);
+
+router.get('/info/:id', paiementController.getPaiementAvecCommande);
+
 module.exports = router;

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import '../Styles/Inventaire.css';
-import Sidebar from '../Components/SidebarMagasinier';
-import Header from '../Components/NavbarM';
+import Sidebar from '../Components/Sidebar';
+import Header from '../Components/Navbar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ function VisualiserInventaires() {
   useEffect(() => {
     const fetchInventaires = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/inventaire/recuperer/${userId}`, {
+        const response = await axios.get(`/inventaire/inventaires`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response.data); 
@@ -59,7 +59,7 @@ function VisualiserInventaires() {
               <table className="table table-striped table-bordered">
                 <thead>
                   <tr>
-                  
+                  <th>Entrepot</th>
                     <th>Produit</th>
                     <th>Quantité Initiale</th>
                     <th>Quantité Finale</th>
@@ -70,8 +70,8 @@ function VisualiserInventaires() {
                 <tbody>
   {inventaires.map((inventaire) => (
     <tr key={inventaire._id}>
-    
-      <td>{inventaire.produit.nom}</td> {/* Affichez le nom du produit ici */}
+          <td>{inventaire.entrepot.nom}</td> 
+      <td>{inventaire.produit.nom}</td> 
       <td>{inventaire.quantitéInitiale}</td>
       <td>{inventaire.quantitéFinale}</td>
       <td>{inventaire.raisonAjustement}</td>

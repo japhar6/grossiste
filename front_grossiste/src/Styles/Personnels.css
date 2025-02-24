@@ -89,16 +89,30 @@
   
   /* Carte de personnel */
   /* Style général du modal */
-.user-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
+  .user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .photo-cont {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .user-photo {
+    max-width: 100%;
+    height: auto;
+    border-radius: 50%; /* Pour une photo de profil ronde */
+  }
+  
+  .user-info {
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+  
 /* Conteneur de la photo */
 .photo-container {
   background: #a30b0b ;
@@ -207,6 +221,8 @@ button.variant-danger {
   }
 
 }
+
+
 
 
 /* GRAND ÉCRAN - Alignement horizontal */

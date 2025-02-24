@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import "../Styles/Commade.css";
+import "../Styles/Caisse.css";
+import Swal from "sweetalert2";
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -59,7 +60,7 @@ function Caisse() {
 
   const validerPaiement = async () => {
     if (!commande) return;
-
+  
     const data = {
       statut: "complet",
       remiseGlobale: typeRemise === "total" ? valeurRemise : 0,
@@ -74,13 +75,13 @@ function Caisse() {
       totalPaye: totalApresRemise,
       idCaissier
     };
-
+  
     try {
       let url = `http://localhost:5000/api/paiement/ajouter/${commande._id}`;
       if (commande.typeClient === "Commercial") {
         url = `http://localhost:5000/api/paiementCom/commercial/${commande._id}`;
       }
-
+  
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -88,34 +89,45 @@ function Caisse() {
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
         throw new Error("Échec du paiement");
       }
-
+  
       const result = await response.json();
-      alert(result.message);
+      Swal.fire({
+        icon: 'success',
+        title: 'Paiement réussi',
+        text: result.message,
+        confirmButtonText: 'OK',
+      });
     } catch (error) {
       console.error(error);
-      alert("Erreur lors du paiement");
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Erreur lors du paiement',
+        confirmButtonText: 'OK',
+      });
     }
   };
+  
 
   return (
     <main className="center">
-      <Sidebar />
-      <section className="contenue">
-        <Header />
-        <div className="p-3 content center">
-          <div className="mini-stat p-3">
-            <h6 className="alert alert-info text-start">
-              <i className="fa fa-shopping-cart"></i> Caisse
-            </h6>
+    <Sidebar />
+    <section className="contenue">
+      <Header />
+      <div className="p-3 content center">
+        <div className="mini-stat p-3">
+          <h6 className="alert alert-info text-start">
+            <i className="fa fa-shopping-cart"></i> Caisse
+          </h6>
 
-            <div className="commande-container d-flex justify-content-between">
-              <div className="client-info w-50 p-3">
-                <h6><i className="fa fa-user"></i> Référence de la commande</h6>
-                <div className="form-group">
+          <div className="commande-container d-flex justify-content-between">
+            <div className="refcli ">
+              <h6><i className="fa fa-user"></i> Référence de la commande</h6>
+                <div className="form-group ">
                   <input
                     type="text"
                     className="form-control"
@@ -123,90 +135,92 @@ function Caisse() {
                     value={referenceFacture}
                     onChange={(e) => setReferenceFacture(e.target.value)}
                   />
-                  <button className="btn btn-primary ms-2" onClick={handleSearch}>
+                  <button className="btno btn-primary " onClick={handleSearch}>
                     Rechercher
                   </button>
                 </div>
-              </div>
-
-              <div className="produits p-3">
-                <h6><i className="fa fa-box"></i> Détails du paiement </h6>
-                <table className="table mt-2">
-                  <thead>
-                    <tr>
-                      <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
-                      <th>Contact</th>
-                      <th>Remise</th>
-                      <th>Valeur</th>
-                      <th>Mode de paiement</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{commande?.typeClient === "Commercial" ? commercial?.nom : client?.nom}</td>
-                      <td>{commande?.typeClient === "Commercial" ? commercial?.telephone : client?.telephone}</td>
-                      <td>
-                        <select className="form-control" value={typeRemise} onChange={(e) => setTypeRemise(e.target.value)}>
-                          <option value="aucune">Aucune</option>
-                          <option value="produit">Par produit (%)</option>
-                          <option value="total">Total (%)</option>
-                          <option value="fixe">Fixe</option>
-                        </select>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={valeurRemise}
-                          onChange={(e) => setValeurRemise(parseFloat(e.target.value))}
-                        />
-                      </td>
-                      <td>{commande ? commande.modePaiement : ""}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <button className="btn btn-secondary mt-2" onClick={calculerRemise}>
-                  Appliquer Remise
-                </button>
-              </div>
             </div>
 
-            {commande && (
-              <div className="commande mt-4">
-                <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-                <table className="table table-bordered mt-2 text-center">
-                  <thead>
-                    <tr>
-                      <th>Nom du produit</th>
-                      <th>Quantité</th>
-                      <th>Prix Unitaire</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commande.produits.map((produit, index) => (
-                      <tr key={index}>
-                        <td>{produit.produit.nom}</td>
-                        <td>{produit.quantite}</td>
-                        <td>{produit.prixUnitaire} Ariary</td>
-                        <td>{produit.total} Ariary</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
-                <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
-
-                <button className="btn btn-success mt-3" onClick={validerPaiement}>
-                  Valider le paiement
-                </button>
+            <div className="paiement p-3">
+              <h6><i className="fa fa-box"></i> Détails du paiement </h6>
+              <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
+         
+              <table className="tableCS mt-2">
+                <thead>
+                  <tr>
+                    <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
+                    <th>Contact</th>
+                    <th>Remise</th>
+                    <th>Valeur</th>
+                    <th>Mode de paiement</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{commande?.typeClient === "Commercial" ? commercial?.nom : client?.nom}</td>
+                    <td>{commande?.typeClient === "Commercial" ? commercial?.telephone : client?.telephone}</td>
+                    <td>
+                      <select className="form-control" value={typeRemise} onChange={(e) => setTypeRemise(e.target.value)}>
+                        <option value="aucune">Aucune</option>
+                        <option value="produit">Par produit (%)</option>
+                        <option value="total">Total (%)</option>
+                        <option value="fixe">Fixe</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={valeurRemise}
+                        onChange={(e) => setValeurRemise(parseFloat(e.target.value))}
+                      />
+                    </td>
+                    <td>{commande ? commande.modePaiement : ""}</td>
+                  </tr>
+                </tbody>
+              </table>
               </div>
-            )}
+              <button className="btn btn-secondary mt-2" onClick={calculerRemise}>
+                Appliquer Remise
+              </button>
+            </div>
           </div>
+
+          {commande && (
+            <div className="commandeX mt-4">
+              <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
+              <table className="tableCS table-bordered mt-2 text-center">
+                <thead>
+                  <tr>
+                    <th>Nom du produit</th>
+                    <th>Quantité</th>
+                    <th>Prix Unitaire</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commande.produits.map((produit, index) => (
+                    <tr key={index}>
+                      <td>{produit.produit.nom}</td>
+                      <td>{produit.quantite}</td>
+                      <td>{produit.prixUnitaire} Ariary</td>
+                      <td>{produit.total} Ariary</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
+              <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
+
+              <button className="btn btn-success mt-3" onClick={validerPaiement}>
+                Valider le paiement
+              </button>
+            </div>
+          )}
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
+  </main>
   );
 }
 
