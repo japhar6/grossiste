@@ -22,13 +22,7 @@ function PaiementCom() {
     if (!referenceFacture) return; // Validation si la référence est vide
 
     try {
-<<<<<<< HEAD
-      const response = await fetch(`https://api.bazariko.duckdns.org/api/commandes/reference/${referenceFacture}`);
-      if (!response.ok) throw new Error("Commande non trouvée");
-      const data = await response.json();
-=======
         const response = await axios.get(`/commandes/reference/${referenceFacture}`);
->>>>>>> dev
 
         // Vérifie si la réponse est un succès
         if (response.status !== 200) throw new Error("Commande non trouvée");
