@@ -70,7 +70,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
   });
   const handleModifierPrix = async (produitId) => {
     try {
-      await axios.put(`https://api.bazariko.duckdns.org/api/produits/modifier/${produitId}`, {
+      await axios.put(`/api/produits/modifier/${produitId}`, {
         prixdevente: prixVenteModifier, prixDachat: prixAchatModifier,
       });
       fetchProduits(); // Réinitialiser la liste des produits après la mise à jour
