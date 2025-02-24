@@ -24,7 +24,7 @@ exports.validerPaiementCommerciale = async (req, res) => {
         const montantFinalPaye = commande.totalGeneral;
         
         // Mettre à jour le statut de la commande
-        commande.statut = "terminée";
+        commande.statut = "payé";
         await commande.save();
 
         // Créer un paiement à crédit pour le commercial
@@ -33,7 +33,7 @@ exports.validerPaiementCommerciale = async (req, res) => {
             montantPaye: 0,  // Pas encore payé
             montantRestant: montantFinalPaye,  // Le montant restant à payer
             totalPaiement: montantFinalPaye,  // Le montant total à payer
-            statut: "partiel", // Statut initial à "partiel"
+            statut: "non payé", // Statut initial à "partiel"
             idCaissier, // ID du caissier
             referenceFacture: commande.referenceFacture // Ajout de la référence de facture
         });
@@ -65,9 +65,9 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         }
 
         // Vérifier si le statut est "partiel"
-        if (paiementCommerciale.statut !== "partiel") {
-            console.error("Tentative de mise à jour d'un paiement qui n'est pas partiel.");
-            return res.status(400).json({ message: "Le paiement doit être partiel pour pouvoir être mis à jour." });
+        if (paiementCommerciale.statut !== "non payé") {
+            console.error("Tentative de mise à jour d'un paiement qui n'est pas non payé.");
+            return res.status(400).json({ message: "Le paiement doit être non payé pour pouvoir être mis à jour." });
         }
 
         let montantTotalVendu = 0;
@@ -100,11 +100,13 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         paiementCommerciale.montantRestant = paiementCommerciale.totalPaiement - paiementCommerciale.montantPaye;
         commande.modePaiement = "espèce";
         await commande.save();
-
-        // Si le paiement est complet après la mise à jour
-        if (paiementCommerciale.montantRestant === 0) {
-            paiementCommerciale.statut = "complet";
-        }
+        
+       
+if (paiementCommerciale.montantRestant === 0) {
+    paiementCommerciale.statut = "payé complet"; 
+} else {
+    paiementCommerciale.statut = "payé partiel"; 
+}
 
         await paiementCommerciale.save();
 

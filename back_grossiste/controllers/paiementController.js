@@ -66,7 +66,7 @@ if (montanApres === montantFinalPaye) {
     montanApres = montantFinalPaye;
 }
         // Mettre à jour le statut de la commande
-        commande.statut = "terminée";
+        commande.statut = "payé";
         await commande.save();
   
         // Créer un paiement avec le montant correctement mis à jour
@@ -75,7 +75,7 @@ if (montanApres === montantFinalPaye) {
             montantPaye: montanApres,  // Montant final après remise
         
             totalPaiement: montanApres,  // Le même montant ici aussi
-            statut: "complet",
+            statut: "payé complet",
             remiseGlobale: remiseGlobale || 0,
             remiseParProduit: remiseParProduit || [],
             remiseFixe: remiseFixe || 0 ,

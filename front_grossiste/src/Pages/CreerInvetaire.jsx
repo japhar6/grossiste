@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
 import '../Styles/CreerInventaire.css';
+import axios from '../api/axios';
 
 function CreerInventaire() {
   const [stocks, setStocks] = useState([]);
@@ -25,16 +26,22 @@ function CreerInventaire() {
   const userId = localStorage.getItem("userid");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/entrepot")
-      .then(response => response.json())
-      .then(data => {
+    const fetchEntrepots = async () => {
+      try {
+        const response = await axios.get("/entrepot");
+        const data = response.data;
+  
         if (Array.isArray(data) && data.length > 0) {
           setEntrepots(data);
         } else {
           toast.error("Impossible de récupérer les entrepôts.");
         }
-      })
-      .catch(() => toast.error("Erreur lors de la récupération des entrepôts."));
+      } catch (error) {
+        toast.error("Erreur lors de la récupération des entrepôts.");
+      }
+    };
+  
+    fetchEntrepots();
   }, []);
 
   useEffect(() => {
@@ -43,12 +50,12 @@ function CreerInventaire() {
     const fetchEntrepotAndStocks = async () => {
       setLoading(true);
       try {
-        const entrepotResponse = await axios.get(`http://localhost:5000/api/entrepot/${selectedEntrepot}`, {
+        const entrepotResponse = await axios.get(`/entrepot/${selectedEntrepot}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepot(entrepotResponse.data);
 
-        const stocksResponse = await axios.get(`http://localhost:5000/api/stocks/stocks/${selectedEntrepot}`);
+        const stocksResponse = await axios.get(`/stocks/stocks/${selectedEntrepot}`);
         setStocks(stocksResponse.data);
         setLoading(false);
       } catch (error) {

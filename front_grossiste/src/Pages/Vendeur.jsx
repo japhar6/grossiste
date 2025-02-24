@@ -283,71 +283,71 @@ function PriseCommande() {
                                     };
 
                                     const validerCommande = async () => {
-                                        if (!selectedPerson || commande.length === 0) {
-                                            Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
-                                            return;
-                                        }
-                                    
-                                        // Ne pas imposer la sélection du mode de paiement si c'est un commercial
-                                        if (!modePaiement && type !== "commercial") {
-                                            Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
-                                            return;
-                                        }
-                                    
-                                        // Récupérer l'ID du vendeur depuis LocalStorage
-                                        const vendeurId = localStorage.getItem("userid"); 
-                                        if (!vendeurId) {
-                                            Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
-                                            return;
-                                        }
-                                    
-                                        // Vérifie si c'est un commercial ou un client
-                                        const isCommercial = type === "commercial"; 
-                                        const typeClient = isCommercial ? "Commercial" : "Client";
-                                    
-                                        const nouvelleCommande = {
-                                            typeClient,
-                                            commercialId: isCommercial ? selectedPerson : null, 
-                                            clientId: !isCommercial ? selectedPerson : null, 
-                                            vendeurId,
-                                            produits: commande.map(prod => ({
-                                                produit: prod._id, 
-                                                quantite: prod.quantite,
-                                            })),
-                                            modePaiement: isCommercial ? "à crédit" : modePaiement,
-                                            statut: "en attente",
-                                        };
-                                    
-                                        console.log("Commande prête à être envoyée :", nouvelleCommande);
-                                    
-                                        try {
-                                            const response = await axios.post("/commandes/ajouter", nouvelleCommande);
-                                    
-                                            if (response.data) {
-                                                const referenceFacture = response.data.commande.referenceFacture; 
-                                                  // Jouer le son
-    playSound();
-                                                Swal.fire({
-                                                    title: "Commande validée",
-                                                    text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
-                                                    icon: "success",
-                                                    confirmButtonText: "OK"
-                                                }).then(() => {
-                                                    // Réinitialisation complète après validation
-                                                    setCommande([]); 
-                                                    setSelectedPerson(""); 
-                                                    setModePaiement(""); 
-                                                    setSearchTerm(""); 
-                                                    setSelectedProducts([]); 
-                                                    setCheckedProduits({}); 
-                                                });
-                                            }
-                                        } catch (error) {
-                                            console.error("Erreur lors de l'enregistrement de la commande", error);
-                                            Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
-                                        }
-                                    };
-                                    
+                                      if (!selectedPerson || commande.length === 0) {
+                                          Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
+                                          return;
+                                      }
+                                  
+                                      if (!modePaiement && type !== "commercial") {
+                                          Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
+                                          return;
+                                      }
+                                  
+                                      const vendeurId = localStorage.getItem("userid"); 
+                                      if (!vendeurId) {
+                                          Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
+                                          return;
+                                      }
+                                  
+                                      const isCommercial = type === "commercial"; 
+                                      const typeClient = isCommercial ? "Commercial" : "Client";
+                                  
+                                      const produitsInvalides = commande.filter(prod => !prod._id || prod.quantite <= 0);
+                                      if (produitsInvalides.length > 0) {
+                                          Swal.fire("Erreur", "Tous les produits doivent avoir un ID valide et une quantité positive.", "error");
+                                          return;
+                                      }
+                                  
+                                      const nouvelleCommande = {
+                                          typeClient,
+                                          commercialId: isCommercial ? selectedPerson : null, 
+                                          clientId: !isCommercial ? selectedPerson : null, 
+                                          vendeurId,
+                                          produits: commande.map(prod => ({
+                                              produit: prod._id, 
+                                              quantite: prod.quantite,
+                                          })),
+                                          modePaiement: isCommercial ? "à crédit" : modePaiement,
+                                          statut: "en cours",
+                                      };
+                                  
+                                      console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                  
+                                      try {
+                                          const response = await axios.post("/commandes/ajouter", nouvelleCommande);
+                                  
+                                          if (response.data) {
+                                              const referenceFacture = response.data.commande.referenceFacture; 
+                                              playSound();
+                                              Swal.fire({
+                                                  title: "Commande validée",
+                                                  text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
+                                                  icon: "success",
+                                                  confirmButtonText: "OK"
+                                              }).then(() => {
+                                                  setCommande([]); 
+                                                  setSelectedPerson(""); 
+                                                  setModePaiement(""); 
+                                                  setSearchTerm(""); 
+                                                  setSelectedProducts([]); 
+                                                  setCheckedProduits({}); 
+                                              });
+                                          }
+                                      } catch (error) {
+                                          console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
+                                          Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                                      }
+                                  };
                                   
                                   
                                   

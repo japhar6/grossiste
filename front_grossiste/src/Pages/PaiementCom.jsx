@@ -3,6 +3,8 @@ import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import "../Styles/Caisse.css";
 import Swal from 'sweetalert2';
+
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 import axios from '../api/axios';
 function PaiementCom() {
   const [referenceFacture, setReferenceFacture] = useState("");
@@ -10,7 +12,11 @@ function PaiementCom() {
   const [commercial, setCommercial] = useState(null);
   const [produitsRetournes, setProduitsRetournes] = useState({});
   const [produitsVendus, setProduitsVendus] = useState([]);
-
+  const playSound = () => {
+                const audio = new Audio(Sound); 
+                audio.play();
+            };
+            
   // Recherche de la commande en fonction de la référence
   const handleSearch = async () => {
     if (!referenceFacture) return; // Validation si la référence est vide
@@ -56,7 +62,6 @@ function PaiementCom() {
         setCommercial(null);
     }
 };
-
 
 
   const handleQuantiteChange = (produitId, quantiteDisponible, e) => {
@@ -138,6 +143,14 @@ function PaiementCom() {
             title: 'Succès',
             text: "Paiement et vente mis à jour avec succès",
         });
+        playSound();
+          // Réinitialisation des états après validation réussie
+          setReferenceFacture("");
+          setCommande(null);
+          setCommercial(null);
+          setProduitsRetournes({});
+          setProduitsVendus([]);
+       
     } catch (error) {
         console.error("Erreur lors de la mise à jour du paiement :", error);
 

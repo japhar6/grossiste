@@ -106,8 +106,27 @@ exports.getCommandeById = async (req, res) => {
     }
 };
 
-// Récupérer une commande par son ID ou référence
-exports.getCommandeById = async (req, res) => {
+
+// Récupérer une commande par sou référence et statu en cours
+exports.getSuggestions = async (req, res) => {
+    try {
+        // Rechercher toutes les commandes avec le statut "en cours"
+        const commandes = await Commande.find({ statut: "en cours" }).sort({ date: -1 }); // Tri par date décroissante
+
+        // Renvoie les références des commandes
+        const suggestions = commandes.map(commande => commande.referenceFacture);
+        res.status(200).json(suggestions);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des suggestions :", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des suggestions." });
+    }
+};
+
+
+
+
+// Récupérer une commande par sou référence
+exports.getCommandeByref = async (req, res) => {
     try {
         const { referenceFacture } = req.params;
         let commande;

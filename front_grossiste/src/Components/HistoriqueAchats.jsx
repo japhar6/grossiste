@@ -49,7 +49,7 @@ const HistoriqueAchats = () => {
                                 <td>{achat.fournisseur?.nom || "Non spécifié"}</td>
                                 <td>{achat.quantite}</td>
                                 <td>{achat.prixAchat} Ariary</td>
-                                <td>{new Date(achat.date).toLocaleDateString()}</td>
+                                <td>{new Date(achat.dateAchat).toLocaleDateString()}</td>
                             </tr>
                         ))
                     ) : (
