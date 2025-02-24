@@ -4,12 +4,12 @@ const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
 const { ajouterOuMettreAJourStock } = require('./stockController'); 
 const Stock = require('../models/Stock');
-const Entrepot = require('../models/Entrepot');
-const { ObjectId } = require('mongodb');
+const Entrepot = require('../models/entrepot');
 
+const { ObjectId } = require('mongodb');
 exports.ajouterAchat = async (req, res) => {
     try {
-        const { produit, fournisseur, quantite, prixAchat, panierId } = req.body;
+        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee } = req.body;
 
         // Vérification de la validité des entrées
         if (isNaN(quantite) || quantite <= 0) {
@@ -50,22 +50,35 @@ exports.ajouterAchat = async (req, res) => {
         let produitsOfferts = 0;
         let quantiteTotale = quantite; // Initialiser avec la quantité d'origine
 
-        if (fournisseurExistant.type === "ristourne" && fournisseurExistant.conditions.ristourne > 0) {
-            const ristournePourcentage = fournisseurExistant.conditions.ristourne;
-            produitsOfferts = Math.floor((quantite * ristournePourcentage) / 100); // Calcul des produits offerts
-            console.log(`✅ Ristourne appliquée : ${ristournePourcentage}% -> Produits offerts : ${produitsOfferts}`);
+        if (fournisseurExistant.type === "ristourne") {
+            if (fournisseurExistant.conditions.typeRistourne === "par_produit") {
+                // Récupérer le pourcentage de ristourne à appliquer
+                const ristournePourcentage = req.body.ristourneAppliquee;
+
+                console.log('Ristourne appliquée:', ristournePourcentage);
+                if (ristournePourcentage && !isNaN(ristournePourcentage) && ristournePourcentage > 0) {
+                    produitsOfferts = Math.floor((quantite * ristournePourcentage) / 100);
+                    console.log(`✅ Ristourne appliquée par ce produit : ${ristournePourcentage}% -> Produits offerts : ${produitsOfferts}`);
+                }
+            } else {
+                // Logique pour le type "générale"
+                const ristournePourcentage = fournisseurExistant.conditions.ristourne;
+                produitsOfferts = Math.floor((quantite * ristournePourcentage) / 100);
+                console.log(`✅ Ristourne générale appliquée : ${ristournePourcentage}% -> Produits offerts : ${produitsOfferts}`);
+            }
             quantiteTotale += produitsOfferts; // Ajouter les produits offerts à la quantité totale
         }
 
-        // Création de l'achat
+        // Création de l'achat après le calcul de la ristourne
         const nouvelAchat = new Achat({
             produit,
             fournisseur,
-            quantite: quantite, // Conserver uniquement la quantité achetée
-            quantiteTotale: quantiteTotale, // Ajouter la quantité totale (y compris les produits offerts)
+            quantite,
+            quantiteTotale,
             prixAchat,
-            total, // Total calculé uniquement sur la quantité achetée
-            panier: panierExistant._id  
+            total,
+            panier: panierExistant._id,
+            ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false
         });
 
         await nouvelAchat.save();
@@ -87,6 +100,7 @@ exports.ajouterAchat = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
     }
 };
+
 
 
 

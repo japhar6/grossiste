@@ -12,7 +12,7 @@ const entrepotSchema = new mongoose.Schema({
   },
   magasinier: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',  // Référence à la collection 'user'
+    ref: 'User',  // Assure-toi que le modèle correspondant est bien 'User'
     required: true,
   },
   type: {
@@ -26,4 +26,5 @@ const entrepotSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.models.Entrepot || mongoose.model('Entrepot', entrepotSchema);
+// Vérification correcte si le modèle existe déjà
+module.exports = mongoose.models['Entrepot'] || mongoose.model('Entrepot', entrepotSchema);
