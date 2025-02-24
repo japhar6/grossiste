@@ -10,4 +10,7 @@ router.delete('/supprimer/:id', achatController.supprimerAchat);
 router.post('/valider/:panierId', achatController.validerPanier);
 
 router.get("/panier/:panierId", achatController.getAchatsByPanier);
+
+router.get('/totals/:periode',achatController.getTotalAchatsParPeriode);
+
 module.exports = router;

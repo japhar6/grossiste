@@ -19,6 +19,7 @@ const achatsRoutes = require("./routes/achatRoute");
 const commissionRoutes = require("./routes/commissionRoute");
 
 
+
 const entrepotRoutes = require("./routes/entrepotRoute");
 
 const clientRoutes = require("./routes/clientRoute");
@@ -34,6 +35,8 @@ const paiementcomRoute = require('./routes/paimentComRoute');
 const commandeRoutes = require("./routes/commandeRoute");
 const comercialeRoutes = require("./routes/comercialeRoute");
 const venteRoutes = require("./routes/venteRoute");
+const personnelRoutes = require("./routes/personnelRoute");
+
 
 
 // Middleware
@@ -63,6 +66,9 @@ app.use('/api/paiement', paiementRoute);
 app.use("/api/commandes", commandeRoutes);
 app.use("/api/comercial", comercialeRoutes);
 app.use("/api/ventes", venteRoutes);
+app.use("/api/personnels", personnelRoutes);
+
+
 app.use('/api/commission', commissionRoutes); 
 // Route de test
 app.get("/", (req, res) => {

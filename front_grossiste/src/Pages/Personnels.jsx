@@ -5,6 +5,8 @@ import "../Styles/Personnels.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import { Modal, Button } from "react-bootstrap";
+import { Link } from 'react-router-dom';
+
 
 function Personnels() {
   const [users, setUsers] = useState([]);
@@ -265,12 +267,15 @@ function Personnels() {
                   </select>
                 </form>
               </div>
+              <div>
               <button 
-                          className="btn_lic" 
+                          className="btn_lic m-2" 
                           onClick={() => setShowLicencies(!showLicencies)}
                         >
                           {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
                 </button>
+                <Link to="/PersonnelsList"><button className="btn_lic w-50 ">Listes des personnels</button></Link>
+              </div>
                 <div className="consultation">
                 <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
                 <table className="tablesa table-striped table-hover table-sm w-100">

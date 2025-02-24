@@ -31,7 +31,8 @@ res.status(500).json({ message: "❌ Erreur lors du comptage des clients", error
 // Récupérer tous les clients
 exports.getAllClients = async (req, res) => {
   try {
-    const clients = await Client.find();
+    const clients = await Client.find()
+    .populate('remises')
     res.status(200).json(clients);
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la récupération des clients', error });
@@ -74,5 +75,24 @@ exports.deleteClient = async (req, res) => {
     res.status(200).json({ message: 'Client supprimé avec succès' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression du client', error });
+  }
+};
+
+// Créer un nouveau client
+exports.createClientAdmin = async (req, res) => {
+  try {
+      const { nom, telephone, adresse, remises } = req.body;
+
+      const newClient = new Client({
+          nom,
+          telephone,
+          adresse,
+          remises: remises || undefined
+      });
+
+      const savedClient = await newClient.save();
+      res.status(201).json(savedClient);
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la création du client', error });
   }
 };

@@ -33,10 +33,11 @@ import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
 import FactureNormal from './Components/FactureNormal.jsx';
 import FactureRemise from './Pages/FactureRemise.jsx';
-
 import HistoCA from './Pages/HistoC.jsx';
 import HistoVA from './Pages/HistoV.jsx';
 import Transfert from './Pages/Transfert.jsx';
+import PersonnelsList from './Pages/PersonnelsList.jsx';
+import Client from './Pages/Client.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -61,6 +62,8 @@ function App() {
           <Route path='/SortieCommande' element={<SortieCommande />} />
           <Route path='/histovad' element={<HistoVA />} />
           <Route path='/histocad' element={<HistoCA />} />
+          <Route path='/PersonnelsList' element={<PersonnelsList />} />
+          <Route path='/Client' element={<Client />} />
           <Route path='/inventaire' element={<Invetaire />} />
           <Route path='/creerinventaire' element={<CreerInventaire />} />
         </Route>
