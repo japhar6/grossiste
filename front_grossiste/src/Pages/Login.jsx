@@ -27,7 +27,7 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch('http://10.152.183.240:5000/api/users/login', {
+            const response = await fetch('https://api.magasin-bazariko.duckdns.org/api/users/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })

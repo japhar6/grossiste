@@ -10,12 +10,12 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Configuration CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://localhost:5173', 'https://localhost:30003', 'http://front', 'https://front'], // Ajout du frontend local et des domaines de production
+  origin: ['https://magasin-bazariko.duckdns.org'], // Ajout du frontend et des domaines de production
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 
-// Importation des routes
+// Importation des route
 const fournisseurRoutes = require("./routes/fournisseurRoute");
 const produitRoutes = require("./routes/produitRoute");
 const userRoutes = require("./routes/userRoute");

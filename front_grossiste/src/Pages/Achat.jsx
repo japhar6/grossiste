@@ -397,23 +397,6 @@ console.log("produit" ,produitId);
   };
 
 
-<<<<<<< HEAD
-=======
-  /*
-  const produitId = produit._id;
-  
-  const updatePrix = async () => {
-    try {
-      const response = await fetch(`http://10.152.183.99/api/produits/modifier/${produitId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prixDachat: prixAchat,
-        }),
-      });
->>>>>>> ac520e2f66be30f733312591e89f94b8b1f61b05
 
   const validerPanier = async() => {
 

@@ -26,7 +26,7 @@ function Profil() {
           return;
         }
 
-        const response = await axios.get(`http://10.152.183.99/api/users/seul/${usId}`, {
+        const response = await axios.get(`http://10.152.183.250/api/users/seul/${usId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -73,7 +73,7 @@ function Profil() {
         formData.append("photo", selectedFile);
       }
 
-      const response = await axios.put(`http://10.152.183.99/api/users/${usId}`, formData, {
+      const response = await axios.put(`http://10.152.183.250/api/users/${usId}`, formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 
@@ -120,7 +120,7 @@ function Profil() {
                 <div className="user-info">
                   <div className="photos-container">
                     <img
-                      src={`http://10.152.183.99${user.photo}`}
+                      src={`http://10.152.183.250${user.photo}`}
                       alt="Photo de profil"
                       className="user-photo"
                     />
