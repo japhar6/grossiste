@@ -9,7 +9,7 @@ function FactureRemise() {
   useEffect(() => {
     const fetchFactureDetails = async () => {
       try {
-        const response = await axios.get(`/paiement/info/${paiementId}`);
+        const response = await axios.get(`/api/paiement/info/${paiementId}`);
         const paiement = response.data.clients.concat(response.data.commerciaux)
                           .find(p => p._id === paiementId); // Trouver le paiement qui correspond à l'ID
         setFacture(paiement);

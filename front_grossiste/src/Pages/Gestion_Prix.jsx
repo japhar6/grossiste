@@ -26,7 +26,7 @@ const [prixAchatModifier, setPrixAchatModifier] = useState("");
  
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("https://api.bazariko.duckdns.org/api/produits/afficher");
+      const response = await axios.get("/api/produits/afficher");
       setProduits(response.data);
 
       const categoriesUniq = [

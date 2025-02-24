@@ -4,8 +4,7 @@ const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
 const { ajouterOuMettreAJourStock } = require('./stockController'); 
 const Stock = require('../models/Stock');
-const Entrepot = require('../models/entrepot');
-
+const Entrepot = require('../models/Entrepot');
 const { ObjectId } = require('mongodb');
 exports.ajouterAchat = async (req, res) => {
     try {

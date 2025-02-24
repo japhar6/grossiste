@@ -27,7 +27,7 @@ function Caisse() {
   useEffect(() => {
     const fetchReferences = async () => {
       try {
-        const response = await axios.get('/commandes/suggestions'); // Votre route pour récupérer toutes les références
+        const response = await axios.get('/api/commandes/suggestions'); // Votre route pour récupérer toutes les références
         setAllReferences(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des références :", error);
@@ -58,7 +58,7 @@ function Caisse() {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`/commandes/reference/${referenceFacture}`);
+      const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
 
       // Vérifiez le statut de la réponse
       if (response.status !== 200) {
@@ -143,9 +143,9 @@ function Caisse() {
     console.log("Données de paiement à envoyer:", data); // Vérification des données
   
     try {
-      let url = `/paiement/ajouter/${commande._id}`;
+      let url = `/api/paiement/ajouter/${commande._id}`;
       if (commande.typeClient === "Commercial") {
-        url = `/paiementCom/commercial/${commande._id}`;
+        url = `/api/paiementCom/commercial/${commande._id}`;
       }
   
       const response = await axios.post(url, data, {
