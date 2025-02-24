@@ -31,15 +31,13 @@ import Caissier from './Pages/Caissier.jsx';
 import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
-<<<<<<< HEAD
 import FactureNormal from './Components/FactureNormal.jsx';
 import FactureRemise from './Pages/FactureRemise.jsx';
-
-=======
 import HistoCA from './Pages/HistoC.jsx';
 import HistoVA from './Pages/HistoV.jsx';
 import Transfert from './Pages/Transfert.jsx';
->>>>>>> 1d4e0065c99acc3b7b8f29ecaca90a22e8ae454b
+import PersonnelsList from './Pages/PersonnelsList.jsx';
+import Client from './Pages/Client.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -64,6 +62,8 @@ function App() {
           <Route path='/SortieCommande' element={<SortieCommande />} />
           <Route path='/histovad' element={<HistoVA />} />
           <Route path='/histocad' element={<HistoCA />} />
+          <Route path='/PersonnelsList' element={<PersonnelsList />} />
+          <Route path='/Client' element={<Client />} />
         </Route>
 
         {/* Routes VENDEUR */}

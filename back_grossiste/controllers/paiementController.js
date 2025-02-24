@@ -2,6 +2,7 @@ const Paiement = require("../models/Paiement");
 const Commande = require("../models/Commandes");
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 
+
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params;
@@ -340,8 +341,139 @@ exports.getPaiementAvecCommande = async (req, res) => {
     }
 };
 
+exports.getTotalPaiementsParPeriode = async (req, res) => {
+    try {
+        const { periode } = req.params; // "journalier", "hebdomadaire", "mensuel", "annuel", "global"
+        let dateDebut, dateFin;
 
+        const maintenant = new Date();
 
+        switch (periode) {
+            case 'journalier':
+                // Récupère la date actuelle à 00:00 et 23:59
+                dateDebut = new Date(maintenant);
+                dateDebut.setHours(0, 0, 0, 0);  // Met à 00:00
+                dateFin = new Date(maintenant);
+                dateFin.setHours(23, 59, 59, 999);  // Met à 23:59
+                break;
 
+            case 'hebdomadaire':
+                // Récupère le premier et dernier jour de la semaine
+                const premierJourSemaine = maintenant.getDate() - maintenant.getDay(); // Dimanche = 0
+                dateDebut = new Date(maintenant);
+                dateDebut.setDate(premierJourSemaine);
+                dateDebut.setHours(0, 0, 0, 0);  // Début de la semaine (dimanche)
+                dateFin = new Date(maintenant);
+                dateFin.setDate(premierJourSemaine + 6);  // Fin de la semaine (samedi)
+                dateFin.setHours(23, 59, 59, 999);  // Fin de la semaine
+                break;
+
+            case 'mensuel':
+                // Récupère le premier et dernier jour du mois
+                dateDebut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);  // Premier jour du mois
+                dateFin = new Date(maintenant.getFullYear(), maintenant.getMonth() + 1, 0);  // Dernier jour du mois
+                dateFin.setHours(23, 59, 59, 999);  // Fin du mois
+                break;
+
+            case 'annuel':
+                // Récupère le premier et dernier jour de l'année
+                dateDebut = new Date(maintenant.getFullYear(), 0, 1);  // Premier jour de l'année
+                dateFin = new Date(maintenant.getFullYear(), 11, 31);  // Dernier jour de l'année
+                dateFin.setHours(23, 59, 59, 999);  // Fin de l'année
+                break;
+
+            case 'global':
+                // Aucun filtre de date, on prend tout
+                const paiementsClients = await Paiement.find().populate({
+                    path: 'commandeId',
+                    populate: [
+                        { path: 'clientId', select: 'nom' },
+                        { path: 'commercialId', select: 'nom' }
+                    ]
+                }).populate({
+                    path: 'idCaissier', select: 'nom'
+                });
+
+                const totalGlobalClients = paiementsClients.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+
+                const paiementsCommerciaux = await PaiementCommerciale.find().populate({
+                    path: 'commandeId',
+                    populate: [
+                        { path: 'clientId', select: 'nom' },
+                        { path: 'commercialId', select: 'nom' }
+                    ]
+                }).populate({
+                    path: 'idCaissier', select: 'nom'
+                });
+
+                const totalGlobalCommerciaux = paiementsCommerciaux.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+
+                return res.status(200).json({
+                    periode: 'global',
+                    totalClients: totalGlobalClients,
+                    totalCommerciaux: totalGlobalCommerciaux,
+                    nombreClients: paiementsClients.length,
+                    nombreCommerciaux: paiementsCommerciaux.length
+                });
+
+            default:
+                return res.status(400).json({ message: 'Période non valide' });
+        }
+
+        // Filtrage des paiements par date pour les périodes autres que "global"
+        const modePaiementFiltre = req.query.modePaiement || "tous";  // Filtrage optionnel par mode de paiement
+
+        // Récupère les paiements clients
+        const paiementsClients = await Paiement.find({
+            datePaiement: {
+                $gte: dateDebut,
+                $lte: dateFin
+            },
+            ...(modePaiementFiltre !== "tous" && { modePaiement: modePaiementFiltre === "espèce" ? "espèce" : { $ne: "espèce" } })
+        }).populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path: 'idCaissier', select: 'nom'
+        });
+
+        const totalClients = paiementsClients.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+
+        // Récupère les paiements commerciaux
+        const paiementsCommerciaux = await PaiementCommerciale.find({
+            datePaiement: {
+                $gte: dateDebut,
+                $lte: dateFin
+            },
+            ...(modePaiementFiltre !== "tous" && { modePaiement: modePaiementFiltre === "espèce" ? "espèce" : { $ne: "espèce" } })
+        }).populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path: 'idCaissier', select: 'nom'
+        });
+
+        const totalCommerciaux = paiementsCommerciaux.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+
+        // Retourne la réponse avec les paiements clients et commerciaux
+        res.status(200).json({
+            periode,
+            totalClients,
+            totalCommerciaux,
+            nombreClients: paiementsClients.length,
+            nombreCommerciaux: paiementsCommerciaux.length
+        });
+
+    } catch (error) {
+        console.error("Erreur lors de la récupération des paiements:", error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
 
 

@@ -17,4 +17,8 @@ router.get('/performance-vente', paiementController.getPerformanceVenteParMois);
 
 router.get('/info/:id', paiementController.getPaiementAvecCommande);
 
+router.get('/totals/:periode', paiementController.getTotalPaiementsParPeriode);
+
+
+
 module.exports = router;

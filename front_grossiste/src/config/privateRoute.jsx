@@ -7,7 +7,7 @@ const PrivateRoute = ({ allowedRoles }) => {
 
   // Mapping des rôles et de leurs pages autorisées
   const rolePaths = {
-    admin: ["/admin", "/produit", "/fournisseur", "/personnel", "/caisse", "/entrepot", "/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande","/histocad","/histovad"],
+    admin: ["/admin", "/produit", "/fournisseur", "/personnel", "/caisse", "/entrepot", "/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande","/histocad","/histovad","/PersonnelsList","/Client"],
     vendeur: ["/vendeur", "/profilv", "/histov"],
     caissier: ["/caissier", "/profilc", "/histoc", "/PaiementCom", "/FactureNormal","/FactureRemise"],
     magasinier: ["/magasinier", "/profilm", "/histom","/RetourStockCom","/stockma","/inventaire","/creerinventaire","/transfert"],

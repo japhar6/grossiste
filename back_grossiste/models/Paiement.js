@@ -19,7 +19,7 @@ const paiementSchema = new mongoose.Schema({
         type: Number, 
         default: 0 
     },
-    remiseFixe: {  // Ajout de la remise fixe
+    remiseFixe: {  
         type: Number,
         default: 0
     },
