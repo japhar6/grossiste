@@ -19,7 +19,7 @@ function SortieStock() {
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get("/commandes/TermineeLivree");
+        const response = await axios.get("/api/commandes/TermineeLivree");
         setCommandes(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des commandes", error);
@@ -54,7 +54,7 @@ function SortieStock() {
     }
   
     try {
-      const response = await axios.post("/ventes/valider", {
+      const response = await axios.post("/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
         magasinierId: magasinierId,
       });

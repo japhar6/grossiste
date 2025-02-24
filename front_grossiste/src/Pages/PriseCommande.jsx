@@ -53,7 +53,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("/client");
+                                    const response = await axios.get("/api/client");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);
@@ -62,7 +62,7 @@ function PriseCommande() {
 
                                 const fetchCommerciaux = async () => {
                                   try {
-                                    const response = await axios.get("/comercial");
+                                    const response = await axios.get("/api/comercial");
                                     setCommerciaux(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des commerciaux", error);
@@ -91,7 +91,7 @@ function PriseCommande() {
                                     }
 
                                     // Déterminer l'URL selon le type (client ou commercial)
-                                    const url = type === "client" ? "/client" : "/comercial/";
+                                    const url = type === "client" ? "/api/client" : "/api/comercial/";
                                     
                                     // Envoi de la requête POST
                                     const response = await axios.post(url, newPerson);
@@ -154,7 +154,7 @@ function PriseCommande() {
                                 
                                 const fetchProduits = async () => {
                                   try {
-                                    const response = await axios.get("/produits/afficher");
+                                    const response = await axios.get("/api/produits/afficher");
                                     setProduits(response.data);
 
                                     // Extraire les catégories uniques
@@ -244,7 +244,7 @@ function PriseCommande() {
                                       console.log("Commande prête à être envoyée :", nouvelleCommande);
                                   
                                       try {
-                                          const response = await axios.post("/commandes/ajouter", nouvelleCommande);
+                                          const response = await axios.post("/api/commandes/ajouter", nouvelleCommande);
                                   
                                           if (response.data) {
                                               Swal.fire({

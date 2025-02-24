@@ -50,12 +50,12 @@ function CreerInventaire() {
     const fetchEntrepotAndStocks = async () => {
       setLoading(true);
       try {
-        const entrepotResponse = await axios.get(`/entrepot/${selectedEntrepot}`, {
+        const entrepotResponse = await axios.get(`/api/entrepot/${selectedEntrepot}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepot(entrepotResponse.data);
 
-        const stocksResponse = await axios.get(`/stocks/stocks/${selectedEntrepot}`);
+        const stocksResponse = await axios.get(`/api/stocks/stocks/${selectedEntrepot}`);
         setStocks(stocksResponse.data);
         setLoading(false);
       } catch (error) {
@@ -112,7 +112,7 @@ function CreerInventaire() {
     };
 
     try {
-      const response = await axios.post('http://localhost:5000/api/inventaire/ajouter', inventaireData, {
+      const response = await axios.post('/api/inventaire/ajouter', inventaireData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

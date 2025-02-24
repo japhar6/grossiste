@@ -21,7 +21,7 @@ const [filtreDate, setFiltreDate] = useState('');
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userid");
-    axios.get(`/entrepot/recuperer/${userId}`, {
+    axios.get(`/api/entrepot/recuperer/${userId}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(response => setEntrepot(response.data))
       .catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
@@ -29,19 +29,19 @@ const [filtreDate, setFiltreDate] = useState('');
 
   useEffect(() => {
     if (!entrepot) return;
-    axios.get(`/stocks/stocks/${entrepot._id}`)
+    axios.get(`/api/stocks/stocks/${entrepot._id}`)
       .then(response => setStocks(response.data))
       .catch(() => toast.error("Erreur lors du chargement des stocks."));
   }, [entrepot]);
 
   useEffect(() => {
-    axios.get('/entrepot')
+    axios.get('/api/entrepot')
       .then(response => setEntrepots(response.data));
     fetchHistoriqueTransferts();
   }, []);
 
   const fetchHistoriqueTransferts = () => {
-    axios.get('/transfert/recup')
+    axios.get('/api/transfert/recup')
       .then(response => setHistoriqueTransferts(response.data));
   };
 
@@ -54,7 +54,7 @@ const [filtreDate, setFiltreDate] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('/transfert/transfert', {
+    axios.post('/api/transfert/transfert', {
       entrepotSource: entrepot._id,
       entrepotDestination,
       produit,

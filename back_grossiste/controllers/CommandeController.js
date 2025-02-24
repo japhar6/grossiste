@@ -77,7 +77,9 @@ exports.ajouterCommande = async (req, res) => {
 exports.getCommandes = async (req, res) => {
     try {
         const commandes = await Commande.find().populate('produits.produit', 'nom prixDachat')
-        .populate('vendeurId', 'nom');
+        .populate('vendeurId', 'nom')
+        .populate('clientId','nom')
+        .populate('commercialId', 'nom');
         res.status(200).json(commandes);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -238,7 +240,8 @@ exports.getCommandesByVendeur = async (req, res) => {
         const { vendeurId } = req.params;
 
         // Rechercher les commandes par ID de vendeur
-        const commandes = await Commande.find({ vendeurId }).populate('produits.produit', 'nom prixDachat'); // Ajustez les champs si nécessaire
+        const commandes = await Commande.find({ vendeurId }).populate('produits.produit', 'nom prixDachat') .populate('clientId','nom')
+        .populate('commercialId', 'nom'); // Ajustez les champs si nécessaire
 
         if (!commandes || commandes.length === 0) {
             return res.status(404).json({ message: "Aucune commande trouvée pour ce vendeur" });

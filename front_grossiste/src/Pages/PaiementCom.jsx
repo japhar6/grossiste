@@ -23,7 +23,7 @@ function PaiementCom() {
             useEffect(() => {
               const fetchReferences = async () => {
                 try {
-                  const response = await axios.get('/commandes/factmo'); // Votre route pour récupérer toutes les références
+                  const response = await axios.get('/api/commandes/factmo'); // Votre route pour récupérer toutes les références
                   setAllReferences(response.data);
                 } catch (error) {
                   console.error("Erreur lors de la récupération des références :", error);
@@ -56,7 +56,7 @@ function PaiementCom() {
     if (!referenceFacture) return; // Validation si la référence est vide
 
     try {
-        const response = await axios.get(`/commandes/reference/${referenceFacture}`);
+        const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
 
         // Vérifie si la réponse est un succès
         if (response.status !== 200) throw new Error("Commande non trouvée");
@@ -158,7 +158,7 @@ function PaiementCom() {
             quantite: produit.quantite,
         }));
 
-        const response = await axios.put(`/paiementCom/mettre-ajour/${referenceFacture}`, {
+        const response = await axios.put(`/api/paiementCom/mettre-ajour/${referenceFacture}`, {
             produitsVendus: produitsVendusToSend,
         });
 

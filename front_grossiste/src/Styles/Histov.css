@@ -22,3 +22,18 @@
   border: 1px solid #ddd;   /* Bordure légère */
   text-align: left;         /* Alignement à gauche */
 }
+.filters .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Espacement entre les filtres */
+}
+
+.filters .col-md-4 {
+  flex: 1; /* Permet un alignement fluide */
+  min-width: 220px; /* Assure que les filtres ne deviennent pas trop petits */
+}
+
+.filters label {
+  display: flex;
+  flex-direction: column;
+}

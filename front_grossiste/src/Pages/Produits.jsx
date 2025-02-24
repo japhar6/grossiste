@@ -23,7 +23,7 @@ function ListeProduits() {
 
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("/produits/afficher");
+      const response = await axios.get("/api/produits/afficher");
       setProduits(response.data);
 
       const categoriesUniq = [
@@ -64,7 +64,7 @@ function ListeProduits() {
 
   const handleModifierPrix = async (produitId) => {
     try {
-      await axios.put(`/produits/modifier/${produitId}`, {
+      await axios.put(`/api/produits/modifier/${produitId}`, {
         prixdevente: prixVenteModifier,
         prixDachat: prixAchatModifier,
         quantiteMinimum: quantiteMinimumModifier,

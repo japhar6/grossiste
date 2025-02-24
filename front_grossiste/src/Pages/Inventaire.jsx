@@ -18,7 +18,7 @@ function VisualiserInventaires() {
   useEffect(() => {
     const fetchInventaires = async () => {
       try {
-        const response = await axios.get(`/inventaire/inventaires`, {
+        const response = await axios.get(`/api/inventaire/inventaires`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log(response.data); 

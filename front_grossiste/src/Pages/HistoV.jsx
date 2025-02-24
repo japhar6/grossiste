@@ -13,11 +13,12 @@ function HistoV() {
   const [statutFilter, setStatutFilter] = useState("");
   const [filtreNomCaissier, setFiltreNomCaissier] = useState("");
   const vendeurId = localStorage.getItem('userid');
-
+const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
+  
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`/commandes/`);
+        const response = await axios.get(`/api/commandes/`);
         console.log("Commandes récupérées :", response.data);
 
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -45,7 +46,10 @@ function HistoV() {
       (commande.vendeurId && commande.vendeurId.nom && commande.vendeurId.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
 
     return dateMatch && modePaiementMatch && statutMatch && matchesNomCaissier;
-  });
+  })
+  .sort((a, b) => 
+    triMontant === "asc" ? a.totalGeneral - b.totalGeneral : b.totalGeneral - a.totalGeneral
+  ); 
 
   return (
     <>
@@ -90,15 +94,26 @@ function HistoV() {
                     >
                       <option value="">Tous les statuts</option>
                       <option value="en cours">En Cours</option>
-                      <option value="en attente">En Attente</option>
-                      <option value="livrée">Livrée</option>
-                      <option value="terminée">Terminé</option>
+                      <option value="payé">Les commande Payé</option>
+                      <option value="payé et livrée">Livrée</option>
+                      
                     </select>
                   </div>
                   <div className="col-md-4 mb-3">
+                  <label>
+                  <select className="form-select" value="" onChange={e => setTriMontant(e.target.value)}>
+                  <option value="">Trier par montant:</option>
+                    <option value="desc">Montant décroissant</option>
+                    <option value="asc">Montant croissant</option>
+                  </select>
+                </label>
+                  </div>
+                  <div className="col-md-4 mb-3">
                     <label className="form-label">
-                      Filtrer par nom de vendeur:
+                
                       <input 
+                      placeholder="Filtrer par nom de vendeur:"
+                      
                         type="text" 
                         className="form-control" 
                         value={filtreNomCaissier} 
@@ -110,7 +125,7 @@ function HistoV() {
               </div>
 
               {filteredCommandes.length === 0 ? (
-                <p>Aucune commande trouvée pour ce vendeur.</p>
+                <p>Aucune commande trouvée .</p>
               ) : (
                 <div className="scrollable-container">
                   <table className="table-striped">
@@ -119,7 +134,9 @@ function HistoV() {
                         <th>Reference du Commande</th>
                         <th>Date de Commande</th>
                         <th>Produits</th>
+                        <th>Nom du client/commerciale</th>
                         <th>Mode de Paiement</th>
+                        
                         <th>Statut</th>
                         <th>Fait par :</th>
                         <th>Montant Total</th>
@@ -141,7 +158,9 @@ function HistoV() {
                                   </li>
                                 ))}
                               </ul>
-                            </td>
+                            </td>      
+                            <td>{commande.clientId ? commande.clientId.nom : (commande.commercialId ? commande.commercialId.nom : "Inconnu")}</td>
+
                             <td>{commande.modePaiement}</td>
                             <td>{commande.statut}</td>
                             <td>

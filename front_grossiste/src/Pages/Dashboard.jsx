@@ -16,7 +16,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchFournisseursCount = async () => {
       try {
-        const response = await axios.get('/fournisseurs/count');
+        const response = await axios.get('/api/fournisseurs/count');
         const data = response.data;
         setFournisseursCount(data.totalFournisseurs);
       } catch (error) {
@@ -33,7 +33,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchCommandecount = async () => {
       try {
-        const response = await axios.get('/commandes/count');
+        const response = await axios.get('/api/commandes/count');
         const data = response.data;
         setcommandeCount(data.totalcommande);
       } catch (error) {
@@ -48,7 +48,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchClientCount = async () => {
       try {
-        const response = await axios.get('/client/count');
+        const response = await axios.get('/api/client/count');
         const data = response.data;
         setclientCount(data.totalclient);
         console.log("countcli",data.totalclient);
@@ -64,7 +64,7 @@ function Dashboard() {
     // Fonction pour récupérer le nombre de fournisseurs
     const fetchproduitCount = async () => {
       try {
-        const response = await axios.get('/produits/count');
+        const response = await axios.get('/api/produits/count');
         const data = response.data;
         setproduitCount(data.totalProduits);
       } catch (error) {

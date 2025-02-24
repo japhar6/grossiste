@@ -28,7 +28,7 @@ function Fournisseur() {
 
   const fetchFournisseurs = async () => {
     try {
-      const response = await axios.get("/fournisseurs/tous");
+      const response = await axios.get("/api/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  
     } catch (error) {
@@ -58,12 +58,12 @@ function Fournisseur() {
   
     try {
       if (editingId) {
-        await axios.put(`/fournisseurs/${editingId}`, formData, {
+        await axios.put(`/api/fournisseurs/${editingId}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Modifié!", "Le fournisseur a été modifié avec succès.", "success");
       } else {
-        await axios.post("/fournisseurs", formData, {
+        await axios.post("/api/fournisseurs", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Ajouté!", "Le fournisseur a été ajouté avec succès.", "success");
@@ -88,7 +88,7 @@ function Fournisseur() {
     });
     if (confirmDelete.isConfirmed) {
       try {
-        await axios.delete(`/fournisseurs/${id}`);
+        await axios.delete(`/api/fournisseurs/${id}`);
         Swal.fire("Supprimé!", "Le fournisseur a été supprimé avec succès.", "success");
         fetchFournisseurs();
       } catch (error) {

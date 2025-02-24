@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
-import axios from 'axios';
+import axios from '../api/axios';
 
 const LineChart = () => {
   const [data, setData] = useState([]);
@@ -9,7 +9,7 @@ const LineChart = () => {
   useEffect(() => {
     const fetchPerformanceData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/paiement/performance-vente'); // Ajuste l'URL si nécessaire
+        const response = await axios.get('/api/paiement/performance-vente'); // Ajuste l'URL si nécessaire
         const performanceData = response.data.data;
 
         const months = performanceData.map(item => item._id); // Extrait les mois

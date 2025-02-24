@@ -10,6 +10,7 @@ function HistoC() {
   const [paiements, setPaiements] = useState({ clients: [], commerciaux: [] });
   const [filtreType, setFiltreType] = useState("both");
   const [date, setDate] = useState("");
+  const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
   const caissierId = localStorage.getItem("userid");
   const nom = localStorage.getItem('nom'); 
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function HistoC() {
   useEffect(() => {
     const fetchPaiements = async () => {
       try {
-        const response = await axios.get(`/paiement/caissier/${caissierId}`);
+        const response = await axios.get(`/api/paiement/caissier/${caissierId}`);
         console.log(response.data);
         setPaiements(response.data);
       } catch (error) {
@@ -41,11 +42,15 @@ function HistoC() {
       })),
     ];
 
-    return allPaiements.filter(paiement => {
-      const matchesType = filtreType === "both" || paiement.type === filtreType;
-      const matchesDate = !date || new Date(paiement.createdAt).toLocaleDateString() === new Date(date).toLocaleDateString();
-      return matchesType && matchesDate;
-    });
+    return allPaiements
+      .filter(paiement => {
+        const matchesType = filtreType === "both" || paiement.type === filtreType;
+        const matchesDate = !date || new Date(paiement.createdAt).toLocaleDateString() === new Date(date).toLocaleDateString();
+        return matchesType && matchesDate;
+      })
+      .sort((a, b) => 
+        triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
+      ); // Tri selon la sélection
   };
 
   const filteredPaiements = getFilteredPaiements();
@@ -53,18 +58,14 @@ function HistoC() {
   const handleFactureChange = (e, paiementId) => {
     const factureType = e.target.value;
     
-    // Enregistrer l'ID du paiement dans le localStorage
     localStorage.setItem("paiementId", paiementId);
     
-    // Rediriger en fonction du type de facture sélectionné
     if (factureType === "factureNormal") {
-      navigate("/FactureNormal"); // Redirection vers la facture normale
+      navigate("/FactureNormal");
     } else if (factureType === "Remise") {
-      navigate("/FactureRemise"); // Redirection vers la facture avec remise
+      navigate("/FactureRemise");
     }
   };
-  
-  
 
   return (
     <>
@@ -96,6 +97,13 @@ function HistoC() {
                     onChange={e => setDate(e.target.value)} 
                   />
                 </label>
+
+                <label>
+                  Trier par montant:
+                  <select className="form-select" value={triMontant} onChange={e => setTriMontant(e.target.value)}>
+                  <option value="desc">Montant décroissant</option>
+                  <option value="asc">Montant croissant</option></select>
+                </label>
               </div>
 
               {filteredPaiements.length === 0 ? (
@@ -120,7 +128,7 @@ function HistoC() {
                           <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
                           <td>{paiement.montantPaye} ariary</td>
                           <td>{paiement.statut}</td>
-                          <td>{paiement.createdAt}</td>
+                          <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
                           <td>
                             <select className="form-control" onChange={(e) => handleFactureChange(e, paiement._id)}>
                               <option>Selectionner la facture</option>

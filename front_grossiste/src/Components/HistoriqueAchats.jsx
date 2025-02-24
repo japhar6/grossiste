@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 
 const HistoriqueAchats = () => {
     const [achats, setAchats] = useState([]);
@@ -8,7 +8,7 @@ const HistoriqueAchats = () => {
     useEffect(() => {
         const fetchAchats = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/achats/afficher");
+                const response = await axios.get("/api/achats/afficher");
                 setAchats(response.data);
             } catch (error) {
                 console.error("Erreur lors de la récupération des achats :", error);

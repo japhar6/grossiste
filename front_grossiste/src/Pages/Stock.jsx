@@ -24,7 +24,7 @@ function Stock() {
   useEffect(() => {
     const fetchEntrepots = async () => {
       try {
-        const response = await axios.get('/entrepot', {
+        const response = await axios.get('/api/entrepot', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepots(response.data);
@@ -47,7 +47,7 @@ function Stock() {
     setError(null);
 
     try {
-      const response = await axios.get(`/stocks/stocks/${entrepotId}`);
+      const response = await axios.get(`/api/stocks/stocks/${entrepotId}`);
       setStocks(response.data);
     } catch (err) {
       toast.error('Erreur lors du chargement des stocks.');

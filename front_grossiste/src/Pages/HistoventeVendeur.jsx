@@ -13,11 +13,12 @@ function HistoV() {
   const [statutFilter, setStatutFilter] = useState("");
   const vendeurId = localStorage.getItem('userid');
   const nom = localStorage.getItem('nom'); 
+  const [triMontant, setTriMontant] = useState("desc");
   const [commissions, setCommissions] = useState([]);
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get(`/commandes/vendeur/${vendeurId}`);
+        const response = await axios.get(`/api/commandes/vendeur/${vendeurId}`);
         const sortedCommandes = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setCommandes(sortedCommandes);
       } catch (error) {
@@ -40,7 +41,11 @@ function HistoV() {
     const statutMatch = statutFilter ? commande.statut === statutFilter : true;
 
     return dateMatch && modePaiementMatch && statutMatch;
-  });
+  })
+  .sort((a, b) => 
+    triMontant === "asc" ? a.totalGeneral - b.totalGeneral : b.totalGeneral - a.totalGeneral
+  ); 
+  
 
   return (
     <>
@@ -77,6 +82,15 @@ function HistoV() {
       </select>
     </div>
     <div className="col-md-4 mb-3">
+                  <label>
+                  <select className="form-select" value="" onChange={e => setTriMontant(e.target.value)}>
+                  <option value="">Trier par montant:</option>
+                    <option value="desc">Montant décroissant</option>
+                    <option value="asc">Montant croissant</option>
+                  </select>
+                </label>
+                  </div>
+    <div className="col-md-4 mb-3">
       <select 
         className="form-control" 
         onChange={(e) => setStatutFilter(e.target.value)} 
@@ -84,9 +98,9 @@ function HistoV() {
       >
         <option value="">Tous les statuts</option>
         <option value="en cours">En Cours</option>
-        <option value="en attente">En Attente</option>
-        <option value="livrée">Livrée</option>
-        <option value="terminée">Terminé</option>
+
+                      <option value="payé">Les commande Payé</option>
+                      <option value="payé et livrée">Livrée</option>
       </select>
     </div>
   </div>
@@ -94,41 +108,73 @@ function HistoV() {
 
 
             {filteredCommandes.length === 0 ? (
-              <p>Aucune commande trouvée pour ce vendeur.</p>
+               <table className="table-striped">
+               <thead>
+                 <tr>  
+                   <th>Reference du Commande</th>
+                   <th>Date de Commande</th>
+                   <th>Produits</th>
+                   <th>Nom du client/commerciale</th>
+                   <th>Mode de Paiement</th>
+                   
+                   <th>Statut</th>
+                   <th>Fait par :</th>
+                   <th>Montant Total</th>
+                 </tr>
+               </thead>
+               <tbody>
+               </tbody>    <tr>
+                <td colSpan={6} style={{ textAlign: 'center' }}>Aucunne commande trouvé.</td>
+            </tr>     </table>
+           
             ) : (
               <div className="scrollable-container">
-                <table className="table-striped">
-                  <thead>
-                    <tr>  
-                      <th>Reference du Commande</th>
-                      <th>Date de Commande</th>
-                      <th>Produits</th>
-                      <th>Mode de Paiement</th>
-                      <th>Statut</th>
-                      <th>Montant Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCommandes.map((commande) => (
-                      <tr key={commande._id}>
-                          <td>{commande.referenceFacture}</td>
-                        <td>{new Date(commande.createdAt).toLocaleDateString()}</td>
-                        <td>
-                          <ul className="produit-list">
-                            {commande.produits.map((produit) => (
-                              <li key={produit._id}>
-                                {produit.produit.nom} - {produit.quantite} x {produit.prixUnitaire} ariary
-                              </li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td>{commande.modePaiement}</td>
-                        <td>{commande.statut}</td>
-                        <td>{commande.totalGeneral} ariary</td>
+                 <table className="table-striped">
+                    <thead>
+                      <tr>  
+                        <th>Reference du Commande</th>
+                        <th>Date de Commande</th>
+                        <th>Produits</th>
+                        <th>Nom du client/commerciale</th>
+                        <th>Mode de Paiement</th>
+                        
+                        <th>Statut</th>
+                        <th>Fait par :</th>
+                        <th>Montant Total</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredCommandes.map((commande) => {
+                        console.log("Commande analysée :", commande); // Debug
+
+                        return (
+                          <tr key={commande._id}>
+                            <td>{commande.referenceFacture}</td>
+                            <td>{new Date(commande.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              <ul className="produit-list">
+                                {commande.produits.map((produit) => (
+                                  <li key={produit._id}>
+                                    {produit.produit.nom} - {produit.quantite} x {produit.prixUnitaire} ariary
+                                  </li>
+                                ))}
+                              </ul>
+                            </td>      
+                            <td>{commande.clientId ? commande.clientId.nom : (commande.commercialId ? commande.commercialId.nom : "Inconnu")}</td>
+
+                            <td>{commande.modePaiement}</td>
+                            <td>{commande.statut}</td>
+                            <td>
+                              {commande.vendeurId && commande.vendeurId.nom
+                                ? commande.vendeurId.nom
+                                : "Inconnu"}
+                            </td>
+                            <td>{commande.totalGeneral} ariary</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                
 
               </div>

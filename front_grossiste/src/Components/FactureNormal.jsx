@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axios";
 import '../Styles/Facture.css';
 
 function FactureNormale() {
@@ -9,7 +9,7 @@ function FactureNormale() {
   useEffect(() => {
     const fetchFactureDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/paiement/info/${paiementId}`);
+        const response = await axios.get(`/api/paiement/info/${paiementId}`);
         const paiement = response.data.clients.concat(response.data.commerciaux)
                           .find(p => p._id === paiementId); // Trouver le paiement qui correspond à l'ID
         setFacture(paiement);

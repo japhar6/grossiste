@@ -22,7 +22,7 @@ function Entrepot() {
   useEffect(() => {
     if (token) {
       axios
-        .get("/entrepot", {
+        .get("/api/entrepot", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -32,7 +32,7 @@ function Entrepot() {
             .filter((magasinier) => magasinier !== null);
 
           axios
-            .get("/users/tout", {
+            .get("/api/users/tout", {
               headers: { Authorization: `Bearer ${token}` },
             })
             .then((userResponse) => {
@@ -67,10 +67,10 @@ function Entrepot() {
     }
 
     const request = editingEntrepotId
-      ? axios.put(`/entrepot/${editingEntrepotId}`, newEntrepot, {
+      ? axios.put(`/api/entrepot/${editingEntrepotId}`, newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
         })
-      : axios.post("/entrepot", newEntrepot, {
+      : axios.post("/api/entrepot", newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -119,7 +119,7 @@ function Entrepot() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`/entrepot/${id}`, {
+        await axios.delete(`/api/entrepot/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

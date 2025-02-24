@@ -26,7 +26,7 @@ function Profil() {
           return;
         }
 
-        const response = await axios.get(`/users/seul/${usId}`, {
+        const response = await axios.get(`/api/users/seul/${usId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -73,7 +73,7 @@ function Profil() {
         formData.append("photo", selectedFile);
       }
 
-      const response = await axios.put(`/users/${usId}`, formData, {
+      const response = await axios.put(`/api/users/${usId}`, formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 

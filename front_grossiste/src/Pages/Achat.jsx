@@ -83,7 +83,7 @@ const handleProduitChange = async (selectedOption) => {
 
     try {
         // Faire une requête pour récupérer les détails du produit avec Axios
-        const response = await axios.get(`/produits/recuperer/${produitId}`);
+        const response = await axios.get(`/api/produits/recuperer/${produitId}`);
         
         if (response.data) {
             setPrixAchat(response.data.prixDachat); // Mettre à jour le prix d'achat
@@ -98,7 +98,7 @@ const handleProduitChange = async (selectedOption) => {
 useEffect(() => {
   const fetchCategories = async () => {
       try {
-          const response = await axios.get('/produits/categories');
+          const response = await axios.get('/api/produits/categories');
           setCategories(response.data); // Mettre à jour l'état avec les données récupérées
       } catch (error) {
           console.error("Erreur lors de la récupération des catégories", error);
@@ -127,7 +127,7 @@ useEffect(() => {
   
       try {
           // Envoi du produit à l'API pour ajout avec Axios
-          const response = await axios.post("/produits/ajouter", produit);
+          const response = await axios.post("/api/produits/ajouter", produit);
           
           Swal.fire({
               icon: 'success',
@@ -150,7 +150,7 @@ useEffect(() => {
   
           // Récupérer les produits du fournisseur
           if (fournisseur) {
-              const produitsResponse = await axios.get(`/produits/fournisseur/${fournisseur}`);
+              const produitsResponse = await axios.get(`/api/produits/fournisseur/${fournisseur}`);
               const data = produitsResponse.data;
             
   
@@ -197,7 +197,7 @@ useEffect(() => {
 
   const fetchAchats = async () => {
     try {
-        const response = await axios.get(`/achats/panier/${panierId}`);
+        const response = await axios.get(`/api/achats/panier/${panierId}`);
         const data = response.data;
 
         // Vérification du statut de la réponse
@@ -227,7 +227,7 @@ useEffect(() => {
     if (fournisseur) {
         const fetchProduits = async () => {
             try {
-                const response = await axios.get(`/produits/fournisseur/${fournisseur}`);
+                const response = await axios.get(`/api/produits/fournisseur/${fournisseur}`);
                 const data = response.data;
 
                 if (Array.isArray(data) && data.length > 0) {
@@ -282,7 +282,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchFournisseurs = async () => {
         try {
-            const response = await axios.get("/fournisseurs/tous");
+            const response = await axios.get("/api/fournisseurs/tous");
             const data = response.data;
 
             if (Array.isArray(data) && data.length > 0) {
@@ -313,7 +313,7 @@ useEffect(() => {
   useEffect(() => {
         const fetchEntrepots = async () => {
             try {
-                const response = await axios.get("/entrepot");
+                const response = await axios.get("/api/entrepot");
                 const data = response.data;
 
                 if (Array.isArray(data) && data.length > 0) {
@@ -354,7 +354,7 @@ useEffect(() => {
     };
   
     try {
-      const response = await axios.post("/paniers/ajouter", panierData);
+      const response = await axios.post("/api/paniers/ajouter", panierData);
   
       const data =  response.data;
       console.log("Réponse API complète :", data);
@@ -411,7 +411,7 @@ useEffect(() => {
     };
 
     try {
-        const response = await axios.post("http://localhost:5000/api/achats/ajouter", achatData);
+        const response = await axios.post("/api/achats/ajouter", achatData);
         const data = response.data;
 
         // Vérifier si la réponse contient un achat
@@ -471,7 +471,7 @@ useEffect(() => {
 
 const validerPanier = async () => {
   try {
-      const response = await axios.post(`http://localhost:5000/api/achats/valider/${panierId}`, {
+      const response = await axios.post(`/api/achats/valider/${panierId}`, {
           entrepotId: entrepot, // Envoie des données ici
       });
 

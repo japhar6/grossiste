@@ -12,6 +12,8 @@ function HistoC() {
 
   const [filtreType, setFiltreType] = useState("both");
   const [date, setDate] = useState("");
+  const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
+    
   const caissierId = localStorage.getItem("userid");
   const nom = localStorage.getItem('nom'); 
   const [filtreModePaiement, setFiltreModePaiement] = useState("all");
@@ -19,7 +21,7 @@ function HistoC() {
   useEffect(() => {
     const fetchPaiements = async () => {
       try {
-        const response = await axios.get(`/paiement`);
+        const response = await axios.get(`/api/paiement`);
         console.log(response.data); // Vérifiez la structure de la réponse
         setPaiements(response.data);
       } catch (error) {
@@ -51,7 +53,10 @@ function HistoC() {
         const matchesNomCaissier = !filtreNomCaissier || (paiement.idCaissier && paiement.idCaissier.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
     
         return matchesType && matchesDate && matchesModePaiement && matchStatut && matchesNomCaissier;
-      });
+      })
+      .sort((a, b) => 
+        triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
+      ); 
   };
   
 
@@ -68,11 +73,11 @@ function HistoC() {
             <div className="mini-stat p-3">
               <h6 className="alert alert-info text-start">Historique des Paiements </h6>
 
-              <div className="filter-container mb-3 d-flex flex-wrap justify-content-between">
-  <div className="flex-fill mb-2">
-    <label className="form-label">
-      Filtrer par type:
-      <select className="form-select" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
+              <div className="filter-container mb-3 d-flex flex-wrap justify-content-between gap-2">
+  <div className="flex-fill">
+    <label className="form-label w-100">
+      <select className="form-select uniform-size" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
+        <option value="">Filtrer par type:</option>
         <option value="both">Les deux</option>
         <option value="client">Paiements Clients</option>
         <option value="commercial">Paiements Commerciaux</option>
@@ -80,55 +85,64 @@ function HistoC() {
     </label>
   </div>
 
-  <div className="flex-fill mb-2">
-    <label className="form-label">
-      Filtrer par date:
+  <div className="flex-fill">
+    <label className="form-label w-100">
       <input 
         type="date" 
-        className="form-control" 
+        className="form-control uniform-size" 
         value={date} 
         onChange={e => setDate(e.target.value)} 
+        placeholder="Filtrer par date"
       />
     </label>
   </div>
 
-  <div className="flex-fill mb-2">
-    <label className="form-label">
-      Filtrer par mode de paiement:
-      <select className="form-select" value={filtreModePaiement} onChange={e => setFiltreModePaiement(e.target.value)}>
+  <div className="flex-fill">
+    <label className="form-label w-100">
+      <select className="form-select uniform-size" value={triMontant} onChange={e => setTriMontant(e.target.value)}>
+        <option value="">Trier par montant:</option>
+        <option value="desc">Montant décroissant</option>
+        <option value="asc">Montant croissant</option>
+      </select>
+    </label>
+  </div>
+
+  <div className="flex-fill">
+    <label className="form-label w-100">
+      <select className="form-select uniform-size" value={filtreModePaiement} onChange={e => setFiltreModePaiement(e.target.value)}>
+        <option value="">Filtrer par mode de paiement:</option>
         <option value="all">Tous</option>
         <option value="espèce">Espèce</option>
         <option value="virement bancaire">Virement Bancaire</option>    
         <option value="mobile money">Mobile Money</option>
         <option value="à crédit">À Crédit</option>
-        {/* Ajoutez d'autres modes de paiement si nécessaire */}
       </select>
     </label>
   </div>
-  <div className="flex-fill mb-2">
-    <label className="form-label">
-      Filtrer par statut:
-      <select className="form-select" value={statutfilter} onChange={e => setstatufilter(e.target.value)}>
-        <option value="all">Tous</option>
-        <option value="complet">Complet</option>
-        <option value="partiel">Partiel</option>    
-        <option value="Produits retourner">Produits retourner</option>
-        {/* Ajoutez d'autres modes de paiement si nécessaire */}
-      </select>
-    </label>
-  </div>
-  <div className="flex-fill mb-2">
-  <label className="form-label">
-    Filtrer par nom de caissier:
-    <input 
-      type="text" 
-      className="form-control" 
-      value={filtreNomCaissier} 
-      onChange={e => setFiltreNomCaissier(e.target.value)} 
-    />
-  </label>
-</div>
 
+  <div className="flex-fill">
+    <label className="form-label w-100">
+      <select className="form-select uniform-size" value={statutfilter} onChange={e => setstatufilter(e.target.value)}>
+        <option value="">Filtrer par statut:</option>
+        <option value="all">Tous</option>
+        <option value="payé complet">Payé Complet</option>
+        <option value="payé partielle">Paiement Partielle</option>    
+        <option value="Produits retourner">Produits retourner</option>
+      </select>
+    </label>
+  </div>
+
+  <div className="flex-fill">
+    <label className="form-label w-100">
+      <input 
+        type="text" 
+        className="form-control uniform-size" 
+        value={filtreNomCaissier} 
+        onChange={e => setFiltreNomCaissier(e.target.value)} 
+        placeholder="Filtrer par nom de caissier:"
+      />
+    </label>
+  </div>
 </div>
 
 

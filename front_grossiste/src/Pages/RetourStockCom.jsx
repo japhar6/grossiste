@@ -27,7 +27,7 @@ function RetourStockCom() {
 
   // Récupération des paiements commerciaux depuis l'API
   useEffect(() => {
-    axios.get("/paiementCom/info")
+    axios.get("/api/paiementCom/info")
       .then(response => {
         setPaiements(response.data);
       })
@@ -45,7 +45,7 @@ const fetchVentesByInfo = (commercialId, commandeId) => {
     return Promise.reject("Le commercialId ou commandeId est undefined ou invalide.");
   }
 
-  return axios.get(`/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
+  return axios.get(`/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
     .then(response => {
       console.log("Ventes récupérées pour le commercial et la commande:", response.data);
       setVentes(response.data);
@@ -103,7 +103,7 @@ const openModal = (paiement) => {
       venteComId: venteComId,
     };
 
-    axios.post("/ventes/retour", returnData)
+    axios.post("/api/ventes/retour", returnData)
       .then(response => {
         console.log("Retour validé avec succès", response.data);
         // Mettre à jour l'UI ou notifier l'utilisateur si nécessaire
