@@ -1,19 +1,28 @@
 const mongoose = require('mongoose');
-const slugify = require('slugify'); // Utilisation de slugify pour générer un slug à partir de la catégorie
+const slugify = require('slugify'); 
+
+
 
 const produitSchema = new mongoose.Schema({
-   nom: { type: String, required: true },
-   description: { type: String },
-   prixdevente: { type: Number, required: false, default: '0' },
-   prixDachat: { type: Number, required: false },
-   categorie: { type: String, required: true },
-   unite: { type: String, required: true },
-   fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur', required: true },
-   dateAjout: { type: Date, default: Date.now },
-   statut: { type: String, enum: ['actif', 'inactif'], default: 'actif' },
-   codeProduit: { type: String, unique: true },
-   quantiteMinimum: { type: Number, default: 0 }
+  nom: { type: String, required: true },
+  description: { type: String },
+  prixDachat: { type: Number, required: true }, // Prix d'achat unique
+  categorie: { type: String, required: true },
+  unites: [
+    {
+      nom: { type: String, required: true }, // Ex: Carton, Paquet, Sachet
+      conversion: { type: Number, required: true }, // Ex: 1, 50, 100
+      prixdevente: { type: Number, required: true } // Prix de vente unique par unité
+    }
+  ],
+  fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: "Fournisseur", required: true },
+  quantiteMinimum: { type: Number, default: 0 },
+  codeProduit: { type: String, unique: false } ,
+
+  dateAjout: { type: Date, default: Date.now }
 });
+
+
 
 // Avant de sauvegarder, générer un code produit unique
 produitSchema.pre('save', async function (next) {

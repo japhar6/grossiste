@@ -16,18 +16,43 @@ const transfertSchema = new mongoose.Schema({
     ref: 'Produit',
     required: true,
   },
-  quantité: {
+  quantitéEnvoyée: {
     type: Number,
-    required: true,
+    required: false,
+  },
+  quantitéReçue: {
+    type: Number,
+    default: 0, // Par défaut 0, sera mis à jour par l'entrepôt receveur
+  },
+  quantitéPerdue: {
+    type: Number,
+    default: 0, // Stocke les pertes si applicable
+  },
+  quantitéEndommagée: {
+    type: Number,
+    default: 0, // Stocke les produits abîmés si applicable
   },
   dateTransfert: {
     type: Date,
     default: Date.now,
   },
-  statut: {
+  statutAdmin: {
     type: String,
-    enum: ['en cours', 'terminé'],
-    default: 'en cours',
+    enum: ['en attente', 'approuvé', 'rejeté'],
+    default: 'en attente',
+  },
+  commentaireAdmin: {
+    type: String,
+    default: '',
+  },
+  statutEntrepotDestination: {
+    type: String,
+    enum: ['en attente', 'reçu', 'refusé'],
+    default: 'en attente',
+  },
+  commentaireEntrepotDestination: {
+    type: String,
+    default: '',
   },
 });
 

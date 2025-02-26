@@ -62,7 +62,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("/api/client/affichergit ");
+                                    const response = await axios.get("/api/client/afficher");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);

@@ -26,3 +26,7 @@
     flex: 1; /* Permet à chaque groupe de prendre une largeur égale */
   }
   
+  .custom-button {
+    width: 120px; /* Définissez la largeur souhaitée */
+  }
+  
