@@ -60,6 +60,7 @@ exports.getQuantiteProduitById = async (req, res) => {
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 } ;
+
 exports.getQuantiteProduitByIde = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
