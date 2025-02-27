@@ -337,26 +337,110 @@ function PriseCommande() {
                                           return;
                                       }
                                   
-                                      const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
+                                    const nouvelleCommande = {
+                                    typeClient,
+                                    commercialId: isCommercial ? selectedPerson : null,
+                                    clientId: !isCommercial ? selectedPerson : null,
+                                    vendeurId,
+                                    produits: commande.map(prod => ({
+                                        produit: prod._id,
+                                        quantite: prod.quantite,
+                                        prixUnitaire: prod.prix,
+                                            prixApresRemise: calculerPrixApresRemise(prod, typeRemise, valeurRemise),  // Calculer et ajouter le prix après remise
+                                    })),
+                                    modePaiement: isCommercial ? "à crédit" : modePaiement,
+                                    statut: "en cours",
+                                    typeRemise,
+                                    valeurRemise,
+                                    totalGeneral: commande.reduce((total, prod) => total + (calculerPrixApresRemise(prod, typeRemise, valeurRemise) * prod.quantite), 0) // Calculer le total général après remise
+                                };
+                                
+                                console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                
+                                try {
+                                  const response = await axios.post("/api/commandes/ajouter", nouvelleCommande);
+                              
+                                  if (response.data) {
+                                      const commande = response.data.commande; // Récupérer la commande retournée par l'API
+                                      console.log("Commande après enregistrement :", commande);
+                              
+                                      // Vérification de la valeur de la remise renvoyée
+                                      console.log("Valeur de la remise renvoyée par l'API : ", commande.valeurRemise);  // Vérifier ce que l'API renvoie.
+                              
+                                      // Affichage des informations sur la remise et le prix après remise
+                                      commande.forEach(prod => {
+                                        console.log(prod);
+                                        if (!prod.prixdevente) {
+                                            console.error("Le produit n'a pas de prix unitaire défini:", prod);
+                                        }
+                                    });
+                                    
+                              
+                                      // Affichage de la remise globale si applicable
+                                      if (commande.typeRemise === "remiseGlobale") {
+                                          console.log(`Remise Globale Appliquée: ${commande.valeurRemise}%`);
+                                      }
+                              
+                                      // Affichage de la valeurRemise
+                                      if (commande.valeurRemise !== undefined) {
+                                          console.log(`Valeur de la Remise : ${commande.valeurRemise}`);  // Affichage de la remise
+                                      } else {
+                                          console.log("Valeur de la Remise est undefined.");
+                                      }
+                              
+                                      Swal.fire({
+                                          title: "Commande validée",
+                                          text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${commande.referenceFacture}`,
+                                          icon: "success",
+                                          confirmButtonText: "OK"
+                                      }).then(() => {
+                                          // Réinitialisation des champs
+                                          setCommande([]);
+                                          setSelectedPerson("");
+                                          setModePaiement("");
+                                          setSearchTerm("");
+                                          setSelectedProducts([]);
+                                          setCheckedProduits({});
+                                      });
+                                  }
+                              } catch (error) {
+                                  console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
+                                  Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                              }                             
+                                  
+                                                                   
+                                };                                  
+                              
+                              
+                              
+                              const handleProduitSelect = (produit) => {
+                                console.log("Produit sélectionné:", produit);
+                                setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
+                              };
+                                  
+                                  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
                                   const valeurRemise = typeRemise === "remiseGlobale"
-  ? remisesClient?.remiseGlobale
-  : typeRemise === "remiseFixe"
-    ? remisesClient?.remiseFixe
-    : typeRemise === "remiseParProduit"
-      ? remisesClient?.remiseParProduit
-      : 0;
+                                  ? remisesClient?.remiseGlobale
+                              : typeRemise === "remiseFixe"
+                                  ? remisesClient?.remiseFixe
+                                  : typeRemise === "remiseParProduit"
+                                      ? remisesClient?.remiseParProduit
+                                      : 0;
+                          
 
-
-                                  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-                                    if (typeRemise === 'remiseFixe') {
-                                      return item.prix; // Pas de changement au niveau des produits
-                                    } else if (typeRemise === 'remiseParProduit') {
-                                      return item.prix - (item.prix * (valeurRemise / 100));
-                                    } else if (typeRemise === 'remiseGlobale') {
-                                      return item.prix; // Pas de changement individuel sur les produits
-                                    }
-                                    return item.prix;
-                                  };
+                                      const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+                                        console.log("Prix avant remise:", item.prix);
+                                        console.log("Type de remise:", typeRemise);
+                                        console.log("Valeur de remise:", valeurRemise);
+                                      
+                                        if (typeRemise === 'remiseParProduit') {
+                                          const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
+                                          console.log("Prix après remise:", prixFinal);
+                                          return prixFinal;
+                                        }
+                                        return item.prix;
+                                      };
+                                      
                                   
                                   const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
                                     if (typeRemise === 'remiseFixe') {
@@ -370,7 +454,7 @@ function PriseCommande() {
                                       return totalCommande - (totalCommande * (valeurRemise / 100));
                                     }
                                     return totalCommande;
-                                  };}
+                                  };
                                   
 
   return (
@@ -649,7 +733,7 @@ function PriseCommande() {
             <td>{item.nom}</td>
             <td>{item.quantite}</td>
             <td>{item.unite}</td>
-            <td>{item.prix} Ariary</td>
+            <td>{item.prixdevente} Ariary</td>
             <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
             <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
           </tr>

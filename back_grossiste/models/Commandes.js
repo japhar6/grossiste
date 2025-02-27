@@ -1,86 +1,36 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const commandeSchema = new mongoose.Schema({
-    clientId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Client' 
-    },
-    commercialId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Commercial' 
-    },
-    vendeurId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User', 
-        required: true 
-    },
-    typeClient: { 
-        type: String, 
-        enum: ["Client", "Commercial"], 
-        required: true 
-    },
-    referenceFacture: {
-        type: String,
-        unique: true
-    },
-    modePaiement: { 
-        type: String, 
-        enum: ["espèce", "mobile money", "virement bancaire", "à crédit"], 
-        required: true 
-    },
+    typeClient: { type: String, required: true },
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
+    commercialId: { type: mongoose.Schema.Types.ObjectId, ref: 'Commercial' },
+    vendeurId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendeur' },
+    modePaiement: { type: String, required: true },
     produits: [
         {
-            produit: { 
-                type: mongoose.Schema.Types.ObjectId, 
-                ref: "Produit", 
-                required: true 
-            },
-            quantite: { 
-                type: Number, 
-                required: true, 
-                min: 1 
-            },
-            prixUnitaire: { 
-                type: Number, 
-                required: true 
-            },
-            total: { 
-                type: Number, 
-                required: true 
-            },
-            typeRemise: { 
-                type: String, 
-                enum: ["remiseParProduit", "remiseGlobale"],
-                default: "remiseParProduit" 
-            },
-            valeurRemise: { 
-                type: Number, 
-                default: 0 
-            },
-            prixApresRemise: { 
-                type: Number, 
-                default: function() {
-                    if (this.typeRemise === "remiseParProduit" && this.valeurRemise > 0) {
-                        return this.prixUnitaire - this.valeurRemise;
-                    }
-                    return this.prixUnitaire;
-                }
-            }
+            produit: { type: mongoose.Schema.Types.ObjectId, ref: 'Produit' },
+            quantite: { type: Number, required: true },
+            prixdevente: { type: Number, required: true },
+            total: { type: Number, required: true },
+            prixApresRemise: { type: Number, required: true },
+            typeRemise: { type: String },
+            valeurRemise: { type: Number },
+            uniteChoisie: { type: String }
         }
     ],
-    totalGeneral: { 
-        type: Number, 
-        required: true 
-    },
+    totalGeneral: { type: Number, required: true },
     statut: { 
         type: String,  
-        enum: [ "en cours", "payé","payé et livrée"], 
+        enum: ["en cours", "payé", "payé et livré"], 
         default: "en cours" 
-    }
+    },
+    typeRemise: { type: String },
+    valeurRemise: { type: Number },
+    referenceFacture: { type: String, unique: true }
 }, { timestamps: true });
 
-// Hook pour générer la référence de facture
-commandeSchema.pre('save', async function(next) {
+ // Hook pour générer la référence de facture
+ commandeSchema.pre('save', async function(next) {
     if (!this.referenceFacture) {
         try {
             const prefix = this.typeClient === "Client" ? "FACTCLI" : "FACTCOM";
@@ -102,4 +52,4 @@ commandeSchema.pre('save', async function(next) {
 });
 
 const Commande = mongoose.model("Commande", commandeSchema);
-module.exports = Commande;
+module.exports = Commande;

@@ -5,13 +5,14 @@ const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut, typeRemise, valeurRemise } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut } = req.body;
 
-        // Vérifier que typeClient est fourni
+        // Vérification du typeClient
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
             return res.status(400).json({ message: "typeClient doit être 'Client' ou 'Commercial'." });
         }
 
+        // Recherche du client ou commercial selon le typeClient
         let clientOuCommercial;
         if (typeClient === "Client") {
             if (!clientId) return res.status(400).json({ message: "clientId est requis pour un Client." });
@@ -21,46 +22,75 @@ exports.ajouterCommande = async (req, res) => {
             clientOuCommercial = await Commercial.findById(commercialId);
         }
 
-        // Vérifier si le client ou commercial existe
         if (!clientOuCommercial) {
             return res.status(404).json({ message: `${typeClient} non trouvé avec cet ID.` });
         }
 
-        // Forcer le mode de paiement à "à crédit" si c'est un commercial
+        // Définir le mode de paiement en fonction du type de client
         const paiementFinal = typeClient === "Commercial" ? "à crédit" : modePaiement;
 
-        // Calcul des produits avec remise et création de la commande
-        const produitsDetails = await Promise.all(produits.map(async (item) => {
-            const produit = await Produit.findById(item.produit);
-            if (!produit) throw new Error(`Produit avec ID ${item.produit} non trouvé.`);
-            
-            const prixUnitaire = produit.prixdevente;
-            let prixApresRemise = prixUnitaire;
-
-            // Calcul de la remise si applicable
-            if (typeRemise === "remiseParProduit") {
-                prixApresRemise = prixUnitaire - (prixUnitaire * (valeurRemise / 100));
+        // Itérer sur les produits dans la commande pour récupérer leurs détails
+        const produitsDetails = await Promise.all(produits.map(async (produitData) => {
+            const produit = await Produit.findById(produitData.produit);
+            if (!produit) {
+                console.error(`Produit introuvable avec l'ID ${produitData.produit}`);
+                throw new Error(`Produit introuvable avec l'ID ${produitData.produit}`);
             }
-            
-            const totalProduit = prixApresRemise * item.quantite;
 
-            // Retourner les détails du produit avec remise
+            const uniteChoisie = produit.unites.find(u => u.nom === produitData.uniteChoisie);
+            if (!uniteChoisie) {
+                console.error(`Unité introuvable pour le produit ${produit.nom}`);
+                throw new Error(`Unité introuvable pour le produit ${produit.nom}`);
+            }
+
+            const prixdevente = uniteChoisie.prixdevente;
+            const totalProduit = prixdevente * produitData.quantite;
+
+            let typeRemise = "aucune";
+            let valeurRemise = 0;
+            let prixApresRemise = prixdevente;
+
+            if (typeClient === "Client" && clientOuCommercial.remises) {
+                if (clientOuCommercial.remises.remiseGlobale) {
+                    typeRemise = "remiseGlobale";
+                    valeurRemise = clientOuCommercial.remises.remiseGlobale;
+                    prixApresRemise = prixdevente * (1 - valeurRemise / 100); // Remise globale
+                } else if (clientOuCommercial.remises.remiseFixe) {
+                    typeRemise = "remiseFixe";
+                    valeurRemise = clientOuCommercial.remises.remiseFixe;
+                    prixApresRemise = prixdevente - valeurRemise; // Remise fixe
+                } else if (clientOuCommercial.remises.remiseParProduit) {
+                    typeRemise = "remiseParProduit";
+                    valeurRemise = clientOuCommercial.remises.remiseParProduit;
+                    prixApresRemise = prixdevente * (1 - valeurRemise / 100); // Remise par produit
+                }
+            }
+
+            const totalApresRemise = prixApresRemise * produitData.quantite;
+
             return {
                 produit: produit._id,
-                quantite: item.quantite,
-                prixUnitaire,
-                prixApresRemise,  // Ajouter ici le prix après remise
-                total: totalProduit
+                quantite: produitData.quantite,
+                prixdevente,
+                total: totalProduit,
+                typeRemise,
+                valeurRemise,
+                prixApresRemise, // On stocke le prix après remise ici
+                uniteChoisie: uniteChoisie.nom
             };
         }));
 
-        // Calcul du total général après remise
-        let totalGeneral = produitsDetails.reduce((acc, item) => acc + item.total, 0);
-        if (typeRemise === "remiseGlobale") {
-            totalGeneral = totalGeneral - (totalGeneral * (valeurRemise / 100));
+        // Calcul total général après remise par produit appliquée
+        let totalGeneral = produitsDetails.reduce((acc, produit) => acc + (produit.prixApresRemise * produit.quantite), 0);
+
+        // Appliquer la remise globale sur le total général si elle existe
+        if (typeClient === "Client" && clientOuCommercial.remises && clientOuCommercial.remises.remiseGlobale) {
+            const remiseGlobale = clientOuCommercial.remises.remiseGlobale;
+            totalGeneral = totalGeneral * (1 - remiseGlobale / 100);
+        } else if (clientOuCommercial.remises && clientOuCommercial.remises.remiseFixe) {
+            totalGeneral -= clientOuCommercial.remises.remiseFixe;
         }
 
-        // Création de la commande
         const nouvelleCommande = new Commande({
             typeClient,
             clientId: typeClient === "Client" ? clientId : null,
@@ -69,24 +99,26 @@ exports.ajouterCommande = async (req, res) => {
             modePaiement: paiementFinal,
             produits: produitsDetails,
             totalGeneral,
-            statut,
-            typeRemise,
-            valeurRemise
+            statut
         });
 
-        // Enregistrement
         await nouvelleCommande.save();
 
-        // Réponse avec les informations importantes
         res.status(201).json({
             message: "Commande créée avec succès.",
             commande: nouvelleCommande
         });
 
     } catch (error) {
+        console.error("Erreur lors de l'ajout de la commande :", error);
         res.status(400).json({ message: error.message });
     }
 };
+
+
+
+
+
 
 
 // Récupérer toutes les commandes
