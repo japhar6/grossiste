@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/clientController');
-
+const upload = require('../config/multerNifStat');
 // Route pour créer un client
-router.post('/', clientController.createClient);
+router.post('/', upload.single('nifStatImage'), clientController.createClient);
 
 // Route pour obtenir tous les clients
-router.get('/afficher', clientController.getAllClients);
+router.get('/', clientController.getAllClients);
 
 // Route pour obtenir un client par ID
 router.get('/recuperer/:id', clientController.getClientById);

@@ -8,11 +8,17 @@ import axios from '../api/axios';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
-              const [newPerson, setNewPerson] = useState({
-                nom: "",
-                telephone: "",
-                adresse: "",
-              });
+           const [newPerson, setNewPerson] = useState({
+    nom: "",
+    telephone: "",
+    adresse: "",
+    nif: "",
+    stat: "",
+    nifStatImage: null, // Stocke l'image
+});
+
+const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'image
+
               const playSound = () => {
                 const audio = new Audio(Sound); 
                 audio.play();
@@ -91,7 +97,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("/api/client/afficher");
+                                    const response = await axios.get("/api/client/");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);
@@ -116,7 +122,7 @@ function PriseCommande() {
                                     // Validation des champs selon le type (client ou commercial)
                                     if (type === "client") {
                                       
-                                      if (!newPerson.nom || !newPerson.telephone || !newPerson.adresse) {
+                                      if (!newPerson.nom ) {
                                         Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
                                         return;
                                       }
@@ -127,13 +133,24 @@ function PriseCommande() {
                                         return;
                                       }
                                     }
+                                         // Création d'un objet FormData
+    const formData = new FormData();
+    
+    // Ajouter les données à FormData
+    for (const key in newPerson) {
+      formData.append(key, newPerson[key]);
+    }
 
+    
                                     // Déterminer l'URL selon le type (client ou commercial)
                                     const url = type === "client" ? "/api/client/" : "/api/comercial/";
                                     
-                                    // Envoi de la requête POST
-                                    const response = await axios.post(url, newPerson);
-                                    
+                                       // Envoi de la requête POST avec FormData
+    const response = await axios.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
                                     if (response.data) {
                                       Swal.fire(
                                         {
@@ -534,6 +551,9 @@ function PriseCommande() {
            </div>
 
            {type === "client" && (
+               
+               
+               <>
                <div className="col-12 mt-2">
                    <input
                        type="text"
@@ -543,6 +563,52 @@ function PriseCommande() {
                        onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
                    />
                </div>
+                   <div className="col-12 mt-2">
+                   <input
+                       type="text"
+                       className="form-control"
+                       placeholder="NIF"
+                       value={newPerson.nif}
+                       onChange={(e) => setNewPerson({ ...newPerson, nif: e.target.value })}
+                   />
+               </div>
+               <div className="col-12 mt-2">
+                <input
+                    type="text"
+                    className="form-control"
+                    placeholder="STAT"
+                    value={newPerson.stat}
+                    onChange={(e) => setNewPerson({ ...newPerson, stat: e.target.value })}
+                />
+            </div>
+            <div className="col-12 mt-2">
+                <label className="form-label">Image NIF/STAT</label>
+                <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            setNewPerson({ ...newPerson, nifStatImage: file });
+
+                            // Prévisualisation de l'image
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                                setPreviewImage(reader.result);
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    }}
+                />
+            </div>
+            {previewImage && (
+                <div className="col-12 mt-2">
+                    <img src={previewImage} alt="Aperçu" className="img-fluid" style={{ maxHeight: "200px" }} />
+                </div>
+            )}
+               </>
+               
            )}
 
            {type === "commercial" && (
