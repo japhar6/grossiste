@@ -164,8 +164,8 @@ function Stock() {
               <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
               <td>{stock.produit.codeProduit}</td>
               <td>{stock.produit.nom}</td>
-              <td>{stock.quantité}</td>
-              <td>{stock.produit.unite}</td>
+              <td>{stock.quantite}</td>
+              <td>{stock.unite}</td>
               <td>{stock.produit.categorie}</td>
               <td>{stock.produit.quantiteMinimum}</td>
               <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>

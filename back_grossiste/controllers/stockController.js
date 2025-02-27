@@ -3,31 +3,54 @@ const Commande = require('../models/Commandes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Produit = require("../models/Produits"); 
 const Entrepot = require('../models/Entrepot');
+const mongoose = require('mongoose');
+
 
 // Fonction réutilisable pour créer ou mettre à jour un stock
-exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
+exports.ajouterOuMettreAJourStock = async (entrepotId, produitId, quantiteAjoutee, prixAchat,unite) => {
   try {
-    if (quantité <= 0 || prixUnitaire <= 0) {
-      throw new Error('La quantité et le prix unitaire doivent être supérieurs à zéro.');
-    }
+      console.log(`📦 Mise à jour du stock: Produit ${produitId}, Quantité: ${quantiteAjoutee}, Prix Achat: ${prixAchat}`);
 
-    let stock = await Stock.findOne({ entrepot, produit });
+      if (!quantiteAjoutee || isNaN(quantiteAjoutee) || quantiteAjoutee <= 0) {
+          throw new Error(`❌ Quantité invalide (${quantiteAjoutee})`);
+      }
 
-    if (stock) {
-      stock.quantité += quantité;
-    } else {
-      stock = new Stock({ entrepot, produit, quantité, prixUnitaire });
-    }
+      if (!prixAchat || isNaN(prixAchat)) {
+          throw new Error(`❌ Prix d'achat invalide (${prixAchat})`);
+      }
 
-    // Calculer la valeur totale
-    stock.valeurTotale = stock.quantité * stock.prixUnitaire;
-    await stock.save();
+      let stock = await Stock.findOne({ produit: produitId, entrepot: entrepotId });
+      console.log("🔎 Stock trouvé dans la base ?", stock);
 
-    return stock;
+      if (stock) {
+          console.log("🛠 Mise à jour du stock existant");
+          stock.quantite += quantiteAjoutee;  // Correction ici (supprimer l'accent)
+          stock.valeurTotale = stock.quantite * prixAchat;
+      } else {
+          console.log("🆕 Création d'un nouveau stock");
+          stock = new Stock({
+              produit: produitId,
+              entrepot: entrepotId,
+              quantite: quantiteAjoutee,  // Correction ici (supprimer l'accent)
+              prixUnitaire: prixAchat,
+              valeurTotale: quantiteAjoutee * prixAchat,
+              unite :unite
+          });
+      }
+
+      console.log("📤 Objet stock avant sauvegarde:", stock);
+
+      await stock.save();
+      console.log(`✅ Stock mis à jour: ${stock.quantite} unités`);
+
   } catch (error) {
-    throw new Error('Erreur lors de la mise à jour du stock: ' + error.message);
+      console.error("❌ Erreur lors de la mise à jour du stock:", error);
+      throw error;
   }
 };
+
+
+
 exports.getQuantiteProduitById = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
@@ -59,7 +82,12 @@ exports.getQuantiteProduitById = async (req, res) => {
     console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
-} ; exports.getQuantiteProduitByIde = async (req, res) => {
+} ; 
+
+
+
+
+exports.getQuantiteProduitByIde = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
   try {

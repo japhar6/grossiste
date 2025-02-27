@@ -1,26 +1,22 @@
 const Transfert = require('../models/Transfert');
 const Stock = require('../models/Stock');
-
-// 1️⃣ Création d'un transfert par l'entrepôt source
+const Produit = require("../models/Produits");
 exports.transfertProduit = async (req, res) => {
   try {
-    const { entrepotSource, entrepotDestination, produit, quantité, prixUnitaire } = req.body;
+    const { entrepotSource, entrepotDestination, produit, quantité } = req.body;
 
     if (quantité <= 0) {
       return res.status(400).json({ message: 'La quantité doit être supérieure à zéro.' });
     }
 
-    // Vérifier le stock dans l'entrepôt source
     const stockSource = await Stock.findOne({ entrepot: entrepotSource, produit });
-    if (!stockSource || stockSource.quantité < quantité) {
+    if (!stockSource || stockSource.quantite < quantité) {
       return res.status(400).json({ message: "Stock insuffisant dans l'entrepôt source." });
     }
 
-    // Réduire le stock dans l'entrepôt source
-    stockSource.quantité -= quantité;
+    stockSource.quantite -= quantité;
     await stockSource.save();
 
-    // Créer un transfert avec statut en attente d'approbation admin
     const transfert = new Transfert({
       entrepotSource,
       entrepotDestination,
@@ -32,7 +28,8 @@ exports.transfertProduit = async (req, res) => {
     await transfert.save();
     res.status(201).json({ message: 'Transfert initié avec succès, en attente de validation admin.', transfert });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de l'initiation du transfert", error });
+    console.error("Erreur lors de l'initiation du transfert:", error);
+    res.status(500).json({ message: "Erreur lors de l'initiation du transfert", error: error.message });
   }
 };
 
@@ -44,12 +41,10 @@ exports.validerParAdmin = async (req, res) => {
       return res.status(404).json({ message: 'Transfert non trouvé' });
     }
 
-    // Vérifiez si le transfert a déjà été validé
     if (transfert.statutAdmin !== 'en attente') {
       return res.status(400).json({ message: 'Le transfert a déjà été traité.' });
     }
 
-    // Mettez à jour le statut sans valider la quantité
     transfert.statutAdmin = 'approuvé';
     
     await transfert.save();
@@ -57,80 +52,76 @@ exports.validerParAdmin = async (req, res) => {
     res.status(200).json({ message: 'Transfert approuvé par l’admin.', transfert });
   } catch (error) {
     console.error("Erreur lors de la validation par l'admin:", error);
-    res.status(500).json({ message: "Erreur lors de la validation par l'admin", error });
+    res.status(500).json({ message: "Erreur lors de la validation par l'admin", error: error.message });
   }
 };
 
-
-// 3️⃣ Réception et validation par l'entrepôt destinataire
-exports.receptionnerTransfert = async (req, res) => {
+// Route pour recevoir et terminer un transfert
+exports.receptionnerEtTerminerTransfert = async (req, res) => {
   try {
-    const { quantitéReçue, quantitéPerdue, quantitéEndommagée, commentaire } = req.body;
-
     const transfert = await Transfert.findById(req.params.id);
+    
     if (!transfert) {
+      console.error('Transfert non trouvé');
       return res.status(404).json({ message: 'Transfert non trouvé' });
     }
-    
-    if (transfert.statutAdmin !== 'approuvé') {
-      return res.status(400).json({ message: "Le transfert n'a pas encore été approuvé par l'admin." });
+
+    // Vérifiez si le transfert a déjà été reçu
+    if (transfert.statutEntrepotDestination === 'reçu') {
+      console.error('Le transfert a déjà été reçu');
+      return res.status(400).json({ message: 'Le transfert a déjà été reçu.' });
     }
 
-    // Vérifier si la quantité reçue est correcte
-    if (quantitéReçue + quantitéPerdue + quantitéEndommagée !== transfert.quantitéEnvoyée) {
-      return res.status(400).json({ message: "La somme des quantités ne correspond pas à la quantité envoyée." });
-    }
-
-    // Mise à jour des informations de réception
-    transfert.quantitéReçue = quantitéReçue;
-    transfert.quantitéPerdue = quantitéPerdue;
-    transfert.quantitéEndommagée = quantitéEndommagée;
-    transfert.commentaireEntrepotDestination = commentaire;
+    // Mettez à jour le statut à "reçu"
     transfert.statutEntrepotDestination = 'reçu';
+    
+    // Mettez à jour la quantité reçue (par exemple, en utilisant la quantité envoyée)
+    transfert.quantitéReçue = transfert.quantitéEnvoyée;
 
-    await transfert.save();
+    // Trouver le produit et ses unités
+    const produit = await Produit.findById(transfert.produit).populate('unites'); // Assurez-vous que 'unites' est un champ peuplé
+    if (!produit) {
+      console.error('Produit non trouvé');
+      return res.status(404).json({ message: 'Produit non trouvé' });
+    }
 
-    // Mise à jour du stock de l'entrepôt de destination
-    let stockDestination = await Stock.findOne({ entrepot: transfert.entrepotDestination, produit: transfert.produit });
+    // Trouver l'unité avec la plus grande conversion
+    const uniteMinimale = produit.unites.reduce((min, unite) => {
+      return (unite.conversion > min.conversion) ? unite : min;
+    });
 
+    console.log('Unité minimale trouvée:', uniteMinimale);
+
+    // Optionnel : Vous pouvez également mettre à jour le stock dans l'entrepôt de destination
+    const stockDestination = await Stock.findOne({ entrepot: transfert.entrepotDestination, produit: transfert.produit });
     if (!stockDestination) {
-      stockDestination = new Stock({
+      console.log('Création d\'un nouveau stock pour le produit');
+      // Si le stock n'existe pas, vous pouvez le créer
+      await Stock.create({
         entrepot: transfert.entrepotDestination,
         produit: transfert.produit,
-        quantité: quantitéReçue,
+        quantite: transfert.quantitéReçue, // Quantité reçue
+        prixUnitaire: produit.prixDachat, // Assurez-vous que prixUnitaire est disponible dans transfert
+        unite: uniteMinimale.nom, 
+        valeurTotale : produit.prixDachat*transfert.quantitéReçue 
       });
     } else {
-      stockDestination.quantité += quantitéReçue;
+      console.log('Mise à jour du stock existant');
+      // Si le stock existe, mettez à jour la quantité
+      stockDestination.quantite += transfert.quantitéReçue; // Ajoutez la quantité reçue
+      await stockDestination.save();
     }
 
-    await stockDestination.save();
-
-    res.status(200).json({ message: 'Transfert reçu et enregistré.', transfert });
-  } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la réception du transfert', error });
-  }
-};
-
-// 4️⃣ Terminer un transfert (statut "terminé")
-exports.terminerTransfert = async (req, res) => {
-  try {
-    const transfert = await Transfert.findById(req.params.id);
-    if (!transfert) {
-      return res.status(404).json({ message: 'Transfert non trouvé' });
-    }
-
-    if (transfert.statutEntrepotDestination !== 'reçu') {
-      return res.status(400).json({ message: "Le transfert ne peut pas être terminé car il n'a pas encore été validé par l'entrepôt de destination." });
-    }
-
-    transfert.statut = 'terminé';
+    // Finalisez le transfert
     await transfert.save();
-
-    res.status(200).json({ message: 'Transfert terminé avec succès.', transfert });
+    console.log('Transfert reçu et terminé avec succès:', transfert);
+    res.status(200).json({ message: 'Transfert reçu et terminé avec succès.', transfert });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du statut', error });
+    console.error("Erreur lors de la réception et de la finalisation du transfert:", error);
+    res.status(500).json({ message: "Erreur lors de la réception et de la finalisation du transfert", error: error.message });
   }
 };
+
 
 // 5️⃣ Récupérer les transferts avec filtres
 exports.recuperer = async (req, res) => {

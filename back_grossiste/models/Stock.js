@@ -11,7 +11,7 @@ const stockSchema = new mongoose.Schema({
     ref: 'Produit',  
     required: true,
   },
-  quantité: {
+  quantite: {
     type: Number,
     required: true,
   },
@@ -27,6 +27,7 @@ const stockSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  unite: { type: String, required: true }, 
   statut: {
     type: String,
     enum: ['actif', 'inactif'],

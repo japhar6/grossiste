@@ -105,49 +105,84 @@ exports.ajouterAchat = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
     }
 };
+const handleChangeUnite = (produit, uniteNom, stock) => {
+    setUniteSelectionnee((prev) => ({
+        ...prev,
+        [produit._id]: uniteNom,
+    }));
+
+    // Trouver l'unité sélectionnée et l'unité actuelle
+    const selectedUnitInfo = produit.unites.find(u => u.nom === uniteNom);
+    const currentUnitInfo = produit.unites.find(u => u.nom === (uniteSelectionnee[produit._id] || produit.unites[0].nom));
+
+    if (selectedUnitInfo && currentUnitInfo) {
+        // Utilisez la quantité actuelle du stock
+        const currentQuantity = stock.quantite;
+
+        // Utiliser la fonction convertirQuantite pour obtenir les quantités converties
+        const quantitesConverties = convertirQuantite(currentQuantity, currentUnitInfo.nom, produit.unites);
+        
+        if (quantitesConverties) {
+            // Mettez à jour une variable d'état pour afficher la quantité convertie
+            setStocks((prevStocks) => {
+                return prevStocks.map(stockItem => {
+                    if (stockItem.produit._id === produit._id) {
+                        return {
+                            ...stockItem,
+                            displayedQuantity: quantitesConverties[selectedUnitInfo.nom], // Quantité convertie pour l'unité sélectionnée
+                            displayedUnit: selectedUnitInfo.nom // Unité convertie
+                        };
+                    }
+                    return stockItem;
+                });
+            });
+        }
+    }
+};
 
 
-
-
-  
-
-
-
-// Route pour valider un panier entier et mettre à jour le stock dans un entrepôt
 exports.validerPanier = async (req, res) => {
     try {
-      const { panierId } = req.params;
-      const { entrepotId } = req.body;
-  
-      console.log("🔍 Validation du panier - ID du panier:", panierId, "Entrepôt:", entrepotId);
-  
-      const panier = await Panier.findById(panierId);  // Trouver le panier
-      if (!panier) {
-        return res.status(404).json({ message: "Panier non trouvé" });
-      }
-  
-      const achats = await Achat.find({ _id: { $in: panier.achats } }).populate('produit');  // Trouver les achats liés au panier
-      if (achats.length === 0) {
-        return res.status(404).json({ message: "Aucun achat trouvé pour ce panier" });
-      }
-  
-      const entrepot = await Entrepot.findById(entrepotId);
-      if (!entrepot) {
-        return res.status(404).json({ message: "Entrepôt non trouvé" });
-      }
-  
-      // Mise à jour du stock
-      for (const achat of achats) {
-        await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, achat.quantite, achat.prixAchat);
-      }
-  
-      res.status(200).json({ message: "Panier validé et stock mis à jour", achats });
+        const { panierId } = req.params;
+        const { entrepotId } = req.body;
+
+        console.log("🔍 Validation du panier - ID du panier:", panierId, "Entrepôt:", entrepotId);
+
+        const panier = await Panier.findById(panierId);
+        if (!panier) {
+            return res.status(404).json({ message: "Panier non trouvé" });
+        }
+
+        const achats = await Achat.find({ _id: { $in: panier.achats } }).populate('produit');
+        if (achats.length === 0) {
+            return res.status(404).json({ message: "Aucun achat trouvé pour ce panier" });
+        }
+
+        const entrepot = await Entrepot.findById(entrepotId);
+        if (!entrepot) {
+            return res.status(404).json({ message: "Entrepôt non trouvé" });
+        }
+
+        for (const achat of achats) {
+            const prixUnitaire = achat.prixAchat || 0;
+
+            // Conversion de la quantité avec ta fonction `convertirUnite`
+            const { quantite, unite } = convertirUnite(achat.quantite, achat.unite, achat.produit.unites);
+
+            console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantite} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
+
+            // Ajout ou mise à jour du stock
+            await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, quantite, prixUnitaire, unite);
+        }
+
+        res.status(200).json({ message: "Panier validé et stock mis à jour", achats });
     } catch (error) {
-      console.error("❌ Erreur lors de la validation du panier:", error);
-      res.status(500).json({ message: "Erreur lors de la validation du panier", error: error.message });
+        console.error("❌ Erreur lors de la validation du panier:", error);
+        res.status(500).json({ message: "Erreur lors de la validation du panier", error: error.message });
     }
-  };
-  
+};
+
+
 
 
 // Afficher tous les achats

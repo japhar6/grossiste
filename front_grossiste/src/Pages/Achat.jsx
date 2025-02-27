@@ -588,6 +588,7 @@ const validerPanier = async () => {
           confirmButtonText: "OK",
       }).then(() => {
           // Mettre à jour l'historique des achats
+          window.location.reload();
           const achat = {
               fournisseur,
               date: new Date().toLocaleString(),
@@ -599,6 +600,7 @@ const validerPanier = async () => {
           setHistoriqueAchats([achat, ...historiqueAchats]);
           // Réinitialiser le panier et le fournisseur
           setPanierCreer(false);
+          setEntrepot("");
           setFournisseur("");
           setPanier([]);
       });
@@ -875,7 +877,7 @@ const validerPanier = async () => {
                  ))}
              
                  {/* Affichage des conversions */}
-                 <div className="conversion-display mt-3">
+                  <div className="conversion-display mt-3">
                      {nouveauProduit.unites.length > 0 && (
                          <p>
                              {nouveauProduit.unites.reduce((acc, unite, index) => {
