@@ -5,102 +5,65 @@ const PaiementCommerciale = require("../models/PaimentCommerciale");
 
 exports.validerpayement = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { statut, remiseGlobale, remiseParProduit, remiseFixe, idCaissier } = req.body; // Ajout de remiseFixe
-  
-        // Recherche de la commande par ID
-        const commande = await Commande.findById(id);
+        const { id } = req.params;  // Référence de la commande (ex : "FACTCLI-001")
+        const { idCaissier, referencePaiement } = req.body; // Récupérer l'id du caissier et la référence du paiement
+
+        // Recherche de la commande par la référence de facture (id)
+        const commande = await Commande.findOne({ referenceFacture: id });
         if (!commande) {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
-  
-       // Calcul du montant après remise globale
-let montantFinalPaye = commande.totalGeneral;
-let montanApres = montantFinalPaye; // Valeur initiale
 
-// Si remise globale est spécifiée et non égale à 0, l'appliquer
-if (remiseGlobale && remiseGlobale > 0) {
-    montanApres -= montanApres * (remiseGlobale / 100);
-    console.log("Total après remise globale:", montanApres); 
-}
+        // Récupérer le mode de paiement de la commande
+        const modePaiement = commande.modePaiement;
 
-// Calcul du montant après remise par produit
-let produitsAvecRemises = [];
-if ((!remiseGlobale || remiseGlobale === 0) && remiseParProduit && Array.isArray(remiseParProduit)) {
-    // Appliquer remise par produit sans modifier la commande
-    produitsAvecRemises = commande.produits.map(item => {
-        const produitRemise = remiseParProduit.find(rp => rp.produitId.toString() === item.produit.toString());
-
-        if (produitRemise) {
-            const remiseProduit = produitRemise.remise || 0;
-            const prixProduit = item.prixUnitaire;
-            const prixApresRemise = prixProduit - (prixProduit * (remiseProduit / 100));
-            const totalProduit = prixApresRemise * item.quantite;
-
-            return {
-                produitId: item.produit,
-                remise: remiseProduit,
-                prixAvantRemise: prixProduit,
-                prixApresRemise: prixApresRemise,
-                totalProduit: totalProduit
-            };
+        // Si le mode de paiement est "mobile money" ou "virement bancaire", la référence de paiement est requise
+        if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
+            return res.status(400).json({ message: "La référence de paiement est requise pour ce mode de paiement" });
         }
 
-        return null; // Aucun changement si pas de remise appliquée
-    }).filter(item => item !== null); // Supprimer les éléments null qui n'ont pas eu de remise
+        // Calcul du montant à payer (aucune remise, juste la somme totale de la commande)
+        let montantPaye = commande.totalGeneral;
 
-    // Calcul final du montant après remise par produit
-    if (produitsAvecRemises.length > 0) {
-        montanApres = produitsAvecRemises.reduce((acc, item) => acc + item.totalProduit, 0);
-        console.log("Montant final après remise par produit :", montanApres);
-    }
-}
-
-// Appliquer la remise fixe si elle est fournie
-if (remiseFixe && remiseFixe > 0) {
-    montanApres -= remiseFixe;
-    console.log("Total après remise fixe:", montanApres);
-}
-
-// Si aucune remise n'est appliquée, utiliser le montant final sans modification
-if (montanApres === montantFinalPaye) {
-    montanApres = montantFinalPaye;
-}
-        // Mettre à jour le statut de la commande
+        // Mettre à jour le statut de la commande à "payé"
         commande.statut = "payé";
         await commande.save();
-  
-        // Créer un paiement avec le montant correctement mis à jour
+
+        // Si le mode de paiement est "mobile money" ou "virement bancaire", le statut du paiement sera "payé partielle"
+        let statutPaiement = "payé complet";
+        if (modePaiement === "mobile money" || modePaiement === "virement bancaire") {
+            statutPaiement = "payé partielle";
+        }
+
+        // Créer un paiement avec le montant payé et d'autres détails
         const paiement = new Paiement({
-            commandeId: commande._id,
-            montantPaye: montanApres,  // Montant final après remise
-        
-            totalPaiement: montanApres,  // Le même montant ici aussi
-            statut: "payé complet",
-            remiseGlobale: remiseGlobale || 0,
-            remiseParProduit: remiseParProduit || [],
-            remiseFixe: remiseFixe || 0 ,
-            idCaissier  
+            commandeId: commande._id,  // Référence à l'ID de la commande
+            montantPaye: montantPaye,  // Montant payé basé sur la commande
+            totalPaiement: montantPaye,  // Le montant total payé est le même ici
+            statut: statutPaiement,  // Statut du paiement (payé partielle ou payé complet)
+            referencePaiement: referencePaiement,  // Référence de paiement, si nécessaire
+            idCaissier: idCaissier  // ID du caissier
         });
-  
+
         // Sauvegarder le paiement dans la base de données
         await paiement.save();
-  
-        return res.status(200).json({ message: "Paiement validé avec succès", paiement: {
-            commandeId: paiement.commandeId,
-            montantPaye: paiement.montantPaye,
-            statut: paiement.statut,
-            remiseGlobale: paiement.remiseGlobale,
-            remiseParProduit: paiement.remiseParProduit,
-            remiseFixe: paiement.remiseFixe,  
-            totalPaiement: paiement.totalPaiement,
-            produitsAvecRemises: produitsAvecRemises,
-            montantFinal: montanApres
-        } });
+
+        // Réponse avec les détails du paiement validé
+        return res.status(200).json({
+            message: "Paiement validé avec succès",
+            paiement: {
+                commandeId: paiement.commandeId,
+                montantPaye: paiement.montantPaye,
+                statut: paiement.statut,
+                totalPaiement: paiement.totalPaiement,
+                referencePaiement: paiement.referencePaiement
+            }
+        });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-}; 
+};
+
 
 
 
