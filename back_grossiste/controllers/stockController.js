@@ -4,30 +4,31 @@ const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Produit = require("../models/Produits"); 
 const Entrepot = require('../models/Entrepot');
 
-// Fonction réutilisable pour créer ou mettre à jour un stock
+// Fonction réutilisable pour créer une nouvelle entrée de stock à chaque achat
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
   try {
     if (quantité <= 0 || prixUnitaire <= 0) {
       throw new Error('La quantité et le prix unitaire doivent être supérieurs à zéro.');
     }
 
-    let stock = await Stock.findOne({ entrepot, produit });
+    // ❌ On ne fusionne plus les stocks existants
+    const nouveauStock = new Stock({
+      entrepot,
+      produit,
+      quantité,
+      prixUnitaire,
+      dateEntree: new Date(), // Nouvelle entrée => nouvelle date
+      valeurTotale: quantité * prixUnitaire
+    });
 
-    if (stock) {
-      stock.quantité += quantité;
-    } else {
-      stock = new Stock({ entrepot, produit, quantité, prixUnitaire });
-    }
+    await nouveauStock.save();
+    return nouveauStock;
 
-    // Calculer la valeur totale
-    stock.valeurTotale = stock.quantité * stock.prixUnitaire;
-    await stock.save();
-
-    return stock;
   } catch (error) {
-    throw new Error('Erreur lors de la mise à jour du stock: ' + error.message);
+    throw new Error('Erreur lors de l’ajout du stock : ' + error.message);
   }
 };
+
 exports.getQuantiteProduitById = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 

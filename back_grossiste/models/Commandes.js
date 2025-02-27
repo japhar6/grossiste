@@ -47,6 +47,24 @@
                 total: { 
                     type: Number, 
                     required: true 
+                },
+                typeRemise: { 
+                    type: String, 
+                    enum: ["remiseParProduit", "remiseGlobale"],
+                    default: "remiseParProduit" 
+                },
+                valeurRemise: { 
+                    type: Number, 
+                    default: 0 
+                },
+                prixApresRemise: { 
+                    type: Number, 
+                    default: function() {
+                        if (this.typeRemise === "remiseParProduit" && this.valeurRemise > 0) {
+                            return this.prixUnitaire - this.valeurRemise;
+                        }
+                        return this.prixUnitaire;
+                    }
                 }
             }
         ],

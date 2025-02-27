@@ -39,7 +39,36 @@ function PriseCommande() {
 
               const [selectedProduit, setSelectedProduit] = useState(null); 
 
-
+              const [remisesClient, setRemisesClient] = useState(null);
+              const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
+              
+              useEffect(() => {
+                const fetchRemisesClient = async () => {
+                  if (selectedPerson) {
+                    try {
+                      const response = await axios.get(`/api/client/recuperer/${selectedPerson}`);
+                      setRemisesClient(response.data.remises);  // Récupère les remises du client
+                      
+                      // Vérifie quel type de remise existe et met à jour le typeRemise
+                      if (response.data.remises.remiseGlobale > 0) {
+                        setTypeRemise("remiseGlobale");
+                      } else if (response.data.remises.remiseFixe > 0) {
+                        setTypeRemise("remiseFixe");
+                      } else if (response.data.remises.remiseParProduit > 0) {
+                        setTypeRemise("remiseParProduit");
+                      } else {
+                        setTypeRemise(null); // Aucune remise spéciale
+                      }
+                      
+                    } catch (error) {
+                      console.error("Erreur lors de la récupération des remises du client", error);
+                    }
+                  }
+                };
+              
+                fetchRemisesClient();
+              }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
+              
 
           
 
@@ -62,7 +91,7 @@ function PriseCommande() {
 
                                 const fetchClients = async () => {
                                   try {
-                                    const response = await axios.get("/api/client/affichergit ");
+                                    const response = await axios.get("/api/client/afficher");
                                     setClients(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des clients", error);
@@ -100,7 +129,7 @@ function PriseCommande() {
                                     }
 
                                     // Déterminer l'URL selon le type (client ou commercial)
-                                    const url = type === "client" ? "/api/client" : "/api/comercial/";
+                                    const url = type === "client" ? "/api/client/" : "/api/comercial/";
                                     
                                     // Envoi de la requête POST
                                     const response = await axios.post(url, newPerson);
@@ -309,45 +338,76 @@ function PriseCommande() {
                                       }
                                   
                                       const nouvelleCommande = {
-                                          typeClient,
-                                          commercialId: isCommercial ? selectedPerson : null, 
-                                          clientId: !isCommercial ? selectedPerson : null, 
-                                          vendeurId,
-                                          produits: commande.map(prod => ({
-                                              produit: prod._id, 
-                                              quantite: prod.quantite,
-                                          })),
-                                          modePaiement: isCommercial ? "à crédit" : modePaiement,
-                                          statut: "en cours",
-                                      };
+                                        typeClient,
+                                        commercialId: isCommercial ? selectedPerson : null,
+                                        clientId: !isCommercial ? selectedPerson : null,
+                                        vendeurId,
+                                        produits: commande.map(prod => ({
+                                            produit: prod._id,
+                                            quantite: prod.quantite,
+                                            prixUnitaire: prod.prixUnitaire, // Le prix unitaire original
+                                            prixApresRemise: calculerPrixApresRemise(prod, typeRemise, valeurRemise),
+                                        })),
+                                        modePaiement: isCommercial ? "à crédit" : modePaiement,
+                                        statut: "en cours",
+                                        typeRemise,
+                                        valeurRemise,
+                                        totalGeneral: commande.reduce((total, prod) => total + (calculerPrixApresRemise(prod, typeRemise, valeurRemise) * prod.quantite), 0) // Calculer le total général après remise
+                                    };
+                                    
+                                    console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                    
+                                    try {
+                                      const response = await axios.post("/api/commandes/ajouter", nouvelleCommande);
                                   
-                                      console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                      if (response.data) {
+                                          const commande = response.data.commande; // Récupérer la commande retournée par l'API
+                                          console.log("Commande après enregistrement :", commande);
                                   
-                                      try {
-                                          const response = await axios.post("/api/commandes/ajouter", nouvelleCommande);
+                                          // Vérification de la valeur de la remise renvoyée
+                                          console.log("Valeur de la remise renvoyée par l'API : ", commande.valeurRemise);  // Vérifier ce que l'API renvoie.
                                   
-                                          if (response.data) {
-                                              const referenceFacture = response.data.commande.referenceFacture; 
-                                              playSound();
-                                              Swal.fire({
-                                                  title: "Commande validée",
-                                                  text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
-                                                  icon: "success",
-                                                  confirmButtonText: "OK"
-                                              }).then(() => {
-                                                  setCommande([]); 
-                                                  setSelectedPerson(""); 
-                                                  setModePaiement(""); 
-                                                  setSearchTerm(""); 
-                                                  setSelectedProducts([]); 
-                                                  setCheckedProduits({}); 
-                                              });
+                                          // Affichage des informations sur la remise et le prix après remise
+                                          commande.produits.forEach(prod => {
+                                              console.log(`Produit ID: ${prod.produit}`);
+                                              console.log(`Prix Unitaire: ${prod.prixUnitaire}`);
+                                              console.log(`Prix Après Remise: ${prod.prixApresRemise}`);
+                                          });
+                                  
+                                          // Affichage de la remise globale si applicable
+                                          if (commande.typeRemise === "remiseGlobale") {
+                                              console.log(`Remise Globale Appliquée: ${commande.valeurRemise}%`);
                                           }
-                                      } catch (error) {
-                                          console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
-                                          Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                                  
+                                          // Affichage de la valeurRemise
+                                          if (commande.valeurRemise !== undefined) {
+                                              console.log(`Valeur de la Remise : ${commande.valeurRemise}`);  // Affichage de la remise
+                                          } else {
+                                              console.log("Valeur de la Remise est undefined.");
+                                          }
+                                  
+                                          Swal.fire({
+                                              title: "Commande validée",
+                                              text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${commande.referenceFacture}`,
+                                              icon: "success",
+                                              confirmButtonText: "OK"
+                                          }).then(() => {
+                                              // Réinitialisation des champs
+                                              setCommande([]);
+                                              setSelectedPerson("");
+                                              setModePaiement("");
+                                              setSearchTerm("");
+                                              setSelectedProducts([]);
+                                              setCheckedProduits({});
+                                          });
                                       }
-                                  };
+                                  } catch (error) {
+                                      console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
+                                      Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                                  }
+                                  
+                                                                   
+                                };                                  
                                   
                                   
                                   
@@ -357,6 +417,40 @@ function PriseCommande() {
                                   };
                                   
                                   const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
+                                  const valeurRemise = typeRemise === "remiseGlobale"
+  ? remisesClient?.remiseGlobale
+  : typeRemise === "remiseFixe"
+    ? remisesClient?.remiseFixe
+    : typeRemise === "remiseParProduit"
+      ? remisesClient?.remiseParProduit
+      : 0;
+
+
+                                  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+                                    if (typeRemise === 'remiseFixe') {
+                                      return item.prix; // Pas de changement au niveau des produits
+                                    } else if (typeRemise === 'remiseParProduit') {
+                                      return item.prix - (item.prix * (valeurRemise / 100));
+                                    } else if (typeRemise === 'remiseGlobale') {
+                                      return item.prix; // Pas de changement individuel sur les produits
+                                    }
+                                    return item.prix;
+                                  };
+                                  
+                                  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
+                                    if (typeRemise === 'remiseFixe') {
+                                      return totalCommande - valeurRemise;
+                                    } else if (typeRemise === 'remiseParProduit') {
+                                      return commande.reduce((total, item) => {
+                                        const prixApresRemise = item.prix - (item.prix * (valeurRemise / 100));
+                                        return total + (prixApresRemise * item.quantite);
+                                      }, 0);
+                                    } else if (typeRemise === 'remiseGlobale') {
+                                      return totalCommande - (totalCommande * (valeurRemise / 100));
+                                    }
+                                    return totalCommande;
+                                  };
+                                  
 
   return (
     <main className="center">
@@ -370,21 +464,23 @@ function PriseCommande() {
               <i className="fa fa-shopping-cart"></i> Prise de Commande
             </h6>
             <div className="form-group mt-3">
-              <label>Type :</label>
-              <select
-                className="form-control"
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setIsNew(false);
-                  setSelectedPerson("");
-                }}
-              >
-                <option value="">Choisir un type</option>
-                <option value="client">Client</option>
-                <option value="commercial">Commercial</option>
-              </select>
-            </div>
+  <label>Type :</label>
+  <select
+    className="form-control"
+    value={type}
+    onChange={(e) => {
+      setType(e.target.value);
+      setIsNew(false);
+      setSelectedPerson("");
+      setTypeRemise(null);  // Réinitialise le type de remise à chaque changement de type
+    }}
+  >
+    <option value="">Choisir un type</option>
+    <option value="client">Client</option>
+    <option value="commercial">Commercial</option>
+  </select>
+</div>
+
     
             <div className="commande-container d-flex justify-content-between">
               {/* Informations Client (colonne gauche) */}
@@ -496,7 +592,14 @@ function PriseCommande() {
                     <option value=" à crédit">Crédit</option>
                     <option value="virement bancaire">Virement bancaire</option>
                   </select>
-                
+                  {type === "client" && remisesClient && typeRemise && (
+                  <div className="remises-info mt-3 m-2">
+                    <h6>Type de remise du client :</h6>
+                    {typeRemise === "remiseGlobale" && <label>Remise Globale : {remisesClient.remiseGlobale}%</label>}
+                    {typeRemise === "remiseFixe" && <label>Remise Fixe : {remisesClient.remiseFixe} Ariary</label>}
+                    {typeRemise === "remiseParProduit" && <label>Remise par Produit : {remisesClient.remiseParProduit}%</label>}
+                  </div>
+                )}
               </div>
 
               {/* Liste des Produits (colonne droite) */}
@@ -569,7 +672,6 @@ function PriseCommande() {
                                                                         readOnly
                                                                       />
                                                                     </td>
-
                                                                   <td>
                                                                     <div className="input-checkbox-container">
                                                                     <input
@@ -606,43 +708,46 @@ function PriseCommande() {
                                        
                                           {/* Récapitulatif de la Commande */}
                                           <div className="commande mt-4">
-                                            <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
-                                            
-                                            <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-            
-                                            <table className="table table-bordered mt-2">
-                                              <thead>
-                                                <tr>
-                                                  <th>Nom</th>
-                                                  <th>Quantité</th>
-                                                  <th>Unité</th>
-                                                  <th>Prix Unitaire</th>
-                                                  <th>Total</th>
-                                                </tr>
-                                              </thead>
-                                              <tbody>
-                                                {commande.map((item, index) => (
-                                                  <tr key={index}>
-                                                        <td>{item.nom}</td>
-                                                        <td>{item.quantite}</td>
-                                                        <td>{item.unite}</td>
-                                                        <td>{item.prix} Ariary</td> 
-                                                        <td>{item.quantite * item.prix} Ariary</td>
+  <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
 
-                                                  </tr>
-                                                ))}
-                                              </tbody>
-                                            </table>
-                                            </div>
-                                         
-                                              <h6 className="total">
-                                                         Total: {totalCommande} Ariary
-                                               </h6>
+  <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+    <table className="table table-bordered mt-2">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Quantité</th>
+          <th>Unité</th>
+          <th>Prix Unitaire</th>
+          <th>Prix Unitaire après remise</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {commande.map((item, index) => (
+          <tr key={index}>
+            <td>{item.nom}</td>
+            <td>{item.quantite}</td>
+            <td>{item.unite}</td>
+            <td>{item.prix} Ariary</td>
+            <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+            <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 
-                                            <button className="btn btn-success  mt-3" onClick={validerCommande}>
-                                              Enregistrer la Commande
-                                            </button>
-                                            </div>
+  <h6 className="total">
+    Total: {totalCommande} Ariary
+  </h6>
+  <h6 className="total">
+    Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
+  </h6>
+  <button className="btn btn-success mt-3" onClick={validerCommande}>
+    Enregistrer la Commande
+  </button>
+</div>
+
                                         </div>
                                       </div>
                                     </section>
