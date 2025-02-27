@@ -100,7 +100,7 @@ function PriseCommande() {
 
                                 const fetchCommerciaux = async () => {
                                   try {
-                                    const response = await axios.get("/api/comercial");
+                                    const response = await axios.get("/api/comercial/");
                                     setCommerciaux(response.data);
                                   } catch (error) {
                                     console.error("Erreur lors de la récupération des commerciaux", error);
@@ -110,41 +110,30 @@ function PriseCommande() {
                                 // Créer une personne (client ou commercial)
                                 const creerPersonne = async () => {
                                   try {
-                                    // Vérification des données envoyées
                                     console.log("Données envoyées :", newPerson);
-
-                                    // Validation des champs selon le type (client ou commercial)
+                                
                                     if (type === "client") {
-                                      
-                                      if (!newPerson.nom || !newPerson.telephone || !newPerson.adresse) {
-                                        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
+                                      if (!newPerson.nom ) {
+                                        Swal.fire("Erreur", "Le nom est requis pour le client", "error");
                                         return;
                                       }
                                     } else if (type === "commercial") {
-                                      // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
                                       if (!newPerson.nom || !newPerson.telephone || !newPerson.email || !newPerson.type) {
                                         Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
                                         return;
                                       }
                                     }
-
-                                    // Déterminer l'URL selon le type (client ou commercial)
+                                
                                     const url = type === "client" ? "/api/client/" : "/api/comercial/";
-                                    
-                                    // Envoi de la requête POST
                                     const response = await axios.post(url, newPerson);
                                     
-                                    if (response.data) {
-                                      Swal.fire(
-                                        {
+                                    if (response.data && response.data._id) {
+                                      Swal.fire({
                                         icon: "success",
                                         title: "Succès",
                                         text: `${type === "client" ? "Client" : "Commercial"} créé avec succès !`,
-                                        
-                                  
-                                        });
-                                    
-                                    
+                                      });
+                                
                                       if (type === "client") {
                                         setClients((prevClients) => [
                                           ...prevClients,
@@ -156,39 +145,19 @@ function PriseCommande() {
                                           { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
                                         ]);
                                       }
-
-                                      // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
-                                      const updatedList = await axios.get(url);  // Recharger les données à partir de l'API
-                                      if (type === "client") {
-                                        setClients(updatedList.data);
-                                      } else {
-                                        setCommerciaux(updatedList.data);
-                                      }
-
-                                      // Sélectionner le nouvel élément
+                                
                                       setSelectedPerson(response.data._id);
                                       setIsNew(false);
-
-                                    
                                       setModePaiement('');
-         
-                                      setNewPerson({
-                                        nom: '',
-                                        telephone: '',
-                                        adresse: '', 
-                                        email: '',
-                                        type: '',
-                                      });
-                                      
-                           
-                                      setSelectedPerson(null); 
+                                      setNewPerson({ nom: '', telephone: '', adresse: '', email: '', type: '' });
+                                      setSelectedPerson(null);
                                     }
                                   } catch (error) {
                                     console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
                                     Swal.fire("Erreur", "Une erreur s'est produite", "error");
                                   }
                                 };
-
+                                
                                 
                                 const fetchProduits = async () => {
                                   try {
