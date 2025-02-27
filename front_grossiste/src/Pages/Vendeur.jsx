@@ -246,18 +246,26 @@ function PriseCommande() {
                                             // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
                                             const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
                                             const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
-                                
+                                            const entrepotNomSecondaire = responseSecondaire.data.entrepotNom;
+                                                console.log("nom",entrepotNomSecondaire);
                                             // Logique pour traiter la disponibilité dans les autres entrepôts
-                                            // Vous pouvez ici ajouter une alerte ou d'autres actions si nécessaire
+                                       
                                             if (quantite > quantiteDisponibleSecondaire) {
                                               Swal.fire({
                                                 title: 'Quantité Insuffisante',
-                                                text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans les autres entrepôts.`,
+                                                text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans l'entrepôt "${entrepotNomSecondaire} ".`,
+               
                                                 icon: 'warning',
                                                 confirmButtonText: 'OK',
                                               });
                                               return; // Ne pas ajouter à la commande
-                                            } else {
+                                            } else {  
+                                              Swal.fire({
+                                                title: 'Entrepot trouvé',
+                                                text: `Le produit a été trouvé depuis l'entrepôt "${entrepotNomSecondaire}".`,
+                                                icon: 'success',
+                                                confirmButtonText: 'OK',
+                                              });
                                               // Ajoutez à la commande si la quantité est disponible dans les autres entrepôts
                                               setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
                                               setCommande((prevCommande) => {
@@ -268,6 +276,9 @@ function PriseCommande() {
                                                       ? { ...item, quantite: item.quantite + quantite, typeQuantite }
                                                       : item
                                                   );
+
+                                               
+ 
                                                 } else {
                                                   return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
                                                 }
@@ -275,6 +286,7 @@ function PriseCommande() {
                                             }
                                           }
                                         } else {
+                                        
                                           // Si la quantité est suffisante dans l'entrepôt principal
                                           setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
                                           setCommande((prevCommande) => {
@@ -289,6 +301,7 @@ function PriseCommande() {
                                               return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
                                             }
                                           });
+                                          
                                         }
                                       } else {
                                         // Si la case à cocher est désactivée, retirer le produit de la commande

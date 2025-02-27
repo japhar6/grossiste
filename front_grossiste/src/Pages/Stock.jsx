@@ -42,7 +42,8 @@ function Stock() {
     const selected = entrepots.find(e => e._id === entrepotId);
 
     setSelectedEntrepot(entrepotId);
-    setMagasinier(selected ? selected.magasinier.nom : '');
+    setMagasinier(selected?.magasinier?.nom || '');
+
     setLoading(true);
     setError(null);
 
@@ -167,18 +168,25 @@ function Stock() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedStocks.map(stock => (
-                    <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
-                      <td>{stock.produit.codeProduit}</td>
-                      <td>{stock.produit.nom}</td>
-                      <td>{stock.quantité}</td>
-                      <td>{stock.produit.unite}</td>
-                      <td>{stock.produit.categorie}</td>
-                      <td>{stock.produit.quantiteMinimum}</td>
-                      <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
+  {sortedStocks.length > 0 ? (
+    sortedStocks.map(stock => (
+      <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
+        <td>{stock.produit.codeProduit.trim()}</td>
+        <td>{stock.produit.nom.trim()}</td>
+        <td>{stock.quantité}</td>
+        <td>{stock.produit.unite.trim()}</td>
+        <td>{stock.produit.categorie.trim()}</td>
+        <td>{stock.produit.quantiteMinimum}</td>
+        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="7" className="text-center">Aucun stock trouvé.</td>
+    </tr>
+  )}
+</tbody>
+
               </table>
               </div>
             ) : selectedEntrepot ? (

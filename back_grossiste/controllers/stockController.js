@@ -4,31 +4,30 @@ const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Produit = require("../models/Produits"); 
 const Entrepot = require('../models/Entrepot');
 
-// Fonction réutilisable pour créer une nouvelle entrée de stock à chaque achat
+// Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepot, produit, quantité, prixUnitaire) => {
   try {
     if (quantité <= 0 || prixUnitaire <= 0) {
       throw new Error('La quantité et le prix unitaire doivent être supérieurs à zéro.');
     }
 
-    // ❌ On ne fusionne plus les stocks existants
-    const nouveauStock = new Stock({
-      entrepot,
-      produit,
-      quantité,
-      prixUnitaire,
-      dateEntree: new Date(), // Nouvelle entrée => nouvelle date
-      valeurTotale: quantité * prixUnitaire
-    });
+    let stock = await Stock.findOne({ entrepot, produit });
 
-    await nouveauStock.save();
-    return nouveauStock;
+    if (stock) {
+      stock.quantité += quantité;
+    } else {
+      stock = new Stock({ entrepot, produit, quantité, prixUnitaire });
+    }
 
+    // Calculer la valeur totale
+    stock.valeurTotale = stock.quantité * stock.prixUnitaire;
+    await stock.save();
+
+    return stock;
   } catch (error) {
-    throw new Error('Erreur lors de l’ajout du stock : ' + error.message);
+    throw new Error('Erreur lors de la mise à jour du stock: ' + error.message);
   }
 };
-
 exports.getQuantiteProduitById = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
@@ -60,8 +59,7 @@ exports.getQuantiteProduitById = async (req, res) => {
     console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
-} ;
-exports.getQuantiteProduitByIde = async (req, res) => {
+} ; exports.getQuantiteProduitByIde = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
   try {
@@ -78,25 +76,38 @@ exports.getQuantiteProduitByIde = async (req, res) => {
     }
 
     // Récupérer les stocks pour le produit dans tous les entrepôts sauf l'entrepôt principal
-    const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } });
+    const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } })
+      .populate("entrepot", "nom"); // Populate pour récupérer le nom de l'entrepôt
 
-    // Trouver la quantité maximale parmi les stocks secondaires
-    const quantiteMaximale = stockData.reduce((max, stock) => {
-      return Math.max(max, stock.quantité);
-    }, 0);
+    if (stockData.length === 0) {
+      return res.status(404).json({ message: "Aucun stock trouvé pour ce produit en dehors de l'entrepôt principal." });
+    }
 
-    // Ajouter la quantité maximale au produit
+    // Trouver l'entrepôt avec la quantité maximale
+    let quantiteMaximale = 0;
+    let entrepotMaxQuantite = null;
+
+    stockData.forEach(stock => {
+      if (stock.quantité > quantiteMaximale) {
+        quantiteMaximale = stock.quantité;
+        entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
+      }
+    });
+
+    // Ajouter la quantité maximale et le nom de l'entrepôt au produit
     const produitAvecQuantite = {
       ...produit.toObject(),
-      quantiteDisponible: quantiteMaximale
+      quantiteDisponible: quantiteMaximale,
+      entrepotNom: entrepotMaxQuantite
     };
 
-    res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité maximale
+    res.json(produitAvecQuantite); // Renvoyer le produit avec les infos de stock
   } catch (error) {
-    console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
-    res.status(500).json({ message: 'Erreur interne du serveur' });
+    console.error("Erreur lors de la récupération du produit et de sa quantité:", error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+
 
 
 // Obtenir tous les stocks
