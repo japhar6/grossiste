@@ -1,6 +1,8 @@
 const Transfert = require('../models/Transfert');
 const Stock = require('../models/Stock');
 const Produit = require("../models/Produits");
+const pusher = require('../config/pusher');
+
 exports.transfertProduit = async (req, res) => {
   try {
     const { entrepotSource, entrepotDestination, produit, quantité } = req.body;
@@ -26,6 +28,18 @@ exports.transfertProduit = async (req, res) => {
     });
 
     await transfert.save();
+
+
+// Notification en temps réel pour l'admin
+const notificationMessage = `Un transfert de ${quantité} de ${produit} est en attente de validation.`;
+    
+// Émettre un événement pour informer l'admin
+pusher.trigger('admin-channel', 'transfert-en-attente', {
+  message: notificationMessage,
+  transfertId: transfert._id
+});
+
+
     res.status(201).json({ message: 'Transfert initié avec succès, en attente de validation admin.', transfert });
   } catch (error) {
     console.error("Erreur lors de l'initiation du transfert:", error);

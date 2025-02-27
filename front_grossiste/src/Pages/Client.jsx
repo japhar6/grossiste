@@ -20,7 +20,7 @@ function ClientsList() {
 
     useEffect(() => {
         // Récupérer les clients depuis l'API
-        axios.get("http://localhost:5000/api/client/afficher")
+        axios.get("http://localhost:5000/api/client/")
             .then(response => {
                 setClients(response.data);
             })

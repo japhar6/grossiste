@@ -2,22 +2,40 @@ const Client = require('../models/Client');
 
 exports.createClient = async (req, res) => {
   try {
-    const { nom, telephone, adresse, remises } = req.body;
+    const { nom, telephone, adresse, nif, stat, remises } = req.body;
 
+    // Vérification que le nom est bien fourni
+    if (!nom) {
+      return res.status(400).json({ message: "Le nom du client est requis." });
+    }
+
+    // Récupération du chemin de l'image téléchargée
+    const imagePath = req.file ? req.file.path : null;
+
+    // Initialisation des remises
     const clientRemises = remises || {
       remiseGlobale: 0,
       remiseFixe: 0,
       remiseParProduit: 0
     };
 
-    const newClient = new Client({ nom, telephone, adresse, remises: clientRemises });
+    // Création d'un nouveau client
+    const newClient = new Client({
+      nom,
+      telephone,
+      adresse,
+      nif,
+      stat,
+      nifStatImage: imagePath, // Stocke le chemin du fichier
+      remises: clientRemises
+    });
 
     await newClient.save();
-    console.log("Client créé :", newClient);  // 🔍 Vérification
+    console.log("✅ Client créé :", newClient);
 
     res.status(201).json(newClient);
   } catch (error) {
-    console.error("Erreur serveur :", error);
+    console.error("❌ Erreur serveur :", error);
     res.status(500).json({ message: "Erreur lors de la création du client", error });
   }
 };
