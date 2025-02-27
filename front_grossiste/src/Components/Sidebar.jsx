@@ -94,7 +94,8 @@ function Sidebar() {
         { path: "/commerciale", icon: faBriefcase, text: "Gestion des commerciaux" },
         { path: "/Client", icon: faUserFriends, text: "Client particulier" },
         { path: "/livraisons", icon: faTruckLoading, text: "Gestion des Livraisons" },
-      
+        
+        { path: "/transfertAdmin", icon: faTruckLoading, text: "Gestion des Transferts" },
         { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
                 { path: "/histovad", icon: faTags, text: "Historique des commandes" },
                 { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },

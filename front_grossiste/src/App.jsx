@@ -36,6 +36,7 @@ import FactureRemise from './Pages/FactureRemise.jsx';
 import HistoCA from './Pages/HistoC.jsx';
 import HistoVA from './Pages/HistoV.jsx';
 import Transfert from './Pages/Transfert.jsx';
+import TransfertAdmin from './Pages/TransfertAdmin.jsx';
 import PersonnelsList from './Pages/PersonnelsList.jsx';
 import Client from './Pages/Client.jsx';
 function App() {
@@ -66,6 +67,8 @@ function App() {
           <Route path='/Client' element={<Client />} />
           <Route path='/inventaire' element={<Invetaire />} />
           <Route path='/creerinventaire' element={<CreerInventaire />} />
+                   
+          <Route path='/transfertAdmin' element={<TransfertAdmin />} />
         </Route>
 
         {/* Routes VENDEUR */}

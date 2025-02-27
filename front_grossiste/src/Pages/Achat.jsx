@@ -14,9 +14,14 @@ function AchatProduits() {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [entrepots, setEntrepots] = useState([]);
   const [entrepot, setEntrepot] = useState([]);
+  const [unitesOptions, setUnitesOptions] = useState([]); // État pour les options d'unités
+const [unite, setUnite] = useState(null); // État pour l'unité sélectionnée
+const [prixAchatInitial, setPrixAchatInitial] = useState(0); // Ajoutez cette ligne
+
   const [panier, setPanier] = useState([]);
   const [panierCreer, setPanierCreer] = useState(false);
   const [produit, setProduit] = useState("");
+  const [produite, setProduite] = useState("");
   const [quantite, setQuantite] = useState("");
   const [prixAchat, setPrixAchat] = useState("");
   const [historiqueAchats, setHistoriqueAchats] = useState([]);
@@ -29,8 +34,17 @@ const [fourID, setFourID] = useState(null);
 const [achats, setAchats] = useState([]);
   const [typeFiltre, setTypeFiltre] = useState("");
   const [dateFiltre, setDateFiltre] = useState("");
-  const [nouveauProduit, setNouveauProduit] = useState({ nom: "", categorie: "" ,description :"",prixDachat: "",unite:"",fournisseur: fourID});
-  const [afficherFormulaireProduit, setAfficherFormulaireProduit] = useState(false);
+  const [nouveauProduit, setNouveauProduit] = useState({
+    nom: "",
+    categorie: "",
+    description: "",
+    prixDachat: "", // Prix d'achat du produit
+    quantiteMinimum: 0,
+    fournisseur: fourID,
+    unites: [{ nom: "", conversion: 1, prixdevente: 0 }] // Initialiser avec une unité par défaut
+  });
+  
+    const [afficherFormulaireProduit, setAfficherFormulaireProduit] = useState(false);
   const [produitId, setProduitId] = useState(""); 
   const [fournisseurInfo, setFournisseurInfo] = useState(null);
 
@@ -59,39 +73,69 @@ const produitsOfferts = fournisseurInfo && fournisseurInfo.type === "ristourne"
 
 const quantiteTotale = quantiteNumerique + produitsOfferts; // Utiliser quantiteNumerique ici
 
-  
+
 
 
 const handleProduitChange = async (selectedOption) => {
-    if (!selectedOption) return; 
-    if (selectedOption.value === 'add-new-product') {
-        // Logique pour afficher le formulaire pour ajouter un nouveau produit
-        setAfficherFormulaireProduit(true);
-        return;
-    }
+  if (!selectedOption) return; 
+  if (selectedOption.value === 'add-new-product') {
+      setAfficherFormulaireProduit(true);
+      return;
+  }
+  const produitId = selectedOption.value; // Récupérer l'ID du produit
+  console.log("produit", produitId);
+  if (!produitId) {
+      console.error("ID du produit manquant");
+      return;
+  }
 
-    const produitId = selectedOption.value; // Récupérer l'ID du produit
-    console.log("produit", produitId);
-    if (!produitId) {
-        console.error("ID du produit manquant");
-        return;
-    }
-    
-    setProduitId(produitId);
-    // Mettre à jour le produit sélectionné
-    setProduit(selectedOption);
+  setProduitId(produitId);
+  setProduit(selectedOption);
 
-    try {
-        // Faire une requête pour récupérer les détails du produit avec Axios
-        const response = await axios.get(`/api/produits/recuperer/${produitId}`);
-        
-        if (response.data) {
-            setPrixAchat(response.data.prixDachat); // Mettre à jour le prix d'achat
-        }
-    } catch (error) {
-        console.error("Erreur lors de la récupération du produit:", error);
-        setPrixAchat(""); // Réinitialiser en cas d'erreur
-    }
+  try {
+      // Récupérer les détails du produit avec Axios
+      const response = await axios.get(`/api/produits/recuperer/${produitId}`);
+      
+      if (response.data) {
+        setPrixAchatInitial(response.data.prixDachat); // Stocker le prix d'achat initial
+        setPrixAchat(response.data.prixDachat);   
+          // Assurez-vous de récupérer toutes les unités correctement
+          const unitOptions = response.data.unites.map(unit => ({
+              label: unit.nom,
+              value: unit.nom,
+              conversion: unit.conversion
+          }));
+          setUnitesOptions(unitOptions);
+          setProduite(response.data); 
+          // Initialiser la première unité
+          setUnite(unitOptions[0]); // Afficher la première unité par défaut
+      }
+  } catch (error) {
+      console.error("Erreur lors de la récupération du produit:", error);
+      setPrixAchat(""); // Réinitialiser en cas d'erreur
+  }
+};
+const handleUniteChange = (selectedUnit) => {
+  console.log("Changement d'unité détecté:", selectedUnit);
+  
+  if (!selectedUnit) return;
+
+  // Mettre à jour l'état de l'unité sélectionnée
+  setUnite(selectedUnit);
+
+  const factor = selectedUnit.conversion; // Facteur de conversion
+  console.log("Prix d'achat initial:", prixAchatInitial);
+  console.log("Facteur de conversion:", factor);
+
+  // Vérifiez si l'unité sélectionnée est la plus grande
+  if (factor === 1) {
+      setPrixAchat(prixAchatInitial); // Si c'est l'unité la plus grande, réinitialisez au prix d'achat initial
+  } else {
+      const nouveauPrixAchat = prixAchatInitial / factor; // Calculer le nouveau prix d'achat
+      setPrixAchat(nouveauPrixAchat);
+  }
+
+  console.log("Nouveau prix d'achat:", prixAchat);
 };
 
 
@@ -110,77 +154,96 @@ useEffect(() => {
 
   const [produitsOptions, setProduitsOptions] = useState([]);
 
-
   const handleAjoutProduit = async (e) => {
-      e.preventDefault();
-  
-      // Ajouter la nouvelle catégorie si nécessaire
-      const categorieFinale = ajouterCategorie ? nouvelleCategorie : nouveauProduit.categorie;
-  
-      const produit = {
-          ...nouveauProduit,
-          categorie: categorieFinale,
-          prixDachat: parseFloat(nouveauProduit.prixDachat),
-          fournisseur: fourID,
-      };
-      console.log("produit", produit);
-  
-      try {
-          // Envoi du produit à l'API pour ajout avec Axios
-          const response = await axios.post("/api/produits/ajouter", produit);
-          
-          Swal.fire({
-              icon: 'success',
-              title: 'Produit ajouté avec succès',
-              showConfirmButton: true,
-              timer: 2000 // Optionnel, pour fermer l'alerte après 2 secondes
-          });
-  
-          // Réinitialiser le formulaire ici
-          setNouveauProduit({
-              nom: "",
-              description: "",
-              prixDachat: "",
-              unite: "",
-              quantiteMinimum: "",
-          });
-          setNouvelleCategorie("");
-          setAjouterCategorie(false);
-          setAfficherFormulaireProduit(false);
-  
-          // Récupérer les produits du fournisseur
-          if (fournisseur) {
-              const produitsResponse = await axios.get(`/api/produits/fournisseur/${fournisseur}`);
-              const data = produitsResponse.data;
-            
-  
-              if (Array.isArray(data) && data.length > 0) {
-                  const options = data.map((produit) => ({
-                      label: `${produit.nom} - ${produit.categorie}`,  // Afficher nom et catégorie
-                      value: produit._id,  // Utiliser l'ID comme valeur
-                  }));
-                  
-                  setProduitsOptions(options);
-              } else {
-                  setProduitsOptions([]);
-                  Swal.fire({
-                      title: "Erreur",
-                      text: "Ce fournisseur n'a pas encore de produit.",
-                      icon: "error",
-                      confirmButtonText: "OK",
-                  });
-              }
-          }
-      } catch (error) {
-          Swal.fire({
-              icon: 'error',
-              title: 'Erreur',
-              text: 'Une erreur est survenue lors de l\'ajout du produit',
-          });
-          console.error(error);
-      }
-  };
-  
+    e.preventDefault();
+
+    // Vérifier si toutes les unités ont les champs requis
+    const isValidUnits = nouveauProduit.unites.every(unite => 
+        unite.nom && unite.conversion > 0
+    );
+
+    if (!isValidUnits) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Erreur de données',
+            text: 'Chaque unité doit avoir un nom, un facteur de conversion et un prix de vente.',
+        });
+        return; // Ne pas continuer si les unités sont invalides
+    }
+
+    // Ajouter la nouvelle catégorie si nécessaire
+    const categorieFinale = ajouterCategorie ? nouvelleCategorie : nouveauProduit.categorie;
+
+    // Préparer l'objet produit avec les bonnes propriétés
+    const produit = {
+        nom: nouveauProduit.nom,
+        description: nouveauProduit.description,
+        categorie: categorieFinale,
+        fournisseur: fourID,
+        quantiteMinimum: parseInt(nouveauProduit.quantiteMinimum), // Assurez-vous que c'est un entier
+        prixDachat: parseFloat(nouveauProduit.prixDachat), // Assurez-vous que c'est un nombre
+        unites: nouveauProduit.unites, // Assurez-vous que c'est un tableau d'unités
+    };
+
+    console.log("Produit à ajouter:", JSON.stringify(produit, null, 2));
+
+    try {
+        // Envoi du produit à l'API pour ajout avec Axios
+        const response = await axios.post("/api/produits/ajouter", produit);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Produit ajouté avec succès',
+            showConfirmButton: true,
+            timer: 2000 // Optionnel, pour fermer l'alerte après 2 secondes
+        });
+
+        // Réinitialiser le formulaire ici
+        setNouveauProduit({
+            nom: "",
+            description: "",
+            prixDachat: "",
+            quantiteMinimum: "",
+            unites: [] // Réinitialiser les unités
+        });
+        setNouvelleCategorie("");
+        setAjouterCategorie(false);
+        setAfficherFormulaireProduit(false);
+
+        // Récupérer les produits du fournisseur
+        if (fournisseur) {
+            const produitsResponse = await axios.get(`/api/produits/fournisseur/${fournisseur}`);
+            const data = produitsResponse.data;
+
+            if (Array.isArray(data) && data.length > 0) {
+                const options = data.map((produit) => ({
+                    label: `${produit.nom} - ${produit.categorie}`,  // Afficher nom et catégorie
+                    value: produit._id,  // Utiliser l'ID comme valeur
+                }));
+                
+                setProduitsOptions(options);
+            } else {
+                setProduitsOptions([]);
+                Swal.fire({
+                    title: "Erreur",
+                    text: "Ce fournisseur n'a pas encore de produit.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'ajout du produit:", error.response?.data || error.message);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: 'Une erreur est survenue lors de l\'ajout du produit',
+        });
+    }
+};
+
+
+
   
   
   
@@ -347,7 +410,7 @@ useEffect(() => {
    
   };
   const creerNouveauPanier = async () => {
-  
+    setPanierCreer(true);
     const panierData = {
       fournisseur,
       produits: panier,
@@ -361,7 +424,7 @@ useEffect(() => {
   
       if (data?.message === "Panier créé avec succès" && data.panier?._id) {
         setPanierId(data.panier._id);
-        setPanierCreer(true);
+       
         setPanier([]);
         setFournisseur("");
   
@@ -384,88 +447,123 @@ useEffect(() => {
       });
     }
   };
-  const ajouterAuPanier = async () => {
-    const quantiteNumerique = Number(quantite);
-
-    // Vérification que la quantité est un nombre valide
-    if (isNaN(quantiteNumerique) || quantiteNumerique <= 0) {
-        Swal.fire({
-            title: "Erreur",
-            text: "La quantité doit être un nombre valide et supérieur à 0.",
-            icon: "warning",
-            confirmButtonText: "OK",
-        });
-        return;
-    }
-
-    console.log("ID du panier avant envoi :", panierId);
-
-    const achatData = {
-        fournisseur: fournisseur,
-        panierId: panierId,
-        produit: produitId,
-        quantite: quantiteNumerique,
-        prixAchat: prixAchat,
-        dateAchat: new Date().toISOString(),
-        ristourneAppliquee: pourcentageManuel,
-    };
-
-    try {
-        const response = await axios.post("/api/achats/ajouter", achatData);
-        const data = response.data;
-
-        // Vérifier si la réponse contient un achat
-        if (data.achat) {
-            console.log("Données envoyées pour création de l'achat :", data);
-
-            // Afficher les produits offerts si disponible
-            if (data.achat.produitsOfferts > 0) {
-                Swal.fire({
-                    title: "Succès",
-                    text: `Achat ajouté avec succès. 🎁 Vous avez reçu ${data.achat.produitsOfferts} produits offerts !`,
-                    icon: "success",
-                    confirmButtonText: "OK",
-                });
-            } else {
-                Swal.fire({
-                    title: "Succès",
-                    text: "Achat ajouté avec succès.",
-                    icon: "success",
-                    confirmButtonText: "OK",
-                });
-            }
-
-            fetchAchats();
-
-            // Réinitialisation des champs après succès
-            setFournisseur("");
-            setQuantite("");
-            setPrixAchat("");
-            setProduit("");
-        } else {
-            throw new Error("Erreur lors de la création de l'achat");
-        }
-
-    } catch (error) {
-        console.error("Erreur lors de la création de l'achat :", error);
-        // Affichage des détails de l'erreur si disponibles
-        if (error.response) {
-            Swal.fire({
-                title: "Erreur",
-                text: error.response.data.message || "Une erreur est survenue.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        } else {
-            Swal.fire({
-                title: "Erreur",
-                text: error.message || "Une erreur est survenue.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        }
-    }
+  const handlePrixAchatChange = (e) => {
+    const newPrixAchat = e.target.value;
+    setPrixAchat(newPrixAchat);
 };
+
+
+
+const ajouterAuPanier = async () => {
+  const quantiteNumerique = Number(quantite);
+
+  // Vérification que la quantité est un nombre valide
+  if (isNaN(quantiteNumerique) || quantiteNumerique <= 0) {
+      Swal.fire({
+          title: "Erreur",
+          text: "La quantité doit être un nombre valide et supérieur à 0.",
+          icon: "warning",
+          confirmButtonText: "OK",
+      });
+      return;
+  }
+
+  console.log("Produit avant l'accès aux unités :", produite);
+
+
+  // Vérifiez si le prix d'achat a été modifié manuellement
+  if (prixAchat !== prixAchatInitial) {
+      try {
+        const uniT=unite.value;
+          // Mettez à jour le produit avec le nouveau prix d'achat
+          await axios.put(`/api/produits/produits/maodi/${produitId}`, { prixDachat : prixAchat,uniteNom:uniT });
+          console.log("Prix d'achat mis à jour :", prixAchat);
+          
+       
+      } catch (error) {
+          console.error("Erreur lors de la mise à jour du prix d'achat :", error);
+          Swal.fire({
+              title: "Erreur",
+              text: "Erreur lors de la mise à jour du prix d'achat.",
+              icon: "error",
+              confirmButtonText: "OK",
+          });
+          return; // Sortir de la fonction si la mise à jour échoue
+      }
+  }
+
+  console.log("ID du panier avant envoi :", panierId);
+
+  // Assurez-vous d'envoyer le nom de l'unité sous forme de chaîne
+  const achatData = {
+      fournisseur: fournisseur,
+      panierId: panierId,
+      produit: produitId,
+      quantite: quantiteNumerique,
+      prixAchat: prixAchat,
+      dateAchat: new Date().toISOString(),
+      ristourneAppliquee: pourcentageManuel,
+      unite: unite.value || unite.label, // Changez ici pour envoyer le nom de l'unité
+  };
+
+  try {
+      const response = await axios.post("/api/achats/ajouter", achatData);
+      const data = response.data;
+
+      // Vérifier si la réponse contient un achat
+      if (data.achat) {
+          console.log("Données envoyées pour création de l'achat :", data);
+
+          // Afficher les produits offerts si disponible
+          if (data.achat.produitsOfferts > 0) {
+              Swal.fire({
+                  title: "Succès",
+                  text: `Achat ajouté avec succès. 🎁 Vous avez reçu ${data.achat.produitsOfferts} produits offerts !`,
+                  icon: "success",
+                  confirmButtonText: "OK",
+              });
+          } else {
+              Swal.fire({
+                  title: "Succès",
+                  text: "Achat ajouté avec succès.",
+                  icon: "success",
+                  confirmButtonText: "OK",
+              });
+          }
+
+          fetchAchats();
+
+          // Réinitialisation des champs après succès
+          setFournisseur("");
+          setQuantite("");
+          setPrixAchat("");
+          setProduit("");
+          setUnite(""); // Réinitialisez également l'unité
+      } else {
+          throw new Error("Erreur lors de la création de l'achat");
+      }
+
+  } catch (error) {
+      console.error("Erreur lors de la création de l'achat :", error);
+      // Affichage des détails de l'erreur si disponibles
+      if (error.response) {
+          Swal.fire({
+              title: "Erreur",
+              text: error.response.data.message || "Une erreur est survenue.",
+              icon: "error",
+              confirmButtonText: "OK",
+          });
+      } else {
+          Swal.fire({
+              title: "Erreur",
+              text: error.message || "Une erreur est survenue.",
+              icon: "error",
+              confirmButtonText: "OK",
+          });
+      }
+  }
+};
+
 
 
 
@@ -652,123 +750,242 @@ const validerPanier = async () => {
 
                   {/* Formulaire d'ajout de produit visible après avoir cliqué sur "Ajouter un Nouveau Produit" */}
                   {afficherFormulaireProduit ? (
-                    <div className="produit-section mt-3">
-                      <h6><i className="fa fa-box"></i> Ajouter un Nouveau Produit</h6>
-                      <input
-                        type="text"
-                        className="form-control mt-2"
-                        placeholder="Nom du produit"
-                        value={nouveauProduit.nom}
-                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, nom: e.target.value })}
-                      />
-                      <input
-                        type="text"
-                        className="form-control mt-2"
-                        placeholder="Description du produit"
-                        value={nouveauProduit.description}
-                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, description: e.target.value })}
-                      />
-                         <select
-                                className="form-control mt-3"
-                                value={nouveauProduit.categorie}
-                                onChange={handleCategorieChange}
-                              >
-                                <option value="">Choisir une catégorie</option>
-                                {categories.map((categorie, index) => (
-                                  <option key={index} value={categorie}>{categorie}</option>
-                                ))}
-                                <option value="ajouter">Ajouter une nouvelle catégorie</option>
-                              </select>
+                 <div className="produit-section mt-3 p-4 border rounded shadow">
+                 <h6 className="mb-3"><i className="fa fa-box"></i> Ajouter un Nouveau Produit</h6>
+                 
+                 <div className="form-group">
+                     <input
+                         type="text"
+                         className="form-control mt-2"
+                         placeholder="Nom du produit"
+                         value={nouveauProduit.nom}
+                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, nom: e.target.value })}
+                     />
+                 </div>
+             
+                 <div className="form-group">
+                     <input
+                         type="text"
+                         className="form-control mt-2"
+                         placeholder="Description du produit"
+                         value={nouveauProduit.description}
+                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, description: e.target.value })}
+                     />
+                 </div>
+             
+                 <div className="form-group">
+                     <select
+                         className="form-control mt-3"
+                         value={nouveauProduit.categorie}
+                         onChange={handleCategorieChange}
+                     >
+                         <option value="">Choisir une catégorie</option>
+                         {categories.map((categorie, index) => (
+                             <option key={index} value={categorie}>{categorie}</option>
+                         ))}
+                         <option value="ajouter">Ajouter une nouvelle catégorie</option>
+                     </select>
+                 </div>
+             
+                 {ajouterCategorie && (
+                     <div className="form-group">
+                         <input
+                             type="text"
+                             className="form-control mt-2"
+                             placeholder="Ajouter une nouvelle catégorie"
+                             value={nouvelleCategorie}
+                             onChange={(e) => setNouvelleCategorie(e.target.value)}
+                         />
+                     </div>
+                 )}
+             
+                 <div className="form-group">
+                     <input
+                         type="number"
+                         className="form-control mt-2"
+                         placeholder="Prix d'achat du produit"
+                         value={nouveauProduit.prixDachat}
+                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, prixDachat: e.target.value })}
+                     />
+                 </div>
+             
+                 <div className="form-group">
+                     <input
+                         type="number"
+                         className="form-control mt-2"
+                         placeholder="Quantité minimum"
+                         value={nouveauProduit.quantiteMinimum}
+                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, quantiteMinimum: e.target.value })}
+                     />
+                 </div>
+             
+                 {/* Gestion des unités */}
+                 <h6 className="mt-3">Unités</h6>
+                 {nouveauProduit.unites.map((unite, index) => (
+                     <div key={index} className="unite-section mt-2 border rounded p-3">
+                         <div className="form-group">
+                             <input
+                                 type="text"
+                                 className="form-control"
+                                 placeholder="Nom de l'unité"
+                                 value={unite.nom}
+                                 onChange={(e) => {
+                                     const updatedUnites = [...nouveauProduit.unites];
+                                     updatedUnites[index].nom = e.target.value;
+                                     setNouveauProduit({ ...nouveauProduit, unites: updatedUnites });
+                                 }}
+                             />
+                         </div>
+                         <div className="form-group">
+                             <input
+                                 type="number"
+                                 className="form-control mt-2"
+                                 placeholder="Conversion"
+                                 value={unite.conversion}
+                                 onChange={(e) => {
+                                     const updatedUnites = [...nouveauProduit.unites];
+                                     updatedUnites[index].conversion = e.target.value;
+                                     setNouveauProduit({ ...nouveauProduit, unites: updatedUnites });
+                                 }}
+                             />
+                         </div>
+                         <div className="form-group">
+                             <input
+                                 type="number"
+                                 className="form-control mt-2"
+                                 placeholder="Prix de vente"
+                                 value={unite.prixdevente}
+                                 onChange={(e) => {
+                                     const updatedUnites = [...nouveauProduit.unites];
+                                     updatedUnites[index].prixdevente = e.target.value;
+                                     setNouveauProduit({ ...nouveauProduit, unites: updatedUnites });
+                                 }}
+                             />
+                         </div>
+                         <button
+                             className="btn btn-danger mt-2"
+                             onClick={() => {
+                                 const updatedUnites = nouveauProduit.unites.filter((_, i) => i !== index);
+                                 setNouveauProduit({ ...nouveauProduit, unites: updatedUnites });
+                             }}
+                         >
+                             Supprimer cette unité
+                         </button>
+                     </div>
+                 ))}
+             
+                 {/* Affichage des conversions */}
+                 <div className="conversion-display mt-3">
+                     {nouveauProduit.unites.length > 0 && (
+                         <p>
+                             {nouveauProduit.unites.reduce((acc, unite, index) => {
+                                 if (index === 0) {
+                                     return `1 ${unite.nom}`;
+                                 }
+                                 const conversionValue = unite.conversion || 0;
+                                 return `${acc} = ${conversionValue} ${unite.nom}`;
+                             }, '')}
+                         </p>
+                     )}
+                 </div>
+             
+                 <div className="button-group mt-3" style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
+    <button
+        className="btn btn-secondary"
+        onClick={() => setNouveauProduit({ ...nouveauProduit, unites: [...nouveauProduit.unites, { nom: '', conversion: 0, prixdevente: 0 }] })}
+    >
+        Ajouter une unité
+    </button>
 
-                              {ajouterCategorie && (
-                                <input
-                                  type="text"
-                                  className="form-control mt-2"
-                                  placeholder="Ajouter une nouvelle catégorie"
-                                  value={nouvelleCategorie}
-                                  onChange={(e) => setNouvelleCategorie(e.target.value)}
-                                />
-                              )}
-      
-                       <input
-                        type="text"
-                        className="form-control mt-2"
-                        placeholder="Prix d'achat du produit"
-                        value={nouveauProduit.prixDachat}
-                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, prixDachat: e.target.value })}
-                      />
-                       <input
-                        type="text"
-                        className="form-control mt-2"
-                        placeholder="Unite du produit"
-                        value={nouveauProduit.unite}
-                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, unite: e.target.value })}
-                      />
-                      <input
-                        type="number"
-                        className="form-control mt-2"
-                        placeholder="Quantité minimum"
-                        value={nouveauProduit.quantiteMinimum}
-                        onChange={(e) => setNouveauProduit({ ...nouveauProduit, quantiteMinimum: e.target.value })}
-                      />
-                      <button
-                        className="btn btn-primary mt-2"
-                        onClick={handleAjoutProduit}
-                      >
-                        Ajouter
-                      </button>
-                         <div className="button-groupu" style={{ display: 'flex', gap: '10px' }}>
     <button
         className="btn btn-primary"
-        onClick={() => setAfficherFormulaireProduit(false)} // Définir à false sur clic
+        onClick={handleAjoutProduit}
+    >
+        Ajouter
+    </button>
+
+    <button
+        className="btn btn-danger"
+        onClick={() => setAfficherFormulaireProduit(false)}
     >
         Annuler
     </button>
 </div>
 
-                    </div>
+
+                 
+             </div>
+             
+               
+                
                   ) : (
                     <div className="produit-section mt-3">
-                      <h6><i className="fa fa-box"></i> Choisir un Produit</h6>
-                      <Select
-    className="form-control mt-3"
-    value={produit ? { label: produit.label, value: produit.label } : null}
-    onChange={handleProduitChange}
-    options={produitsOptionsWithAddOption}
-    placeholder="Choisir un produit"
+                    <h6><i className="fa fa-box"></i> Choisir un Produit</h6>
+                    <Select
+                        className="form-control mt-3"
+                        value={produit ? { label: produit.label, value: produit.label } : null}
+                        onChange={handleProduitChange}
+                        options={produitsOptionsWithAddOption}
+                        placeholder="Choisir un produit"
+                        isSearchable
+                        noOptionsMessage={() => customNoOptionMessage}
+                        isDisabled={!fournisseur}
+                    />
+                
+                    <div className="quantite-section mt-3 d-flex align-items-center">
+                        <input
+                            type="number"
+                            className="form-control me-2"
+                            placeholder="Quantité"
+                            value={quantite}
+                            onChange={(e) => setQuantite(e.target.value)}
+                        />
+                    </div>
+                
+                    {/* Sélection de l'unité */}
+                    <div className="unite-section mt-3">
+                    <Select
+    className="form-control"
+    value={unite} // Assurez-vous que unite a la bonne structure
+    onChange={handleUniteChange} // Gère le changement d'unité
+    options={unitesOptions} // Options des unités récupérées du produit
+    placeholder="Choisir une unité"
     isSearchable
-    noOptionsMessage={() => customNoOptionMessage}
-    isDisabled={!fournisseur}
+    isDisabled={!fournisseur || !unitesOptions.length} // Désactiver si aucun produit n'est sélectionné
 />
 
-                          <div className="quantite-section mt-3 d-flex align-items-center">
- 
-                        <input
-                          type="number"
-                          className="form-control me-2"
-                          placeholder="Quantité"
-                          value={quantite}
-                          onChange={(e) => setQuantite(e.target.value)}
-                        />
-
-                          
-                        </div>
-
-                       <input
-                          type="number"
-                          className="form-control mt-3"
-                          placeholder="Prix d'achat"
-                          value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} 
-                          onChange={(e) => setPrixAchat(e.target.value)}
-                          readOnly
-                          disabled={!fournisseur}
-                        />
-                      <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
-
                     </div>
-                  )}
+                
+                    <input
+                        type="number"
+                        className="form-control mt-3"
+                        placeholder="Prix d'achat"
+                        value={prixAchat !== undefined && prixAchat !== null ? prixAchat : ''} 
+                        onChange={handlePrixAchatChange} 
+                        disabled={!fournisseur}
+                    />
+                    
+                    <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
                 </div>
-              )}
+                
+                
+                
+                
+                
+                
+                
+                
+                )}
+                </div>
+             
+             
+             
+             
+             
+             
+             
+             
+             )}
 
 {panierCreer && (
    <div className="consultationL mt-3">
@@ -801,7 +1018,7 @@ const validerPanier = async () => {
                                <td>{achat.quantiteTotale}</td>
                            </>
                        )}
-                       <td>{achat.produit?.unite || "Unité"}</td>
+                       <td>{achat.unite || "Unité"}</td>
                        <td>{achat.prixAchat} Ar</td>
                        <td>{achat.total} Ar</td>
                    </tr>

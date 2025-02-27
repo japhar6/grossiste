@@ -10,7 +10,7 @@ const Entrepot = require('../models/Entrepot'); // Respecte la casse
 const { ObjectId } = require('mongodb');
 exports.ajouterAchat = async (req, res) => {
     try {
-        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee } = req.body;
+        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee, unite } = req.body; // Ajout de 'unite'
 
         // Vérification de la validité des entrées
         if (isNaN(quantite) || quantite <= 0) {
@@ -18,6 +18,9 @@ exports.ajouterAchat = async (req, res) => {
         }
         if (isNaN(prixAchat) || prixAchat <= 0) {
             return res.status(400).json({ message: "Le prix d'achat doit être un nombre valide supérieur à zéro." });
+        }
+        if (!unite) {
+            return res.status(400).json({ message: "L'unité est requise." }); // Vérification de l'unité
         }
 
         // Vérifier si le produit et le fournisseur existent
@@ -79,7 +82,8 @@ exports.ajouterAchat = async (req, res) => {
             prixAchat,
             total,
             panier: panierExistant._id,
-            ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false
+            ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false,
+            unite // Ajout de l'unité à l'achat
         });
 
         await nouvelAchat.save();
