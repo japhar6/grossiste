@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Pusher from 'pusher-js';
-import '../Styles/Navbar.css'
+import { useNavigate } from "react-router-dom"; // Importer le hook useNavigate
+import '../Styles/Navbar.css';
+import audio from '../assets/mixkit-happy-bells-notification-937.wav';
 
 function Header() {
   const [email, setEmail] = useState("");
   const [currentTime, setCurrentTime] = useState("");
-  const [notifications, setNotifications] = useState([]); // Stocke les notifications
+  const [notifications, setNotifications] = useState([]);
+  const navigate = useNavigate(); // Hook pour naviguer
+
+  // Préparer l'audio pour la notification
+  const notificationSound = new Audio(audio);
 
   // Configurer Pusher
   useEffect(() => {
@@ -14,7 +20,7 @@ function Header() {
     if (storedEmail) {
       setEmail(storedEmail);
     } else {
-      window.location.href = "/";
+      window.location.href = "/"; // Redirige si aucun email trouvé
     }
 
     const intervalId = setInterval(() => {
@@ -28,19 +34,22 @@ function Header() {
     });
 
     const channel = pusher.subscribe('admin-channel');
-    
+
     // Écoute les notifications en temps réel
     channel.bind('transfert-en-attente', (data) => {
-      // Ajoute la nouvelle notification à l'état
-      setNotifications((prevNotifications) => [
-        ...prevNotifications,
-        data.message,
-      ]);
+      setNotifications((prevNotifications) => {
+        // Si la notification existe déjà, ne pas l'ajouter
+        if (!prevNotifications.some(notif => notif.message === data.message)) {
+          notificationSound.play();
+          return [...prevNotifications, data.message];
+        }
+        return prevNotifications;
+      });
     });
 
     return () => {
       clearInterval(intervalId);
-      pusher.unsubscribe('admin-channel'); // Désabonne lors du démontage du composant
+      pusher.unsubscribe('admin-channel');
     };
   }, []);
 
@@ -63,6 +72,11 @@ function Header() {
     });
   };
 
+  // Naviguer vers la page des notifications
+  const goToNotifications = () => {
+    navigate('/notif'); 
+  };
+
   return (
     <header>
       <nav className="navbar navbar-expand-lg navbar-light navbar-custom">
@@ -81,7 +95,7 @@ function Header() {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto">
               <li className="nav-item">
-                <div className="notification-icon">
+                <div className="notification-icon" onClick={goToNotifications}>
                   <i className="fas fa-bell fa-lg"></i>
                   {notifications.length > 0 && (
                     <span className="notification-badge">{notifications.length}</span>

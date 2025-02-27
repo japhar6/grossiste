@@ -37,7 +37,7 @@ const comercialeRoutes = require("./routes/comercialeRoute");
 const venteRoutes = require("./routes/venteRoute");
 const personnelRoutes = require("./routes/personnelRoute");
 
-
+const notifRoutes = require("./routes/notificationRoute");
 
 // Middleware
 app.use(express.json());
@@ -67,7 +67,7 @@ app.use("/api/commandes", commandeRoutes);
 app.use("/api/comercial", comercialeRoutes);
 app.use("/api/ventes", venteRoutes);
 app.use("/api/personnels", personnelRoutes);
-
+app.use("/api/notif", notifRoutes);
 
 app.use('/api/commission', commissionRoutes); 
 // Route de test

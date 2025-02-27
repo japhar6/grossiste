@@ -5,7 +5,7 @@ const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, , statut } = req.body;
 
         // Vérification du typeClient
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {

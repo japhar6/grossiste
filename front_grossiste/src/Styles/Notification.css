@@ -1,0 +1,115 @@
+.notifications-page {
+  width: 80%;
+  margin: 30px auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #89c2ba, #2575fc); /* Dégradé bleu-violacé doux */
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet moderne */
+}
+
+.notifications-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.notification-item {
+  background: linear-gradient(135deg, #e6f1ff, #d0e4ff); /* Dégradé doux bleu clair pour les notifications */
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 10px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.notification-item:hover {
+  transform: translateY(-3px); /* Effet de survol avec un léger déplacement */
+  background: linear-gradient(135deg, #c7d7f2, #b2c9e6); /* Changement de dégradé au survol */
+}
+
+.notification-item.lue {
+  background: linear-gradient(135deg, #f3f8ff, #e0e9f4); /* Dégradé plus clair pour notifications lues */
+}
+
+.notification-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-message {
+  font-size: 14px;
+  color: #2c3e50; /* Gris foncé pour le texte */
+}
+
+.badge {
+  background-color: #007bff; /* Bleu doux pour le badge 'Non lue' */
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+}
+
+.notification-item.non-lue {
+  border-left: 6px solid #007bff; /* Bordure bleue pour les notifications non lues */
+}
+
+.notifications-page h2 {
+  font-size: 26px;
+  color: #ffffff; /* Blanc pour le titre */
+  margin-bottom: 20px;
+}
+
+.notifications-page p {
+  font-size: 18px;
+  color: #bdc3c7; /* Texte 'Aucune notification' en gris clair */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notifications-page {
+    width: 90%; /* Réduire la largeur de la page sur les petits écrans */
+    padding: 15px;
+  }
+
+  .notifications-page h2 {
+    font-size: 22px; /* Taille de titre plus petite sur mobile */
+  }
+
+  .notification-item {
+    padding: 12px;
+    font-size: 13px; /* Ajustement de la taille des notifications */
+  }
+
+  .notification-message {
+    font-size: 12px; /* Taille de texte des notifications sur mobile */
+  }
+
+  .badge {
+    padding: 4px 10px; /* Réduire la taille du badge */
+    font-size: 11px; /* Réduire la taille du texte du badge */
+  }
+}
+
+@media (max-width: 480px) {
+  .notifications-page {
+    width: 100%; /* Prendre toute la largeur sur les très petits écrans */
+    padding: 10px;
+  }
+
+  .notifications-page h2 {
+    font-size: 20px; /* Taille de titre encore plus petite */
+  }
+
+  .notification-item {
+    padding: 10px;
+    font-size: 12px; /* Réduire encore la taille des notifications */
+  }
+
+  .notification-message {
+    font-size: 11px; /* Ajustement de la taille du texte */
+  }
+
+  .badge {
+    padding: 3px 8px; /* Plus petit badge sur les petits écrans */
+    font-size: 10px; /* Texte du badge plus petit */
+  }
+}

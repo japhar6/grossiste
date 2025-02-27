@@ -1,0 +1,65 @@
+.notifications-page {
+    width: 80%;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #347ec9 !important; /* Un fond doux */
+    border-radius: 8px;
+  }
+  
+  .notifications-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .notification-item {
+    background-color: #ffffff; /* Blanc cassé pour les notifications */
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Ombre légère pour l'effet de profondeur */
+    transition: transform 0.3s ease;
+  }
+  
+  .notification-item:hover {
+    transform: scale(1.02); /* Effet de zoom léger lors du survol */
+    background-color: #f7f9fc; /* Fond très légèrement bleu clair */
+  }
+  
+  .notification-item.lue {
+    background-color: #f9f9f9; /* Notification lue avec un fond légèrement gris */
+  }
+  
+  .notification-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .notification-message {
+    font-size: 14px;
+    color: #444444; /* Texte gris foncé */
+  }
+  
+  .badge {
+    background-color: #4caf50; /* Vert pour 'Non lue', plus doux */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  
+  .notification-item.non-lue {
+    border-left: 5px solid #4caf50; /* Bordure verte pour les notifications non lues */
+  }
+  
+  .notifications-page h2 {
+    font-size: 24px;
+    color: #333333; /* Titre en gris foncé */
+    margin-bottom: 20px;
+  }
+  
+  .notifications-page p {
+    font-size: 18px;
+    color: #777777; /* Texte 'Aucune notification' en gris clair */
+  }
+  

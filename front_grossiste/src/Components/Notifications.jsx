@@ -36,7 +36,7 @@ const NotificationsPage = () => {
   };
 
   const handleNotificationClick = (notification) => {
-    navigate(`/transfertAdmin`);
+    navigate(`/transfertAdmin`); 
   };
 
   return (
@@ -51,7 +51,7 @@ const NotificationsPage = () => {
             {notifications.length === 0 ? (
               <p>Aucune notification.</p>
             ) : (
-              <ul className="notifications-list">
+              <ul>
                 {notifications.map((notification) => (
                   <li
                     key={notification._id}

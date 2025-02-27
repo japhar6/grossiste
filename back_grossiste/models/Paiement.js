@@ -36,6 +36,7 @@ const paiementSchema = new mongoose.Schema({
             }
         }
     ],
+    modePaiement: { type: String, required: true },
     totalPaiement: {
         type: Number,
         required: true

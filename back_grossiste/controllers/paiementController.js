@@ -6,7 +6,7 @@ const PaiementCommerciale = require("../models/PaimentCommerciale");
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params;
-        const { statut, remiseGlobale, remiseParProduit, remiseFixe, idCaissier } = req.body; // Ajout de remiseFixe
+        const { statut, remiseGlobale, remiseParProduit, remiseFixe, modePaiement,idCaissier } = req.body; // Ajout de remiseFixe
   
         // Recherche de la commande par ID
         const commande = await Commande.findById(id);
