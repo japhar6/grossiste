@@ -3,12 +3,20 @@ const Client = require('../models/Client');
 // Créer un nouveau client
 exports.createClient = async (req, res) => {
   try {
-    const { nom, telephone, adresse } = req.body;
+    const { nom, telephone, adresse, remises } = req.body;
+
+    // Si les remises ne sont pas fournies, les initialiser avec les valeurs par défaut
+    const clientRemises = remises || {
+      remiseGlobale: 0,
+      remiseFixe: 0,
+      remiseParProduit: 0
+    };
 
     const newClient = new Client({
       nom,
       telephone,
       adresse,
+      remises: clientRemises
     });
 
     await newClient.save();
@@ -17,6 +25,7 @@ exports.createClient = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la création du client', error });
   }
 };
+
 
 exports.countClient = async (req, res) => {
   try {

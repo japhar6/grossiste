@@ -5,7 +5,7 @@ const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut, typeRemise, valeurRemise } = req.body;
 
         // Vérifier que typeClient est fourni
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
@@ -29,24 +29,36 @@ exports.ajouterCommande = async (req, res) => {
         // Forcer le mode de paiement à "à crédit" si c'est un commercial
         const paiementFinal = typeClient === "Commercial" ? "à crédit" : modePaiement;
 
-        // Vérifier que tous les produits existent
+        // Calcul des produits avec remise et création de la commande
         const produitsDetails = await Promise.all(produits.map(async (item) => {
             const produit = await Produit.findById(item.produit);
             if (!produit) throw new Error(`Produit avec ID ${item.produit} non trouvé.`);
             
             const prixUnitaire = produit.prixdevente;
-            const totalProduit = prixUnitaire * item.quantite;
+            let prixApresRemise = prixUnitaire;
 
+            // Calcul de la remise si applicable
+            if (typeRemise === "remiseParProduit") {
+                prixApresRemise = prixUnitaire - (prixUnitaire * (valeurRemise / 100));
+            }
+            
+            const totalProduit = prixApresRemise * item.quantite;
+
+            // Retourner les détails du produit avec remise
             return {
                 produit: produit._id,
                 quantite: item.quantite,
                 prixUnitaire,
+                prixApresRemise,  // Ajouter ici le prix après remise
                 total: totalProduit
             };
         }));
 
-        // Calcul du total général
-        const totalGeneral = produitsDetails.reduce((acc, item) => acc + item.total, 0);
+        // Calcul du total général après remise
+        let totalGeneral = produitsDetails.reduce((acc, item) => acc + item.total, 0);
+        if (typeRemise === "remiseGlobale") {
+            totalGeneral = totalGeneral - (totalGeneral * (valeurRemise / 100));
+        }
 
         // Création de la commande
         const nouvelleCommande = new Commande({
@@ -57,12 +69,15 @@ exports.ajouterCommande = async (req, res) => {
             modePaiement: paiementFinal,
             produits: produitsDetails,
             totalGeneral,
-            statut
+            statut,
+            typeRemise,
+            valeurRemise
         });
 
         // Enregistrement
         await nouvelleCommande.save();
 
+        // Réponse avec les informations importantes
         res.status(201).json({
             message: "Commande créée avec succès.",
             commande: nouvelleCommande
@@ -72,6 +87,8 @@ exports.ajouterCommande = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
@@ -179,7 +196,7 @@ exports.getCommandesTermineesEtLivrees = async (req, res) => {
     try {
         // Filtrer les commandes par les statuts "terminée" et "livrée"
         const commandes = await Commande.find({
-            statut: { $in: ["terminée", "livrée"] }
+            statut: { $in: ["payé", "payé et livrée"] }
         })
         .populate("produits.produit", "nom unite")  // Récupérer les produits associés (nom du produit)
         .populate("clientId", "nom telephone")  // Récupérer les informations du client

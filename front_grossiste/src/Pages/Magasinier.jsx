@@ -241,7 +241,7 @@ const filteredCommandes = commandes.filter((commande) => {
 
 <div className="modal-footer center">
   <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-  {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "terminée" && ( // Affiche le bouton seulement si la commande est terminée
+  {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && ( // Affiche le bouton seulement si la commande est terminée
     <button className="btn btn-info" onClick={validerVente}>
       Valider la vente
     </button>

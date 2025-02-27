@@ -18,7 +18,7 @@ exports.validerVente = async (req, res) => {
         }
 
         // Vérifier si la commande est prête à sortir
-        if (commande.statut !== 'terminée') {
+        if (commande.statut !== 'payé') {
             return res.status(400).json({ message: "La commande doit être validée par le caissier avant" });
         }
 
@@ -37,28 +37,48 @@ exports.validerVente = async (req, res) => {
         // Sauvegarder la vente dans la base de données
         await vente.save();
 
-        // Réduire les quantités dans le stock
+        // Réduire les quantités dans le stock en appliquant FIFO
         await Promise.all(commande.produits.map(async (item) => {
-            const stock = await Stock.findOne({ produit: item.produit._id, statut: 'actif' });
-            if (!stock) {
-                throw new Error(`Le produit ${item.produit.nom} est epuisé dans le stock`);
+            let remainingQuantity = item.quantite;  // Quantité restante à réduire
+            const produitId = item.produit._id;
+
+            // Trouver tous les stocks du produit en question, triés par date d'entrée croissante (FIFO)
+            const stocks = await Stock.find({ produit: produitId, statut: 'actif' }).sort({ dateEntree: 1 });
+            
+            if (stocks.length === 0) {
+                throw new Error(`Le produit ${item.produit.nom} est épuisé dans le stock`);
             }
 
-            // Vérifier si la quantité en stock est suffisante
-            if (stock.quantité < item.quantite) {
-                throw new Error(`Quantité insuffisante pour le produit ${item.produit.nom}. Disponible: ${stock.quantité}, Demandée: ${item.quantite}`);
+            // Réduire les quantités de stock en respectant FIFO
+            for (let stock of stocks) {
+                if (remainingQuantity <= 0) break;
+
+                const availableQuantity = stock.quantité;
+
+                if (availableQuantity > remainingQuantity) {
+                    // Si le stock courant est suffisant pour couvrir la vente, on réduit uniquement la quantité nécessaire
+                    stock.quantité -= remainingQuantity;
+                    stock.valeurTotale = stock.quantité * stock.prixUnitaire;
+                    await stock.save(); // Sauvegarder le stock après la réduction
+                    remainingQuantity = 0; // Plus de quantité à réduire
+                } else {
+                    // Si le stock courant est insuffisant, on consomme tout ce stock et on passe au suivant
+                    remainingQuantity -= availableQuantity;
+                    stock.quantité = 0; // Réduire complètement ce stock
+                    stock.valeurTotale = 0;
+                    await stock.save(); // Sauvegarder la suppression du stock
+                }
             }
 
-            // Réduction de la quantité de stock
-            stock.quantité -= item.quantite;
-            stock.valeurTotale = stock.quantité * stock.prixUnitaire;
+            // Si la quantité demandée n'a pas été entièrement réduite, cela signifie qu'il n'y a pas assez de stock
+            if (remainingQuantity > 0) {
+                throw new Error(`Quantité insuffisante pour le produit ${item.produit.nom}. Disponible: ${item.quantite - remainingQuantity}, Demandée: ${item.quantite}`);
+            }
 
-            // Sauvegarder les modifications du stock
-            await stock.save();
         }));
 
         // Mettre à jour la commande avec le statut 'livrée'
-        commande.statut = 'livrée';
+        commande.statut = 'payé et livrée';
         await commande.save();
 
         res.status(200).json({
@@ -69,6 +89,7 @@ exports.validerVente = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 exports.validerRetourProduits = async (req, res) => {
     try {
