@@ -79,7 +79,61 @@ router.put('/produits/maodi/:id', async (req, res) => {
     }
 });
 
-module.exports = router;
+
+
+
+router.put('/produits/modifier-prix-vente/:id', async (req, res) => {
+  try {
+      const { prixdevente, uniteNom } = req.body;
+      const produitId = req.params.id; // Assurez-vous d'utiliser le bon paramètre
+
+      // Validation
+      if (!prixdevente || !uniteNom) {
+          return res.status(400).json({ error: "Prix de vente et nom d'unité sont requis." });
+      }
+
+      const produit = await Produit.findById(produitId);
+      if (!produit) {
+          return res.status(404).json({ error: "Produit non trouvé." });
+      }
+
+      // Mettre à jour le prix de vente de l'unité correspondante
+      const unite = produit.unites.find(u => u.nom === uniteNom);
+      if (!unite) {
+          return res.status(400).json({ message: "Unité non trouvée pour le produit." });
+      }
+
+      unite.prixdevente = prixdevente; // Mise à jour du prix de vente de l'unité
+      await produit.save();
+
+      res.status(200).json({ message: "Prix de vente mis à jour avec succès.", produit });
+  } catch (error) {
+      console.error("Erreur lors de la mise à jour du prix de vente:", error);
+      res.status(500).json({ error: "Erreur interne du serveur." });
+  }
+});
 
   
+
+router.put('/produits/modifier-quantite-minimum/:id', async (req, res) => {
+  const { quantiteMinimum } = req.body;
+  const produitId = req.params.id;
+
+  try {
+      const produit = await Produit.findById(produitId);
+      if (!produit) {
+          return res.status(404).json({ message: 'Produit non trouvé' });
+      }
+
+      produit.quantiteMinimum = quantiteMinimum;
+      await produit.save();
+
+      res.json({ message: 'Quantité minimum mise à jour avec succès', produit });
+  } catch (error) {
+      console.error("Erreur lors de la mise à jour de la quantité minimum:", error);
+      res.status(500).json({ message: 'Erreur lors de la mise à jour de la quantité minimum' });
+  }
+});
+
+
 module.exports = router;
