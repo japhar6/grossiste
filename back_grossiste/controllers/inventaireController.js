@@ -21,7 +21,7 @@ exports.createInventaire = async (req, res) => {
       if (quantiteFinale < quantiteInitiale) {
           const stock = await Stock.findOne({ entrepot, produit });
           if (stock) {
-              stock.quantité -= (quantiteInitiale - quantiteFinale);
+              stock.quantite -= (quantiteInitiale - quantiteFinale);
               await stock.save();
           } else {
              

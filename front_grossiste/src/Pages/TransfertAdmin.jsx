@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
-import Sidebar from "../Components/SidebarMagasinier";
-import Header from "../Components/NavbarM";
+import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Navbar";
 import '../Styles/Transfert.css';
 
 const TransfertAdmin = () => {

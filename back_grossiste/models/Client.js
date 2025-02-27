@@ -21,7 +21,9 @@ const clientSchema = new mongoose.Schema({
     type: String,
     enum: ['actif', 'inactif'],
     default: 'actif',
-  },
+  }, nif: { type: String, default: null },
+  stat: { type: String, default: null },
+  nifStatImage: { type: String, default: null }  ,
   remises: {
     type: {
       remiseGlobale: { 

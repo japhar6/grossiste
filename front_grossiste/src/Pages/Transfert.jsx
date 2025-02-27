@@ -16,6 +16,7 @@ const Transfert = () => {
   const [showModal, setShowModal] = useState(false);
   const [showModalReception, setShowModalReception] = useState(false);
   const [transfertId, setTransfertId] = useState(null);
+  const [quantiteEnvoyee, setQuantiteEnvoyee] = useState(0); // État pour la quantité envoyée
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -52,8 +53,10 @@ const Transfert = () => {
       }).catch(() => toast.error('Erreur de validation.'));
   };
 
-  const openReceptionModal = (id) => {
+  // Modification de la fonction pour ouvrir le modal de réception
+  const openReceptionModal = (id, quantiteEnvoyee, entrepotDestination) => {
     setTransfertId(id);
+    setQuantiteEnvoyee(quantiteEnvoyee); // Sauvegarder la quantité envoyée
     setShowModalReception(true);
   };
 
@@ -99,18 +102,12 @@ const Transfert = () => {
                     <td>{transfert.entrepotSource?.nom || 'N/A'}</td>
                     <td>{transfert.entrepotDestination?.nom || 'N/A'}</td>
                     <td>{transfert.produit?.nom || 'N/A'}</td>
-                    <td>{transfert.quantité}</td>
+                    <td>{transfert.quantitéEnvoyée}</td>
                     <td>{new Date(transfert.dateTransfert).toLocaleDateString()}</td>
-                    <td>{transfert.statut}</td>
+                    <td>{transfert.statutAdmin}</td>
                     <td>
-                      {transfert.statut === 'En attente' && (
-                        <>
-                          <button className="btn btn-success btn-sm" onClick={() => handleValidation(transfert._id, 'Validé')}>Valider</button>
-                          <button className="btn btn-danger btn-sm ml-2" onClick={() => handleValidation(transfert._id, 'Rejeté')}>Rejeter</button>
-                        </>
-                      )}
                       {transfert.statutAdmin === 'approuvé' && transfert.statutEntrepotDestination !== 'reçu' && (
-                        <button className="btn btn-primary btn-sm" onClick={() => openReceptionModal(transfert._id)}>
+                        <button className="btn btn-primary btn-sm" onClick={() => openReceptionModal(transfert._id, transfert.quantitéEnvoyée, transfert.entrepotDestination)}>
                           Recevoir
                         </button>
                       )}
@@ -130,6 +127,7 @@ const Transfert = () => {
           show={showModalReception}
           handleClose={() => setShowModalReception(false)}
           transfertId={transfertId}
+          quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
           refreshHistorique={fetchHistoriqueTransferts}
         />
       )}

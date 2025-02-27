@@ -13,13 +13,19 @@ function Stock() {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [uniteSelectionnee, setUniteSelectionnee] = useState({});
+  const [quantitesInitiales, setQuantitesInitiales] = useState({});
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const [sortBy, setSortBy] = useState('nom'); 
+  const [sortBy, setSortBy] = useState('nom');
 
   const token = localStorage.getItem("token");
+
+
+  
+  
+  
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -35,21 +41,30 @@ function Stock() {
     };
 
     fetchEntrepots();
-  }, [token]);
+  }, []);
 
   const handleEntrepotChange = async (event) => {
     const entrepotId = event.target.value;
     const selected = entrepots.find(e => e._id === entrepotId);
-
+  
     setSelectedEntrepot(entrepotId);
     setMagasinier(selected?.magasinier?.nom || '');
-
+  
     setLoading(true);
     setError(null);
-
+  
     try {
       const response = await axios.get(`/api/stocks/stocks/${entrepotId}`);
       setStocks(response.data);
+  
+      const defaultUnits = {};
+      const initialQuantities = {};
+      response.data.forEach(stock => {
+        defaultUnits[stock.produit._id] = stock.unite;
+        initialQuantities[stock.produit._id] = stock.quantite;
+      });
+      setUniteSelectionnee(defaultUnits);
+      setQuantitesInitiales(initialQuantities);
     } catch (err) {
       toast.error('Erreur lors du chargement des stocks.');
       setError('Erreur lors du chargement des stocks.');
@@ -59,6 +74,12 @@ function Stock() {
     }
   };
 
+  
+  
+  
+  
+
+
   const filteredStocks = stocks.filter(stock => {
     return (
       (search === '' || stock.produit.nom.toLowerCase().includes(search.toLowerCase())) &&
@@ -67,18 +88,24 @@ function Stock() {
     );
   });
 
-  const sortedStocks = [...filteredStocks].sort((a, b) => {
+const sortedStocks = [...filteredStocks]
+  .filter(stock => {
+    if (sortBy === 'rupture') {
+      return stock.quantite < stock.produit.quantiteMinimum; // Filtrer uniquement les ruptures
+    }
+    return true; // Pour les autres cas, ne pas filtrer
+  })
+  .sort((a, b) => {
     if (sortBy === 'nom') {
       return a.produit.nom.localeCompare(b.produit.nom);
-    } else if (sortBy === 'quantité') {
-      return a.quantité - b.quantité;
+    } else if (sortBy === 'quantite') {
+      return b.quantite - a.quantite; // Trier par quantité décroissante
     } else if (sortBy === 'date') {
-      return new Date(a.dateEntree) - new Date(b.dateEntree);
-    } else if (sortBy === 'rupture') {
-      return a.quantité < a.produit.quantiteMinimum ? -1 : 1;
+      return new Date(b.dateEntree) - new Date(a.dateEntree); // Trier par date décroissante
     }
     return 0;
-  }).filter(stock => sortBy !== 'rupture' || stock.quantité < stock.produit.quantiteMinimum);
+  });
+
 
   return (
     <>
@@ -87,7 +114,7 @@ function Stock() {
         <Sidebar />
         <section className='contenue'>
           <Header />
-          <div className=" mini-statr p-3 content">
+          <div className="mini-statr p-3 content">
             <h5 className='alert alert-success'>
               <i className='fa fa-line-chart'></i> Stock
             </h5>
@@ -106,12 +133,13 @@ function Stock() {
 
             {selectedEntrepot && (
               <div className="alert alert-info mt-3">
-                <strong>Gere par le Magasinier :</strong> {magasinier || 'Aucun'}
+                <strong>Géré par le Magasinier :</strong> {magasinier || 'Aucun'}
               </div>
             )}
 
+
             {selectedEntrepot && (
-              <div className="filters mt-3 d-flex justify-content-between"  style={{ display: 'flex', gap: '10px' }}>
+              <div className="filters mt-3 d-flex justify-content-between" style={{ display: 'flex', gap: '10px' }}>
                 <input
                   type="text"
                   className="form-control mr-2"
@@ -141,7 +169,7 @@ function Stock() {
                   onChange={(e) => setSortBy(e.target.value)}
                 >
                   <option value="nom">Trier par Nom</option>
-                  <option value="quantité">Trier par Quantité</option>
+                  <option value="quantite">Trier par Quantité</option>
                   <option value="date">Trier par Date d'Entrée</option>
                   <option value="rupture">Produit en rupture</option>
                 </select>
@@ -153,41 +181,34 @@ function Stock() {
             ) : error ? (
               <p className="text-danger mt-3">{error}</p>
             ) : selectedEntrepot && sortedStocks.length > 0 ? (
-
-              <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-              <table className="tableSt mt-3">
-                <thead>
-                  <tr>
-                    <th>Référence</th>
-                    <th>Produit</th>
-                    <th>Quantité</th>
-                    <th>Unité</th>
-                    <th>Catégorie</th>
-                    <th>Quantite Minimum</th>
-                    <th>Date d'ajout</th>
-                  </tr>
-                </thead>
-                <tbody>
-  {sortedStocks.length > 0 ? (
-    sortedStocks.map(stock => (
-      <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
-        <td>{stock.produit.codeProduit.trim()}</td>
-        <td>{stock.produit.nom.trim()}</td>
-        <td>{stock.quantité}</td>
-        <td>{stock.produit.unite.trim()}</td>
-        <td>{stock.produit.categorie.trim()}</td>
-        <td>{stock.produit.quantiteMinimum}</td>
-        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-      </tr>
-    ))
-  ) : (
-    <tr>
-      <td colSpan="7" className="text-center">Aucun stock trouvé.</td>
-    </tr>
-  )}
-</tbody>
-
-              </table>
+              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                <table className="tableSt mt-3">
+                  <thead>
+                    <tr>
+                      <th>Référence</th>
+                      <th>Produit</th>
+                      <th>Quantité</th>
+                      <th>Unité</th>
+                      <th>Catégorie</th>
+                      <th>Quantité Minimum</th>
+                      <th>Date d'ajout</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedStocks.map(stock => (
+                      <tr key={stock._id} className={stock.quantite < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
+                        <td>{stock.produit.codeProduit.trim()}</td>
+                        <td>{stock.produit.nom.trim()}</td>
+                        <td>{stock.quantite}</td>    <td>
+                        {stock.unite}
+                        </td>
+                        <td>{stock.produit.categorie.trim()}</td>
+                        <td>{stock.produit.quantiteMinimum}</td>
+                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : selectedEntrepot ? (
               <p className="text-center mt-3">Aucun stock trouvé.</p>
@@ -196,24 +217,20 @@ function Stock() {
         </section>
       </main>
       <style>{`
-.stock-low {
-  animation: blink 0.6s infinite alternate ease-in-out;
-  background-color: #f8d7da !important; /* Rose clair pour une alerte */
-  color: #721c24; /* Rouge foncé pour le texte */
-  font-weight: bold;
-  border-radius: 5px;
-  padding: 10px;
-  border: 1px solid #f5c6cb; /* Bordure rouge clair */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 10px 0; /* Espacement en haut et en bas */
-}
-
-@keyframes blink {
-  0% { background-color: #f8d7da; opacity: 1; }
-  50% { background-color: #f5c6cb; opacity: 0.8; }
-  100% { background-color: #f8d7da; opacity: 1; }
-}
-
+        .stock-low {
+          animation: blink 0.6s infinite alternate ease-in-out;
+          background-color: #f8d7da !important; /* Rose clair pour une alerte */
+          color: #721c24; /* Rouge foncé pour le texte */
+          font-weight: bold; /* Gras pour le texte */
+        }
+        @keyframes blink {
+          from {
+            opacity: 1;
+          }
+          to {
+            opacity: 0.5;
+          }
+        }
       `}</style>
     </>
   );

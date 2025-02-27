@@ -174,13 +174,13 @@ function CreerInventaire() {
                       <tr key={stock._id}>
                         <td>{stock.produit.codeProduit}</td>
                         <td>{stock.produit.nom}</td>
-                        <td>{stock.quantité}</td>
-                        <td>{stock.produit.unite}</td>
+                        <td>{stock.quantite}</td>
+                        <td>{stock.unite}</td>
                         <td>
                           <button 
                             className="btn btn-primary btn-sm"
                             onClick={() => {
-                              setQuantiteInitiale(stock.quantité);
+                              setQuantiteInitiale(stock.quantite);
                               setSelectedProduct(stock);
                             }}
                           >

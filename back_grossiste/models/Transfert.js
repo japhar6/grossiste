@@ -26,11 +26,7 @@ const transfertSchema = new mongoose.Schema({
   },
   quantitéPerdue: {
     type: Number,
-    default: 0, // Stocke les pertes si applicable
-  },
-  quantitéEndommagée: {
-    type: Number,
-    default: 0, // Stocke les produits abîmés si applicable
+    default: 0, // Regroupe les pertes et les produits endommagés
   },
   dateTransfert: {
     type: Date,
@@ -41,18 +37,10 @@ const transfertSchema = new mongoose.Schema({
     enum: ['en attente', 'approuvé', 'rejeté'],
     default: 'en attente',
   },
-  commentaireAdmin: {
-    type: String,
-    default: '',
-  },
   statutEntrepotDestination: {
     type: String,
     enum: ['en attente', 'reçu', 'refusé'],
     default: 'en attente',
-  },
-  commentaireEntrepotDestination: {
-    type: String,
-    default: '',
   },
 });
 
