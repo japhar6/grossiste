@@ -74,6 +74,9 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
               
                 fetchRemisesClient();
               }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
+              
+
+          
 
                                 const handleSelectChange = (e) => {
                                   const id = e.target.value;
@@ -349,7 +352,80 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                       if (produitsInvalides.length > 0) {
                                           Swal.fire("Erreur", "Tous les produits doivent avoir un ID valide et une quantité positive.", "error");
                                           return;
-                                      }                              
+                                      }
+                                  
+                                    const nouvelleCommande = {
+                                    typeClient,
+                                    commercialId: isCommercial ? selectedPerson : null,
+                                    clientId: !isCommercial ? selectedPerson : null,
+                                    vendeurId,
+                                    produits: commande.map(prod => ({
+                                        produit: prod._id,
+                                        quantite: prod.quantite,
+                                        prixUnitaire: prod.prix,
+                                            prixApresRemise: calculerPrixApresRemise(prod, typeRemise, valeurRemise),  // Calculer et ajouter le prix après remise
+                                    })),
+                                    modePaiement: isCommercial ? "à crédit" : modePaiement,
+                                    statut: "en cours",
+                                    typeRemise,
+                                    valeurRemise,
+                                    totalGeneral: commande.reduce((total, prod) => total + (calculerPrixApresRemise(prod, typeRemise, valeurRemise) * prod.quantite), 0) // Calculer le total général après remise
+                                };
+                                
+                                console.log("Commande prête à être envoyée :", nouvelleCommande);
+                                
+                                try {
+                                  const response = await axios.post("/api/commandes/ajouter", nouvelleCommande);
+                              
+                                  if (response.data) {
+                                      const commande = response.data.commande; // Récupérer la commande retournée par l'API
+                                      console.log("Commande après enregistrement :", commande);
+                              
+                                      // Vérification de la valeur de la remise renvoyée
+                                      console.log("Valeur de la remise renvoyée par l'API : ", commande.valeurRemise);  // Vérifier ce que l'API renvoie.
+                              
+                                      // Affichage des informations sur la remise et le prix après remise
+                                      commande.forEach(prod => {
+                                        console.log(prod);
+                                        if (!prod.prixdevente) {
+                                            console.error("Le produit n'a pas de prix unitaire défini:", prod);
+                                        }
+                                    });
+                                    
+                              
+                                      // Affichage de la remise globale si applicable
+                                      if (commande.typeRemise === "remiseGlobale") {
+                                          console.log(`Remise Globale Appliquée: ${commande.valeurRemise}%`);
+                                      }
+                              
+                                      // Affichage de la valeurRemise
+                                      if (commande.valeurRemise !== undefined) {
+                                          console.log(`Valeur de la Remise : ${commande.valeurRemise}`);  // Affichage de la remise
+                                      } else {
+                                          console.log("Valeur de la Remise est undefined.");
+                                      }
+                              
+                                      Swal.fire({
+                                          title: "Commande validée",
+                                          text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${commande.referenceFacture}`,
+                                          icon: "success",
+                                          confirmButtonText: "OK"
+                                      }).then(() => {
+                                          // Réinitialisation des champs
+                                          setCommande([]);
+                                          setSelectedPerson("");
+                                          setModePaiement("");
+                                          setSearchTerm("");
+                                          setSelectedProducts([]);
+                                          setCheckedProduits({});
+                                      });
+                                  }
+                              } catch (error) {
+                                  console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
+                                  Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
+                              }                             
+                                  
+                                                                   
                                 };                                  
                               
                               
@@ -358,6 +434,46 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                 console.log("Produit sélectionné:", produit);
                                 setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
                               };
+                                  
+                                  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
+                                  const valeurRemise = typeRemise === "remiseGlobale"
+                                  ? remisesClient?.remiseGlobale
+                              : typeRemise === "remiseFixe"
+                                  ? remisesClient?.remiseFixe
+                                  : typeRemise === "remiseParProduit"
+                                      ? remisesClient?.remiseParProduit
+                                      : 0;
+                          
+
+                                      const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+                                        console.log("Prix avant remise:", item.prix);
+                                        console.log("Type de remise:", typeRemise);
+                                        console.log("Valeur de remise:", valeurRemise);
+                                      
+                                        if (typeRemise === 'remiseParProduit') {
+                                          const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
+                                          console.log("Prix après remise:", prixFinal);
+                                          return prixFinal;
+                                        }
+                                        return item.prix;
+                                      };
+                                      
+                                  
+                                  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
+                                    if (typeRemise === 'remiseFixe') {
+                                      return totalCommande - valeurRemise;
+                                    } else if (typeRemise === 'remiseParProduit') {
+                                      return commande.reduce((total, item) => {
+                                        const prixApresRemise = item.prix - (item.prix * (valeurRemise / 100));
+                                        return total + (prixApresRemise * item.quantite);
+                                      }, 0);
+                                    } else if (typeRemise === 'remiseGlobale') {
+                                      return totalCommande - (totalCommande * (valeurRemise / 100));
+                                    }
+                                    return totalCommande;
+                                  };
+                                  
+
   return (
     <main className="center">
       <Sidebar />
@@ -609,21 +725,62 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                                                 <td className="margin-left-mobile">{p.nom}</td>
                                                                 <td className="margin-left-mobile">{p.categorie}</td>
                                                                 <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
-                                                                  <td>
-                                                                    <input
-                                                                      type="number"
-                                                                      min="1"
-                                                                      className="form-control"
-                                                                      onChange={(e) => (p.quantiteTemp = parseInt(e.target.value) || 1)}
-                                                                      onKeyDown={(e) => handleKeyDown(p, e)}
-                                                                    />
-                                                                  </td>
-                                                                   <td>
-                                                                  <select className="form-control">
-                                                                    <option value="">Veillez selectionner l'unité</option>
-                                                                    <option value=""></option>
-                                                                  </select>    
-                                                                  </td>
+<td>
+  <input
+    type="number"
+    min="1"
+    className="form-control"
+    onChange={(e) => {
+      const updatedProduit = { ...p };  // Crée une copie de l'objet produit
+      updatedProduit.quantiteTemp = parseInt(e.target.value) || 1;
+      setProduits((prevProduits) =>
+        prevProduits.map((prod) =>
+          prod._id === updatedProduit._id ? updatedProduit : prod
+        )
+      );
+    }}
+    onKeyDown={(e) => handleKeyDown(p, e)}
+  />
+</td>
+<td>
+  <select
+    className="form-control"
+    onChange={(e) => {
+      const selectedUnite = e.target.value;
+      const updatedProduit = { ...p };  // Crée une copie de l'objet produit
+
+      // Met à jour l'unité temporaire dans la copie du produit
+      updatedProduit.uniteTemp = selectedUnite;
+
+      // Recherche l'unité sélectionnée dans la liste des unités
+      const selectedUniteObj = updatedProduit.unites.find((unite) => unite.nom === selectedUnite);
+
+      // Si une unité valide est trouvée, met à jour le prix
+      if (selectedUniteObj) {
+        updatedProduit.prixdevente = selectedUniteObj.prixdevente;  // Mise à jour du prix
+      }
+
+      // Met à jour l'état avec la copie modifiée du produit
+      setProduits((prevProduits) =>
+        prevProduits.map((prod) =>
+          prod._id === updatedProduit._id ? updatedProduit : prod
+        )
+      );
+    }}
+    value={p.uniteTemp || ""}
+  >
+    <option value="">Veuillez sélectionner l'unité</option>
+    {p.unites && p.unites.length > 0 ? (
+      p.unites.map((unite, index) => (
+        <option key={index} value={unite.nom}>
+          {unite.nom}
+        </option>
+      ))
+    ) : (
+      <option value="">Pas d'unité disponible</option>
+    )}
+  </select>
+</td>
                                                                   <td>
                                                                     <div className="input-checkbox-container">
                                                                     <input
@@ -675,51 +832,32 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
         </tr>
       </thead>
       <tbody>
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td> Ariary</td>
-            <td> Ariary</td>
-            <td> Ariary</td>
+        {commande.map((item, index) => (
+          <tr key={index}>
+            <td>{item.nom}</td>
+            <td>{item.quantite}</td>
+            <td>{item.unite}</td>
+            <td>{item.prixdevente} Ariary</td>
+            <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+            <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
           </tr>
+        ))}
       </tbody>
     </table>
   </div>
-      
-              <div className="commande-container d-flex justify-content-between">
-                {/* Informations Client (colonne gauche) */}
-                <div className="client-info w-50 p-3">
-                  <h6><i className="fa fa-user"></i> Informations Client</h6>
-                  <div className="form-group mt-3">
-                  {type && (
-        <div className="form-group mt-3">
-          <label>{type === "client" ? "Sélectionner un client" : "Sélectionner un commercial"}</label>
-          <select className="form-control" value={selectedPerson} onChange={handleSelectChange}>
-            <option value="">Sélectionner</option>
-            {(type === "client" ? clients : commerciaux).map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.nom} - {p.telephone}
-              </option>
-            ))}
-            <option value="new">Ajouter un nouveau {type}</option>
-          </select>
-        </div>
-      )}
-  </div>
+
   <h6 className="total">
-    Total:  Ariary
+    Total: {totalCommande} Ariary
   </h6>
   <h6 className="total">
-    Total après remise:  Ariary
+    Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
   </h6>
   <button className="btn btn-success mt-3" onClick={validerCommande}>
     Enregistrer la Commande
   </button>
 </div>
+
                                         </div>
-                                      </div>
-                                      </div>
                                       </div>
                                     </section>
                                   </main>
