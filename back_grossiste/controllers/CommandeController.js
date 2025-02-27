@@ -23,7 +23,7 @@ exports.ajouterCommande = async (req, res) => {
 
         // Vérifier si le client ou commercial existe
         if (!clientOuCommercial) {
-            return res.status(404).json({ message: `${typeClient} non trouvé avec cet ID.` });
+            return res.status(404).json({ message: ${typeClient} non trouvé avec cet ID. });
         }
 
         // Forcer le mode de paiement à "à crédit" si c'est un commercial
@@ -32,7 +32,7 @@ exports.ajouterCommande = async (req, res) => {
         // Calcul des produits avec remise et création de la commande
         const produitsDetails = await Promise.all(produits.map(async (item) => {
             const produit = await Produit.findById(item.produit);
-            if (!produit) throw new Error(`Produit avec ID ${item.produit} non trouvé.`);
+            if (!produit) throw new Error(Produit avec ID ${item.produit} non trouvé.);
             
             const prixUnitaire = produit.prixdevente;
             let prixApresRemise = prixUnitaire;
@@ -49,7 +49,7 @@ exports.ajouterCommande = async (req, res) => {
                 produit: produit._id,
                 quantite: item.quantite,
                 prixUnitaire,
-                prixApresRemise,  // Ajouter ici le prix après remise
+                prixApresRemise, 
                 total: totalProduit
             };
         }));
