@@ -1,8 +1,8 @@
 // Route pour récupérer les notifications non lues
 
+const User = require('../models/User');  
 
-
-
+const mongoose = require('mongoose');
 const Notification = require('../models/Notification'); // Assurez-vous d'importer le modèle Notification
 const Pusher = require('pusher');
 
@@ -14,27 +14,26 @@ const pusher = new Pusher({
   cluster: "mt1",
   useTLS: true
 });
-
-// Fonction pour créer une notification
-exports.createNotification = async (userId, message) => {
+exports.sendNotification = async (message) => {
   try {
-    // Créer et sauvegarder la notification dans la base de données
+    // Créer la notification dans la base de données
     const notification = new Notification({
       message,
-      user: userId,  // Assurez-vous de passer l'ID de l'utilisateur à qui la notification est destinée
-      lue: false
+      lue: false,
     });
-    
+
     await notification.save();
 
-    // Envoyer la notification en temps réel à l'utilisateur via Pusher
-    pusher.trigger('notifications-channel', `user-${userId}`, {
-      message
+    // Émettre un événement via Pusher
+    pusher.trigger('admin-channel', 'transfert-en-attente', {
+      message,
+
     });
 
-    console.log("Notification envoyée avec succès !");
+    console.log("Notification envoyée avec succès.");
+
   } catch (error) {
-    console.error("Erreur lors de l'ajout de la notification", error);
+    console.error("Erreur lors de l'envoi de la notification:", error);
   }
 };
 
@@ -77,4 +76,37 @@ exports.markAsRead = async (req, res) => {
 
   
 
-  
+exports.envoyerNotificationAdmin = async (req, res) => {
+  try {
+    const { message } = req.body; // On attend un message dans le corps de la requête
+
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ message: 'Le message de la notification est requis.' });
+    }
+
+    // Créer la notification dans la base de données
+    const notification = new Notification({
+      message: message,
+      lue: false, // Par défaut, la notification n'est pas lue
+    });
+
+    await notification.save();
+
+    // Récupérer l'ObjectId de l'admin
+    const adminUser = await User.findOne({ role: 'admin' });
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Utilisateur admin non trouvé.' });
+    }
+
+    // Envoyer un message de notification via Pusher
+    pusher.trigger('admin-channel', 'nouvelle-notification', {
+      message: message,
+      notificationId: notification._id
+    });
+
+    res.status(201).json({ message: 'Notification envoyée avec succès.', notification });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de la notification:", error);
+    res.status(500).json({ message: "Erreur lors de l'envoi de la notification", error: error.message });
+  }
+};

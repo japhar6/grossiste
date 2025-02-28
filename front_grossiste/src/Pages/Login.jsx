@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import axios from '../api/axios';
+import Logo from '../assets/logoo.png'
 
 
 function Login() {
@@ -90,12 +91,15 @@ function Login() {
         <main className='mainLogin center'>
             <section className='login'>
                 <div className="container-fluid center cont">
-                    <div className='description p-5'>
-                        <h1 className='mb-4'>
-                            <b className='gradient-text'>DIGITALISATION GROSSISTE PPN</b> <br />
-                            <b className='gradient'> by INNOV-T Madagascar</b>
+                    <div className='description p-5  text-center'>
+                        <div className="center">
+                            <img src={Logo} alt="" width={250} className='img-fluid'/>
+                        </div>
+                        <h1 className='mb-4 mt-5'>
+                            <b className='gradient-text'>MAGASIN BAZARIKO</b><br />
+                            <h2>Ho anao, Akaikinao</h2>
                         </h1>
-                        <p>Optimisez la gestion et la distribution des Produits de Première Nécessité (PPN)...</p>
+                        <p>Optimisez la gestion et la distribution des PPN... by <b className='fw-bold'>INNOV-T Madagascar</b></p>
                         <Link to="/inscription">
 
                       
@@ -127,29 +131,29 @@ function Login() {
                                         <label>Nom d'utilisateur</label>
                                     </div>
                                     <div className="form-floating mb-3" style={{ position: 'relative' }}>
-            <input
-                type={showPassword ? "text" : "password"}
-                className="form-control"
-                placeholder="Password"
-                autoComplete="off"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ paddingRight: '2.5rem' }}
-            />
-            <label>Mot de passe</label>
-            <span 
-                className="input-icon" 
-                onClick={togglePasswordVisibility} 
-                style={{ cursor: 'pointer', position: 'absolute', right: '20px', top: '20px' }}
-            >
-                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-            </span>
-        </div>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="form-control"
+                                        placeholder="Password"
+                                        autoComplete="off"
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        style={{ paddingRight: '2.5rem' }}
+                                    />
+                                    <label>Mot de passe</label>
+                                    <span 
+                                        className="input-icon" 
+                                        onClick={togglePasswordVisibility} 
+                                        style={{ cursor: 'pointer', position: 'absolute', right: '20px', top: '20px' }}
+                                    >
+                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                    </span>
                                 </div>
-                                <div>
+                                </div>
+                                <div className='text-center'>
                                     {!success && (
-                                        <button type="submit" className='btn1 btn1-success p-3 mt-3' disabled={loading}>
+                                        <button type="submit" className='btn1 btn1-success p-3 mt-3 button' disabled={loading}>
                                             {loading ? (
                                                 <span>
                                                     <i className="fa fa-spinner fa-spin"></i> Connexion...

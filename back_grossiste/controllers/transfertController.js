@@ -52,7 +52,6 @@ exports.transfertProduit = async (req, res) => {
     // Créer la notification dans la base de données
     const notification = new Notification({
       message: notificationMessage,
-      user: adminUser._id,  // Utiliser l'ObjectId de l'admin
       lue: false,
     });
 

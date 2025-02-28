@@ -105,42 +105,25 @@ exports.ajouterAchat = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
     }
 };
-const handleChangeUnite = (produit, uniteNom, stock) => {
-    setUniteSelectionnee((prev) => ({
-        ...prev,
-        [produit._id]: uniteNom,
-    }));
+function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
+    // Trouver l'unité de départ
+    const uniteSource = unitesDisponibles.find(u => u.nom === uniteAchat);
 
-    // Trouver l'unité sélectionnée et l'unité actuelle
-    const selectedUnitInfo = produit.unites.find(u => u.nom === uniteNom);
-    const currentUnitInfo = produit.unites.find(u => u.nom === (uniteSelectionnee[produit._id] || produit.unites[0].nom));
-
-    if (selectedUnitInfo && currentUnitInfo) {
-        // Utilisez la quantité actuelle du stock
-        const currentQuantity = stock.quantite;
-
-        // Utiliser la fonction convertirQuantite pour obtenir les quantités converties
-        const quantitesConverties = convertirQuantite(currentQuantity, currentUnitInfo.nom, produit.unites);
-        
-        if (quantitesConverties) {
-            // Mettez à jour une variable d'état pour afficher la quantité convertie
-            setStocks((prevStocks) => {
-                return prevStocks.map(stockItem => {
-                    if (stockItem.produit._id === produit._id) {
-                        return {
-                            ...stockItem,
-                            displayedQuantity: quantitesConverties[selectedUnitInfo.nom], // Quantité convertie pour l'unité sélectionnée
-                            displayedUnit: selectedUnitInfo.nom // Unité convertie
-                        };
-                    }
-                    return stockItem;
-                });
-            });
-        }
+    if (!uniteSource) {
+        console.error("❌ Erreur: Unité source introuvable !");
+        return { quantite, unite: uniteAchat };
     }
-};
 
+    // Trier les unités par ordre croissant de conversion (plus petite unité a une conversion plus grande)
+    const unitesTriees = [...unitesDisponibles].sort((a, b) => b.conversion - a.conversion);
 
+    // Trouver la plus petite unité
+    const uniteCible = unitesTriees[0]; // La première unité dans la liste triée est la plus petite
+
+    // Conversion
+    const nouvelleQuantite = quantite * (uniteCible.conversion / uniteSource.conversion);
+    return { quantite: nouvelleQuantite, unite: uniteCible.nom };
+}
 exports.validerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;

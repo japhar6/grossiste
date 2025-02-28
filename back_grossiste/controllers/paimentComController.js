@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 exports.validerPaiementCommerciale = async (req, res) => {
     try {
         const { id } = req.params;
-        const { statut, idCaissier } = req.body;  // Pas de remise pour un commercial
+        const { statut, idCaissier,dateLimiteCredit, modePaiement } = req.body;  // Définir "à crédit" par défaut
 
         // Recherche de la commande par ID
         const commande = await Commande.findById(id);
@@ -18,6 +18,11 @@ exports.validerPaiementCommerciale = async (req, res) => {
         // Vérifier si c'est un commercial
         if (commande.typeClient !== "Commercial") {
             return res.status(400).json({ message: "Cette commande n'est pas destinée à un commercial" });
+        }
+
+         // Si le mode de paiement est "à crédit", vérifier que la date limite est fournie
+         if (modePaiement === "a credit" && !dateLimiteCredit) {
+            return res.status(400).json({ message: "La date limite de paiement à crédit est requise." });
         }
 
         // Le montant final à payer est simplement le total de la commande
@@ -33,9 +38,12 @@ exports.validerPaiementCommerciale = async (req, res) => {
             montantPaye: 0,  // Pas encore payé
             montantRestant: montantFinalPaye,  // Le montant restant à payer
             totalPaiement: montantFinalPaye,  // Le montant total à payer
-            statut: "non payé", // Statut initial à "partiel"
+            statut: "non payé", // Statut initial à "non payé"
             idCaissier, // ID du caissier
-            referenceFacture: commande.referenceFacture // Ajout de la référence de facture
+            referenceFacture: commande.referenceFacture, // Ajout de la référence de facture
+            modePaiement: modePaiement,  
+            dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null // Ajout de la date limite si le paiement est à crédit
+            // Utiliser "à crédit" par défaut si non spécifié
         });
 
         // Sauvegarder le paiement
@@ -46,6 +54,7 @@ exports.validerPaiementCommerciale = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 exports.mettreAJourPaiementCommerciale = async (req, res) => {
     try {
@@ -88,8 +97,8 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
 
                 produitsRestants.push({
                     produitId: produit.produitId,
-                    quantiteRestante: produitCommande.quantite - produit.quantite, // Calcul de la quantité restante
-                    unite: produitDB.unite  // Ajout de l'unité
+                    quantiteRestante: produitCommande.quantite - produit.quantite,  
+                  
                 });
             } else {
                 console.error(`Produit ${produit.produitId} non trouvé dans la commande.`);

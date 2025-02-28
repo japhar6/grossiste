@@ -10,42 +10,33 @@ const paiementSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    referencePaiement: {
+        type: String,
+        required: function() { 
+            return this.modePaiement === "mobile money" || this.modePaiement === "virement bancaire";
+        }
+    },
     statut: { 
         type: String, 
         enum: ["payé complet", "payé partielle", "annulé"], 
-        default: "payé complet"
+        default: "en cours"
     },
-    remiseGlobale: { 
-        type: Number, 
-        default: 0 
-    },
-    remiseFixe: {  
-        type: Number,
-        default: 0
-    },
-    remiseParProduit: [
-        {
-            produitId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Produit",
-                required: true
-            },
-            remise: {
-                type: Number,
-                default: 0
-            }
-        }
-    ],
-    modePaiement: { type: String, required: true },
     totalPaiement: {
         type: Number,
         required: true
     },
-    idCaissier: { // Nouveau champ pour stocker l'ID du caissier
+    idCaissier: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Assure-toi que "User" est le modèle de tes utilisateurs (caissiers)
+        ref: "User",
         required: true
+    },
+    modePaiement: { 
+        type: String, 
+        enum: ["espèce", "mobile money", "virement bancaire", "a credit"], 
+        required: true 
     }
+    ,
+    dateLimiteCredit: { type: Date, required: false },
 }, { timestamps: true });
 
 const Paiement = mongoose.model("Paiement", paiementSchema);

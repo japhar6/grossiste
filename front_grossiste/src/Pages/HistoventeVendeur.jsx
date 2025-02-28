@@ -68,19 +68,7 @@ function HistoV() {
         placeholder="Filtrer par date"
       />
     </div>
-    <div className="col-md-4 mb-3">
-      <select 
-        className="form-control" 
-        onChange={(e) => setModePaiementFilter(e.target.value)} 
-        value={modePaiementFilter}
-      >
-        <option value="">Tous les modes de paiement</option>
-        <option value="virement bancaire">Virement Bancaire</option>
-        <option value="espèce">Espèces</option>
-        <option value="mobile money">Mobile Money</option>
-        <option value="à crédit">A crédit</option>
-      </select>
-    </div>
+   
     <div className="col-md-4 mb-3">
                   <label>
                   <select className="form-select" value="" onChange={e => setTriMontant(e.target.value)}>
@@ -136,7 +124,7 @@ function HistoV() {
                         <th>Date de Commande</th>
                         <th>Produits</th>
                         <th>Nom du client/commerciale</th>
-                        <th>Mode de Paiement</th>
+                    
                         
                         <th>Statut</th>
                         <th>Fait par :</th>
@@ -162,7 +150,7 @@ function HistoV() {
                             </td>      
                             <td>{commande.clientId ? commande.clientId.nom : (commande.commercialId ? commande.commercialId.nom : "Inconnu")}</td>
 
-                            <td>{commande.modePaiement}</td>
+                         
                             <td>{commande.statut}</td>
                             <td>
                               {commande.vendeurId && commande.vendeurId.nom

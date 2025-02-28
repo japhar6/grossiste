@@ -46,6 +46,18 @@ function Header() {
         return prevNotifications;
       });
     });
+  
+    // Écoute les notifications de type "nouvelle-notification"
+    channel.bind('nouvelle-notification', (data) => {
+      setNotifications((prevNotifications) => {
+        // Si la notification existe déjà, ne pas l'ajouter
+        if (!prevNotifications.some(notif => notif.message === data.message)) {
+          notificationSound.play();
+          return [...prevNotifications, data.message];
+        }
+        return prevNotifications;
+      });
+    });
 
     return () => {
       clearInterval(intervalId);

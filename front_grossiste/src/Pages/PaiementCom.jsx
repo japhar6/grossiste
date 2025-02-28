@@ -130,14 +130,26 @@ function PaiementCom() {
 
   // Calcul du total après retour de produits
   const calculerTotalApresRetour = () => {
-    if (!commande) return 0;
-
+    if (!commande || !commande.produits) return 0;
+  
     return commande.produits.reduce((total, produit) => {
-      const quantiteRetournee = parseInt(produitsRetournes[produit.produit.id] || 0);
+      // Récupérer la quantité retournée ou 0 si aucune donnée n'est présente
+      const quantiteRetournee = parseInt(produitsRetournes[produit.produit.id] || 0, 10);
+      
+      // Vérifier que la quantité retournée est bien un nombre valide
+      if (isNaN(quantiteRetournee)) {
+        console.error(`Quantité retournée invalide pour le produit ${produit.produit.nom}`);
+        return total; // Si la quantité retournée est invalide, ignorer ce produit
+      }
+      
+      // Calculer la nouvelle quantité après retour
       const nouvelleQuantite = Math.max(produit.quantite - quantiteRetournee, 0);
+      
+      // Calculer le total
       return total + nouvelleQuantite * produit.prixUnitaire;
     }, 0);
   };
+  
 
   // Validation de la commande et mise à jour de la vente
   const handleValidation = async () => {

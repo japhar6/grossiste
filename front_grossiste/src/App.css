@@ -10,7 +10,6 @@
     background: linear-gradient(90deg, #19cd5e, #544adb); /* Couleurs du dégradé */
     -webkit-background-clip: text; /* Applique le dégradé au texte */
     -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
-    font-size: 2rem !important; /* Taille du texte */
     font-weight: 1000 !important; /* Épaissir le texte */
     font-style: normal;
 }

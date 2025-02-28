@@ -20,5 +20,5 @@ router.get('/info/:id', paiementController.getPaiementAvecCommande);
 router.get('/totals/:periode', paiementController.getTotalPaiementsParPeriode);
 
 
-
+router.get('/check-payments-due', paiementController.checkPaymentsDue);
 module.exports = router;
