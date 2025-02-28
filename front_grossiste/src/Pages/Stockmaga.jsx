@@ -18,9 +18,39 @@ function Stock() {
   const [dateFilter, setDateFilter] = useState('');
   const [sortBy, setSortBy] = useState('nom'); 
 
+    const [uniteSelectionnee, setUniteSelectionnee] = useState({});
+    const [quantitesInitiales, setQuantitesInitiales] = useState({});
+    const [quantiteAffichee, setQuantiteAffichee] = useState({});
+
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userid");
   const nom = localStorage.getItem("nom");
+
+ const handleUniteChange = (produitId, nouvelleUnite) => {
+    const produit = stocks.find(stock => stock.produit._id === produitId);
+    const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
+    const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
+    
+    // Calcul de la nouvelle quantité en fonction de l'unité choisie
+    const quantiteStock = quantitesInitiales[produitId];
+    const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
+  
+    // Si l'unité choisie est plus grande (ex: cartouche vers carton), divisez la quantité
+    const nouvelleQuantite = quantiteStock / conversion;
+  
+    // Mettre à jour l'état avec la nouvelle quantité
+    setQuantiteAffichee(prevState => ({
+      ...prevState,
+      [produitId]: nouvelleQuantite,
+    }));
+  
+    // Mettre à jour l'unité sélectionnée pour ce produit
+    setUniteSelectionnee(prevState => ({
+      ...prevState,
+      [produitId]: nouvelleUnite,
+    }));
+  };
+  
 
   // Récupère tous les entrepôts à l'initialisation
   useEffect(() => {
@@ -51,6 +81,21 @@ function Stock() {
       try {
         const response = await axios.get(`/api/stocks/stocks/${entrepot._id}`);
         setStocks(response.data);
+        
+        const defaultUnits = {};
+        const initialQuantities = {};
+        const initialQuantiteAffichee = {};
+        response.data.forEach(stock => {
+          defaultUnits[stock.produit._id] = stock.unite; // Unité par défaut
+          initialQuantities[stock.produit._id] = stock.quantite; // Quantité initiale (en plus petite unité)
+          initialQuantiteAffichee[stock.produit._id] = stock.quantite; // Quantité affichée
+        });
+        setUniteSelectionnee(defaultUnits);
+        setQuantitesInitiales(initialQuantities);
+        setQuantiteAffichee(initialQuantiteAffichee);
+
+
+
       } catch (err) {
         toast.error('Erreur lors du chargement des stocks.');
         setError('Erreur lors du chargement des stocks.');
@@ -184,8 +229,20 @@ function Stock() {
                       <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
                         <td>{stock.produit.codeProduit}</td>
                         <td>{stock.produit.nom}</td>
-                        <td>{stock.quantite}</td>
-                        <td>{stock.unite}</td>
+                        <td>{quantiteAffichee[stock.produit._id]}</td>
+                      <td>
+                        <select
+                          value={uniteSelectionnee[stock.produit._id] || ''}
+                          onChange={(e) => handleUniteChange(stock.produit._id, e.target.value)}
+                          className="form-control"
+                        >
+                          {stock.produit.unites.map(unite => (
+                            <option key={unite.nom} value={unite.nom}>
+                              {unite.nom}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
                         <td>{stock.produit.categorie}</td>
                         <td>{stock.produit.quantiteMinimum}</td>
                         <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>

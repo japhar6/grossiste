@@ -96,17 +96,18 @@ function Stock() {
       [produitId]: nouvelleUnite,
     }));
   };
+  // Fonction pour convertir la quantité minimale en fonction de l'unité choisie
+const convertirQuantiteMinimum = (quantiteMinimum, uniteSource, uniteCible) => {
+  const source = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteSource));
+  const cible = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteCible));
+  if (!source || !cible) return quantiteMinimum;
+  const ratio = source.produit.unites.find(u => u.nom === uniteSource).conversion /
+                cible.produit.unites.find(u => u.nom === uniteCible).conversion;
+  return quantiteMinimum * ratio;
+};
+
   
 
-  // Fonction pour convertir la quantité en fonction de l'unité choisie
-  const convertQuantity = (quantite, uniteSource, uniteCible) => {
-    const source = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteSource));
-    const cible = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteCible));
-    if (!source || !cible) return quantite;
-    const ratio = source.produit.unites.find(u => u.nom === uniteSource).conversion /
-                  cible.produit.unites.find(u => u.nom === uniteCible).conversion;
-    return quantite * ratio;
-  };
 
   const filteredStocks = stocks.filter(stock => {
     return (
@@ -207,14 +208,16 @@ function Stock() {
             ) : error ? (
               <p className="text-center mt-3 text-danger">{error}</p>
             ) : (
-              <table className="table table-bordered mt-3">
+              <table className="tableSt table-bordered mt-3">
                 <thead>
                   <tr>
                     <th>Nom du produit</th>
                     <th>Catégorie</th>
                     <th>Quantité</th>
                     <th>Unité</th>
-                    <th>Actions</th>
+                    <th>Catégorie</th>
+                      <th>Quantite Minimum</th>
+                      <th>Date d'ajout</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,9 +239,15 @@ function Stock() {
                           ))}
                         </select>
                       </td>
+                      <td>{stock.produit.categorie}</td>
                       <td>
-                        <button className="btn btn-primary">Mettre à jour</button>
-                      </td>
+  {
+    convertirQuantiteMinimum(stock.produit.quantiteMinimum, 'carton', uniteSelectionnee[stock.produit._id]) // Par exemple ici 'carton' comme unité source
+  }
+</td>
+
+                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                     
                     </tr>
                   ))}
                 </tbody>
