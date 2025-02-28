@@ -9,7 +9,8 @@ const instance = axios.create({
   baseURL: 'http://localhost:5000', // URL de base pour toutes les requêtes
   headers: {
      // Ajoute le token d'authentification
-     'Content-Type': 'application/json', // Spécifie que le contenu est au format JSON
+     'Content-Type': 'application/json',
+       "Content-Type": "multipart/form-data"// Spécifie que le contenu est au format JSON
   },
 });
 

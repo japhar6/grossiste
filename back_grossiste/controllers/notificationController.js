@@ -87,7 +87,8 @@ exports.envoyerNotificationAdmin = async (req, res) => {
     // Créer la notification dans la base de données
     const notification = new Notification({
       message: message,
-      lue: false, // Par défaut, la notification n'est pas lue
+      lue: false,
+      type: 'remise', // Par défaut, la notification n'est pas lue
     });
 
     await notification.save();
@@ -99,7 +100,7 @@ exports.envoyerNotificationAdmin = async (req, res) => {
     }
 
     // Envoyer un message de notification via Pusher
-    pusher.trigger('admin-channel', 'nouvelle-notification', {
+    pusher.trigger('admin-channel', 'remise', {
       message: message,
       notificationId: notification._id
     });

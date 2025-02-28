@@ -39,7 +39,7 @@ const NotificationsPage = () => {
     // Vérifier le type de la notification pour la redirection
     if (notification.type === 'transfert-en-attente') {
       navigate(`/transfertAdmin`); // Rediriger vers la page de transfert admin
-    } else if (notification.type === 'nouvelle-notification') {
+    } else if (notification.type === 'remise') {
       navigate(`/Client`); // Rediriger vers une page de détails spécifique pour la notification
     } else {
       navigate(`/default-page`); // Une page par défaut au cas où
