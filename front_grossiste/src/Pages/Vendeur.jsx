@@ -409,6 +409,8 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                         text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
                                         icon: "success",
                                         confirmButtonText: "OK",
+                                      }).then(() => {
+                                        window.location.reload(); // Recharger la page après avoir cliqué sur OK
                                       });
                                   
                                       // Réinitialisation de la commande après la création
