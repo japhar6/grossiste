@@ -69,7 +69,7 @@ exports.getQuantiteProduitById = async (req, res) => {
 
     // Récupérer les données de stock pour l'entrepôt "principal"
     const stockData = await Stock.findOne({ entrepot: entrepotPrincipale._id, produit: id });
-    const quantiteDisponible = stockData ? stockData.quantité : 0; // Si aucun stock, mettre 0
+    const quantiteDisponible = stockData ? stockData.quantite : 0; // Si aucun stock, mettre 0
 
     // Ajouter la quantité disponible au produit
     const produitAvecQuantite = {
@@ -83,8 +83,6 @@ exports.getQuantiteProduitById = async (req, res) => {
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 } ; 
-
-
 
 
 exports.getQuantiteProduitByIde = async (req, res) => {
@@ -107,20 +105,19 @@ exports.getQuantiteProduitByIde = async (req, res) => {
     const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } })
       .populate("entrepot", "nom"); // Populate pour récupérer le nom de l'entrepôt
 
-    if (stockData.length === 0) {
-      return res.status(404).json({ message: "Aucun stock trouvé pour ce produit en dehors de l'entrepôt principal." });
-    }
-
-    // Trouver l'entrepôt avec la quantité maximale
+    // Définir les valeurs par défaut
     let quantiteMaximale = 0;
     let entrepotMaxQuantite = null;
 
-    stockData.forEach(stock => {
-      if (stock.quantité > quantiteMaximale) {
-        quantiteMaximale = stock.quantité;
-        entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
-      }
-    });
+    if (stockData.length > 0) {
+      // Trouver l'entrepôt avec la quantité maximale
+      stockData.forEach(stock => {
+        if (stock.quantite > quantiteMaximale) {
+          quantiteMaximale = stock.quantite;
+          entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
+        }
+      });
+    }
 
     // Ajouter la quantité maximale et le nom de l'entrepôt au produit
     const produitAvecQuantite = {
@@ -164,20 +161,20 @@ exports.getStockById = async (req, res) => {
 // Mettre à jour un stock (mis à jour pour inclure la logique de recalcul de valeurTotale)
 exports.updateStock = async (req, res) => {
   try {
-    const { quantité, prixUnitaire, statut } = req.body;
+    const { quantite, prixUnitaire, statut } = req.body;
 
     // Validation des données d'entrée
-    if (quantité <= 0 || prixUnitaire <= 0) {
+    if (quantite <= 0 || prixUnitaire <= 0) {
       return res.status(400).json({ message: 'La quantité et le prix unitaire doivent être supérieurs à zéro.' });
     }
 
     // Calculer la nouvelle valeurTotale
-    const valeurTotale = quantité * prixUnitaire;
+    const valeurTotale = quantite * prixUnitaire;
 
     // Mise à jour du stock avec la nouvelle valeurTotale
     const stock = await Stock.findByIdAndUpdate(
       req.params.id,
-      { quantité, prixUnitaire, statut, valeurTotale },
+      { quantite, prixUnitaire, statut, valeurTotale },
       { new: true }
     );
 
@@ -229,7 +226,7 @@ exports.retournerProduits = async (req, res) => {
       }
 
       // Mettre à jour le stock
-      stockProduit.quantité += produit.quantite;
+      stockProduit.quantite += produit.quantite;
       await stockProduit.save();
 
 
@@ -271,7 +268,7 @@ exports.sortirProduitsStock = async (req, res) => {
         return res.status(400).json({ message: `Pas de stock trouvé pour le produit ${item.produit.nom} dans cet entrepôt` });
       }
 
-      if (stock.quantité < item.quantite) {
+      if (stock.quantite < item.quantite) {
         return res.status(400).json({ message: `Pas assez de stock pour le produit ${item.produit.nom}` });
       }
     }
@@ -280,9 +277,9 @@ exports.sortirProduitsStock = async (req, res) => {
     for (let item of commande.produits) {
       const stock = await Stock.findOne({ produit: item.produit._id, entrepot: entrepotId });
 
-      stock.quantité -= item.quantite;
+      stock.quantite -= item.quantite;
 
-      if (stock.quantité < 0) {
+      if (stock.quantite < 0) {
         return res.status(400).json({ message: "Stock insuffisant" });
       }
 

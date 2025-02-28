@@ -206,6 +206,12 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                     
                                   setIsNew(false);
                                   }
+                                  const handleKeyDown = (produit, e) => {
+                                    if (e.key === "Enter") {
+                                      handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
+                                    }
+                                  };
+
                                 const fetchProduits = async () => {
                                   try {
                                     const response = await axios.get("/api/produits/afficher");
@@ -229,6 +235,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                 });
                                 
                                 const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
+                                  console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
                                   if (!produit.uniteChoisie) {
                                     // Si aucune unité n'est sélectionnée, empêcher l'ajout à la commande
                                     Swal.fire({
@@ -270,8 +277,10 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                         } else if (result.isDismissed) {
                                           // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
                                           const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
-                                          const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
-                                
+                                        let quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0; // Défaut à 0 si non défini
+
+                                        console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire}`);
+
                                           if (quantite > quantiteDisponibleSecondaire) {
                                             Swal.fire({
                                               title: 'Quantité Insuffisante',
@@ -280,7 +289,12 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                               confirmButtonText: 'OK',
                                             });
                                             return; // Ne pas ajouter à la commande
-                                          } else {
+                                          } else { Swal.fire({
+                                            title: 'Quantité suffisante',
+                                            text: `Disponible dans (${response.data.entrepotNom})`,
+                                            icon: 'info',
+                                            confirmButtonText: 'OK',
+                                          });
                                             // Ajouter à la commande si la quantité est disponible dans les autres entrepôts
                                             setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
                                             setCommande((prevCommande) => {
@@ -336,14 +350,12 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                             : 0;
                                 
                                 const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-                                    console.log("Prix avant remise:", item.prix);
-                                    console.log("Type de remise:", typeRemise);
-                                    console.log("Valeur de remise:", valeurRemise);
+                                  
                                 
                                     // Remise par produit
                                     if (typeRemise === 'remiseParProduit') {
                                         const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
-                                        console.log("Prix après remise (par produit):", prixFinal);
+                                  
                                         return prixFinal;
                                     }
                                 
@@ -375,8 +387,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                 
                                 // Calculer le total final après application de la remise
                                 const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
-                                console.log("Total après remise:", totalFinal);
-                                
+                     
 
                                   const creerCommande = async () => {
                                     try {
@@ -457,49 +468,43 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                     const client = clients.find(client => client._id === id);
                                     return client ? client.nom : '';
                                   };
-                                  
-const vendeurNom = localStorage.getItem("nom"); 
-const vendeurId = localStorage.getItem("userid"); 
-console.log("Nom du vendeur:", vendeurNom); 
-console.log("Vendeur ID:", vendeurId);
+                               
+                                  const vendeurNom = localStorage.getItem("nom"); 
+                                  const vendeurId = localStorage.getItem("userid"); 
                                   const handleDemandeRemise = async () => {
                                     if (!selectedPerson) {
                                       alert("Veuillez sélectionner un client !");
                                       return;
                                     }
-
-                                    // Vérifie que l'ID du vendeur est correct
-
-                                    const clientNom = getClientNom(selectedPerson); // Récupérer le nom du client
-                                    console.log("Nom du client:", clientNom); // Vérifie que le nom du client est correct
-                                    
-
-                                    console.log("Message de notification:", `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`);
-                                    
+                                  
+                                    const clientNom = getClientNom(selectedPerson);
+                                    console.log("Nom du client:", clientNom);
+                                    console.log("Id:", selectedId);
                                     if (!vendeurNom) {
                                       alert("Nom du vendeur non trouvé dans localStorage.");
                                       return;
                                     }
-
+                                  
+                                    // Message incluant le nom du client
+                                    const message = `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`;
+                                  
                                     try {
                                       const response = await axios.post("/api/notif/envoie-notifications", {
-                                        message: `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`
+                                        message: message, // Envoie le message complet
+                                        idClient: selectedId// Envoi l'ID du client sélectionné
                                       }, {
                                         headers: {
                                           "Content-Type": "application/json"
                                         }
                                       });
-                                      
-                                      
-
-                                      console.log("Réponse de l'API:", response.data); // Affiche la réponse de l'API
+                                  
+                                      console.log("Réponse de l'API:", response.data);
                                       alert("Demande de remise envoyée !");
                                     } catch (error) {
                                       console.error("Erreur lors de l'envoi de la notification", error);
                                       alert("Une erreur est survenue. Veuillez réessayer.");
                                     }
                                   };
-
 
                                   
                             

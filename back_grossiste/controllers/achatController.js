@@ -105,6 +105,7 @@ exports.ajouterAchat = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de l'ajout de l'achat", error: error.message });
     }
 };
+
 function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
     // Trouver l'unité de départ
     const uniteSource = unitesDisponibles.find(u => u.nom === uniteAchat);

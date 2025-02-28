@@ -6,6 +6,10 @@
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet moderne */
 }
+.client-name {
+  color: #f7a600 !important; /* Couleur personnalisée */
+  font-weight: bold;
+}
 
 .notifications-list {
   list-style-type: none;

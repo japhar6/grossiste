@@ -15,17 +15,13 @@ function Stock() {
   const [error, setError] = useState(null);
   const [uniteSelectionnee, setUniteSelectionnee] = useState({});
   const [quantitesInitiales, setQuantitesInitiales] = useState({});
+  const [quantiteAffichee, setQuantiteAffichee] = useState({});
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [sortBy, setSortBy] = useState('nom');
 
   const token = localStorage.getItem("token");
-
-
-  
-  
-  
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -46,25 +42,28 @@ function Stock() {
   const handleEntrepotChange = async (event) => {
     const entrepotId = event.target.value;
     const selected = entrepots.find(e => e._id === entrepotId);
-  
+
     setSelectedEntrepot(entrepotId);
     setMagasinier(selected?.magasinier?.nom || '');
-  
+
     setLoading(true);
     setError(null);
-  
+
     try {
       const response = await axios.get(`/api/stocks/stocks/${entrepotId}`);
       setStocks(response.data);
-  
+
       const defaultUnits = {};
       const initialQuantities = {};
+      const initialQuantiteAffichee = {};
       response.data.forEach(stock => {
-        defaultUnits[stock.produit._id] = stock.unite;
-        initialQuantities[stock.produit._id] = stock.quantite;
+        defaultUnits[stock.produit._id] = stock.unite; // Unité par défaut
+        initialQuantities[stock.produit._id] = stock.quantite; // Quantité initiale (en plus petite unité)
+        initialQuantiteAffichee[stock.produit._id] = stock.quantite; // Quantité affichée
       });
       setUniteSelectionnee(defaultUnits);
       setQuantitesInitiales(initialQuantities);
+      setQuantiteAffichee(initialQuantiteAffichee);
     } catch (err) {
       toast.error('Erreur lors du chargement des stocks.');
       setError('Erreur lors du chargement des stocks.');
@@ -72,13 +71,42 @@ function Stock() {
     } finally {
       setLoading(false);
     }
+  };// Fonction pour gérer le changement d'unité
+  const handleUniteChange = (produitId, nouvelleUnite) => {
+    const produit = stocks.find(stock => stock.produit._id === produitId);
+    const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
+    const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
+    
+    // Calcul de la nouvelle quantité en fonction de l'unité choisie
+    const quantiteStock = quantitesInitiales[produitId];
+    const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
+  
+    // Si l'unité choisie est plus grande (ex: cartouche vers carton), divisez la quantité
+    const nouvelleQuantite = quantiteStock / conversion;
+  
+    // Mettre à jour l'état avec la nouvelle quantité
+    setQuantiteAffichee(prevState => ({
+      ...prevState,
+      [produitId]: nouvelleQuantite,
+    }));
+  
+    // Mettre à jour l'unité sélectionnée pour ce produit
+    setUniteSelectionnee(prevState => ({
+      ...prevState,
+      [produitId]: nouvelleUnite,
+    }));
   };
-
-  
-  
-  
   
 
+  // Fonction pour convertir la quantité en fonction de l'unité choisie
+  const convertQuantity = (quantite, uniteSource, uniteCible) => {
+    const source = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteSource));
+    const cible = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteCible));
+    if (!source || !cible) return quantite;
+    const ratio = source.produit.unites.find(u => u.nom === uniteSource).conversion /
+                  cible.produit.unites.find(u => u.nom === uniteCible).conversion;
+    return quantite * ratio;
+  };
 
   const filteredStocks = stocks.filter(stock => {
     return (
@@ -88,24 +116,23 @@ function Stock() {
     );
   });
 
-const sortedStocks = [...filteredStocks]
-  .filter(stock => {
-    if (sortBy === 'rupture') {
-      return stock.quantite < stock.produit.quantiteMinimum; // Filtrer uniquement les ruptures
-    }
-    return true; // Pour les autres cas, ne pas filtrer
-  })
-  .sort((a, b) => {
-    if (sortBy === 'nom') {
-      return a.produit.nom.localeCompare(b.produit.nom);
-    } else if (sortBy === 'quantite') {
-      return b.quantite - a.quantite; // Trier par quantité décroissante
-    } else if (sortBy === 'date') {
-      return new Date(b.dateEntree) - new Date(a.dateEntree); // Trier par date décroissante
-    }
-    return 0;
-  });
-
+  const sortedStocks = [...filteredStocks]
+    .filter(stock => {
+      if (sortBy === 'rupture') {
+        return stock.quantite < stock.produit.quantiteMinimum; // Filtrer uniquement les ruptures
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'nom') {
+        return a.produit.nom.localeCompare(b.produit.nom);
+      } else if (sortBy === 'quantite') {
+        return b.quantite - a.quantite;
+      } else if (sortBy === 'date') {
+        return new Date(b.dateEntree) - new Date(a.dateEntree);
+      }
+      return 0;
+    });
 
   return (
     <>
@@ -136,7 +163,6 @@ const sortedStocks = [...filteredStocks]
                 <strong>Géré par le Magasinier :</strong> {magasinier || 'Aucun'}
               </div>
             )}
-
 
             {selectedEntrepot && (
               <div className="filters mt-3 d-flex justify-content-between" style={{ display: 'flex', gap: '10px' }}>
@@ -179,59 +205,48 @@ const sortedStocks = [...filteredStocks]
             {loading ? (
               <p className="text-center mt-3">Chargement des stocks...</p>
             ) : error ? (
-              <p className="text-danger mt-3">{error}</p>
-            ) : selectedEntrepot && sortedStocks.length > 0 ? (
-              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                <table className="tableSt mt-3">
-                  <thead>
-                    <tr>
-                      <th>Référence</th>
-                      <th>Produit</th>
-                      <th>Quantité</th>
-                      <th>Unité</th>
-                      <th>Catégorie</th>
-                      <th>Quantité Minimum</th>
-                      <th>Date d'ajout</th>
+              <p className="text-center mt-3 text-danger">{error}</p>
+            ) : (
+              <table className="table table-bordered mt-3">
+                <thead>
+                  <tr>
+                    <th>Nom du produit</th>
+                    <th>Catégorie</th>
+                    <th>Quantité</th>
+                    <th>Unité</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedStocks.map(stock => (
+                    <tr key={stock._id}>
+                      <td>{stock.produit.nom}</td>
+                      <td>{stock.produit.categorie}</td>
+                      <td>{quantiteAffichee[stock.produit._id]}</td>
+                      <td>
+                        <select
+                          value={uniteSelectionnee[stock.produit._id] || ''}
+                          onChange={(e) => handleUniteChange(stock.produit._id, e.target.value)}
+                          className="form-control"
+                        >
+                          {stock.produit.unites.map(unite => (
+                            <option key={unite.nom} value={unite.nom}>
+                              {unite.nom}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <button className="btn btn-primary">Mettre à jour</button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {sortedStocks.map(stock => (
-                      <tr key={stock._id} className={stock.quantite < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
-                        <td>{stock.produit.codeProduit.trim()}</td>
-                        <td>{stock.produit.nom.trim()}</td>
-                        <td>{stock.quantite}</td>    <td>
-                        {stock.unite}
-                        </td>
-                        <td>{stock.produit.categorie.trim()}</td>
-                        <td>{stock.produit.quantiteMinimum}</td>
-                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : selectedEntrepot ? (
-              <p className="text-center mt-3">Aucun stock trouvé.</p>
-            ) : null}
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
       </main>
-      <style>{`
-        .stock-low {
-          animation: blink 0.6s infinite alternate ease-in-out;
-          background-color: #f8d7da !important; /* Rose clair pour une alerte */
-          color: #721c24; /* Rouge foncé pour le texte */
-          font-weight: bold; /* Gras pour le texte */
-        }
-        @keyframes blink {
-          from {
-            opacity: 1;
-          }
-          to {
-            opacity: 0.5;
-          }
-        }
-      `}</style>
     </>
   );
 }

@@ -18,67 +18,94 @@ const Transfert = () => {
   const [transfertId, setTransfertId] = useState(null);
   const [quantiteEnvoyee, setQuantiteEnvoyee] = useState(0); // État pour la quantité envoyée
   const [entrepotSource, setEntrepotSource] = useState(null);
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userid");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userid");
-  
-    axios.get(`/api/entrepot/recuperer/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(response => {
-      setEntrepotSource(response.data);  // Stocker l'entrepôt source du magasinier
-    }).catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
-  }, []);
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userid");
-    axios.get(`/api/entrepot/recuperer/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(response => setEntrepot(response.data))
-      .catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
-  }, []);
+    const fetchEntrepots = async () => {
+      try {
+        const response = await axios.get(`/api/entrepot/recuperer/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setEntrepots(response.data); // Stocke la liste d'entrepôts
+      } catch (error) {
+        toast.error('Erreur lors du chargement des entrepôts.');
+        console.error(error);
+      }
+    };
+    fetchEntrepots();
+  }, [token, userId]);
 
+  // Mise à jour de l'entrepôt source lorsque l'entrepôt sélectionné change
+  const handleEntrpotChange = (e) => {
+    const selectedEntrepot = entrepots.find(entrepot => entrepot._id === e.target.value);
+    setEntrepotSource(selectedEntrepot);
+  };
+
+  // Récupère les stocks de l'entrepôt sélectionné
   useEffect(() => {
     if (!entrepot) return;
-    axios.get(`/api/stocks/stocks/${entrepot._id}`)
-      .then(response => setStocks(response.data))
-      .catch(() => toast.error("Erreur lors du chargement des stocks."));
+
+    const fetchStocks = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(`/api/stocks/stocks/${entrepot._id}`);
+        setStocks(response.data);
+      } catch (err) {
+        toast.error('Erreur lors du chargement des stocks.');
+        setError('Erreur lors du chargement des stocks.');
+        setStocks([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStocks();
   }, [entrepot]);
 
-  
-  useEffect(() => {
-    axios.get('/api/transfert/recup')
-    .then(response => {
-      const filteredTransfers = response.data.filter((transfert) =>
-        transfert.entrepotSource._id === entrepotSource._id || transfert.entrepotDestination._id === entrepotSource._id
-      );
-      setHistoriqueTransferts(filteredTransfers);
-    });
-}, [entrepotSource]);
-const fetchHistoriqueTransferts = () => {
+ // Récupère l'historique des transferts de l'entrepôt source
+useEffect(() => {
+  if (!entrepotSource) return; // Vérifie que l'entrepôt source est défini
+
   axios.get('/api/transfert/recup')
     .then(response => {
       const filteredTransfers = response.data.filter((transfert) =>
-        transfert.entrepotSource._id === entrepotSource._id || transfert.entrepotDestination._id === entrepotSource._id
+        (transfert.entrepotSource?._id === entrepotSource._id || transfert.entrepotDestination?._id === entrepotSource._id)
       );
       setHistoriqueTransferts(filteredTransfers);
     })
     .catch(error => {
-      // Ajoute un gestionnaire d'erreurs pour une meilleure gestion des exceptions
+      console.error("Erreur lors de la récupération des transferts :", error);
       toast.error("Erreur lors de la récupération des transferts.");
     });
-};
+}, [entrepotSource]);
 
-  
+
+  const fetchHistoriqueTransferts = () => {
+    axios.get('/api/transfert/recup')
+      .then(response => {
+        const filteredTransfers = response.data.filter((transfert) =>
+          transfert.entrepotSource._id === entrepotSource._id || transfert.entrepotDestination._id === entrepotSource._id
+        );
+        setHistoriqueTransferts(filteredTransfers);
+      })
+      .catch(error => {
+        toast.error("Erreur lors de la récupération des transferts.");
+      });
+  };
+
   const handleValidation = (id, statut) => {
     axios.put(`/api/transfert/valider/${id}`, { statut })
       .then(() => {
         toast.success(`Transfert ${statut.toLowerCase()} avec succès.`);
-
       }).catch(() => toast.error('Erreur de validation.'));
   };
 
-  // Modification de la fonction pour ouvrir le modal de réception
+  // Ouverture du modal de réception
   const openReceptionModal = (id, quantiteEnvoyee, entrepotDestination) => {
     setTransfertId(id);
     setQuantiteEnvoyee(quantiteEnvoyee); // Sauvegarder la quantité envoyée
@@ -90,11 +117,11 @@ const fetchHistoriqueTransferts = () => {
   );
 
   const handleRecevoirButtonVisibility = (transfert) => {
-    // Vérifier si l'entrepôt destinataire correspond à l'entrepôt du magasinier connecté
     return transfert.entrepotDestination?._id === entrepotSource?._id && 
       transfert.statutAdmin === 'approuvé' && 
       transfert.statutEntrepotDestination !== 'reçu';
   };
+
   return (
     <main className="center">
       <Sidebar />
@@ -107,6 +134,21 @@ const fetchHistoriqueTransferts = () => {
             <button className="btn btn-primary mb-3" onClick={() => setShowModal(true)}>Nouveau Transfert</button>
 
             <h3>Historique des Transferts</h3>
+            <div className="mt-3">
+              <select
+                className="form-control"
+                onChange={(e) => setEntrepot(entrepots.find(ent => ent._id === e.target.value))}
+                defaultValue=""
+                onClick={handleEntrpotChange}
+              >
+                <option value="">-- Sélectionner un entrepôt --</option>
+                {entrepots.map((ent) => (
+                  <option key={ent._id} value={ent._id}>
+                    {ent.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
             <label>Filtrer par Statut:</label>
             <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
               <option value="">Tous</option>
@@ -137,13 +179,13 @@ const fetchHistoriqueTransferts = () => {
                     <td>{new Date(transfert.dateTransfert).toLocaleDateString()}</td>
                     <td>{transfert.statutAdmin}</td>
                     <td>
-        {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
-        {handleRecevoirButtonVisibility(transfert) && (
-          <button className="btn btn-primary btn-sm" onClick={() => openReceptionModal(transfert._id, transfert.quantitéEnvoyée, transfert.entrepotDestination)}>
-            Recevoir
-          </button>
-        )}
-      </td>
+                      {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
+                      {handleRecevoirButtonVisibility(transfert) && (
+                        <button className="btn btn-primary btn-sm" onClick={() => openReceptionModal(transfert._id, transfert.quantitéEnvoyée, transfert.entrepotDestination)}>
+                          Recevoir
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
