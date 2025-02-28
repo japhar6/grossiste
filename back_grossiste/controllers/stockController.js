@@ -50,7 +50,6 @@ exports.ajouterOuMettreAJourStock = async (entrepotId, produitId, quantiteAjoute
 };
 
 
-
 exports.getQuantiteProduitById = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
@@ -69,20 +68,35 @@ exports.getQuantiteProduitById = async (req, res) => {
 
     // Récupérer les données de stock pour l'entrepôt "principal"
     const stockData = await Stock.findOne({ entrepot: entrepotPrincipale._id, produit: id });
-    const quantiteDisponible = stockData ? stockData.quantite : 0; // Si aucun stock, mettre 0
 
-    // Ajouter la quantité disponible au produit
+    // Débogage : Afficher les données de stock pour voir si l'unité est bien définie
+    console.log("Données de stock :", stockData);
+
+    // Vérification si stockData existe et récupérer la quantité et l'unité
+    if (!stockData) {
+      return res.status(404).json({ message: "Aucune donnée de stock trouvée pour ce produit dans l'entrepôt principal" });
+    }
+
+    const quantiteDisponible = stockData ? stockData.quantite : 0; // Si aucun stock, mettre 0
+    const uniteNom = stockData.unite || 'Non spécifiée'; // Récupérer l'unité, ou spécifier "Non spécifiée" si vide
+
+    console.log("Nom de l'unité :", uniteNom); // Afficher le nom de l'unité pour vérifier
+
+    // Ajouter la quantité disponible et le nom de l'unité au produit
     const produitAvecQuantite = {
       ...produit.toObject(),
-      quantiteDisponible
+      quantiteDisponible,
+      uniteNom // Ajouter l'unité au produit
     };
 
-    res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité
+    res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité et son unité
   } catch (error) {
     console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
-} ; 
+};
+
+
 
 
 exports.getQuantiteProduitByIde = async (req, res) => {
@@ -103,35 +117,40 @@ exports.getQuantiteProduitByIde = async (req, res) => {
 
     // Récupérer les stocks pour le produit dans tous les entrepôts sauf l'entrepôt principal
     const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } })
-      .populate("entrepot", "nom"); // Populate pour récupérer le nom de l'entrepôt
+      .populate("entrepot", "nom") // Populate pour récupérer le nom de l'entrepôt
+      .populate("unite", "nom conversion"); 
 
     // Définir les valeurs par défaut
     let quantiteMaximale = 0;
     let entrepotMaxQuantite = null;
+    let uniteMaxQuantite = "Unité"; // Nouvelle variable pour l'unité
 
     if (stockData.length > 0) {
-      // Trouver l'entrepôt avec la quantité maximale
+      // Trouver l'entrepôt avec la quantité maximale et l'unité correspondante
       stockData.forEach(stock => {
         if (stock.quantite > quantiteMaximale) {
           quantiteMaximale = stock.quantite;
           entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
+          uniteMaxQuantite = stock.unite; // Récupérer le nom de l'unité
         }
       });
     }
 
-    // Ajouter la quantité maximale et le nom de l'entrepôt au produit
+    // Ajouter la quantité maximale, le nom de l'entrepôt et l'unité au produit
     const produitAvecQuantite = {
       ...produit.toObject(),
       quantiteDisponible: quantiteMaximale,
-      entrepotNom: entrepotMaxQuantite
+      entrepotNom: entrepotMaxQuantite,
+      uniteNom: uniteMaxQuantite // Ajouter l'unité à la réponse
     };
 
-    res.json(produitAvecQuantite); // Renvoyer le produit avec les infos de stock
+    res.json(produitAvecQuantite); // Renvoyer le produit avec les infos de stock et d'unité
   } catch (error) {
     console.error("Erreur lors de la récupération du produit et de sa quantité:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+
 
 
 

@@ -233,69 +233,116 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                   const matchesCategorie = categorie ? p.categorie === categorie : true;
                                   return matchesRecherche && matchesCategorie;
                                 });
+                                const convertirQuantiteEnUniteSelectionnee = (produitId, nouvelleUnite, quantitesInitiales) => {
+                                  // Recherche du produit
+                                  const produit = stocks.find(stock => stock.produit._id === produitId);
+                                  if (!produit) return 0; // Si le produit n'est pas trouvé, retourne 0
+                                
+                                  // Trouver les unités
+                                  const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
+                                  const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
+                                  
+                                  if (!uniteSelectionneeProduit || !uniteStockProduit) return 0; // Vérifier que les unités existent
+                                  
+                                  // Récupérer la quantité initiale en fonction du produit
+                                  const quantiteStock = quantitesInitiales[produitId];
+                                  if (quantiteStock === undefined || quantiteStock <= 0) return 0; // Vérifier que la quantité est valide
+                                
+                                  // Calcul de la conversion entre les unités
+                                  const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
+                                
+                                  // Conversion de la quantité
+                                  const nouvelleQuantite = quantiteStock / conversion;
+                                
+                                  return nouvelleQuantite;
+                                };
+
                                 
                                 const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
                                   console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
+                                  
                                   if (!produit.uniteChoisie) {
-                                    // Si aucune unité n'est sélectionnée, empêcher l'ajout à la commande
                                     Swal.fire({
                                       title: 'Unité non sélectionnée',
                                       text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
                                       icon: 'warning',
                                       confirmButtonText: 'OK',
                                     });
-                                    return;  // Ne rien faire si l'unité n'est pas sélectionnée
+                                    return; // Ne rien faire si l'unité n'est pas sélectionnée
                                   }
+                                
                                   // Ne rien faire si la quantité demandée est inférieure ou égale à 0
                                   if (quantite <= 0) return;
                                 
                                   try {
+                                    // Trouver l'unité avec la plus grande conversion (la plus petite unité)
+                                    const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
+                                      return prev.conversion > current.conversion ? prev : current;
+                                    });
+                                
+                                    console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
+                                    
+                                    // Comparer l'unité choisie avec l'unité la plus petite
+                                    let quantiteConvertie = quantite;
+                                    if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
+                                      // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
+                                      quantiteConvertie = quantite * uniteLaPlusPetite.conversion;
+                                      console.log(`Quantité convertie : ${quantiteConvertie}`);
+                                    } else {
+                                      console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
+                                    }
+                                
                                     // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
                                     const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
                                     const quantiteDisponible = response.data.quantiteDisponible;
+                                    const uniteDisponible = response.data.uniteNom || 'Unité par défaut';
                                 
-                                    // Comparer la quantité demandée avec la quantité disponible
+                                    console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
+                                
+                                    // Comparer la quantité convertie avec la quantité disponible
                                     if (isChecked) {
-                                      if (quantite > quantiteDisponible) {
+                                      if (quantiteConvertie > quantiteDisponible) {
                                         const result = await Swal.fire({
                                           title: 'Quantité Insuffisante',
-                                          text: `Il n'en reste que (${quantiteDisponible}) dans l'entrepôt principal.`,
+                                          text: `Il n'en reste que (${quantiteDisponible} ${uniteDisponible}) dans l'entrepôt principal.`,
                                           icon: 'warning',
                                           showCancelButton: true,
                                           confirmButtonText: 'OK',
                                           cancelButtonText: 'Choisir un autre entrepôt',
                                           customClass: {
-                                            confirmButton: 'btn btn-success', 
+                                            confirmButton: 'btn btn-success',
                                             cancelButton: 'btn btn-danger'
                                           },
                                           buttonsStyling: false,
                                         });
                                 
                                         if (result.isConfirmed) {
-                                          // L'utilisateur a cliqué sur "OK"
                                           return; // Ne pas ajouter à la commande
                                         } else if (result.isDismissed) {
-                                          // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
+                                          // Choisir un autre entrepôt
                                           const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
-                                        let quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0; // Défaut à 0 si non défini
-
-                                        console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire}`);
-
-                                          if (quantite > quantiteDisponibleSecondaire) {
+                                          const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0;
+                                          const uniteSecondaire = responseSecondaire.data.uniteNom || 'Unité par défaut';
+                                
+                                          // Afficher les informations de l'autre entrepôt pour débogage
+                                          console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire}`);
+                                          console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
+                                
+                                          if (quantiteConvertie > quantiteDisponibleSecondaire) {
                                             Swal.fire({
                                               title: 'Quantité Insuffisante',
-                                              text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans les autres entrepôts.`,
+                                              text: `Il n'en reste que ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans les autres entrepôts.`,
                                               icon: 'warning',
                                               confirmButtonText: 'OK',
                                             });
                                             return; // Ne pas ajouter à la commande
-                                          } else { Swal.fire({
-                                            title: 'Quantité suffisante',
-                                            text: `Disponible dans (${response.data.entrepotNom})`,
-                                            icon: 'info',
-                                            confirmButtonText: 'OK',
-                                          });
-                                            // Ajouter à la commande si la quantité est disponible dans les autres entrepôts
+                                          } else {
+                                            Swal.fire({
+                                              title: 'Quantité suffisante',
+                                              text: `Disponible dans (${response.data.entrepotNom})`,
+                                              icon: 'info',
+                                              confirmButtonText: 'OK',
+                                            });
                                             setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
                                             setCommande((prevCommande) => {
                                               const existant = prevCommande.find((item) => item._id === produit._id);
@@ -313,7 +360,6 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                           }
                                         }
                                       } else {
-                                        // Si la quantité est suffisante dans l'entrepôt principal
                                         setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
                                         setCommande((prevCommande) => {
                                           const existant = prevCommande.find((item) => item._id === produit._id);
@@ -329,7 +375,6 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                         });
                                       }
                                     } else {
-                                      // Si la case à cocher est désactivée, retirer le produit de la commande
                                       setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
                                       setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
                                     }
@@ -337,6 +382,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                     console.error("Erreur lors de la récupération de la quantité disponible", error);
                                   }
                                 };
+                                
      
                                   
                                 const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
@@ -449,7 +495,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                       }).then(() => {
                                         window.location.reload(); // Recharger la page après avoir cliqué sur OK
                                       });
-                                  
+                                      playSound();  
                                       // Réinitialisation de la commande après la création
                                       setCommande([]);
                                       

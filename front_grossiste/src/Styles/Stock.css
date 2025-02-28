@@ -11,8 +11,38 @@
     margin-right: 1%;
     overflow: hidden;
 
-}
-
+}.blink {
+    animation: blink-animation 1s steps(5, start) infinite;
+  }
+  
+  @keyframes blink-animation {
+    50% {
+      background-color: #f8d7da;
+    }
+  }
+  
+  @keyframes clignoter {
+    0% {
+      background-color: #f8d7da; /* Couleur pour rupture de stock (rouge clair) */
+    }
+    50% {
+      background-color: #ffffff; /* Couleur neutre (blanc) */
+    }
+    100% {
+      background-color: #f8d7da; /* Retour à la couleur de rupture de stock */
+    }
+  }
+  
+  .clignoter {
+    animation: clignoter 1s infinite; /* Clignotement toutes les secondes */
+  }
+  
+  
+  
+  .ligne-clignotante {
+    animation: clignoter 1s infinite; /* Clignote toutes les secondes */
+  }
+  
 .form-group {
     margin-bottom: 15px;
 }

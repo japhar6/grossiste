@@ -96,18 +96,12 @@ function Stock() {
       [produitId]: nouvelleUnite,
     }));
   };
-  // Fonction pour convertir la quantité minimale en fonction de l'unité choisie
-const convertirQuantiteMinimum = (quantiteMinimum, uniteSource, uniteCible) => {
-  const source = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteSource));
-  const cible = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteCible));
-  if (!source || !cible) return quantiteMinimum;
-  const ratio = source.produit.unites.find(u => u.nom === uniteSource).conversion /
-                cible.produit.unites.find(u => u.nom === uniteCible).conversion;
-  return quantiteMinimum * ratio;
-};
-
   
+  
+  const isRuptureDeStock = (stock) => {
 
+    return stock.quantite < stock.produit.quantiteMinimum;
+  };
 
   const filteredStocks = stocks.filter(stock => {
     return (
@@ -222,10 +216,13 @@ const convertirQuantiteMinimum = (quantiteMinimum, uniteSource, uniteCible) => {
                 </thead>
                 <tbody>
                   {sortedStocks.map(stock => (
-                    <tr key={stock._id}>
+                      <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
                       <td>{stock.produit.nom}</td>
                       <td>{stock.produit.categorie}</td>
-                      <td>{quantiteAffichee[stock.produit._id]}</td>
+                      <td>
+  {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
+</td>
+
                       <td>
                         <select
                           value={uniteSelectionnee[stock.produit._id] || ''}
@@ -240,14 +237,11 @@ const convertirQuantiteMinimum = (quantiteMinimum, uniteSource, uniteCible) => {
                         </select>
                       </td>
                       <td>{stock.produit.categorie}</td>
-                      <td>
-  {
-    convertirQuantiteMinimum(stock.produit.quantiteMinimum, 'carton', uniteSelectionnee[stock.produit._id]) // Par exemple ici 'carton' comme unité source
-  }
-</td>
-
+                        <td>{stock.produit.quantiteMinimum} {stock.unite}</td>
                         <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-                     
+                        <td>
+        {isRuptureDeStock(stock) && <span className="text-danger">Rupture de stock</span>}
+      </td>
                     </tr>
                   ))}
                 </tbody>
