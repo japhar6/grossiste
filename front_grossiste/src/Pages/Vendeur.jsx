@@ -28,7 +28,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
               // Définir l'état pour les produits sélectionnés
                 const [commande, setCommande] = useState([]);
                 const [typeQuantite, setTypeQuantite] = useState("");
-              
+                const [selectedId, setSelectedId] = useState("");
                 const [type, setType] = useState(""); 
               const [isNew, setIsNew] = useState(false); 
               const [selectedPerson, setSelectedPerson] = useState("");
