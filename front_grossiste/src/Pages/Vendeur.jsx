@@ -304,7 +304,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                       if (quantiteConvertie > quantiteDisponible) {
                                         const result = await Swal.fire({
                                           title: 'Quantité Insuffisante',
-                                          text: `Il n'en reste que (${quantiteDisponible} ${uniteDisponible}) dans l'entrepôt principal.`,
+                                          text: `Il n'en reste que (${quantiteDisponible} ${uniteDisponible}) dans l'entrepôt principal. Donc il en manque ${quantiteConvertie - quantiteDisponible}  ${uniteDisponible}.`,
                                           icon: 'warning',
                                           showCancelButton: true,
                                           confirmButtonText: 'OK',
