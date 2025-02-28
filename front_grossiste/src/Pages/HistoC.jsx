@@ -48,7 +48,7 @@ function HistoC() {
     return allPaiements.filter(paiement => {
         const matchesType = filtreType === "both" || paiement.type === filtreType;
         const matchesDate = !date || new Date(paiement.createdAt).toLocaleDateString() === new Date(date).toLocaleDateString();
-        const matchesModePaiement = filtreModePaiement === "all" || (paiement.commandeId && paiement.commandeId.modePaiement === filtreModePaiement);
+        const matchesModePaiement = filtreModePaiement === "all" || (paiement.modePaiement == filtreModePaiement);
         const matchStatut = statutfilter === "all" || (paiement.statut === statutfilter);
         const matchesNomCaissier = !filtreNomCaissier || (paiement.idCaissier && paiement.idCaissier.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
     
@@ -110,12 +110,12 @@ function HistoC() {
   <div className="flex-fill">
     <label className="form-label w-100">
       <select className="form-select uniform-size" value={filtreModePaiement} onChange={e => setFiltreModePaiement(e.target.value)}>
-        <option value="">Filtrer par mode de paiement:</option>
+   
         <option value="all">Tous</option>
         <option value="espèce">Espèce</option>
         <option value="virement bancaire">Virement Bancaire</option>    
         <option value="mobile money">Mobile Money</option>
-        <option value="à crédit">À Crédit</option>
+        <option value="a credit">À Crédit</option>
       </select>
     </label>
   </div>
@@ -184,7 +184,7 @@ function HistoC() {
                           <td>{paiement.commandeId?.referenceFacture}</td>
                           <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
                           <td>{paiement.montantPaye} ariary</td>
-                          <td>{paiement.commandeId ? paiement.commandeId.modePaiement : "Non spécifié"} </td>
+                          <td>{paiement.modePaiement ? paiement.modePaiement : "Non spécifié"} </td>
                           <td>{paiement.statut}</td>
                           <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
 

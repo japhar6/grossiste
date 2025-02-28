@@ -117,6 +117,7 @@ exports.ajouterCommande = async (req, res) => {
 
 
 
+
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
     try {
@@ -174,7 +175,7 @@ exports.getSuggestionscom = async (req, res) => {
         const commandes = await Commande.find({
             statut: "en cours",
             typeClient: "Commercial",
-            modePaiement : "à crédit", // Ajout de ":" pour spécifier la clé et sa valeur
+            // Ajout de ":" pour spécifier la clé et sa valeur
         }).sort({ createdAt: -1 }); // Tri par date décroissante
 
         // Renvoie les références des commandes

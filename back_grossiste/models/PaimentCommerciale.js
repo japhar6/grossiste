@@ -31,7 +31,18 @@ const paiementCommercialeSchema = new mongoose.Schema({
     referenceFacture: { // Nouveau champ pour la référence de facture
         type: String,
         required: true
-    }
+    },
+    referencePaiement: {
+        type: String,
+        required: function() { 
+            return this.modePaiement === "mobile money" || this.modePaiement === "virement bancaire";
+        }
+    },
+    modePaiement: { 
+        type: String, 
+        enum: ["espèce", "mobile money", "virement bancaire", "a credit"], 
+        required: true 
+    },  dateLimiteCredit: { type: Date, required: false },
 }, { timestamps: true });
 
 const PaiementCommerciale = mongoose.model("PaiementCommerciale", paiementCommercialeSchema);

@@ -39,6 +39,10 @@ import Transfert from './Pages/Transfert.jsx';
 import TransfertAdmin from './Pages/TransfertAdmin.jsx';
 import PersonnelsList from './Pages/PersonnelsList.jsx';
 import Client from './Pages/Client.jsx';
+import Notification from './Components/Notifications.jsx';
+
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -56,6 +60,7 @@ function App() {
           <Route path='/caisse' element={<Caisse />} />
           <Route path='/entrepot' element={<Entrepot />} />
           <Route path='/stock' element={<Stock />} />
+          <Route path='/transfertAdmin' element={<TransfertAdmin />} />
           <Route path='/commerciale' element={<Commerciale />} />
           <Route path='/profil' element={<Profil />} />
           <Route path='/commande' element={<PriseCommande />} />
@@ -67,8 +72,9 @@ function App() {
           <Route path='/Client' element={<Client />} />
           <Route path='/inventaire' element={<Invetaire />} />
           <Route path='/creerinventaire' element={<CreerInventaire />} />
-                   
-          <Route path='/transfertAdmin' element={<TransfertAdmin />} />
+          <Route path='/notif' element={<Notification />} />
+    
+          
         </Route>
 
         {/* Routes VENDEUR */}

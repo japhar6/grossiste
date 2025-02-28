@@ -2,6 +2,8 @@ const Transfert = require('../models/Transfert');
 const Stock = require('../models/Stock');
 const Produit = require("../models/Produits");
 const pusher = require('../config/pusher');
+const Notification = require('../models/Notification');
+const User = require('../models/User');  // Import du modèle User si nécessaire
 
 exports.transfertProduit = async (req, res) => {
   try {
@@ -11,14 +13,23 @@ exports.transfertProduit = async (req, res) => {
       return res.status(400).json({ message: 'La quantité doit être supérieure à zéro.' });
     }
 
+    // Récupérer le produit à partir de la table 'Produit' en utilisant son ID
+    const produitData = await Produit.findById(produit);  // Remplace "Produit" par le modèle approprié
+    if (!produitData) {
+      return res.status(404).json({ message: 'Produit non trouvé.' });
+    }
+
+    // Vérifier le stock dans l'entrepôt source
     const stockSource = await Stock.findOne({ entrepot: entrepotSource, produit });
     if (!stockSource || stockSource.quantite < quantité) {
       return res.status(400).json({ message: "Stock insuffisant dans l'entrepôt source." });
     }
 
+    // Réduire la quantité du stock source
     stockSource.quantite -= quantité;
     await stockSource.save();
 
+    // Créer un nouveau transfert
     const transfert = new Transfert({
       entrepotSource,
       entrepotDestination,
@@ -29,16 +40,28 @@ exports.transfertProduit = async (req, res) => {
 
     await transfert.save();
 
+    // Récupérer l'ObjectId de l'admin
+    const adminUser = await User.findOne({ role: 'admin' });
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Utilisateur admin non trouvé.' });
+    }
 
-// Notification en temps réel pour l'admin
-const notificationMessage = `Un transfert de ${quantité} de ${produit} est en attente de validation.`;
-    
-// Émettre un événement pour informer l'admin
-pusher.trigger('admin-channel', 'transfert-en-attente', {
-  message: notificationMessage,
-  transfertId: transfert._id
-});
+    // Notification message avec le nom du produit
+    const notificationMessage = `Un transfert de ${quantité} de ${produitData.nom} est en attente de validation.`;  // Utilisation du nom du produit
 
+    // Créer la notification dans la base de données
+    const notification = new Notification({
+      message: notificationMessage,
+      lue: false,
+    });
+
+    await notification.save();
+
+    // Émettre un événement via Pusher avec le nom du produit
+    pusher.trigger('admin-channel', 'transfert-en-attente', {
+      message: notificationMessage,
+      transfertId: transfert._id
+    });
 
     res.status(201).json({ message: 'Transfert initié avec succès, en attente de validation admin.', transfert });
   } catch (error) {
@@ -46,6 +69,7 @@ pusher.trigger('admin-channel', 'transfert-en-attente', {
     res.status(500).json({ message: "Erreur lors de l'initiation du transfert", error: error.message });
   }
 };
+
 
 exports.validerParAdmin = async (req, res) => {
   try {

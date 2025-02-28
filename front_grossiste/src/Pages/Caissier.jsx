@@ -13,15 +13,20 @@ function Caisse() {
   const [commercial, setCommercial] = useState(null);
   const [allReferences, setAllReferences] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
-  
+  const [modePaiement, setModePaiement] = useState("");
+    const [dateLimiteCredit, setDateLimiteCredit] = useState("");
+    const [referencePaiement, setReferencePaiement] = useState("");
+   
+    const handleChangeModePaiement = (e) => {
+      setModePaiement(e.target.value);
+    };
+
   const playSound = () => {
     const audio = new Audio(Sound); 
     audio.play();
   };
 
-  const [typeRemise, setTypeRemise] = useState("aucune");
-  const [valeurRemise, setValeurRemise] = useState(0);
-  const [totalApresRemise, setTotalApresRemise] = useState(0);
+
   const idCaissier = localStorage.getItem("userid"); 
 
   useEffect(() => {
@@ -47,7 +52,7 @@ function Caisse() {
       );
       setSuggestions(filteredSuggestions);
     } else {
-      setSuggestions([]); // Réinitialisez les suggestions si l'input est vide
+      setSuggestions([]); 
     }
   };
 
@@ -77,7 +82,7 @@ function Caisse() {
       }
 
       setCommande(data);
-      setTotalApresRemise(data.totalGeneral);
+     
     } catch (error) {
       console.error("Erreur lors de la recherche de la commande :", error);
       setCommande(null);
@@ -92,29 +97,42 @@ function Caisse() {
     }
   };
 
-  const calculerRemise = () => {
-    if (!commande) return;
-
-    let totalFinal = commande.totalGeneral;
-
-    if (typeRemise === "total" && valeurRemise > 0) {
-      totalFinal -= totalFinal * (valeurRemise / 100);
-    } else if (typeRemise === "fixe" && valeurRemise > 0) {
-      totalFinal -= valeurRemise;
-    } else if (typeRemise === "produit") {
-      totalFinal = commande.produits.reduce((total, produit) => {
-        const remiseProduit = (produit.prixUnitaire * (valeurRemise / 100)) * produit.quantite;
-        return total + (produit.total - remiseProduit);
-      }, 0);
-    }
-
-    setTotalApresRemise(Math.max(totalFinal, 0));
-  };
-
   const validerPaiement = async () => {
     if (!commande) return;
   
-    console.log("Statut de la commande:", commande.statut); // Vérification du statut
+// Si le type de client est "Commercial", définir le mode de paiement à "a credit" automatiquement
+   
+
+
+if (commande.typeClient === "Client" && !modePaiement) {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Alerte',
+        text: 'Veuillez sélectionner un mode de paiement.',
+    });
+    return;
+}
+  
+  
+    // Vérifier que la référence de paiement est remplie si nécessaire
+    if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Alerte',
+        text: modePaiement === "mobile money" ? 'Veuillez entrer la référence de la transaction.' : 'Veuillez entrer la référence du bordereau.',
+      });
+      return;
+    }
+  
+    // Vérifier que la date limite est bien remplie si mode de paiement "à crédit"
+    if (modePaiement === "a credit" && !dateLimiteCredit) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Alerte',
+        text: 'Veuillez entrer une date limite pour le paiement à crédit.',
+      });
+      return;
+    }
   
     if (commande.statut !== "en cours") {
       Swal.fire({
@@ -122,25 +140,23 @@ function Caisse() {
         title: 'Alerte',
         text: 'Le paiement ne peut pas être validé car la commande est déjà payée.',
       });
-      return; // Arrête la fonction si le statut n'est pas "en cours"
+      return;
     }
+    let typeClient = commande.typeClient; console.log("type",typeClient);
+  
+
+  
+  
     const data = {
-      statut: commande.typeClient === "Commercial" ? "non payé" : "payé complet", // Changer le statut selon le type de client
-    
-      remiseGlobale: typeRemise === "total" ? valeurRemise : 0,
-      remiseFixe: typeRemise === "fixe" ? valeurRemise : 0,
-      remiseParProduit:
-        typeRemise === "produit"
-          ? commande.produits.map((produit) => ({
-              produitId: produit.produit._id,
-              remise: valeurRemise,
-            }))
-          : [],
-      totalPaye: totalApresRemise,
+      statut: typeClient === "Commercial" ? "non payé" : "payé complet",
+      modePaiement: modePaiement, 
+      totalPaye: commande.totalGeneral,
+      referencePaiement,
+      dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null, 
       idCaissier
     };
   
-    console.log("Données de paiement à envoyer:", data); // Vérification des données
+    console.log("Données de paiement à envoyer:", data);
   
     try {
       let url = `/api/paiement/ajouter/${commande._id}`;
@@ -150,31 +166,30 @@ function Caisse() {
   
       const response = await axios.post(url, data, {
         headers: {
-            "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
       });
   
       if (response.status !== 200) {
         throw new Error("Échec du paiement");
       }
-
+  
       const result = response.data;
       Swal.fire({
         icon: 'success',
         title: 'Succès',
         text: result.message,
       }).then(() => {
-   
         window.location.reload();
       });
       playSound();
-      setReferenceFacture("");
+      setReferencePaiement("");
+      setDateLimiteCredit("");
       setCommande(null);
       setClient(null);
       setCommercial(null);
-      setTypeRemise("aucune");
-      setValeurRemise(0);
-      setTotalApresRemise(0);
+   
+  
     } catch (error) {
       console.error(error);
       Swal.fire({
@@ -216,10 +231,55 @@ function Caisse() {
                       ))}
                     </ul>
                   )}
+                    <select
+  className="form-control mt-2"
+  value={modePaiement}
+  onChange={(e) => setModePaiement(e.target.value)}
+>
+  <option value="">Sélectionner le mode de paiement</option>
+  <option value="espèce">Espèce</option>
+  <option value="mobile money">Mobile Money</option>
+  <option value="a credit">A Crédit</option>
+  <option value="virement bancaire">Virement bancaire</option>
+</select>
+
+                  {(modePaiement === "mobile money" || modePaiement === "virement bancaire") && (
+  <div className="form-group mt-3">
+    <label htmlFor="referencePaiement">
+      {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}
+    </label>
+    <input
+      type="text"
+      id="referencePaiement"
+      className="form-control"
+      placeholder="Entrez la référence de la facture"
+      value={referencePaiement}
+      onChange={(e) => setReferencePaiement(e.target.value)}
+    />
+  </div>
+)}
+{modePaiement === "a credit" && (
+  <div className="form-group">
+    <label htmlFor="dateLimiteCredit">Date limite de paiement</label>
+    <input
+      type="date"
+      id="dateLimiteCredit"
+      className="form-control"
+      value={dateLimiteCredit}
+      onChange={(e) => setDateLimiteCredit(e.target.value)}
+      required
+    />
+  </div>
+)}
+
+
+
+
                   <button className="btno btn-primary " onClick={handleSearch}>
                     Rechercher
                   </button>
                 </div>
+            
               </div>
 
               <div className="produits p-3">
@@ -230,8 +290,8 @@ function Caisse() {
                       <tr>
                         <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
                         <th>Contact</th>
-                        <th>Remise</th>
-                        <th>Valeur</th>
+                      
+                        
                         <th>Mode de paiement</th>
                       </tr>
                     </thead>
@@ -239,30 +299,15 @@ function Caisse() {
                       <tr>
                         <td>{commande?.typeClient === "Commercial" ? commercial?.nom : client?.nom}</td>
                         <td>{commande?.typeClient === "Commercial" ? commercial?.telephone : client?.telephone}</td>
-                        <td>
-                          <select className="form-control" value={typeRemise} onChange={(e) => setTypeRemise(e.target.value)}>
-                            <option value="aucune">Aucune</option>
-                            <option value="produit">Par produit (%)</option>
-                            <option value="total">Total (%)</option>
-                            <option value="fixe">Fixe</option>
-                          </select>
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            className="form-control"
-                            value={valeurRemise}
-                            onChange={(e) => setValeurRemise(parseFloat(e.target.value))}
-                          />
-                        </td>
-                        <td>{commande ? commande.modePaiement : ""}</td>
+                      
+                      
+                        <td>{modePaiement || "Non spécifié"}</td>
+
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <button className="btna btn-secondary mt-2" onClick={calculerRemise}>
-                  Appliquer Remise
-                </button>
+             
               </div>
             </div>
 
@@ -289,8 +334,8 @@ function Caisse() {
                     ))}
                   </tbody>
                 </table>
-                <h6 className="total">Total avant remise: {commande.totalGeneral} Ariary</h6>
-                <h6 className="total">Total après remise: {totalApresRemise} Ariary</h6>
+                <h6 className="total">Total : {commande.totalGeneral} Ariary</h6>
+             
 
                 <button className="btnVA btn-success mt-3" onClick={validerPaiement}>
                   Valider le paiement

@@ -29,7 +29,14 @@ const paiementSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
+    },
+    modePaiement: { 
+        type: String, 
+        enum: ["espèce", "mobile money", "virement bancaire", "a credit"], 
+        required: true 
     }
+    ,
+    dateLimiteCredit: { type: Date, required: false },
 }, { timestamps: true });
 
 const Paiement = mongoose.model("Paiement", paiementSchema);

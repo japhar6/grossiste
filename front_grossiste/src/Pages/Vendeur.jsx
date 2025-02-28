@@ -28,6 +28,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
               // Définir l'état pour les produits sélectionnés
                 const [commande, setCommande] = useState([]);
                 const [typeQuantite, setTypeQuantite] = useState("");
+              
                 const [type, setType] = useState(""); 
               const [isNew, setIsNew] = useState(false); 
               const [selectedPerson, setSelectedPerson] = useState("");
@@ -126,7 +127,8 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                         return;
                                       }
                                     }
-                                         // Création d'un objet FormData
+                                 
+                                         
     const formData = new FormData();
     
     // Ajouter les données à FormData
@@ -180,6 +182,7 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                       setIsNew(false);
 
                                     
+                                   
          
                                       setNewPerson({
                                         nom: '',
@@ -198,7 +201,10 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                   }
                                 };
 
-                                
+                                const Annuler = async () => {
+                                    
+                                  setIsNew(false);
+                                  }
                                 const fetchProduits = async () => {
                                   try {
                                     const response = await axios.get("/api/produits/afficher");
@@ -419,6 +425,50 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                     }
                                   };
                                   
+                                  const getClientNom = (id) => {
+                                    const client = clients.find(client => client._id === id);
+                                    return client ? client.nom : '';
+                                  };
+                                  
+const vendeurNom = localStorage.getItem("nom"); 
+const vendeurId = localStorage.getItem("userid"); 
+console.log("Nom du vendeur:", vendeurNom); 
+console.log("Vendeur ID:", vendeurId);
+const handleDemandeRemise = async () => {
+  if (!selectedPerson) {
+    alert("Veuillez sélectionner un client !");
+    return;
+  }
+
+  // Vérifie que l'ID du vendeur est correct
+
+  const clientNom = getClientNom(selectedPerson); // Récupérer le nom du client
+  console.log("Nom du client:", clientNom); // Vérifie que le nom du client est correct
+  
+
+
+  if (!vendeurNom) {
+    alert("Nom du vendeur non trouvé dans localStorage.");
+    return;
+  }
+
+  try {
+    const response = await axios.post("api/notif/envoie-notifications", {
+    
+      message: `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`
+    });
+
+    console.log("Réponse de l'API:", response.data); // Affiche la réponse de l'API
+    alert("Demande de remise envoyée !");
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de la notification", error);
+    alert("Une erreur est survenue. Veuillez réessayer.");
+  }
+};
+
+
+                                  
+                            
                                   
 
   return (
@@ -468,12 +518,19 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
           ))}
           <option value="new">Ajouter un nouveau {type}</option>
         </select>
+ 
       </div>
     )}
 </div>
+{type === "client" && selectedPerson && selectedPerson !== "new" && (
+  <button className="btn btn-success" onClick={handleDemandeRemise}>
+    Demander remise
+  </button>
+)}
 
 
-{/* Affichage du formulaire si "Nouveau client" est sélectionné */}{isNew && (
+{/* Affichage du formulaire si "Nouveau client" est sélectionné */}
+{isNew && (
    <div className="container mt-3" style={{ marginLeft:'-25px', padding: '20px', overflow: 'hidden' }}>
    <div className="form-group">
        <div className="row">
@@ -588,6 +645,12 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                >
                    Créer {type === "client" ? "Client" : "Commercial"}
                </button>
+               <button
+                   className="btn btn-success"
+                   onClick={Annuler}
+               >
+                  Annuler
+               </button>
            </div>
        </div>
    </div>
@@ -596,6 +659,10 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
 
   )}
 
+
+
+
+              
                   {type === "client" && remisesClient && typeRemise && (
                   <div className="remises-info mt-3 m-2">
                     <h6>Type de remise du client :</h6>

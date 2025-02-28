@@ -1,13 +1,13 @@
 import React, { useState,useEffect } from "react";
 import "../Styles/Achat.css";
 import Sidebar from "../Components/Sidebar";
-import axios from '../api/axios';
+
 import Header from "../Components/Navbar";
 import Swal from "sweetalert2";
 import Select from 'react-select'; 
 import HistoriqueAchats from "../Components/HistoriqueAchats";
 
-
+import axios from '../api/axios';
 
 function AchatProduits() {
   const [fournisseur, setFournisseur] = useState("");

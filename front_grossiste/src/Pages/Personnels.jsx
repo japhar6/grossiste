@@ -398,6 +398,7 @@ function Personnels() {
     <div className="user-card">
       <div className="photo-cont">
         <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
+        {selectedUser.photo}
       </div>
       <div className="user-info">
         <p><strong>Nom:</strong> {selectedUser.nom}</p>

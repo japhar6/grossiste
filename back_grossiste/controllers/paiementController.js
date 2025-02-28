@@ -1,25 +1,34 @@
 const Paiement = require("../models/Paiement");
 const Commande = require("../models/Commandes");
 const PaiementCommerciale = require("../models/PaimentCommerciale");
+const { sendNotificationToAdmin } = require('../service/payementService'); // Service de notification
 
 
+const mongoose = require("mongoose");
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params;  // Référence de la commande (ex : "FACTCLI-001")
-        const { idCaissier, referencePaiement } = req.body; // Récupérer l'id du caissier et la référence du paiement
+        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit } = req.body; // Récupérer les données de la requête
 
         // Recherche de la commande par la référence de facture (id)
-        const commande = await Commande.findOne({ referenceFacture: id });
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "ID de commande invalide" });
+        }
+
+        const commande = await Commande.findById(id);
+
         if (!commande) {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        // Récupérer le mode de paiement de la commande
-        const modePaiement = commande.modePaiement;
-
         // Si le mode de paiement est "mobile money" ou "virement bancaire", la référence de paiement est requise
         if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
             return res.status(400).json({ message: "La référence de paiement est requise pour ce mode de paiement" });
+        }
+
+        // Si le mode de paiement est "à crédit", vérifier que la date limite est fournie
+        if (modePaiement === "a credit" && !dateLimiteCredit) {
+            return res.status(400).json({ message: "La date limite de paiement à crédit est requise." });
         }
 
         // Calcul du montant à payer (aucune remise, juste la somme totale de la commande)
@@ -31,18 +40,17 @@ exports.validerpayement = async (req, res) => {
 
         // Si le mode de paiement est "mobile money" ou "virement bancaire", le statut du paiement sera "payé partielle"
         let statutPaiement = "payé complet";
-        if (modePaiement === "mobile money" || modePaiement === "virement bancaire") {
-            statutPaiement = "payé partielle";
-        }
-
-        // Créer un paiement avec le montant payé et d'autres détails
+       
+        // Créer un paiement avec le montant payé et d'autres détails, incluant le mode de paiement et la date limite pour les paiements à crédit
         const paiement = new Paiement({
             commandeId: commande._id,  // Référence à l'ID de la commande
             montantPaye: montantPaye,  // Montant payé basé sur la commande
             totalPaiement: montantPaye,  // Le montant total payé est le même ici
             statut: statutPaiement,  // Statut du paiement (payé partielle ou payé complet)
             referencePaiement: referencePaiement,  // Référence de paiement, si nécessaire
-            idCaissier: idCaissier  // ID du caissier
+            idCaissier: idCaissier,
+            modePaiement: modePaiement,  // Mode de paiement
+            dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null // Ajout de la date limite si le paiement est à crédit
         });
 
         // Sauvegarder le paiement dans la base de données
@@ -56,7 +64,9 @@ exports.validerpayement = async (req, res) => {
                 montantPaye: paiement.montantPaye,
                 statut: paiement.statut,
                 totalPaiement: paiement.totalPaiement,
-                referencePaiement: paiement.referencePaiement
+                referencePaiement: paiement.referencePaiement,
+                modePaiement: paiement.modePaiement, // Inclure le mode de paiement dans la réponse
+                dateLimiteCredit: paiement.dateLimiteCredit // Inclure la date limite de crédit dans la réponse si applicable
             }
         });
     } catch (error) {
@@ -65,6 +75,32 @@ exports.validerpayement = async (req, res) => {
 };
 
 
+// Vérification des paiements à crédit et envoi de notifications
+exports.checkPaymentsDue = async (req, res) => {
+    try {
+      // Récupérer tous les paiements à crédit
+      const payments = await Payment.find({ modePaiement: 'à crédit' });
+      const today = moment(); // Date actuelle
+  
+      // Parcours des paiements à crédit
+      payments.forEach(payment => {
+        const dateLimite = moment(payment.dateLimiteCredit); // Date limite du paiement
+  
+        // Si la date limite est dépassée
+        if (dateLimite.isBefore(today)) {
+          // Envoie la notification à l'admin
+          sendNotificationToAdmin(payment);
+        }
+      });
+  
+      // Répondre que le processus a été effectué
+      res.status(200).json({ message: 'Vérification des paiements effectuée avec succès.' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Une erreur est survenue lors de la vérification des paiements.' });
+    }
+  };
+  
 
 
 // Récupérer tous les paiements des client 
