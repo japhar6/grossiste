@@ -5,7 +5,7 @@ const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, modePaiement, statut } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, statut } = req.body;
 
         // Vérification du typeClient
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
@@ -25,9 +25,6 @@ exports.ajouterCommande = async (req, res) => {
         if (!clientOuCommercial) {
             return res.status(404).json({ message: `${typeClient} non trouvé avec cet ID.` });
         }
-
-        // Définir le mode de paiement en fonction du type de client
-        const paiementFinal = typeClient === "Commercial" ? "à crédit" : modePaiement;
 
         // Itérer sur les produits dans la commande pour récupérer leurs détails
         const produitsDetails = await Promise.all(produits.map(async (produitData) => {
@@ -96,7 +93,6 @@ exports.ajouterCommande = async (req, res) => {
             clientId: typeClient === "Client" ? clientId : null,
             commercialId: typeClient === "Commercial" ? commercialId : null,
             vendeurId,
-            modePaiement: paiementFinal,
             produits: produitsDetails,
             totalGeneral,
             statut
