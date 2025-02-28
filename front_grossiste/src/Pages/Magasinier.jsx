@@ -34,6 +34,7 @@ function SortieStock() {
   };
 
   const validerVente = async () => {
+    // Vérification si une commande est sélectionnée
     if (!commandeSelectionnee) {
       Swal.fire({
         icon: 'warning',
@@ -43,6 +44,7 @@ function SortieStock() {
       return;
     }
   
+    // Vérification de l'identité du magasinier
     const magasinierId = localStorage.getItem("userid");
     if (!magasinierId) {
       Swal.fire({
@@ -53,6 +55,17 @@ function SortieStock() {
       return;
     }
   
+    // Vérification que la commande est payée avant la validation
+    if (commandeSelectionnee.statut.toLowerCase() !== 'payé') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'La commande n\'est pas payée. Vous ne pouvez pas valider cette vente.',
+      });
+      return;
+    }
+  
+    // Envoi de la requête pour valider la vente
     try {
       const response = await axios.post("/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
@@ -65,9 +78,8 @@ function SortieStock() {
         text: response.data.message,
       }).then(() => {
         window.location.reload();
-        
-    });
-      
+      });
+  
       setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id));
       setCommandeSelectionnee(null);
     } catch (error) {
@@ -78,7 +90,8 @@ function SortieStock() {
         text: error.response?.data.message || 'Échec de la validation de la vente.',
       });
     }
-};
+  };
+  
 
   // Effect pour suivre les changements de taille de la fenêtre
   useEffect(() => {

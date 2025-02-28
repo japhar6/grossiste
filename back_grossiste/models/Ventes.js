@@ -17,6 +17,14 @@ const venteSchema = new mongoose.Schema({
                 type: Number,
                 required: true,
             },
+            quantiteConvertie: {
+                type: Number, // Stocker la quantité convertie
+                required: true,
+            },
+            unite: {
+                type: String, // Stocker l'unité convertie
+                required: true,
+            }
         }
     ],
     dateVente: {
