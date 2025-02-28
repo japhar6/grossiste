@@ -78,7 +78,7 @@ exports.markAsRead = async (req, res) => {
 
 exports.envoyerNotificationAdmin = async (req, res) => {
   try {
-    const { message } = req.body; // On attend un message dans le corps de la requête
+    const { message, idClient } = req.body; // On attend maintenant aussi un idClient dans le corps de la requête
 
     if (!message || message.trim() === "") {
       return res.status(400).json({ message: 'Le message de la notification est requis.' });
@@ -89,6 +89,7 @@ exports.envoyerNotificationAdmin = async (req, res) => {
       message: message,
       lue: false,
       type: 'remise', // Par défaut, la notification n'est pas lue
+      idClient: idClient || null, // Si un idClient est fourni, on l'ajoute à la notification, sinon on le laisse à null
     });
 
     await notification.save();
@@ -111,3 +112,4 @@ exports.envoyerNotificationAdmin = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de l'envoi de la notification", error: error.message });
   }
 };
+

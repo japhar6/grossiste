@@ -28,6 +28,11 @@ const personnelSchema = new mongoose.Schema({
     adresse: {
         type: String,
         trim: true
+    },
+    salaire: {
+        type: Number,
+        required: true,
+        min: 0 // Empêche les valeurs négatives
     }
 }, {
     timestamps: true

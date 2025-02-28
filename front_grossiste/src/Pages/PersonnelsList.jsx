@@ -17,7 +17,8 @@ function PersonnelList() {
         nom: "",
         poste: "",
         telephone: "",
-        adresse: ""
+        adresse: "",
+        salaire:""
     });
 
     // Pour le modal de modification
@@ -60,7 +61,7 @@ function PersonnelList() {
         try {
             const response = await axios.post("http://localhost:5000/api/personnels/ajouter", newPersonnel);
             setPersonnels([...personnels, response.data]);
-            setNewPersonnel({ nom: "", poste: "", telephone: "", adresse: "" });
+            setNewPersonnel({ nom: "", poste: "", telephone: "", adresse: "",salaire: "" });
             handleClose();
             // SweetAlert pour l'ajout
             Swal.fire({
@@ -199,7 +200,8 @@ function PersonnelList() {
                                             <th>Nom</th>
                                             <th>Poste</th>
                                             <th>Téléphone</th>
-                                            <th>Adresse</th>
+                                            <th>Adresse</th>   
+                                            <th>Salaire</th>
                                             <th>Date d'embauche</th>
                                             <th>Action</th>
                                         </tr>
@@ -211,6 +213,7 @@ function PersonnelList() {
                                                 <td>{personnel.poste}</td>
                                                 <td>{personnel.telephone}</td>
                                                 <td>{personnel.adresse}</td>
+                                                <td>{personnel.salaire}</td>
                                                 <td>{personnel.dateEmbauche}</td>
                                                 <td>
                                                     <button className="btn btn-warning m-1" onClick={() => handleShowEdit(personnel)}>
@@ -252,6 +255,10 @@ function PersonnelList() {
                         <Form.Group>
                             <Form.Label>Adresse</Form.Label>
                             <Form.Control type="text" name="adresse" value={newPersonnel.adresse} onChange={handleChange} />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Salaire</Form.Label>
+                            <Form.Control type="number" name="salaire" value={newPersonnel.salaire} onChange={handleChange} />
                         </Form.Group>
                     </Form>
                 </Modal.Body>
@@ -295,21 +302,23 @@ function PersonnelList() {
                                 onChange={handleEditChange}
                             />
                         </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Statut</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="statut"
-                                value={editPersonnel.statut || ""}
-                                onChange={handleEditChange}
-                            />
-                        </Form.Group>
+                      
+                       
                         <Form.Group>
                             <Form.Label>Adresse</Form.Label>
                             <Form.Control
                                 type="text"
                                 name="adresse"
                                 value={editPersonnel.adresse || ""}
+                                onChange={handleEditChange}
+                            />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Salaire</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="salaire"
+                                value={editPersonnel.salaire || ""}
                                 onChange={handleEditChange}
                             />
                         </Form.Group>

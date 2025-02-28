@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; // Assurez-vous d'avoir installé axios
+import axios from '../api/axios';
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import { Modal, Button, Form } from 'react-bootstrap';
@@ -17,10 +17,14 @@ function ClientsList() {
         remiseValeur: 0
     });
     const [currentClient, setCurrentClient] = useState({});
-
+   
+   
+   
+ 
+    
     useEffect(() => {
         // Récupérer les clients depuis l'API
-        axios.get("http://localhost:5000/api/client/")
+        axios.get("/api/client/")
             .then(response => {
                 setClients(response.data);
             })
@@ -29,6 +33,27 @@ function ClientsList() {
             });
     }, []);
 
+    useEffect(() => {
+        const idClient = localStorage.getItem('idClient');
+        if (idClient) {
+            // Récupérer les informations du client depuis l'API
+            axios.get(`/api/client/recuperer/${idClient}`)
+                .then(response => {
+                    const clientData = response.data;
+                    // Pré-remplir les informations dans le modal d'édition
+                    setCurrentClient({
+                        ...clientData,
+                        typeRemise: clientData.remises.remiseFixe ? 'remiseFixe' : clientData.remises.remiseParProduit ? 'remiseParProduit' : 'remiseGlobale',
+                        remiseValeur: clientData.remises.remiseFixe || clientData.remises.remiseParProduit || clientData.remises.remiseGlobale
+                    });
+                    setShowEditModal(true); // Ouvrir le modal d'édition
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la récupération du client :", error);
+                });
+        }
+    }, []);
+    
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
 
@@ -61,7 +86,7 @@ function ClientsList() {
         };
 
         try {
-            const response = await axios.post("http://localhost:5000/api/client/ajouter", {
+            const response = await axios.post("/api/client/ajouter", {
                 nom: newClient.nom,
                 telephone: newClient.telephone,
                 adresse: newClient.adresse,
@@ -89,7 +114,7 @@ function ClientsList() {
         };
 
         try {
-            const response = await axios.put(`http://localhost:5000/api/client/modifier/${currentClient._id}`, {
+            const response = await axios.put(`/api/client/modifier/${currentClient._id}`, {
                 nom: currentClient.nom,
                 telephone: currentClient.telephone,
                 adresse: currentClient.adresse,
@@ -97,6 +122,7 @@ function ClientsList() {
             });
             setClients(clients.map(client => client._id === currentClient._id ? response.data.client : client));
             handleEditClose();
+            localStorage.removeItem('idClient');
             Swal.fire({
                 icon: 'success',
                 title: 'Client modifié avec succès!',
@@ -120,7 +146,7 @@ function ClientsList() {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`http://localhost:5000/api/client/supprimer/${id}`);
+                    await axios.delete(`/api/client/supprimer/${id}`);
                     setClients(clients.filter(p => p.id !== id));
                     Swal.fire(
                         'Supprimé!',
@@ -198,7 +224,7 @@ function ClientsList() {
                                                 <td>{client.telephone}</td>
                                                 <td>{client.adresse}</td>
                                                 <td>{new Date(client.dateInscription).toLocaleDateString()}</td>
-                                                <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}%</td>
+                                                <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}</td>
                                                 <td>{client.remises ? client.remises.remiseParProduit : 'Pas de remise'}%</td>
                                                 <td>{client.remises ? client.remises.remiseGlobale : 'Pas de remise'}Ariary</td>
                                                 <td>
@@ -257,41 +283,59 @@ function ClientsList() {
             </Modal>
 
             <Modal show={showEditModal} onHide={handleEditClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Modifier le client</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleEditSubmit}>
-                        <Form.Group>
-                            <Form.Label>Nom</Form.Label>
-                            <Form.Control type="text" name="nom" value={currentClient.nom} onChange={handleEditChange} />
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Téléphone</Form.Label>
-                            <Form.Control type="text" name="telephone" value={currentClient.telephone} onChange={handleEditChange} />
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Adresse</Form.Label>
-                            <Form.Control type="text" name="adresse" value={currentClient.adresse} onChange={handleEditChange} />
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Type de remise</Form.Label>
-                            <Form.Control as="select" name="typeRemise" value={currentClient.typeRemise} onChange={handleEditChange}>
-                                <option value="remiseFixe">Remise fixe</option>
-                                <option value="remiseParProduit">Remise par produit</option>
-                                <option value="remiseGlobale">Remise globale</option>
-                            </Form.Control>
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Valeur de la remise</Form.Label>
-                            <Form.Control type="number" name="remiseValeur" value={currentClient.remiseValeur} onChange={handleEditChange} />
-                        </Form.Group>
-                        <Button variant="primary" type="submit" className="mt-3">
-                            Modifier
-                        </Button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
+    <Modal.Header closeButton>
+        <Modal.Title>Modifier le client</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+        <Form onSubmit={handleEditSubmit}>
+            <Form.Group>
+                <Form.Label>Nom</Form.Label>
+                <Form.Control type="text" name="nom" value={currentClient.nom} onChange={handleEditChange} />
+            </Form.Group>
+            <Form.Group>
+                <Form.Label>Téléphone</Form.Label>
+                <Form.Control type="text" name="telephone" value={currentClient.telephone} onChange={handleEditChange} />
+            </Form.Group>
+            <Form.Group>
+                <Form.Label>Adresse</Form.Label>
+                <Form.Control type="text" name="adresse" value={currentClient.adresse} onChange={handleEditChange} />
+            </Form.Group>
+            <Form.Group>
+                <Form.Label>Type de remise</Form.Label>
+                <Form.Control as="select" name="typeRemise" value={currentClient.typeRemise} onChange={handleEditChange}>
+                    <option value="remiseFixe">Remise fixe</option>
+                    <option value="remiseParProduit">Remise par produit</option>
+                    <option value="remiseGlobale">Remise globale</option>
+                </Form.Control>
+            </Form.Group>
+            <Form.Group>
+                <Form.Label>Valeur de la remise</Form.Label>
+                <Form.Control type="number" name="remiseValeur" value={currentClient.remiseValeur} onChange={handleEditChange} />
+            </Form.Group>
+            <Button 
+    variant="primary" 
+    type="submit" 
+    className="mt-3 px-4 py-2 rounded-pill shadow-lg" 
+    style={{ backgroundColor: '#007bff', border: 'none' }}
+>
+    Modifier
+</Button>
+<Button 
+    variant="secondary" 
+    className="mt-3 ml-2 px-4 py-2 rounded-pill shadow-lg" 
+    style={{ backgroundColor: '#6c757d', border: 'none' }} 
+    onClick={() => {
+        localStorage.removeItem('idClient'); // Supprime l'élément 'idClient' du localStorage
+        handleEditClose(); // Ferme le modal
+    }}
+>
+    Annuler
+</Button>
+
+        </Form>
+    </Modal.Body>
+</Modal>
+
         </>
     );
 }

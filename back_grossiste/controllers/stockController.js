@@ -85,8 +85,6 @@ exports.getQuantiteProduitById = async (req, res) => {
 } ; 
 
 
-
-
 exports.getQuantiteProduitByIde = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
@@ -107,20 +105,19 @@ exports.getQuantiteProduitByIde = async (req, res) => {
     const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } })
       .populate("entrepot", "nom"); // Populate pour récupérer le nom de l'entrepôt
 
-    if (stockData.length === 0) {
-      return res.status(404).json({ message: "Aucun stock trouvé pour ce produit en dehors de l'entrepôt principal." });
-    }
-
-    // Trouver l'entrepôt avec la quantite maximale
+    // Définir les valeurs par défaut
     let quantiteMaximale = 0;
     let entrepotMaxQuantite = null;
 
-    stockData.forEach(stock => {
-      if (stock.quantite > quantiteMaximale) {
-        quantiteMaximale = stock.quantite;
-        entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
-      }
-    });
+    if (stockData.length > 0) {
+      // Trouver l'entrepôt avec la quantité maximale
+      stockData.forEach(stock => {
+        if (stock.quantite > quantiteMaximale) {
+          quantiteMaximale = stock.quantite;
+          entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
+        }
+      });
+    }
 
     // Ajouter la quantite maximale et le nom de l'entrepôt au produit
     const produitAvecQuantite = {

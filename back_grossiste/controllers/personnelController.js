@@ -3,17 +3,24 @@ const Personnel = require('../models/Personnels');
 // Créer un nouveau personnel
 exports.ajouterPersonnel = async (req, res) => {
     try {
-        const { nom, poste, telephone, adresse } = req.body;
+        const { nom, poste, telephone, adresse, salaire } = req.body;
 
-        if (!nom || !poste || !telephone) {
-            return res.status(400).json({ message: 'Veuillez remplir tous les champs obligatoires.' });
+        // Vérifier que tous les champs obligatoires sont remplis
+        if (!nom || !poste || !telephone || salaire === undefined) {
+            return res.status(400).json({ message: 'Veuillez remplir tous les champs obligatoires, y compris le salaire.' });
+        }
+
+        // Vérifier que le salaire est un nombre positif
+        if (isNaN(salaire) || salaire < 0) {
+            return res.status(400).json({ message: 'Le salaire doit être un nombre positif.' });
         }
 
         const nouveauPersonnel = new Personnel({
             nom,
             poste,
             telephone,
-            adresse
+            adresse,
+            salaire
         });
 
         const personnelEnregistre = await nouveauPersonnel.save();
