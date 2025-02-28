@@ -12,11 +12,13 @@ const commandeSchema = new mongoose.Schema({
             prixdevente: { type: Number, required: true },
             total: { type: Number, required: true },
             prixApresRemise: { type: Number, required: true },
+            montantApresRemise: { type: Number }, // Nouveau champ
             typeRemise: { type: String },
             valeurRemise: { type: Number },
             uniteChoisie: { type: String }
         }
     ],
+    
     totalGeneral: { type: Number, required: true },
     statut: { 
         type: String,  

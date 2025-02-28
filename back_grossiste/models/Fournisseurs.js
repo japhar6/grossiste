@@ -10,7 +10,7 @@ const fournisseurSchema = new mongoose.Schema({
   },
   conditions: {
     ristourne: { type: Number, default: 0 }, // Ristourne générale
-    typeRistourne: { type: String, enum: ['générale', 'par_produit'], required: false } 
+    typeRistourne: { type: String, enum: ['générale', 'par_produit'], required: false } // Type de ristourne
   },
   logo: { type: String }, 
   createdAt: { type: Date, default: Date.now }

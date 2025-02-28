@@ -41,7 +41,8 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
               const [categories, setCategories] = useState([]);
               const [remisesClient, setRemisesClient] = useState(null);
               const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
-              
+              const [produitsDesactives, setProduitsDesactives] = useState({}); // {idProduit: true/false}
+
               useEffect(() => {
                 const fetchRemisesClient = async () => {
                   if (selectedPerson) {
@@ -226,8 +227,18 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                   const matchesCategorie = categorie ? p.categorie === categorie : true;
                                   return matchesRecherche && matchesCategorie;
                                 });
-
+                                
                                 const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
+                                  if (!produit.uniteChoisie) {
+                                    // Si aucune unité n'est sélectionnée, empêcher l'ajout à la commande
+                                    Swal.fire({
+                                      title: 'Unité non sélectionnée',
+                                      text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
+                                      icon: 'warning',
+                                      confirmButtonText: 'OK',
+                                    });
+                                    return;  // Ne rien faire si l'unité n'est pas sélectionnée
+                                  }
                                   // Ne rien faire si la quantité demandée est inférieure ou égale à 0
                                   if (quantite <= 0) return;
                                 
@@ -314,43 +325,58 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                 };
      
                                   
-                                  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
-                                  const valeurRemise = typeRemise === "remiseGlobale"
-                                  ? remisesClient?.remiseGlobale
-                              : typeRemise === "remiseFixe"
-                                  ? remisesClient?.remiseFixe
-                                  : typeRemise === "remiseParProduit"
-                                      ? remisesClient?.remiseParProduit
-                                      : 0;
-                          
+                                const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
 
-                                      const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-                                        console.log("Prix avant remise:", item.prix);
-                                        console.log("Type de remise:", typeRemise);
-                                        console.log("Valeur de remise:", valeurRemise);
-                                      
-                                        if (typeRemise === 'remiseParProduit') {
-                                          const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
-                                          console.log("Prix après remise:", prixFinal);
-                                          return prixFinal;
-                                        }
-                                        return item.prix;
-                                      };
-                                      
-                                  
-                                  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
-                                    if (typeRemise === 'remiseFixe') {
-                                      return totalCommande - valeurRemise;
-                                    } else if (typeRemise === 'remiseParProduit') {
-                                      return commande.reduce((total, item) => {
-                                        const prixApresRemise = item.prix - (item.prix * (valeurRemise / 100));
-                                        return total + (prixApresRemise * item.quantite);
-                                      }, 0);
-                                    } else if (typeRemise === 'remiseGlobale') {
-                                      return totalCommande - (totalCommande * (valeurRemise / 100));
+                                const valeurRemise = typeRemise === "remiseGlobale"
+                                    ? remisesClient?.remiseGlobale
+                                    : typeRemise === "remiseFixe"
+                                        ? remisesClient?.remiseFixe
+                                        : typeRemise === "remiseParProduit"
+                                            ? remisesClient?.remiseParProduit
+                                            : 0;
+                                
+                                const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+                                    console.log("Prix avant remise:", item.prix);
+                                    console.log("Type de remise:", typeRemise);
+                                    console.log("Valeur de remise:", valeurRemise);
+                                
+                                    // Remise par produit
+                                    if (typeRemise === 'remiseParProduit') {
+                                        const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
+                                        console.log("Prix après remise (par produit):", prixFinal);
+                                        return prixFinal;
                                     }
-                                    return totalCommande;
-                                  };
+                                
+                                    // Remise globale
+                                    if (typeRemise === 'remiseGlobale') {
+                                        return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
+                                    }
+                                
+                                    // Remise fixe (appliquée après)
+                                    return item.prix;
+                                };
+                                
+                                const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
+                                    if (typeRemise === 'remiseFixe') {
+                                        // Appliquer la remise fixe sur le total de la commande
+                                        return totalCommande - valeurRemise;
+                                    } else if (typeRemise === 'remiseParProduit') {
+                                        // Appliquer la remise sur chaque produit (selon leur prix)
+                                        return commande.reduce((total, item) => {
+                                            const prixApresRemise = calculerPrixApresRemise(item, typeRemise, valeurRemise);
+                                            return total + (prixApresRemise * item.quantite);
+                                        }, 0);
+                                    } else if (typeRemise === 'remiseGlobale') {
+                                        // Appliquer la remise globale sur le total de la commande
+                                        return totalCommande - (totalCommande * (valeurRemise / 100));
+                                    }
+                                    return totalCommande; // Aucun changement si pas de remise
+                                };
+                                
+                                // Calculer le total final après application de la remise
+                                const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
+                                console.log("Total après remise:", totalFinal);
+                                
 
                                   const creerCommande = async () => {
                                     try {
