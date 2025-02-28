@@ -53,6 +53,7 @@ exports.transfertProduit = async (req, res) => {
     const notification = new Notification({
       message: notificationMessage,
       lue: false,
+      type: 'transfert-en-attente',
     });
 
     await notification.save();

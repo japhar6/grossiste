@@ -48,7 +48,7 @@ function Header() {
     });
   
     // Écoute les notifications de type "nouvelle-notification"
-    channel.bind('nouvelle-notification', (data) => {
+    channel.bind('remise', (data) => {
       setNotifications((prevNotifications) => {
         // Si la notification existe déjà, ne pas l'ajouter
         if (!prevNotifications.some(notif => notif.message === data.message)) {
