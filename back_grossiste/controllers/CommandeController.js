@@ -235,12 +235,15 @@ exports.getCommandesTermineesEtLivrees = async (req, res) => {
     try {
         // Filtrer les commandes par les statuts "terminée" et "livrée"
         const commandes = await Commande.find({
-            statut: { $in: ["payé", "payé et livrée"] }
+            statut: { $in: ["payé", "payé et livré"] }
         })
-        .populate("produits.produit", "nom unite")  // Récupérer les produits associés (nom du produit)
+        .populate("produits.produit", "nom unite.nom")  // Récupérer les produits associés (nom du produit)
         .populate("clientId", "nom telephone")  // Récupérer les informations du client
         .populate("commercialId", "nom telephone")
         .populate("vendeurId", "nom")  // Récupérer les informations du vendeur
+        .populate("paiement", "modePaiement")
+
+
 
         res.status(200).json(commandes);
     } catch (error) {

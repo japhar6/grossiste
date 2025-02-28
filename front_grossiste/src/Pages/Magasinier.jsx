@@ -167,7 +167,7 @@ const filteredCommandes = commandes.filter((commande) => {
                   <td>{commande.referenceFacture}</td>
                   <td>{commande.vendeurId ? commande.vendeurId.nom : "N/A"}</td>
                   <td>{commande.clientId ? commande.clientId.nom : commande.commercialId ? commande.commercialId.nom : "N/A"}</td>
-                  <td>{commande.modePaiement}</td>
+                  <td>{commande.paiement ? commande.paiement.modePaiement : "à crédit"}</td>
                   <td>{commande.statut}</td>
                   <td>{commande.updatedAt ? new Date(commande.updatedAt).toLocaleDateString() : "N/A"}</td>
                   <td>
@@ -228,7 +228,7 @@ const filteredCommandes = commandes.filter((commande) => {
             <tr key={index}>
               <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
               <td className="w-25">{produit.quantite}</td>
-              <td className="w-25">{produit.produit ? produit.produit.unite : "N/A"}</td>
+              <td className="w-25">{produit.uniteChoisie  ? produit.uniteChoisie  : "N/A"}</td>
             </tr>
           ))}
         </tbody>

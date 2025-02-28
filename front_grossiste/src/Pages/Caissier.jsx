@@ -328,7 +328,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
                       <tr key={index}>
                         <td>{produit.produit.nom}</td>
                         <td>{produit.quantite}</td>
-                        <td>{produit.prixUnitaire} Ariary</td>
+                        <td>{produit.prixdevente} Ariary</td>
                         <td>{produit.total} Ariary</td>
                       </tr>
                     ))}

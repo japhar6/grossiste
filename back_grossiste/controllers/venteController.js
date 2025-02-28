@@ -78,7 +78,7 @@ exports.validerVente = async (req, res) => {
         }));
 
         // Mettre à jour la commande avec le statut 'livrée'
-        commande.statut = 'payé et livrée';
+        commande.statut = 'payé et livré';
         await commande.save();
 
         res.status(200).json({
