@@ -5,8 +5,10 @@ const app = express();
 require("dotenv").config();
 
 
+
 const path = require("path");
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 // Importation des routes
 const fournisseurRoutes = require("./routes/fournisseurRoute"); 

@@ -7,6 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Stock() {
+  const [entrepots, setEntrepots] = useState([]); // Pour stocker la liste des entrepôts
   const [entrepot, setEntrepot] = useState(null);
   const [magasinier, setMagasinier] = useState('');
   const [stocks, setStocks] = useState([]);
@@ -21,23 +22,25 @@ function Stock() {
   const userId = localStorage.getItem("userid");
   const nom = localStorage.getItem("nom");
 
+  // Récupère tous les entrepôts à l'initialisation
   useEffect(() => {
-    const fetchEntrepot = async () => {
+    const fetchEntrepots = async () => {
       try {
         const response = await axios.get(`/api/entrepot/recuperer/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setEntrepot(response.data); // Stocke directement l'objet au lieu d'un tableau
+        setEntrepots(response.data); // Stocke la liste d'entrepôts
       } catch (error) {
-        toast.error('Erreur lors du chargement de l\'entrepôt.');
+        toast.error('Erreur lors du chargement des entrepôts.');
         console.error(error);
       }
     };
 
-    fetchEntrepot();
+    fetchEntrepots();
   }, [token, userId]);
 
+  // Récupère les stocks de l'entrepôt sélectionné
   useEffect(() => {
     if (!entrepot) return;
 
@@ -60,6 +63,7 @@ function Stock() {
     fetchStocks();
   }, [entrepot]);
 
+  // Filtre et trie les stocks
   const filteredStocks = stocks.filter(stock => {
     return (
       stock.produit && 
@@ -82,7 +86,6 @@ function Stock() {
     return 0;
   }).filter(stock => sortBy !== 'rupture' || stock.quantité < stock.produit.quantiteMinimum);
 
-
   return (
     <>
       <ToastContainer />
@@ -96,16 +99,33 @@ function Stock() {
             </h5>
 
             <div className="entrepot-magasinier-container mt-3">
-  <div className="entrepot-info">
-    <strong>Entrepôt :</strong> {entrepot ? entrepot.nom : "Aucun entrepôt"}
-  </div>
+              <div className="entrepot-info">
+                <strong>Entrepôt :</strong> {entrepot ? entrepot.nom : "Aucun entrepôt"}
+              </div>
 
-  <div className="magasinier-info">
-    <strong>Magasinier :</strong> {nom || 'Aucun'}
-  </div>
-</div>
+              <div className="magasinier-info">
+                <strong>Magasinier :</strong> {nom || 'Aucun'}
+              </div>
+            </div>
+
+            {/* Sélecteur d'entrepôt */}
+            <div className="mt-3">
+              <select
+                className="form-control"
+                onChange={(e) => setEntrepot(entrepots.find(ent => ent._id === e.target.value))}
+                defaultValue=""
+              >
+                <option value="">-- Sélectionner un entrepôt --</option>
+                {entrepots.map((ent) => (
+                  <option key={ent._id} value={ent._id}>
+                    {ent.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div className="filters mt-3 d-flex justify-content-between" style={{ display: 'flex', gap: '10px' }}>
+              {/* Champs de filtre */}
               <input
                 type="text"
                 className="form-control mr-2"
@@ -129,16 +149,16 @@ function Stock() {
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-                <select
-                  className="form-control"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="nom">Trier par Nom</option>
-                  <option value="quantité">Trier par Quantité</option>
-                  <option value="date">Trier par Date d'Entrée</option>
-                  <option value="rupture">Produit en rupture</option>
-                </select>
+              <select
+                className="form-control"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="nom">Trier par Nom</option>
+                <option value="quantité">Trier par Quantité</option>
+                <option value="date">Trier par Date d'Entrée</option>
+                <option value="rupture">Produit en rupture</option>
+              </select>
             </div>
 
             {loading ? (
@@ -150,26 +170,26 @@ function Stock() {
                 <table className="tableSt table-striped table-bordered mt-3">
                   <thead>
                     <tr>
-                    <th>Référence</th>
-                    <th>Produit</th>
-                    <th>Quantité</th>
-                    <th>Unité</th>
-                    <th>Catégorie</th>
-                    <th>Quantite Minimum</th>
-                    <th>Date d'ajout</th>
+                      <th>Référence</th>
+                      <th>Produit</th>
+                      <th>Quantité</th>
+                      <th>Unité</th>
+                      <th>Catégorie</th>
+                      <th>Quantite Minimum</th>
+                      <th>Date d'ajout</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedStocks.map(stock => (
-              <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
-              <td>{stock.produit.codeProduit}</td>
-              <td>{stock.produit.nom}</td>
-              <td>{stock.quantite}</td>
-              <td>{stock.unite}</td>
-              <td>{stock.produit.categorie}</td>
-              <td>{stock.produit.quantiteMinimum}</td>
-              <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-            </tr>
+                      <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
+                        <td>{stock.produit.codeProduit}</td>
+                        <td>{stock.produit.nom}</td>
+                        <td>{stock.quantite}</td>
+                        <td>{stock.unite}</td>
+                        <td>{stock.produit.categorie}</td>
+                        <td>{stock.produit.quantiteMinimum}</td>
+                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -180,27 +200,6 @@ function Stock() {
           </div>
         </section>
       </main>
-      <style>{`
- .stock-low {
-  animation: blink 0.6s infinite alternate ease-in-out;
-  background-color: #f8d7da !important; /* Rose clair pour une alerte */
-  color: #721c24; /* Rouge foncé pour le texte */
-  font-weight: bold;
-  border-radius: 5px;
-  padding: 10px;
-  border: 1px solid #f5c6cb; /* Bordure rouge clair */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin: 10px 0; /* Espacement en haut et en bas */
-}
-
-@keyframes blink {
-  0% { background-color: #f8d7da; opacity: 1; }
-  50% { background-color: #f5c6cb; opacity: 0.8; }
-  100% { background-color: #f8d7da; opacity: 1; }
-}
-
-`}</style>
-
     </>
   );
 }

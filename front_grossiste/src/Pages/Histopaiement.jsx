@@ -116,8 +116,9 @@ function HistoC() {
                         <th>Reference Facture</th>
                         <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
                         <th>Montant Payé</th>
-                        <th>Statut</th>
+                        <th>Statut</th>  <th>Mode de paiement</th>
                         <th>Date de payement</th>
+                       
                         <th>Facture</th>
                       </tr>
                     </thead>
@@ -127,8 +128,22 @@ function HistoC() {
                           <td>{paiement.commandeId?.referenceFacture}</td>
                           <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
                           <td>{paiement.montantPaye} ariary</td>
+                    
                           <td>{paiement.statut}</td>
-                          <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
+                          <td>
+  {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"} 
+  {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
+    <span style={{ color: "red", fontWeight: "bold" }}>
+      {" "} 📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
+    </span>
+  )}
+  {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+    <span style={{ color: "blue", fontWeight: "bold" }}>
+      {" "} 🔢 Réf : {paiement.referencePaiement}
+    </span>
+  )}
+</td>
+  <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
                           <td>
                             <select className="form-control" onChange={(e) => handleFactureChange(e, paiement._id)}>
                               <option>Selectionner la facture</option>

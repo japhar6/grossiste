@@ -81,33 +81,43 @@ const TransfertAdmin = () => {
           <div className="mini-stat p-3 bg-light shadow rounded">
             <h2 className='alert alert-success text-center'>Transfert Inter-Entrepôts</h2>
             <h3>Historique des Transferts</h3>
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+  <div className="form-group col-12 col-md-3 mb-3">
+    <label>Filtrer par Statut:</label>
+    <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
+      <option value="">Tous</option>
+      <option value="en attente">En attente</option>
+      <option value="approuvé">Validé</option>
+      <option value="rejeté">Rejeté</option>
+    </select>
+  </div>
 
-            <label>Filtrer par Statut:</label>
-            <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
-              <option value="">Tous</option>
-              <option value="en attente">En attente</option>
-              <option value="approuvé">Validé</option>
-              <option value="rejeté">Rejeté</option>
-            </select>
+  <div className="form-group col-12 col-md-3 mb-3">
+    <label>Filtrer par Entrepôt Source:</label>
+    <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
+      <option value="">Tous</option>
+      {entrepots.map(entrepot => (
+        <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
+      ))}
+    </select>
+  </div>
 
-            <label>Filtrer par Entrepôt Source:</label>
-            <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
-              <option value="">Tous</option>
-              {entrepots.map(entrepot => (
-                <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
-              ))}
-            </select>
+  <div className="form-group col-12 col-md-3 mb-3">
+    <label>Filtrer par Entrepôt Destination:</label>
+    <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
+      <option value="">Tous</option>
+      {entrepots.map(entrepot => (
+        <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
+      ))}
+    </select>
+  </div>
 
-            <label>Filtrer par Entrepôt Destination:</label>
-            <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
-              <option value="">Tous</option>
-              {entrepots.map(entrepot => (
-                <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
-              ))}
-            </select>
+  <div className="form-group col-12 col-md-3 mb-3">
+    <label>Filtrer par Date:</label>
+    <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
+  </div>
+</div>
 
-            <label>Filtrer par Date:</label>
-            <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
 
             <table className="table table-bordered table-striped">
               <thead className="thead-dark">

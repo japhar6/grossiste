@@ -165,15 +165,6 @@ exports.getPaiementById = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
-
-
 exports.getPaiementsParCaissier = async (req, res) => {
     try {
         const { idCaissier } = req.params;
@@ -186,7 +177,6 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
                     { path: 'commercialId', select: 'nom' }, // Récupérer le nom du commercial
                     { path: 'produits.produit', select: 'nom prixUnitaire' }, // Nom et prix unitaire des produits
-                    { path: 'modePaiement', select: 'modePaiement' } // Récupérer le mode de paiement
                 ]
             });
 
@@ -200,34 +190,36 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     { path: 'produits.produit', select: 'nom prixUnitaire' },
                     { path: 'modePaiement', select: 'modePaiement' }
                 ]
-            })   ;
+            });
 
         // Combiner les deux résultats
         const paiements = {
-            clients: paiementsClients.map(paiement => {
-                const modePaiementClient = paiement.commandeId?.modePaiement || 'Inconnu';
-                return {
-                    ...paiement.toObject(),
-                    clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
-                    produits: paiement.commandeId?.produits?.map(produit => ({
-                        nom: produit.produit.nom,
-                        prixUnitaire: produit.produit.prixUnitaire
-                    })) || [],
-                    modePaiement: modePaiementClient
-                };
-            }),
-            commerciaux: paiementsCommerciaux.map(paiement => {
-                const modePaiementCommercial = paiement.commandeId?.modePaiement || 'Inconnu';
-                return {
-                    ...paiement.toObject(),
-                    commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu',
-                    produits: paiement.commandeId?.produits?.map(produit => ({
-                        nom: produit.produit.nom,
-                        prixUnitaire: produit.produit.prixUnitaire
-                    })) || [],
-                    modePaiement: modePaiementCommercial
-                };
-            })
+            clients: paiementsClients.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                produits: paiement.commandeId?.produits?.map(produit => ({
+                    nom: produit.produit.nom,
+                    prixUnitaire: produit.produit.prixUnitaire
+                })) || [],
+                modePaiement: paiement.modePaiement || 'Inconnu',
+                dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
+                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire') 
+                    ? paiement.referencePaiement 
+                    : null
+            })),
+            commerciaux: paiementsCommerciaux.map(paiement => ({
+                ...paiement.toObject(),
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu',
+                produits: paiement.commandeId?.produits?.map(produit => ({
+                    nom: produit.produit.nom,
+                    prixUnitaire: produit.produit.prixUnitaire
+                })) || [],
+                modePaiement: paiement.commandeId?.modePaiement || 'Inconnu',
+                dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
+                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire') 
+                    ? paiement.referencePaiement 
+                    : null
+            }))
         };
 
         res.status(200).json(paiements);
@@ -235,7 +227,6 @@ exports.getPaiementsParCaissier = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 
 exports.getPerformanceVenteParMois = async (req, res) => {

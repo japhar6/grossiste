@@ -5,11 +5,13 @@ import Swal from "sweetalert2";
 import "../Styles/HistoC.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-
+import audio from '../assets/mixkit-software-interface-start-2574.wav';
 function HistoC() {
     const [paiements, setPaiements] = useState({ clients: [], commerciaux: [] });
     const [filtreNomCaissier, setFiltreNomCaissier] = useState("");
 
+    
+  const notificationSound = new Audio(audio);
   const [filtreType, setFiltreType] = useState("both");
   const [date, setDate] = useState("");
   const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
@@ -32,6 +34,7 @@ function HistoC() {
 
     fetchPaiements();
   }, [caissierId]);
+  
 
   const getFilteredPaiements = () => {
     const allPaiements = [
@@ -61,7 +64,23 @@ function HistoC() {
   
 
   const filteredPaiements = getFilteredPaiements();
-
+    useEffect(() => {
+      const paiementsEnRetard = filteredPaiements.filter(paiement => 
+        paiement.modePaiement === "a credit" &&
+        paiement.dateLimiteCredit &&
+        new Date(paiement.dateLimiteCredit) <= new Date()
+      );
+    
+      if (paiementsEnRetard.length > 0) {
+        Swal.fire({
+          title: "⚠️ Paiements en retard !",
+          text: `Il y a ${paiementsEnRetard.length} paiement(s) à crédit arrivés à échéance.`,
+          icon: "warning",
+          confirmButtonText: "Voir la liste",
+        });  notificationSound.play();
+      }
+    }, [filteredPaiements]);
+  
   return (
     <>
       <header></header>
@@ -184,7 +203,20 @@ function HistoC() {
                           <td>{paiement.commandeId?.referenceFacture}</td>
                           <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
                           <td>{paiement.montantPaye} ariary</td>
-                          <td>{paiement.modePaiement ? paiement.modePaiement : "Non spécifié"} </td>
+                          <td>
+  {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"} 
+  {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
+    <span style={{ color: "red", fontWeight: "bold" }}>
+      {" "} 📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
+    </span>
+  )}
+  {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+    <span style={{ color: "blue", fontWeight: "bold" }}>
+      {" "} 🔢 Réf : {paiement.referencePaiement}
+    </span>
+  )}
+</td>
+
                           <td>{paiement.statut}</td>
                           <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
 

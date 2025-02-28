@@ -9,8 +9,8 @@ const paiementSchema = new mongoose.Schema({
     montantPaye: {
         type: Number,
         required: true
-    },
-    referencePaiement: {
+    },referencePaiement:
+   {
         type: String,
         required: function() { 
             return this.modePaiement === "mobile money" || this.modePaiement === "virement bancaire";

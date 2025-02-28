@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom"; // Importer le hook useNavigate
 import '../Styles/Navbar.css';
 import audio from '../assets/mixkit-happy-bells-notification-937.wav';
 
+
 function Header() {
   const [email, setEmail] = useState("");
   const [currentTime, setCurrentTime] = useState("");

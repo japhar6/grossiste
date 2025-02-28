@@ -17,7 +17,18 @@ const Transfert = () => {
   const [showModalReception, setShowModalReception] = useState(false);
   const [transfertId, setTransfertId] = useState(null);
   const [quantiteEnvoyee, setQuantiteEnvoyee] = useState(0); // État pour la quantité envoyée
+  const [entrepotSource, setEntrepotSource] = useState(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userid");
+  
+    axios.get(`/api/entrepot/recuperer/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(response => {
+      setEntrepotSource(response.data);  // Stocker l'entrepôt source du magasinier
+    }).catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
+  }, []);
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userid");
@@ -34,22 +45,36 @@ const Transfert = () => {
       .catch(() => toast.error("Erreur lors du chargement des stocks."));
   }, [entrepot]);
 
+  
   useEffect(() => {
-    axios.get('/api/entrepot')
-      .then(response => setEntrepots(response.data));
-    fetchHistoriqueTransferts();
-  }, []);
-
-  const fetchHistoriqueTransferts = () => {
     axios.get('/api/transfert/recup')
-      .then(response => setHistoriqueTransferts(response.data));
-  };
+    .then(response => {
+      const filteredTransfers = response.data.filter((transfert) =>
+        transfert.entrepotSource._id === entrepotSource._id || transfert.entrepotDestination._id === entrepotSource._id
+      );
+      setHistoriqueTransferts(filteredTransfers);
+    });
+}, [entrepotSource]);
+const fetchHistoriqueTransferts = () => {
+  axios.get('/api/transfert/recup')
+    .then(response => {
+      const filteredTransfers = response.data.filter((transfert) =>
+        transfert.entrepotSource._id === entrepotSource._id || transfert.entrepotDestination._id === entrepotSource._id
+      );
+      setHistoriqueTransferts(filteredTransfers);
+    })
+    .catch(error => {
+      // Ajoute un gestionnaire d'erreurs pour une meilleure gestion des exceptions
+      toast.error("Erreur lors de la récupération des transferts.");
+    });
+};
 
+  
   const handleValidation = (id, statut) => {
     axios.put(`/api/transfert/valider/${id}`, { statut })
       .then(() => {
         toast.success(`Transfert ${statut.toLowerCase()} avec succès.`);
-        fetchHistoriqueTransferts();
+
       }).catch(() => toast.error('Erreur de validation.'));
   };
 
@@ -61,9 +86,15 @@ const Transfert = () => {
   };
 
   const filteredTransferts = historiqueTransferts.filter(transfert =>
-    statutFiltre ? transfert.statut === statutFiltre : true
+    statutFiltre ? transfert.statutAdmin === statutFiltre : true
   );
 
+  const handleRecevoirButtonVisibility = (transfert) => {
+    // Vérifier si l'entrepôt destinataire correspond à l'entrepôt du magasinier connecté
+    return transfert.entrepotDestination?._id === entrepotSource?._id && 
+      transfert.statutAdmin === 'approuvé' && 
+      transfert.statutEntrepotDestination !== 'reçu';
+  };
   return (
     <main className="center">
       <Sidebar />
@@ -79,9 +110,9 @@ const Transfert = () => {
             <label>Filtrer par Statut:</label>
             <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
               <option value="">Tous</option>
-              <option value="En attente">En attente</option>
-              <option value="Validé">Validé</option>
-              <option value="Rejeté">Rejeté</option>
+              <option value="en attente">En attente</option>
+              <option value="approuvé">Validé</option>
+              <option value="rejeté">Rejeté</option>
             </select>
 
             <table className="table table-bordered table-striped">
@@ -106,12 +137,13 @@ const Transfert = () => {
                     <td>{new Date(transfert.dateTransfert).toLocaleDateString()}</td>
                     <td>{transfert.statutAdmin}</td>
                     <td>
-                      {transfert.statutAdmin === 'approuvé' && transfert.statutEntrepotDestination !== 'reçu' && (
-                        <button className="btn btn-primary btn-sm" onClick={() => openReceptionModal(transfert._id, transfert.quantitéEnvoyée, transfert.entrepotDestination)}>
-                          Recevoir
-                        </button>
-                      )}
-                    </td>
+        {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
+        {handleRecevoirButtonVisibility(transfert) && (
+          <button className="btn btn-primary btn-sm" onClick={() => openReceptionModal(transfert._id, transfert.quantitéEnvoyée, transfert.entrepotDestination)}>
+            Recevoir
+          </button>
+        )}
+      </td>
                   </tr>
                 ))}
               </tbody>
