@@ -26,6 +26,8 @@ function Stock() {
   const userId = localStorage.getItem("userid");
   const nom = localStorage.getItem("nom");
 
+ 
+  
  const handleUniteChange = (produitId, nouvelleUnite) => {
     const produit = stocks.find(stock => stock.produit._id === produitId);
     const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
@@ -51,7 +53,14 @@ function Stock() {
     }));
   };
   
-
+  const convertirQuantiteMinimum = (quantiteMinimum, uniteSource, uniteCible) => {
+    const source = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteSource));
+    const cible = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteCible));
+    if (!source || !cible) return quantiteMinimum;
+    const ratio = source.produit.unites.find(u => u.nom === uniteSource).conversion /
+                  cible.produit.unites.find(u => u.nom === uniteCible).conversion;
+    return quantiteMinimum * ratio;
+  };
   // Récupère tous les entrepôts à l'initialisation
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -117,6 +126,10 @@ function Stock() {
       (dateFilter === '' || new Date(stock.dateEntree).toISOString().split('T')[0] === dateFilter)
     );
   });
+  const isRuptureDeStock = (stock) => {
+
+    return stock.quantite < stock.produit.quantiteMinimum;
+  };
 
   const sortedStocks = [...filteredStocks].sort((a, b) => {
     if (sortBy === 'nom') {
@@ -226,11 +239,12 @@ function Stock() {
                   </thead>
                   <tbody>
                     {sortedStocks.map(stock => (
-                      <tr key={stock._id} className={stock.quantité < stock.produit.quantiteMinimum ? 'stock-low' : ''}>
-                        <td>{stock.produit.codeProduit}</td>
+                    <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
+                         <td>{stock.produit.codeProduit}</td>
                         <td>{stock.produit.nom}</td>
-                        <td>{quantiteAffichee[stock.produit._id]}</td>
-                      <td>
+                        <td>
+  {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
+</td>         <td>
                         <select
                           value={uniteSelectionnee[stock.produit._id] || ''}
                           onChange={(e) => handleUniteChange(stock.produit._id, e.target.value)}
@@ -244,8 +258,12 @@ function Stock() {
                         </select>
                       </td>
                         <td>{stock.produit.categorie}</td>
-                        <td>{stock.produit.quantiteMinimum}</td>
-                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                        <td>{stock.produit.quantiteMinimum} {stock.unite}</td>
+                    <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                    <td>
+        {isRuptureDeStock(stock) && <span className="text-danger">Rupture de stock</span>}
+      </td>
+                      
                       </tr>
                     ))}
                   </tbody>

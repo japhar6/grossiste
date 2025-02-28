@@ -180,7 +180,7 @@ useEffect(() => {
         description: nouveauProduit.description,
         categorie: categorieFinale,
         fournisseur: fourID,
-        quantiteMinimum: parseInt(nouveauProduit.quantiteMinimum), // Assurez-vous que c'est un entier
+        quantiteMinimum, // Assurez-vous que c'est un entier
         prixDachat: parseFloat(nouveauProduit.prixDachat), // Assurez-vous que c'est un nombre
         unites: nouveauProduit.unites, // Assurez-vous que c'est un tableau d'unités
     };
@@ -811,15 +811,6 @@ const validerPanier = async () => {
                      />
                  </div>
              
-                 <div className="form-group">
-                     <input
-                         type="number"
-                         className="form-control mt-2"
-                         placeholder="Quantité minimum"
-                         value={nouveauProduit.quantiteMinimum}
-                         onChange={(e) => setNouveauProduit({ ...nouveauProduit, quantiteMinimum: e.target.value })}
-                     />
-                 </div>
              
                  {/* Gestion des unités */}
                  <h6 className="mt-3">Unités</h6>

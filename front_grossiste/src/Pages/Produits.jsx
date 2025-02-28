@@ -267,7 +267,10 @@ function ListeProduits() {
                                     placeholder={produit.quantiteMinimum}
                                   />
                                 ) : (
-                                  <span style={{ color: 'black' }}>{produit.quantiteMinimum ?? 0} unités</span>
+                                  <span style={{ color: 'black' }}>
+                                  {produit.quantiteMinimum ?? 0} {produit.unites.reduce((min, unite) => 
+                                    unite.conversion > min.conversion ? unite : min, produit.unites[0]).nom}
+                                </span>
                                 )}
                               </td>
                               <td>
