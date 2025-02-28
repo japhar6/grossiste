@@ -26,25 +26,19 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
             
 
               // Définir l'état pour les produits sélectionnés
-              const [selectedProducts, setSelectedProducts] = useState([]);
-              const [quantiteDispo, setQuantiteDispo] = useState([]); 
                 const [commande, setCommande] = useState([]);
                 const [typeQuantite, setTypeQuantite] = useState("");
-              
+                const [selectedId, setSelectedId] = useState("");
                 const [type, setType] = useState(""); 
               const [isNew, setIsNew] = useState(false); 
               const [selectedPerson, setSelectedPerson] = useState("");
               const [clients, setClients] = useState([]);
               const [commerciaux, setCommerciaux] = useState([]);
               const [checkedProduits, setCheckedProduits] = useState({});
-              const [selectedId, setSelectedId] = useState("");
               const [produits, setProduits] = useState([]);
               const [searchTerm, setSearchTerm] = useState("");
               const [categorie, setCategorie] = useState("");
               const [categories, setCategories] = useState([]);
-
-              const [selectedProduit, setSelectedProduit] = useState(null); 
-
               const [remisesClient, setRemisesClient] = useState(null);
               const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
               
@@ -233,208 +227,92 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                   return matchesRecherche && matchesCategorie;
                                 });
 
-                                const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
+                                const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
                                   // Ne rien faire si la quantité demandée est inférieure ou égale à 0
                                   if (quantite <= 0) return;
                                 
-                                  const fetchQuantite = async () => {
-                                    try {
-                                      // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
-                                      const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
-                                      const quantiteDisponible = response.data.quantiteDisponible;
+                                  try {
+                                    // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
+                                    const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
+                                    const quantiteDisponible = response.data.quantiteDisponible;
                                 
-                                      // Comparer la quantité demandée avec la quantité disponible
-                                      if (isChecked) {
-                                        if (quantite > quantiteDisponible) {
-                                          const result = await Swal.fire({
-                                            title: 'Quantité Insuffisante',
-                                            text: `Il n'en reste que (${quantiteDisponible}) dans l'entrepôt principal.`,
-                                            icon: 'warning',
-                                            showCancelButton: true,
-                                            confirmButtonText: 'OK',
-                                            cancelButtonText: 'Choisir un autre entrepôt',
-                                            customClass: {
-                                              confirmButton: 'btn btn-success', // Ajoutez une classe CSS pour le bouton de confirmation
-                                              cancelButton: 'btn btn-danger' // Ajoutez une classe CSS pour le bouton d'annulation
-                                            },
-                                            buttonsStyling: false, 
-                                          });
+                                    // Comparer la quantité demandée avec la quantité disponible
+                                    if (isChecked) {
+                                      if (quantite > quantiteDisponible) {
+                                        const result = await Swal.fire({
+                                          title: 'Quantité Insuffisante',
+                                          text: `Il n'en reste que (${quantiteDisponible}) dans l'entrepôt principal.`,
+                                          icon: 'warning',
+                                          showCancelButton: true,
+                                          confirmButtonText: 'OK',
+                                          cancelButtonText: 'Choisir un autre entrepôt',
+                                          customClass: {
+                                            confirmButton: 'btn btn-success', 
+                                            cancelButton: 'btn btn-danger'
+                                          },
+                                          buttonsStyling: false,
+                                        });
                                 
-                                          if (result.isConfirmed) {
-                                            // L'utilisateur a cliqué sur "OK"
+                                        if (result.isConfirmed) {
+                                          // L'utilisateur a cliqué sur "OK"
+                                          return; // Ne pas ajouter à la commande
+                                        } else if (result.isDismissed) {
+                                          // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
+                                          const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
+                                          const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
+                                
+                                          if (quantite > quantiteDisponibleSecondaire) {
+                                            Swal.fire({
+                                              title: 'Quantité Insuffisante',
+                                              text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans les autres entrepôts.`,
+                                              icon: 'warning',
+                                              confirmButtonText: 'OK',
+                                            });
                                             return; // Ne pas ajouter à la commande
-                                          } else if (result.isDismissed) {
-                                            // L'utilisateur a cliqué sur "Choisir un autre entrepôt"
-                                            const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
-                                            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
-                                
-                                            // Logique pour traiter la disponibilité dans les autres entrepôts
-                                            // Vous pouvez ici ajouter une alerte ou d'autres actions si nécessaire
-                                            if (quantite > quantiteDisponibleSecondaire) {
-                                              Swal.fire({
-                                                title: 'Quantité Insuffisante',
-                                                text: `Il n'en reste que (${quantiteDisponibleSecondaire}) dans les autres entrepôts.`,
-                                                icon: 'warning',
-                                                confirmButtonText: 'OK',
-                                              });
-                                              return; // Ne pas ajouter à la commande
-                                            } else {
-                                              // Ajoutez à la commande si la quantité est disponible dans les autres entrepôts
-                                              setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-                                              setCommande((prevCommande) => {
-                                                const existant = prevCommande.find((item) => item._id === produit._id);
-                                                if (existant) {
-                                                  return prevCommande.map((item) =>
-                                                    item._id === produit._id
-                                                      ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                                                      : item
-                                                  );
-                                                } else {
-                                                  return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
-                                                }
-                                              });
-                                            }
+                                          } else {
+                                            // Ajouter à la commande si la quantité est disponible dans les autres entrepôts
+                                            setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                            setCommande((prevCommande) => {
+                                              const existant = prevCommande.find((item) => item._id === produit._id);
+                                              const unite = produit.uniteChoisie || (produit.unites && produit.unites.length > 0 ? produit.unites[0].nom : "Unité par défaut");
+                                              if (existant) {
+                                                return prevCommande.map((item) =>
+                                                  item._id === produit._id
+                                                    ? { ...item, quantite: item.quantite + quantite, typeQuantite, unite }
+                                                    : item
+                                                );
+                                              } else {
+                                                return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente, unite }];
+                                              }
+                                            });
                                           }
-                                        } else {
-                                          // Si la quantité est suffisante dans l'entrepôt principal
-                                          setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-                                          setCommande((prevCommande) => {
-                                            const existant = prevCommande.find((item) => item._id === produit._id);
-                                            if (existant) {
-                                              return prevCommande.map((item) =>
-                                                item._id === produit._id
-                                                  ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                                                  : item
-                                              );
-                                            } else {
-                                              return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
-                                            }
-                                          });
                                         }
                                       } else {
-                                        // Si la case à cocher est désactivée, retirer le produit de la commande
-                                        setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
-                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
+                                        // Si la quantité est suffisante dans l'entrepôt principal
+                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+                                        setCommande((prevCommande) => {
+                                          const existant = prevCommande.find((item) => item._id === produit._id);
+                                          if (existant) {
+                                            return prevCommande.map((item) =>
+                                              item._id === produit._id
+                                                ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                                                : item
+                                            );
+                                          } else {
+                                            return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+                                          }
+                                        });
                                       }
-                                    } catch (error) {
-                                      console.error("Erreur lors de la récupération de la quantité disponible", error);
+                                    } else {
+                                      // Si la case à cocher est désactivée, retirer le produit de la commande
+                                      setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
+                                      setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
                                     }
-                                  };
-                                
-                                  fetchQuantite(); // Appeler la fonction pour récupérer la quantité
-                                };
-                                
-
-
-                                    const handleKeyDown = (produit, e) => {
-                                      if (e.key === "Enter") {
-                                        handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
-                                      }
-                                    };
-
-                                    const validerCommande = async () => {
-                                      if (!selectedPerson || commande.length === 0) {
-                                          Swal.fire("Erreur", "Veuillez sélectionner un client/commercial et ajouter des produits", "error");
-                                          return;
-                                      }
-                                  
-                                  
-                                  
-                                      const vendeurId = localStorage.getItem("userid"); 
-                                      if (!vendeurId) {
-                                          Swal.fire("Erreur", "ID du vendeur introuvable. Veuillez vous reconnecter.", "error");
-                                          return;
-                                      }
-                                  
-                                      const isCommercial = type === "commercial"; 
-                                      const typeClient = isCommercial ? "Commercial" : "Client";
-                                  
-                                      const produitsInvalides = commande.filter(prod => !prod._id || prod.quantite <= 0);
-                                      if (produitsInvalides.length > 0) {
-                                          Swal.fire("Erreur", "Tous les produits doivent avoir un ID valide et une quantité positive.", "error");
-                                          return;
-                                      }
-                                  
-                                    const nouvelleCommande = {
-                                    typeClient,
-                                    commercialId: isCommercial ? selectedPerson : null,
-                                    clientId: !isCommercial ? selectedPerson : null,
-                                    vendeurId,
-                                    produits: commande.map(prod => ({
-                                        produit: prod._id,
-                                        quantite: prod.quantite,
-                                        prixUnitaire: prod.prix,
-                                            prixApresRemise: calculerPrixApresRemise(prod, typeRemise, valeurRemise),  // Calculer et ajouter le prix après remise
-                                    })),
-                                  
-                                    statut: "en cours",
-                                    typeRemise,
-                                    valeurRemise,
-                                    totalGeneral: commande.reduce((total, prod) => total + (calculerPrixApresRemise(prod, typeRemise, valeurRemise) * prod.quantite), 0) // Calculer le total général après remise
-                                };
-                                
-                                console.log("Commande prête à être envoyée :", nouvelleCommande);
-                                
-                                try {
-                                  const response = await axios.post("/api/commandes/ajouter", nouvelleCommande);
-                              
-                                  if (response.data) {
-                                      const commande = response.data.commande; // Récupérer la commande retournée par l'API
-                                      console.log("Commande après enregistrement :", commande);
-                              
-                                      // Vérification de la valeur de la remise renvoyée
-                                      console.log("Valeur de la remise renvoyée par l'API : ", commande.valeurRemise);  // Vérifier ce que l'API renvoie.
-                              
-                                      // Affichage des informations sur la remise et le prix après remise
-                                      commande.forEach(prod => {
-                                        console.log(prod);
-                                        if (!prod.prixdevente) {
-                                            console.error("Le produit n'a pas de prix unitaire défini:", prod);
-                                        }
-                                    });
-                                    
-                              
-                                      // Affichage de la remise globale si applicable
-                                      if (commande.typeRemise === "remiseGlobale") {
-                                          console.log(`Remise Globale Appliquée: ${commande.valeurRemise}%`);
-                                      }
-                              
-                                      // Affichage de la valeurRemise
-                                      if (commande.valeurRemise !== undefined) {
-                                          console.log(`Valeur de la Remise : ${commande.valeurRemise}`);  // Affichage de la remise
-                                      } else {
-                                          console.log("Valeur de la Remise est undefined.");
-                                      }
-                              
-                                      Swal.fire({
-                                          title: "Commande validée",
-                                          text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${commande.referenceFacture}`,
-                                          icon: "success",
-                                          confirmButtonText: "OK"
-                                      }).then(() => {
-                                          // Réinitialisation des champs
-                                          setCommande([]);
-                                          setSelectedPerson("");
-                                          setModePaiement("");
-                                          setSearchTerm("");
-                                          setSelectedProducts([]);
-                                          setCheckedProduits({});
-                                      });
+                                  } catch (error) {
+                                    console.error("Erreur lors de la récupération de la quantité disponible", error);
                                   }
-                              } catch (error) {
-                                  console.error("Erreur lors de l'enregistrement de la commande", error.response ? error.response.data : error.message);
-                                  Swal.fire("Erreur", "Une erreur s'est produite lors de l'enregistrement de la commande", "error");
-                              }                             
-                                  
-                                                                   
-                                };                                  
-                              
-                              
-                              
-                              const handleProduitSelect = (produit) => {
-                                console.log("Produit sélectionné:", produit);
-                                setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
-                              };
+                                };
+     
                                   
                                   const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
                                   const valeurRemise = typeRemise === "remiseGlobale"
@@ -473,6 +351,80 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
                                     }
                                     return totalCommande;
                                   };
+
+                                  const creerCommande = async () => {
+                                    try {
+                                      const vendeurId = localStorage.getItem("userid");
+                                      const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
+                                      
+                                      if (!selectedPersonId) {
+                                        Swal.fire({
+                                          title: "Erreur",
+                                          text: "Aucun client ou commercial sélectionné.",
+                                          icon: "error",
+                                          confirmButtonText: "OK",
+                                        });
+                                        return;
+                                      }
+                                      
+                                      const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
+                                      const commercialId = type === "commercial" ? selectedPersonId : null;
+                                      const typeClient = type === "client" ? "Client" : "Commercial";
+                                      const statut = "en cours"; // Le statut initial de la commande
+                                      
+                                      if (!vendeurId) {
+                                        Swal.fire({
+                                          title: "Erreur",
+                                          text: "ID du vendeur non trouvé.",
+                                          icon: "error",
+                                          confirmButtonText: "OK",
+                                        });
+                                        return;
+                                      }
+                                      
+                                      // Crée les produits à partir de l'état de commande
+                                      const produitsCommande = commande.map((item) => ({
+                                        produit: item._id,
+                                        quantite: item.quantite,
+                                        uniteChoisie: item.uniteChoisie || "Unité par défaut", // Si une unité est choisie, sinon "Unité par défaut"
+                                      }));
+                                  
+                                      // Préparer les données de la commande
+                                      const commandeData = {
+                                        typeClient,
+                                        clientId: typeClient === "Client" ? clientId : null, // Dynamique selon le type de client
+                                        commercialId: typeClient === "Commercial" ? commercialId : null, // Dynamique pour commercial
+                                        vendeurId,
+                                        produits: produitsCommande,
+                                        statut,
+                                      };
+                                  
+                                      // Envoie la requête API pour créer la commande
+                                      const response = await axios.post("/api/commandes/ajouter", commandeData);
+                                      console.log("Commande créée avec succès:", response.data);
+                                      
+                                      // Affichage d'une notification de succès
+                                      Swal.fire({
+                                        title: "Commande créée avec succès",
+                                        text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
+                                        icon: "success",
+                                        confirmButtonText: "OK",
+                                      });
+                                  
+                                      // Réinitialisation de la commande après la création
+                                      setCommande([]);
+                                      
+                                    } catch (error) {
+                                      console.error("Erreur lors de la création de la commande:", error);
+                                      Swal.fire({
+                                        title: "Erreur",
+                                        text: "Une erreur s'est produite lors de la création de la commande.",
+                                        icon: "error",
+                                        confirmButtonText: "OK",
+                                      });
+                                    }
+                                  };
+                                  
                                   const getClientNom = (id) => {
                                     const client = clients.find(client => client._id === id);
                                     return client ? client.nom : '';
@@ -482,37 +434,43 @@ const vendeurNom = localStorage.getItem("nom");
 const vendeurId = localStorage.getItem("userid"); 
 console.log("Nom du vendeur:", vendeurNom); 
 console.log("Vendeur ID:", vendeurId);
-const handleDemandeRemise = async () => {
-  if (!selectedPerson) {
-    alert("Veuillez sélectionner un client !");
-    return;
-  }
+                                  const handleDemandeRemise = async () => {
+                                    if (!selectedPerson) {
+                                      alert("Veuillez sélectionner un client !");
+                                      return;
+                                    }
 
-  // Vérifie que l'ID du vendeur est correct
+                                    // Vérifie que l'ID du vendeur est correct
 
-  const clientNom = getClientNom(selectedPerson); // Récupérer le nom du client
-  console.log("Nom du client:", clientNom); // Vérifie que le nom du client est correct
-  
+                                    const clientNom = getClientNom(selectedPerson); // Récupérer le nom du client
+                                    console.log("Nom du client:", clientNom); // Vérifie que le nom du client est correct
+                                    
 
+                                    console.log("Message de notification:", `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`);
+                                    
+                                    if (!vendeurNom) {
+                                      alert("Nom du vendeur non trouvé dans localStorage.");
+                                      return;
+                                    }
 
-  if (!vendeurNom) {
-    alert("Nom du vendeur non trouvé dans localStorage.");
-    return;
-  }
+                                    try {
+                                      const response = await axios.post("/api/notif/envoie-notifications", {
+                                        message: `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`
+                                      }, {
+                                        headers: {
+                                          "Content-Type": "application/json"
+                                        }
+                                      });
+                                      
+                                      
 
-  try {
-    const response = await axios.post("api/notif/envoie-notifications", {
-    
-      message: `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`
-    });
-
-    console.log("Réponse de l'API:", response.data); // Affiche la réponse de l'API
-    alert("Demande de remise envoyée !");
-  } catch (error) {
-    console.error("Erreur lors de l'envoi de la notification", error);
-    alert("Une erreur est survenue. Veuillez réessayer.");
-  }
-};
+                                      console.log("Réponse de l'API:", response.data); // Affiche la réponse de l'API
+                                      alert("Demande de remise envoyée !");
+                                    } catch (error) {
+                                      console.error("Erreur lors de l'envoi de la notification", error);
+                                      alert("Une erreur est survenue. Veuillez réessayer.");
+                                    }
+                                  };
 
 
                                   
@@ -773,24 +731,65 @@ const handleDemandeRemise = async () => {
                                                                 <td className="margin-left-mobile">{p.nom}</td>
                                                                 <td className="margin-left-mobile">{p.categorie}</td>
                                                                 <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
-                                                                  <td>
-                                                                    <input
-                                                                      type="number"
-                                                                      min="1"
-                                                                      className="form-control"
-                                                                      onChange={(e) => (p.quantiteTemp = parseInt(e.target.value) || 1)}
-                                                                      onKeyDown={(e) => handleKeyDown(p, e)}
-                                                                    />
-                                                                  </td>
-                                                                                <td>
-                                                                      <input
-                                                                        type="text"
-                                                                        className="form-control"
-                                                                        value={p.unite || 'Non spécifiée'} 
-               
-                                                                        readOnly
-                                                                      />
-                                                                    </td>
+<td>
+  <input
+    type="number"
+    min="1"
+    className="form-control"
+    onChange={(e) => {
+      const updatedProduit = { ...p };  // Crée une copie de l'objet produit
+      updatedProduit.quantiteTemp = parseInt(e.target.value) || 1;
+      setProduits((prevProduits) =>
+        prevProduits.map((prod) =>
+          prod._id === updatedProduit._id ? updatedProduit : prod
+        )
+      );
+    }}
+    onKeyDown={(e) => handleKeyDown(p, e)}
+  />
+</td>
+<td>
+<select
+  className="form-control"
+  onChange={(e) => {
+    const selectedUnite = e.target.value;
+    const updatedProduit = { ...p }; // Crée une copie de l'objet produit
+
+    // Met à jour l'unité temporaire dans la copie du produit
+    updatedProduit.uniteChoisie = selectedUnite;
+
+    // Recherche l'unité sélectionnée dans la liste des unités
+    const selectedUniteObj = updatedProduit.unites.find((unite) => unite.nom === selectedUnite);
+
+    // Si une unité valide est trouvée, met à jour le prix
+    if (selectedUniteObj) {
+      updatedProduit.prixdevente = selectedUniteObj.prixdevente; // Mise à jour du prix
+    } else {
+      console.error(`Unité introuvable pour le produit ${updatedProduit.nom}`);
+    }
+
+    // Met à jour l'état avec la copie modifiée du produit
+    setProduits((prevProduits) =>
+      prevProduits.map((prod) =>
+        prod._id === updatedProduit._id ? updatedProduit : prod
+      )
+    );
+  }}
+  value={p.uniteChoisie || ""}
+>
+  <option value="">Veuillez sélectionner l'unité</option>
+  {p.unites && p.unites.length > 0 ? (
+    p.unites.map((unite, index) => (
+      <option key={index} value={unite.nom}>
+        {unite.nom}
+      </option>
+    ))
+  ) : (
+    <option value="">Pas d'unité disponible</option>
+  )}
+</select>
+
+</td>
                                                                   <td>
                                                                     <div className="input-checkbox-container">
                                                                     <input
@@ -846,7 +845,7 @@ const handleDemandeRemise = async () => {
           <tr key={index}>
             <td>{item.nom}</td>
             <td>{item.quantite}</td>
-            <td>{item.unite}</td>
+            <td>{item.uniteChoisie}</td>
             <td>{item.prixdevente} Ariary</td>
             <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
             <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
@@ -862,7 +861,7 @@ const handleDemandeRemise = async () => {
   <h6 className="total">
     Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
   </h6>
-  <button className="btn btn-success mt-3" onClick={validerCommande}>
+  <button className="btn btn-success mt-3" onClick={creerCommande}>
     Enregistrer la Commande
   </button>
 </div>

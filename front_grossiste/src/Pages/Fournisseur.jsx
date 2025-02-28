@@ -56,7 +56,7 @@ function Fournisseur() {
     formData.append("contact[email]", email);
     formData.append("contact[adresse]", adresse);
   
-    // Assurer que les champs "ristourne" et "typeRistourne" sont ajoutés
+    // Si le type est "ristourne", ajouter les conditions
     if (type === "ristourne") {
       if (ristourne && typeRistourne) {  // Vérifie que ces champs existent
         formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
@@ -65,6 +65,11 @@ function Fournisseur() {
         Swal.fire("Erreur", "Les informations de ristourne sont incomplètes.", "error");
         return;  // Empêche l'envoi si les informations sont manquantes
       }
+    }
+  
+    // Si le type est "prix_libre", ne pas inclure de ristourne
+    if (type === "prix_libre") {
+      console.log("Aucune ristourne à ajouter pour les fournisseurs à prix libre.");
     }
   
     if (logo) {

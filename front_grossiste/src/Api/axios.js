@@ -10,7 +10,7 @@ const instance = axios.create({
   headers: {
      // Ajoute le token d'authentification
      'Content-Type': 'application/json',
-       "Content-Type": "multipart/form-data"// Spécifie que le contenu est au format JSON
+     
   },
 });
 
