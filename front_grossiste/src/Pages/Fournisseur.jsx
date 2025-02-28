@@ -8,18 +8,19 @@ import Header from "../Components/Navbar";
 function Fournisseur() {
   const [fournisseurs, setFournisseurs] = useState([]); 
   const [filteredFournisseurs, setFilteredFournisseurs] = useState([]);
-  const [nom, setNom] = useState("");
-  const [type, setType] = useState("");
-  const [telephone, setTelephone] = useState("");
-  const [email, setEmail] = useState("");
-  const [adresse, setAdresse] = useState("");
-  const [ristourne, setRistourne] = useState("");
+  const [nom, setNom] = useState('');
+  const [type, setType] = useState('');
+  const [telephone, setTelephone] = useState('');
+  const [email, setEmail] = useState('');
+  const [adresse, setAdresse] = useState('');
+  const [ristourne, setRistourne] = useState('');
+  const [typeRistourne, setTypeRistourne] = useState('');
   const [logo, setLogo] = useState(null);
+  
   const [editingId, setEditingId] = useState(null);
   const nomRef = useRef(null);
   const [filterNom, setFilterNom] = useState("");  
-  const [typeRistourne, setTypeRistourne] = useState(""); // Nouveau champ pour le type de ristourne
-
+  
   const [filterType, setFilterType] = useState(""); 
 
   useEffect(() => {
@@ -35,34 +36,60 @@ function Fournisseur() {
       console.error("Erreur lors de la récupération des fournisseurs", error);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Vérifie si toutes les valeurs sont présentes
+    console.log("Nom: ", nom);
+    console.log("Type: ", type);
+    console.log("Ristourne: ", ristourne);
+    console.log("TypeRistourne: ", typeRistourne);
+    console.log("Telephone: ", telephone);
+    console.log("Email: ", email);
+    console.log("Adresse: ", adresse);
+    console.log("Logo: ", logo);
+  
     const formData = new FormData();
     formData.append("nom", nom);
     formData.append("type", type);
     formData.append("contact[telephone]", telephone);
     formData.append("contact[email]", email);
     formData.append("contact[adresse]", adresse);
-    
+  
+    // Si le type est "ristourne", ajouter les conditions
     if (type === "ristourne") {
-      formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
-      formData.append("conditions[typeRistourne]", typeRistourne); // Corriger ici
+      if (ristourne && typeRistourne) {  // Vérifie que ces champs existent
+        formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
+        formData.append("conditions[typeRistourne]", typeRistourne);
+      } else {
+        Swal.fire("Erreur", "Les informations de ristourne sont incomplètes.", "error");
+        return;  // Empêche l'envoi si les informations sont manquantes
+      }
     }
-    
+  
+    // Si le type est "prix_libre", ne pas inclure de ristourne
+    if (type === "prix_libre") {
+      console.log("Aucune ristourne à ajouter pour les fournisseurs à prix libre.");
+    }
+  
     if (logo) {
       formData.append("logo", logo);
     }
   
-    console.log("FormData à soumettre : ", formData); // Ajoute ceci
+    // Log FormData avant l'envoi
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
   
     try {
       if (editingId) {
+        // Modification
         await axios.put(`/api/fournisseurs/${editingId}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Modifié!", "Le fournisseur a été modifié avec succès.", "success");
       } else {
+        // Ajout
         await axios.post("/api/fournisseurs", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -72,7 +99,12 @@ function Fournisseur() {
       resetForm();
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du fournisseur", error);
-      Swal.fire("Erreur", "Une erreur est survenue lors de l'enregistrement du fournisseur.", "error");
+      if (error.response) {
+        console.error("Réponse de l'erreur : ", error.response);
+        Swal.fire("Erreur", `Une erreur est survenue : ${error.response.data.message}`, "error");
+      } else {
+        Swal.fire("Erreur", "Une erreur est survenue lors de la demande au serveur.", "error");
+      }
     }
   };
   
