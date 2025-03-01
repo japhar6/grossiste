@@ -23,7 +23,8 @@ router.get('/reference/:referenceFacture', commandeController.getCommandeByref);
 
 // Route pour récupérer les commandes avec les statuts "terminée" et "livrée"
 router.get('/TermineeLivree', commandeController.getCommandesTermineesEtLivrees);
-
+// Route pour récupérer les commandes avec les statuts "terminée" et "livrée"
+router.get('/TermineeLivreeMaga', commandeController.getCommandesLivrees);
 router.get('/vendeur/:vendeurId', commandeController.getCommandesByVendeur);
 
 router.get('/suggestions', commandeController.getSuggestions);

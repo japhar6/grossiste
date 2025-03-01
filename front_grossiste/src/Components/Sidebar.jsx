@@ -98,6 +98,7 @@ function Sidebar() {
         { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
                 { path: "/histovad", icon: faTags, text: "Historique des commandes" },
                 { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
+                { path: "/histomad", icon: "fa-tags", text: "Historique des Sorties des Produits" },
                         { path: "/inventaire", icon: faBox , text: "Inventaire" },
     ];
 

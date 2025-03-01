@@ -151,9 +151,9 @@ exports.validerPanier = async (req, res) => {
             const prixUnitaire = achat.prixAchat || 0;
 
             // Conversion de la quantité avec ta fonction `convertirUnite`
-            const { quantite, unite } = convertirUnite(achat.quantite, achat.unite, achat.produit.unites);
+            const { quantite, unite } = convertirUnite(achat.quantiteTotale, achat.unite, achat.produit.unites);
 
-            console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantite} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
+            console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantiteTotale} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
 
             // Ajout ou mise à jour du stock
             await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, quantite, prixUnitaire, unite);

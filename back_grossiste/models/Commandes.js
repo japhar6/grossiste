@@ -5,7 +5,8 @@ const commandeSchema = new mongoose.Schema({
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     commercialId: { type: mongoose.Schema.Types.ObjectId, ref: 'Commercial' },
     vendeurId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    produits: [
+    paiement: { type: mongoose.Schema.Types.ObjectId, ref: 'Paiement', default: null },
+        produits: [
         {
             produit: { type: mongoose.Schema.Types.ObjectId, ref: 'Produit' },
             quantite: { type: Number, required: true },
@@ -27,7 +28,8 @@ const commandeSchema = new mongoose.Schema({
     },
     typeRemise: { type: String },
     valeurRemise: { type: Number },
-    referenceFacture: { type: String, unique: true }
+    referenceFacture: { type: String, unique: true },
+    dateSortie: { type: Date, default: null }  
 }, { timestamps: true });
 
  // Hook pour générer la référence de facture

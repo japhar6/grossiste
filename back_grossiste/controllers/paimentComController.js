@@ -49,6 +49,9 @@ exports.validerPaiementCommerciale = async (req, res) => {
         // Sauvegarder le paiement
         await paiementCommerciale.save();
 
+        commande.paiement = paiementCommerciale._id;
+        await commande.save();
+
         return res.status(200).json({ message: "Paiement à crédit validé pour commercial", paiementCommerciale });
     } catch (error) {
         res.status(400).json({ message: error.message });

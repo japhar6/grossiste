@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from '../api/axios';
 import "../Styles/SortieStock.css";
-import Sidebar from "../Components/SidebarMagasinier"; // Assurez-vous que ces imports sont corrects
-import Header from "../Components/NavbarM"; 
+import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Navbar"; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
@@ -18,49 +18,15 @@ function SortieStock() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // État pour mobile
   const [sortOrder, setSortOrder] = useState("desc");
 
+  const [vente, setVente] = useState(null);
 
-  const [entrepots, setEntrepots] = useState([]);
-  const [entrepotSelectionne, setEntrepotSelectionne] = useState(null);
-       const playSound = () => {
-                  const audio = new Audio(Sound); 
-                  audio.play();
-              };
-              
-
-    // Vérification de l'identité du magasinier
-    const magasinierId = localStorage.getItem("userid");
-    if (!magasinierId) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Erreur',
-        text: 'Magasinier non identifié.',
-      });
-      return;
-    }
   
-  const getEntrepotsDuMagasinier = async (magasinierId) => {
-    try {
-      const response = await axios.get(`/api/entrepot/recuperer/${magasinierId}`);
-      setEntrepots(response.data); // Stocker la liste des entrepôts
-    } catch (error) {
-      console.error("Erreur lors de la récupération des entrepôts:", error);
-    }
-  };
-  
-  // Charger les entrepôts au montage du composant
-  useEffect(() => {
-    if (magasinierId) {
-      getEntrepotsDuMagasinier(magasinierId);
-    }
-  }, [magasinierId]);
-  
-
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
-        const response = await axios.get("/api/commandes/TermineeLivree");
+        const response = await axios.get("/api/commandes/TermineeLivreeMaga");
         const sortedCommandes = response.data.sort((a, b) => {
-          // Assurez-vous que la date est dans le bon format et qu'elle est valide
+
           const dateA = new Date(a.dateCommande);
           const dateB = new Date(b.dateCommande);
           return dateB - dateA;  // Trier du plus récent au plus ancien
@@ -74,60 +40,7 @@ function SortieStock() {
   }, []);
   
 
-  const getDetailsCommande = (commandeId) => {
-    const commande = commandes.find((c) => c._id === commandeId);
-    setCommandeSelectionnee(commande);
-  };
-  const validerVente = async () => {
-    if (!entrepotSelectionne) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Erreur',
-        text: "Veuillez sélectionner un entrepôt avant de valider la vente.",
-      });
-      return;
-    }
-  
-    try {
-      const response = await axios.post("/api/ventes/valider", {
-        commandeId: commandeSelectionnee._id,
-        magasinierId,
-        entrepotId: entrepotSelectionne, // On envoie l’entrepôt sélectionné
-      });
-  
-      Swal.fire({
-        icon: 'success',
-        title: 'Succès',
-        text: response.data.message,
-      }).then(() => {
-        window.location.reload();
-      });
-      playSound();  
-  
-      setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id));
-      setCommandeSelectionnee(null);
-    } catch (error) {
-      console.error("Erreur lors de la validation de la vente:", error);
-      let errorMessage = error.response?.data.message || 'Échec de la validation de la vente.';
-      
-      // Détection des erreurs de rupture de stock
-      if (errorMessage.includes("rupture de stock") || errorMessage.includes("insuffisant")) {
-        errorMessage = "Le produit n'est pas disponible dans cet entrepôt.";
-        Swal.fire({
-          icon: 'warning', // Affichage du type warning pour la rupture de stock
-          title: 'Avertissement',
-          text: errorMessage,
-        });
-      } else {
-        // Gérer les autres erreurs
-        Swal.fire({
-          icon: 'error',
-          title: 'Erreur',
-          text: errorMessage,
-        });
-      }
-    }
-  };
+
   
 
   // Effect pour suivre les changements de taille de la fenêtre
@@ -140,6 +53,20 @@ function SortieStock() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const getDetailsCommande = async (commandeId) => {
+    // Récupérer la commande sélectionnée
+    const commande = commandes.find((c) => c._id === commandeId);
+    setCommandeSelectionnee(commande);
+    
+    // Récupérer les informations de vente liées à cette commande
+    try {
+      const response = await axios.get(`/api/ventes/ventes/${commandeId}`);
+      setVente(response.data[0]); // Supposons que la réponse est un tableau, prendre le premier élément
+    } catch (error) {
+      console.error("Erreur lors de la récupération des informations de vente", error);
+    }
+  };
+  
 
 // Filtrage des commandes
 const filteredCommandes = commandes.filter((commande) => {
@@ -194,15 +121,7 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
       <option value="client">Client</option>
       <option value="commercial">Commercial</option>
     </select>
-    <select 
-      className="form-control mt-2 m-1 p-1" // Réduire le padding et la marge
-      value={statutCommande} 
-      onChange={(e) => setStatutCommande(e.target.value)}
-    >
-      <option value="">Statut du commande</option>
-      <option value="terminée">Terminée</option>
-      <option value="livrée">Livrée</option>
-    </select>
+    
     <input 
       type="date" 
       className="form-control mt-2 m-1 p-1" // Réduire le padding et la marge
@@ -264,66 +183,82 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
           <div className="modal fade" id="DétailsCommande" tabIndex="-1" aria-labelledby="DétailsCommandeLabel" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered modal-md"> 
 
-    <div className="modal-content">
-      <div className="modal-header">
-        <h5 className="modal-title fw-bold text-info" id="DétailsCommandeLabel">Détails de la commande</h5>
-        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div className="modal-body">
-  {commandeSelectionnee ? (
-    <>
-     <p>
-  <strong>{commandeSelectionnee.clientId ? "Client" : "Commercial"}:</strong> 
-  {commandeSelectionnee.clientId ? commandeSelectionnee.clientId.nom : commandeSelectionnee.commercialId ? commandeSelectionnee.commercialId.nom : "N/A"}
-</p>
- <p><strong>Date:</strong> {commandeSelectionnee.updatedAt ? new Date(commandeSelectionnee.updatedAt).toLocaleDateString() : "N/A"}</p>
-      <p><strong>Type de Client:</strong> {commandeSelectionnee.clientId ? "Client" : commandeSelectionnee.commercialId ? "Commercial" : "N/A"}</p>
-      <table className="modaltable ">
-        <thead>
-          <tr>
-            <th className="w-20">Produit</th>
-            <th className="w-25">Quantité</th>
-            <th className="w-25">Unité</th>
-          </tr>
-        </thead>
-        <tbody>
-          {commandeSelectionnee.produits.map((produit, index) => (
-            <tr key={index}>
-              <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
-              <td className="w-25">{produit.quantite}</td>
-              <td className="w-25">{produit.uniteChoisie  ? produit.uniteChoisie  : "N/A"}</td>
+          <div className="modal-content">
+  <div className="modal-header">
+    <h5 className="modal-title fw-bold text-info" id="DétailsCommandeLabel">Détails de la commande</h5>
+    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+
+  <div className="modal-body">
+    {commandeSelectionnee ? (
+      <>
+        <div className="detail-item">
+          <strong>{commandeSelectionnee.clientId ? "Client" : "Commercial"}: </strong>
+          {commandeSelectionnee.clientId ? commandeSelectionnee.clientId.nom : commandeSelectionnee.commercialId ? commandeSelectionnee.commercialId.nom : "N/A"}
+        </div>
+        
+        <div className="detail-item">
+          <strong>Date de la commande: </strong> 
+          {commandeSelectionnee.createdAt 
+            ? new Date(commandeSelectionnee.createdAt).toLocaleString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
+            : "N/A"
+          }
+        </div>
+
+        <div className="detail-item">
+          <strong>Date de Sortie: </strong> 
+          {commandeSelectionnee.dateSortie 
+            ? new Date(commandeSelectionnee.dateSortie).toLocaleString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
+            : "N/A"
+          }
+        </div>
+
+        <div className="detail-item">
+          <strong>Type de Client: </strong>
+          {commandeSelectionnee.clientId ? "Client" : commandeSelectionnee.commercialId ? "Commercial" : "N/A"}
+        </div>
+
+        {vente && (
+          <>
+            <div className="detail-item">
+              <strong>Magasinier: </strong> {vente.magasinierId ? vente.magasinierId.nom : "N/A"}
+            </div>
+
+            <div className="detail-item">
+              <strong>Entrepôt: </strong> {vente.entrepotId ? vente.entrepotId.nom : "N/A"}
+            </div>
+          </>
+        )}
+
+        <table className="modaltable">
+          <thead>
+            <tr>
+              <th className="w-20">Produit</th>
+              <th className="w-25">Quantité</th>
+              <th className="w-25">Unité</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  ) : (
-    <p>Aucune commande sélectionnée</p>
-  )}
+          </thead>
+          <tbody>
+            {commandeSelectionnee.produits.map((produit, index) => (
+              <tr key={index}>
+                <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
+                <td className="w-25">{produit.quantite}</td>
+                <td className="w-25">{produit.uniteChoisie ? produit.uniteChoisie : "N/A"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    ) : (
+      <p>Aucune commande sélectionnée</p>
+    )}
+  </div>
+
+  <div className="modal-footer text-center">
+    <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+  </div>
 </div>
 
-<div className="modal-footer center">
-<label>Choisissez l'entrepôt :</label>
-<select
-  value={entrepotSelectionne}
-  onChange={(e) => setEntrepotSelectionne(e.target.value)}
->
-  <option value="">Sélectionnez un entrepôt</option>
-  {entrepots.map((entrepot) => (
-    <option key={entrepot._id} value={entrepot._id}>
-      {entrepot.nom} - {entrepot.localisation}
-    </option>
-  ))}
-</select>
-
-  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-  {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && ( // Affiche le bouton seulement si la commande est terminée
-    <button className="btn btn-info" onClick={validerVente}>
-      Valider la vente
-    </button>
-  )}
-</div>
-    </div>
   </div>
 </div>
 

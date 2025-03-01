@@ -1,94 +1,131 @@
 const Vente = require('../models/Ventes');
 const Commande = require('../models/Commandes');
 const Stock = require('../models/Stock');
+const Entrepot = require('../models/Entrepot');
 const Produit = require("../models/Produits");
 const VenteCom = require('../models/VenteComm');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
+// Controller pour l'historique des sorties
+const User = require('../models/User');  // Assurez-vous de bien inclure votre modèle User
+// Fonction de conversion d'unité
+function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
+    // Trouver l'unité de départ
+    let uniteSource = unitesDisponibles.find(u => u.nom === uniteAchat);
 
+    if (!uniteSource) {
+        console.error("❌ Erreur: Unité source introuvable !");
+        return { quantite, unite: uniteAchat }; // Retourner la quantité d'origine si l'unité source n'est pas trouvée
+    }
 
-// Valider la vente après validation par le magasinier
+    // Trier les unités par ordre croissant de conversion (plus petite unité a une conversion plus grande)
+    let unitesTriees = [...unitesDisponibles].sort((a, b) => b.conversion - a.conversion);
+
+    // Trouver la plus petite unité
+    let uniteCible = unitesTriees[0]; // La première unité dans la liste triée est la plus petite
+
+    // Conversion
+    let nouvelleQuantite = quantite * (uniteCible.conversion / uniteSource.conversion);
+    return { quantite: nouvelleQuantite, unite: uniteCible.nom };
+}
 exports.validerVente = async (req, res) => {
     try {
-        const { commandeId, magasinierId } = req.body;
+        let { commandeId, magasinierId, entrepotId } = req.body;
 
-        // Récupérer la commande validée par le magasinier
-        const commande = await Commande.findById(commandeId).populate('produits.produit');
+        if (!entrepotId) {
+            return res.status(400).json({ message: "Veuillez sélectionner un entrepôt." });
+        }
+
+        // Vérifier si l'entrepôt existe bien et appartient au magasinier
+        let entrepot = await Entrepot.findOne({ _id: entrepotId, magasinier: magasinierId });
+        if (!entrepot) {
+            return res.status(403).json({ message: "Cet entrepôt ne vous appartient pas ou n'existe pas." });
+        }
+
+        // Récupérer la commande
+        let commande = await Commande.findById(commandeId).populate('produits.produit');
         if (!commande) {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        // Vérifier si la commande est prête à sortir
         if (commande.statut !== 'payé') {
-            return res.status(400).json({ message: "La commande doit être validée par le caissier avant" });
+            return res.status(400).json({ message: "La commande doit être validée par le caissier avant." });
         }
 
-        // Créer une nouvelle vente
-        const vente = new Vente({
+        // Créer une vente
+        let vente = new Vente({
             commandeId,
-            produits: commande.produits.map(item => ({
-                produit: item.produit._id,
-                quantite: item.quantite,
-            })),
+            produits: [],
             magasinierId,
-            statut: 'validée', // La vente est directement validée
+            entrepotId,  // Sauvegarder l'entrepôt utilisé
+            statut: 'validée',
             dateValidationMagasinier: Date.now(),
         });
 
-        // Sauvegarder la vente dans la base de données
-        await vente.save();
-
-        // Réduire les quantités dans le stock en appliquant FIFO
+        // Réduction du stock
         await Promise.all(commande.produits.map(async (item) => {
-            let remainingQuantity = item.quantite;  // Quantité restante à réduire
-            const produitId = item.produit._id;
+            let remainingQuantity = item.quantite;
+            let produitId = item.produit._id;
+            let produit = await Produit.findById(produitId);
 
-            // Trouver tous les stocks du produit en question, triés par date d'entrée croissante (FIFO)
-            const stocks = await Stock.find({ produit: produitId, statut: 'actif' }).sort({ dateEntree: 1 });
-            
+            let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
+
             if (stocks.length === 0) {
-                throw new Error(`Le produit ${item.produit.nom} est épuisé dans le stock`);
+                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock.`);
             }
 
-            // Réduire les quantités de stock en respectant FIFO
-            for (let stock of stocks) {
-                if (remainingQuantity <= 0) break;
+            let { quantite: quantityInMinUnit, unite } = convertirUnite(remainingQuantity, item.uniteChoisie, produit.unites);
 
-                const availableQuantity = stock.quantité;
+            for (let i = 0; i < stocks.length; i++) {
+                let stock = stocks[i];
+                if (quantityInMinUnit <= 0) break;
 
-                if (availableQuantity > remainingQuantity) {
-                    // Si le stock courant est suffisant pour couvrir la vente, on réduit uniquement la quantité nécessaire
-                    stock.quantité -= remainingQuantity;
-                    stock.valeurTotale = stock.quantité * stock.prixUnitaire;
-                    await stock.save(); // Sauvegarder le stock après la réduction
-                    remainingQuantity = 0; // Plus de quantité à réduire
+                let availableQuantity = stock.quantite;
+
+                if (availableQuantity >= quantityInMinUnit) {
+                    stock.quantite -= quantityInMinUnit;
+                    stock.valeurTotale = stock.quantite * stock.prixUnitaire;
+                    await stock.save();
+                    quantityInMinUnit = 0;
                 } else {
-                    // Si le stock courant est insuffisant, on consomme tout ce stock et on passe au suivant
-                    remainingQuantity -= availableQuantity;
-                    stock.quantité = 0; // Réduire complètement ce stock
+                    quantityInMinUnit -= availableQuantity;
+                    stock.quantite = 0;
                     stock.valeurTotale = 0;
-                    await stock.save(); // Sauvegarder la suppression du stock
+                    await stock.save();
                 }
             }
 
-            // Si la quantité demandée n'a pas été entièrement réduite, cela signifie qu'il n'y a pas assez de stock
-            if (remainingQuantity > 0) {
-                throw new Error(`Quantité insuffisante pour le produit ${item.produit.nom}. Disponible: ${item.quantite - remainingQuantity}, Demandée: ${item.quantite}`);
+            if (quantityInMinUnit > 0) {
+                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt sélectionné.`);
             }
 
+            vente.produits.push({
+                produit: item.produit._id,
+                quantite: item.quantite,
+                quantiteConvertie: quantityInMinUnit,
+                unite: unite
+            });
         }));
 
-        // Mettre à jour la commande avec le statut 'livrée'
-        commande.statut = 'payé et livrée';
+        await vente.save();
+        commande.statut = 'payé et livré';
+        commande.dateSortie = Date.now(); 
         await commande.save();
 
         res.status(200).json({
-            message: "Vente validée avec succès et commande marquée comme livrée",
+            message: "✅ Vente validée avec succès et commande marquée comme livrée",
             vente,
+            produits: vente.produits.map(item => ({
+                produit: item.produit.nom,
+                quantiteConvertie: item.quantiteConvertie,
+                unite: item.unite
+            })),
         });
+
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 exports.validerRetourProduits = async (req, res) => {
@@ -115,8 +152,8 @@ exports.validerRetourProduits = async (req, res) => {
             }
 
             // Ajouter la quantité retournée au stock
-            stock.quantité += item.quantiteRestante;
-            stock.valeurTotale = stock.quantité * stock.prixUnitaire;
+            stock.quantite += item.quantiteRestante;
+            stock.valeurTotale = stock.quantite * stock.prixUnitaire;
 
             await stock.save();
         }));
@@ -150,5 +187,34 @@ exports.validerRetourProduits = async (req, res) => {
 
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+exports.getAllVentes = async (req, res) => {
+    try {
+        // Récupérer toutes les ventes, incluant les produits et le magasinier
+        const ventes = await Vente.find()
+            .populate("magasinierId", "nom")  
+            .populate("entrepotId", "nom")// Limiter à la propriété 'nom' du magasinier
+            .populate({
+                path: "commandeId",              // Peupler la référence 'commandeId'
+                populate: [
+                    { path: "clientId", select: "nom email" },  // Peupler 'clientId' avec nom et email du client
+                    { path: "commercialId", select: "nom" },    // Peupler 'commercialId' avec nom du commercial
+                    { path: "vendeurId", select: "nom" },       // Peupler 'vendeurId' avec nom du vendeur
+                    { path: "paiement", select: "type montant" }, // Peupler 'paiement' avec type et montant
+                    { path: "produits.produit", select: "nom prix" } // Peupler 'produit' dans 'produits' avec nom et prix
+                ]
+            });
+        
+        if (ventes.length === 0) {
+            return res.status(404).json({ message: 'Aucune vente trouvée' });
+        }
+
+        // Retourner les ventes
+        res.status(200).json(ventes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur serveur' });
     }
 };

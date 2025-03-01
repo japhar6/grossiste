@@ -39,7 +39,7 @@ const [achats, setAchats] = useState([]);
     categorie: "",
     description: "",
     prixDachat: "", // Prix d'achat du produit
-    quantiteMinimum: 0,
+
     fournisseur: fourID,
     unites: [{ nom: "", conversion: 1, prixdevente: 0 }] // Initialiser avec une unité par défaut
   });
@@ -180,7 +180,7 @@ useEffect(() => {
         description: nouveauProduit.description,
         categorie: categorieFinale,
         fournisseur: fourID,
-        quantiteMinimum, // Assurez-vous que c'est un entier
+   
         prixDachat: parseFloat(nouveauProduit.prixDachat), // Assurez-vous que c'est un nombre
         unites: nouveauProduit.unites, // Assurez-vous que c'est un tableau d'unités
     };
@@ -203,7 +203,7 @@ useEffect(() => {
             nom: "",
             description: "",
             prixDachat: "",
-            quantiteMinimum: "",
+      
             unites: [] // Réinitialiser les unités
         });
         setNouvelleCategorie("");

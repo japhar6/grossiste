@@ -9,10 +9,10 @@ const mongoose = require('mongoose');
 // Fonction réutilisable pour créer ou mettre à jour un stock
 exports.ajouterOuMettreAJourStock = async (entrepotId, produitId, quantiteAjoutee, prixAchat,unite) => {
   try {
-      console.log(`📦 Mise à jour du stock: Produit ${produitId}, Quantité: ${quantiteAjoutee}, Prix Achat: ${prixAchat}`);
+      console.log(`📦 Mise à jour du stock: Produit ${produitId}, quantite: ${quantiteAjoutee}, Prix Achat: ${prixAchat}`);
 
       if (!quantiteAjoutee || isNaN(quantiteAjoutee) || quantiteAjoutee <= 0) {
-          throw new Error(`❌ Quantité invalide (${quantiteAjoutee})`);
+          throw new Error(`❌ quantite invalide (${quantiteAjoutee})`);
       }
 
       if (!prixAchat || isNaN(prixAchat)) {
@@ -91,7 +91,7 @@ exports.getQuantiteProduitById = async (req, res) => {
 
     res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité et son unité
   } catch (error) {
-    console.error('Erreur lors de la récupération du produit et de sa quantité:', error);
+    console.error('Erreur lors de la récupération du produit et de sa quantite:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
@@ -146,7 +146,7 @@ exports.getQuantiteProduitByIde = async (req, res) => {
 
     res.json(produitAvecQuantite); // Renvoyer le produit avec les infos de stock et d'unité
   } catch (error) {
-    console.error("Erreur lors de la récupération du produit et de sa quantité:", error);
+    console.error("Erreur lors de la récupération du produit et de sa quantite:", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
@@ -184,7 +184,7 @@ exports.updateStock = async (req, res) => {
 
     // Validation des données d'entrée
     if (quantite <= 0 || prixUnitaire <= 0) {
-      return res.status(400).json({ message: 'La quantité et le prix unitaire doivent être supérieurs à zéro.' });
+      return res.status(400).json({ message: 'La quantite et le prix unitaire doivent être supérieurs à zéro.' });
     }
 
     // Calculer la nouvelle valeurTotale

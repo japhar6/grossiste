@@ -34,6 +34,18 @@ const NotificationsPage = () => {
       console.error('Erreur lors de la mise à jour de la notification', error);
     }
   };
+
+  const deleteNotification = async (notificationId) => {
+    try {
+      await axios.delete(`/api/notif/supprimer/${notificationId}`);  // Envoi de la requête pour supprimer la notification
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter((notif) => notif._id !== notificationId)  // Retirer la notification supprimée de l'état
+      );
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la notification', error);
+    }
+  };
+
   const handleNotificationClick = (notification) => {
     // Vérifier le type de la notification pour la redirection
     if (notification.type === 'transfert-en-attente') {
@@ -44,12 +56,18 @@ const NotificationsPage = () => {
   
       // Rediriger vers la page Client
       navigate(`/Client`);
-    } else {
+    } 
+    
+    else if (notification.type === 'rupture_stock') {
+    
+      // Rediriger vers la page Client
+      navigate(`/achat`);
+    }
+    
+    else {
       navigate(`/default-page`); // Une page par défaut au cas où
     }
   };
-  
-  
 
   return (
     <>
@@ -64,30 +82,40 @@ const NotificationsPage = () => {
               <p>Aucune notification.</p>
             ) : (
               <ul>
-              {notifications.map((notification) => (
-  <li
-    key={notification._id}
-    className={`notification-item ${notification.lue ? "lue" : "non-lue"}`}
-    onClick={() => {
-      markAsRead(notification._id);
-      handleNotificationClick(notification);
-    }}
-    style={{ cursor: 'pointer' }}
-  >
-    <div className="notification-content">
-      <div className="notification-message">
-        {/* Diviser le message et styliser le nom du client */}
-        {notification.message.split("client").map((part, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && <span className="client-name">{notification.clientNom}</span>}
-            {part}
-          </React.Fragment>
-        ))}
-      </div>
-      {!notification.lue && <span className="badge">Non lue</span>}
-    </div>
-  </li>
-))}
+                {notifications.map((notification) => (
+                  <li
+                    key={notification._id}
+                    className={`notification-item ${notification.lue ? "lue" : "non-lue"}`}
+                    onClick={() => {
+                      markAsRead(notification._id);
+                      handleNotificationClick(notification);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="notification-content">
+                      <div className="notification-message">
+                        {/* Diviser le message et styliser le nom du client */}
+                        {notification.message.split("client").map((part, index) => (
+                          <React.Fragment key={index}>
+                            {index > 0 && <span className="client-name">{notification.clientNom}</span>}
+                            {part}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                      {!notification.lue && <span className="badge">Non lue</span>}
+                      {/* Ajout de la croix pour supprimer la notification */}
+                      <button
+                        className="delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation();  // Empêcher la propagation de l'événement de clic sur le li
+                          deleteNotification(notification._id);
+                        }}
+                      >
+                        &#10005; {/* Symbole de la croix */}
+                      </button>
+                    </div>
+                  </li>
+                ))}
               </ul>
             )}
           </div>

@@ -56,6 +56,9 @@ exports.validerpayement = async (req, res) => {
         // Sauvegarder le paiement dans la base de données
         await paiement.save();
 
+        commande.paiement = paiement._id;
+        await commande.save();
+
         // Réponse avec les détails du paiement validé
         return res.status(200).json({
             message: "Paiement validé avec succès",
