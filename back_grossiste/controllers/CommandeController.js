@@ -132,7 +132,7 @@ exports.ajouterCommande = async (req, res) => {
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
     try {
-        const commandes = await Commande.find().populate('produits.produit', 'nom prixDachat')
+        const commandes = await Commande.find().populate('produits.produit', 'nom *')
         .populate('vendeurId', 'nom')
         .populate('clientId','nom')
         .populate('commercialId', 'nom');

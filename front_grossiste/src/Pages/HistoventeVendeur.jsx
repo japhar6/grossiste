@@ -53,7 +53,8 @@ function HistoV() {
         <Sidebar />
         <section className="contenue">
           <Header />
-          <div className="profil-container p-4">
+          <div className="p-4">
+          <div className="mini-stat p-3">
             <h6 className="alert alert-info text-start">Historique des Commandes faites par {nom}</h6>
 
             {/* Filtres */}
@@ -143,7 +144,7 @@ function HistoV() {
                               <ul className="produit-list">
                                 {commande.produits.map((produit) => (
                                   <li key={produit._id}>
-                                    {produit.produit.nom} - {produit.quantite} x {produit.prixUnitaire} ariary
+                                    {produit.produit.nom} - {produit.quantite} x {produit.prixdevente} ariary
                                   </li>
                                 ))}
                               </ul>
@@ -168,6 +169,7 @@ function HistoV() {
               </div>
               
             )}
+          </div>
           </div>
         </section>
       </main>

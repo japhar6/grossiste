@@ -4,7 +4,7 @@ const commandeSchema = new mongoose.Schema({
     typeClient: { type: String, required: true },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
     commercialId: { type: mongoose.Schema.Types.ObjectId, ref: 'Commercial' },
-    vendeurId: { type: mongoose.Schema.Types.ObjectId, ref: 'Vendeur' },
+    vendeurId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     produits: [
         {
             produit: { type: mongoose.Schema.Types.ObjectId, ref: 'Produit' },
