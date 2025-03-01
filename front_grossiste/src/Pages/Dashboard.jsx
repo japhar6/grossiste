@@ -4,6 +4,7 @@ import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
 import LineChart from '../Components/LineChart';
 import DonutChart from '../Components/DonutChart';
+import ClientCredi from '../Components/ClientCredi';
 import axios from '../api/axios';
 
 function Dashboard() {
@@ -111,6 +112,7 @@ function Dashboard() {
             </div>
             
           </div>
+          <ClientCredi />
         </section>
       </main>
     </>

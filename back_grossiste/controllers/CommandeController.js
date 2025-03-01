@@ -5,7 +5,7 @@ const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, statut } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, statut,entrepotId } = req.body;
 
         // Vérification du typeClient
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
@@ -81,6 +81,7 @@ exports.ajouterCommande = async (req, res) => {
                 montantApresRemise,  // Ajout de montant après remise fixe
                 typeRemise,
                 valeurRemise,
+                entrepotId,
                 uniteChoisie: uniteChoisie.nom
             };
         }));
@@ -94,6 +95,7 @@ exports.ajouterCommande = async (req, res) => {
             clientId: typeClient === "Client" ? clientId : null,
             commercialId: typeClient === "Commercial" ? commercialId : null,
             vendeurId,
+            entrepotId,
             produits: produitsDetails,
             totalGeneral,  // Ce total général inclut désormais la remise fixe
             statut
@@ -210,7 +212,9 @@ exports.getCommandeByref = async (req, res) => {
             commande = await Commande.findOne({ referenceFacture })
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
-                .populate("produits.produit", "nom");
+                .populate("produits.produit", "nom")
+                .populate("entrepotId", "nom")
+                ;
         } else {
             commande = await Commande.findById(req.params.id)
                 .populate("clientId", "nom telephone")

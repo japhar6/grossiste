@@ -5,6 +5,7 @@ import "../Styles/Caisse.css";
 import Swal from 'sweetalert2';
 import axios from '../api/axios';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav";
+import generateInvoice from '../config/generateInvoice';
 
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
@@ -173,6 +174,10 @@ if (commande.typeClient === "Client" && !modePaiement) {
       if (response.status !== 200) {
         throw new Error("Échec du paiement");
       }
+
+      // Générer la facture après la validation du paiement
+    generateInvoice(commande, modePaiement, referencePaiement, dateLimiteCredit, client, commercial);
+
   
       const result = response.data;
       Swal.fire({
@@ -198,7 +203,11 @@ if (commande.typeClient === "Client" && !modePaiement) {
         text: error.message || "Une erreur s'est produite lors du paiement.",
       });
     }
+  }; 
+  const handleGenerateInvoice = () => {
+    generateInvoice(commande, modePaiement, referencePaiement, dateLimiteCredit, client, commercial);
   };
+
   
   return (
     <main className="center">
@@ -210,7 +219,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Caisse
             </h6>
-
+          
             <div className="commande-container d-flex justify-content-between">
               <div className="refcli ">
                 <h6><i className="fa fa-user"></i> Référence de la commande</h6>
@@ -310,7 +319,9 @@ if (commande.typeClient === "Client" && !modePaiement) {
              
               </div>
             </div>
-
+            <div>
+      <button onClick={handleGenerateInvoice}>Générer la Facture</button>
+    </div>
             {commande && (
               <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
@@ -327,7 +338,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
                     {commande.produits.map((produit, index) => (
                       <tr key={index}>
                         <td>{produit.produit.nom}</td>
-                        <td>{produit.quantite}</td>
+                        <td>{produit.quantite} {produit.uniteChoisie}</td>
                         <td>{produit.prixdevente} Ariary</td>
                         <td>{produit.total} Ariary</td>
                       </tr>

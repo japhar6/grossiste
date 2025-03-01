@@ -7,6 +7,7 @@ router.post('/ajouter/:id', paiementController.validerpayement);
 
 // Route pour récupérer tous les paiements
 router.get('/', paiementController.getPaiements);
+router.get('/acredit', paiementController.getPaiementsCredit);
 
 // Route pour récupérer un paiement par son ID
 router.get('/recuperer/:id', paiementController.getPaiementById);

@@ -1,100 +1,111 @@
 const Stock = require('../models/Stock');
 const Commande = require('../models/Commandes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
-const Produit = require("../models/Produits"); 
+const Produit = require("../models/Produits");
 const Entrepot = require('../models/Entrepot');
 const mongoose = require('mongoose');
 
 
 // Fonction réutilisable pour créer ou mettre à jour un stock
-exports.ajouterOuMettreAJourStock = async (entrepotId, produitId, quantiteAjoutee, prixAchat,unite) => {
+exports.ajouterOuMettreAJourStock = async (entrepotId, produitId, quantiteAjoutee, prixAchat, unite) => {
   try {
-      console.log(`📦 Mise à jour du stock: Produit ${produitId}, quantite: ${quantiteAjoutee}, Prix Achat: ${prixAchat}`);
+    console.log(`📦 Mise à jour du stock: Produit ${produitId}, quantite: ${quantiteAjoutee}, Prix Achat: ${prixAchat}`);
 
-      if (!quantiteAjoutee || isNaN(quantiteAjoutee) || quantiteAjoutee <= 0) {
-          throw new Error(`❌ quantite invalide (${quantiteAjoutee})`);
-      }
+    if (!quantiteAjoutee || isNaN(quantiteAjoutee) || quantiteAjoutee <= 0) {
+      throw new Error(`❌ quantite invalide (${quantiteAjoutee})`);
+    }
 
-      if (!prixAchat || isNaN(prixAchat)) {
-          throw new Error(`❌ Prix d'achat invalide (${prixAchat})`);
-      }
+    if (!prixAchat || isNaN(prixAchat)) {
+      throw new Error(`❌ Prix d'achat invalide (${prixAchat})`);
+    }
 
-      let stock = await Stock.findOne({ produit: produitId, entrepot: entrepotId });
-      console.log("🔎 Stock trouvé dans la base ?", stock);
+    let stock = await Stock.findOne({ produit: produitId, entrepot: entrepotId });
+    console.log("🔎 Stock trouvé dans la base ?", stock);
 
-      if (stock) {
-          console.log("🛠 Mise à jour du stock existant");
-          stock.quantite += quantiteAjoutee;  // Correction ici (supprimer l'accent)
-          stock.valeurTotale = stock.quantite * prixAchat;
-      } else {
-          console.log("🆕 Création d'un nouveau stock");
-          stock = new Stock({
-              produit: produitId,
-              entrepot: entrepotId,
-              quantite: quantiteAjoutee,  // Correction ici (supprimer l'accent)
-              prixUnitaire: prixAchat,
-              valeurTotale: quantiteAjoutee * prixAchat,
-              unite :unite
-          });
-      }
+    if (stock) {
+      console.log("🛠 Mise à jour du stock existant");
+      stock.quantite += quantiteAjoutee;  // Correction ici (supprimer l'accent)
+      stock.valeurTotale = stock.quantite * prixAchat;
+    } else {
+      console.log("🆕 Création d'un nouveau stock");
+      stock = new Stock({
+        produit: produitId,
+        entrepot: entrepotId,
+        quantite: quantiteAjoutee,  // Correction ici (supprimer l'accent)
+        prixUnitaire: prixAchat,
+        valeurTotale: quantiteAjoutee * prixAchat,
+        unite: unite
+      });
+    }
 
-      console.log("📤 Objet stock avant sauvegarde:", stock);
+    console.log("📤 Objet stock avant sauvegarde:", stock);
 
-      await stock.save();
-      console.log(`✅ Stock mis à jour: ${stock.quantite} unités`);
+    await stock.save();
+    console.log(`✅ Stock mis à jour: ${stock.quantite} unités`);
 
   } catch (error) {
-      console.error("❌ Erreur lors de la mise à jour du stock:", error);
-      throw error;
+    console.error("❌ Erreur lors de la mise à jour du stock:", error);
+    throw error;
   }
 };
-
-
 exports.getQuantiteProduitById = async (req, res) => {
   const { id } = req.params; // Récupérer l'ID du produit depuis les paramètres de la requête
 
   try {
-    // Récupérer l'entrepôt "principal"
-    const entrepotPrincipale = await Entrepot.findOne({ type: 'principal' });
-    if (!entrepotPrincipale) {
-      return res.status(404).json({ message: "Entrepôt 'principal' non trouvé" });
-    }
-
     // Récupérer le produit par ID
     const produit = await Produit.findById(id);
     if (!produit) {
       return res.status(404).json({ message: "Produit non trouvé" });
     }
 
-    // Récupérer les données de stock pour l'entrepôt "principal"
-    const stockData = await Stock.findOne({ entrepot: entrepotPrincipale._id, produit: id });
+    // Parcourir les stocks pour trouver le produit dans les entrepôts
+    const stockData = await Stock.find({ produit: id }).populate('entrepot'); // Récupère tous les stocks du produit avec les informations de l'entrepôt
 
-    // Débogage : Afficher les données de stock pour voir si l'unité est bien définie
-    console.log("Données de stock :", stockData);
-
-    // Vérification si stockData existe et récupérer la quantité et l'unité
-    if (!stockData) {
-      return res.status(404).json({ message: "Aucune donnée de stock trouvée pour ce produit dans l'entrepôt principal" });
+    // Si aucun stock n'est trouvé pour ce produit
+    if (stockData.length === 0) {
+      return res.status(404).json({ message: "Produit non trouvé dans aucun stock" });
     }
 
-    const quantiteDisponible = stockData ? stockData.quantite : 0; // Si aucun stock, mettre 0
-    const uniteNom = stockData.unite || 'Non spécifiée'; // Récupérer l'unité, ou spécifier "Non spécifiée" si vide
+    // Parcours des stocks pour identifier l'entrepôt principal
+    let entrepotPrincipale = null;
+    for (let stock of stockData) {
+      // Si l'entrepôt est de type "principal", on le garde
+      if (stock.entrepot.type === 'principal') {
+        entrepotPrincipale = stock.entrepot;
+        uniteProduit = stock.unite;
+        break;
+      }
+    }
 
-    console.log("Nom de l'unité :", uniteNom); // Afficher le nom de l'unité pour vérifier
+    // Si aucun entrepôt principal n'est trouvé, on retourne 0 et un message
+    if (!entrepotPrincipale) {
+      return res.status(200).json({
+        quantiteDisponible: 0,
+        unite: "Unité",
+        message: "Aucun entrepôt principal trouvé pour ce produit, mais la quantité est 0"
+      });
+    }
 
-    // Ajouter la quantité disponible et le nom de l'unité au produit
+    // Récupérer la quantité disponible dans l'entrepôt principal
+    const stockPrincipale = stockData.find(stock => stock.entrepot._id.toString() === entrepotPrincipale._id.toString());
+    const quantiteDisponible = stockPrincipale ? stockPrincipale.quantite : 0;
+
+    // Ajouter les informations de l'entrepôt principal et de la quantité au produit
     const produitAvecQuantite = {
       ...produit.toObject(),
       quantiteDisponible,
-      uniteNom // Ajouter l'unité au produit
+      entrepotId: entrepotPrincipale._id,
+      entrepotNom: entrepotPrincipale.nom,
+      unite: uniteProduit, // Assurez-vous que le champ 'nom' existe dans le modèle d'entrepôt
     };
 
-    res.json(produitAvecQuantite); // Renvoyer le produit avec sa quantité et son unité
+    res.status(200).json(produitAvecQuantite); // Renvoyer le produit avec sa quantité et les informations de l'entrepôt
   } catch (error) {
     console.error('Erreur lors de la récupération du produit et de sa quantite:', error);
     res.status(500).json({ message: 'Erreur interne du serveur' });
   }
 };
+
 
 
 
@@ -118,19 +129,21 @@ exports.getQuantiteProduitByIde = async (req, res) => {
     // Récupérer les stocks pour le produit dans tous les entrepôts sauf l'entrepôt principal
     const stockData = await Stock.find({ produit: id, entrepot: { $ne: entrepotPrincipale._id } })
       .populate("entrepot", "nom") // Populate pour récupérer le nom de l'entrepôt
-      .populate("unite", "nom conversion"); 
+      .populate("unite", "nom conversion");
 
     // Définir les valeurs par défaut
     let quantiteMaximale = 0;
     let entrepotMaxQuantite = null;
-    let uniteMaxQuantite = "Unité"; // Nouvelle variable pour l'unité
+    let  entrepotIdMaxQuantite = null ;
+        let uniteMaxQuantite = "Unité";
 
     if (stockData.length > 0) {
       // Trouver l'entrepôt avec la quantité maximale et l'unité correspondante
       stockData.forEach(stock => {
         if (stock.quantite > quantiteMaximale) {
           quantiteMaximale = stock.quantite;
-          entrepotMaxQuantite = stock.entrepot.nom; // Récupérer le nom de l'entrepôt
+          entrepotMaxQuantite = stock.entrepot.nom;
+          entrepotIdMaxQuantite = stock.entrepot._id;// Récupérer le nom de l'entrepôt
           uniteMaxQuantite = stock.unite; // Récupérer le nom de l'unité
         }
       });
@@ -141,6 +154,7 @@ exports.getQuantiteProduitByIde = async (req, res) => {
       ...produit.toObject(),
       quantiteDisponible: quantiteMaximale,
       entrepotNom: entrepotMaxQuantite,
+      entrepotId :entrepotIdMaxQuantite,
       uniteNom: uniteMaxQuantite // Ajouter l'unité à la réponse
     };
 
@@ -319,11 +333,11 @@ exports.sortirProduitsStock = async (req, res) => {
 
 exports.getStocksByEntrepot = async (req, res) => {
   try {
-      const { entrepotId } = req.params;
-      const stocks = await Stock.find({ entrepot: entrepotId }).populate('produit');
+    const { entrepotId } = req.params;
+    const stocks = await Stock.find({ entrepot: entrepotId }).populate('produit');
 
-      res.status(200).json(stocks);
+    res.status(200).json(stocks);
   } catch (error) {
-      res.status(500).json({ message: "Erreur lors de la récupération des stocks", error });
+    res.status(500).json({ message: "Erreur lors de la récupération des stocks", error });
   }
 };

@@ -20,6 +20,7 @@ function HistoC() {
   const nom = localStorage.getItem('nom'); 
   const [filtreModePaiement, setFiltreModePaiement] = useState("all");
   const [statutfilter, setstatufilter] = useState("all");
+  
   useEffect(() => {
     const fetchPaiements = async () => {
       try {
