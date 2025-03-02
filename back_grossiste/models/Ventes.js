@@ -33,8 +33,13 @@ const venteSchema = new mongoose.Schema({
     },
     magasinierId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Magasinier',
+        ref: 'User',
         required: true,
+    },
+    entrepotId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Entrepot', // Assurez-vous que l'entité 'Entrepot' existe
+        required: true
     },
     statut: {
         type: String,

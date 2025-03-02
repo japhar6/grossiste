@@ -5,7 +5,7 @@ const Commercial = require("../models/Commercial");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, statut } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, statut,entrepotId } = req.body;
 
         // Vérification du typeClient
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
@@ -81,6 +81,7 @@ exports.ajouterCommande = async (req, res) => {
                 montantApresRemise,  // Ajout de montant après remise fixe
                 typeRemise,
                 valeurRemise,
+                entrepotId,
                 uniteChoisie: uniteChoisie.nom
             };
         }));
@@ -94,6 +95,7 @@ exports.ajouterCommande = async (req, res) => {
             clientId: typeClient === "Client" ? clientId : null,
             commercialId: typeClient === "Commercial" ? commercialId : null,
             vendeurId,
+            entrepotId,
             produits: produitsDetails,
             totalGeneral,  // Ce total général inclut désormais la remise fixe
             statut
@@ -132,7 +134,7 @@ exports.ajouterCommande = async (req, res) => {
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
     try {
-        const commandes = await Commande.find().populate('produits.produit', 'nom prixDachat')
+        const commandes = await Commande.find().populate('produits.produit', 'nom *')
         .populate('vendeurId', 'nom')
         .populate('clientId','nom')
         .populate('commercialId', 'nom');
@@ -198,6 +200,23 @@ exports.getSuggestionscom = async (req, res) => {
     }
 };
 
+exports.getSuggestionscomcre = async (req, res) => {
+    try {
+        // Rechercher toutes les commandes avec le statut "payé" et le type de client "Commercial"
+        const commandes = await Commande.find({
+            statut: "payé",
+            typeClient: "Commercial",
+            // Ajout de ":" pour spécifier la clé et sa valeur
+        }).sort({ createdAt: -1 }); // Tri par date décroissante
+
+        // Renvoie les références des commandes
+        const suggestions = commandes.map(commande => commande.referenceFacture);
+        res.status(200).json(suggestions);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des suggestions :", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des suggestions." });
+    }
+};
 
 
 // Récupérer une commande par sou référence
@@ -211,7 +230,9 @@ exports.getCommandeByref = async (req, res) => {
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
                 .populate("produits.produit", "nom")
-                .populate("paiement", "modePaiement"); // Ajout de modePaiement
+                .populate("paiement", "modePaiement") // Ajout de modePaiement
+                .populate("entrepotId", "nom")
+                ;
         } else {
             commande = await Commande.findById(req.params.id)
                 .populate("clientId", "nom telephone")
@@ -254,6 +275,26 @@ exports.getCommandesTermineesEtLivrees = async (req, res) => {
     }
 };
 
+// Récupérer les commandes avec les statuts "terminée" et "livrée"
+exports.getCommandesLivrees = async (req, res) => {
+    try {
+        // Filtrer les commandes par les statuts "terminée" et "livrée"
+        const commandes = await Commande.find({
+            statut: { $in: [ "payé et livré"] }
+        })
+        .populate("produits.produit", "nom unite.nom")  // Récupérer les produits associés (nom du produit)
+        .populate("clientId", "nom telephone")  // Récupérer les informations du client
+        .populate("commercialId", "nom telephone")
+        .populate("vendeurId", "nom")  // Récupérer les informations du vendeur
+        .populate("paiement", "modePaiement")
+
+
+
+        res.status(200).json(commandes);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
 
 // Mettre à jour une commande
 exports.updateCommande = async (req, res) => {

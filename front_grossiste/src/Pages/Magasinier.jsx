@@ -6,6 +6,7 @@ import Header from "../Components/NavbarM";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function SortieStock() {
   const [commandes, setCommandes] = useState([]);
@@ -15,35 +16,17 @@ function SortieStock() {
   const [statutCommande, setStatutCommande] = useState("");
   const [searchDate, setSearchDate] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // État pour mobile
+  const [sortOrder, setSortOrder] = useState("desc");
 
-  useEffect(() => {
-    const fetchCommandes = async () => {
-      try {
-        const response = await axios.get("/api/commandes/TermineeLivree");
-        setCommandes(response.data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des commandes", error);
-      }
-    };
-    fetchCommandes();
-  }, []);
 
-  const getDetailsCommande = (commandeId) => {
-    const commande = commandes.find((c) => c._id === commandeId);
-    setCommandeSelectionnee(commande);
-  };
+  const [entrepots, setEntrepots] = useState([]);
+  const [entrepotSelectionne, setEntrepotSelectionne] = useState(null);
+       const playSound = () => {
+                  const audio = new Audio(Sound); 
+                  audio.play();
+              };
+              
 
-  const validerVente = async () => {
-    // Vérification si une commande est sélectionnée
-    if (!commandeSelectionnee) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Attention',
-        text: 'Veuillez sélectionner une commande à valider.',
-      });
-      return;
-    }
-  
     // Vérification de l'identité du magasinier
     const magasinierId = localStorage.getItem("userid");
     if (!magasinierId) {
@@ -55,21 +38,61 @@ function SortieStock() {
       return;
     }
   
-    // Vérification que la commande est payée avant la validation
-    if (commandeSelectionnee.statut.toLowerCase() !== 'payé') {
+  const getEntrepotsDuMagasinier = async (magasinierId) => {
+    try {
+      const response = await axios.get(`/api/entrepot/recuperer/${magasinierId}`);
+      setEntrepots(response.data); // Stocker la liste des entrepôts
+    } catch (error) {
+      console.error("Erreur lors de la récupération des entrepôts:", error);
+    }
+  };
+  
+  // Charger les entrepôts au montage du composant
+  useEffect(() => {
+    if (magasinierId) {
+      getEntrepotsDuMagasinier(magasinierId);
+    }
+  }, [magasinierId]);
+  
+
+  useEffect(() => {
+    const fetchCommandes = async () => {
+      try {
+        const response = await axios.get("/api/commandes/TermineeLivree");
+        const sortedCommandes = response.data.sort((a, b) => {
+          // Assurez-vous que la date est dans le bon format et qu'elle est valide
+          const dateA = new Date(a.dateCommande);
+          const dateB = new Date(b.dateCommande);
+          return dateB - dateA;  // Trier du plus récent au plus ancien
+        });
+        setCommandes(sortedCommandes);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des commandes", error);
+      }
+    };
+    fetchCommandes();
+  }, []);
+  
+
+  const getDetailsCommande = (commandeId) => {
+    const commande = commandes.find((c) => c._id === commandeId);
+    setCommandeSelectionnee(commande);
+  };
+  const validerVente = async () => {
+    if (!entrepotSelectionne) {
       Swal.fire({
-        icon: 'error',
+        icon: 'warning',
         title: 'Erreur',
-        text: 'La commande n\'est pas payée. Vous ne pouvez pas valider cette vente.',
+        text: "Veuillez sélectionner un entrepôt avant de valider la vente.",
       });
       return;
     }
   
-    // Envoi de la requête pour valider la vente
     try {
       const response = await axios.post("/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
-        magasinierId: magasinierId,
+        magasinierId,
+        entrepotId: entrepotSelectionne,
       });
   
       Swal.fire({
@@ -80,17 +103,51 @@ function SortieStock() {
         window.location.reload();
       });
   
+      playSound();
       setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id));
       setCommandeSelectionnee(null);
     } catch (error) {
       console.error("Erreur lors de la validation de la vente:", error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: error.response?.data.message || 'Échec de la validation de la vente.',
-      });
+      let errorMessage = error.response?.data.message || 'Échec de la validation de la vente.';
+  
+      // Vérifier si l'erreur concerne une rupture de stock
+      if (errorMessage.includes("🚨")) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Stock insuffisant',
+          html: `<b>${errorMessage}</b>`,
+        });
+  
+        // Extraire le nom du produit en rupture de stock
+        const match = errorMessage.match(/"([^"]+)"/); // Récupère le nom du produit entre guillemets
+        const produitNom = match ? match[1] : "Produit inconnu";
+  
+        // Envoyer la notification à l'admin
+        const data = {
+          "produit": produitNom,
+          "quantiteRestante": "0" // Supposons que la quantité est 0 pour une rupture
+        };
+  
+        console.log("Envoi de la notification:", data);
+  
+        axios.post('/api/notif/rupture-stock', data)
+          .then(response => {
+            toast.warn(`Attention : Rupture de stock sur ${produitNom}!`);
+          })
+          .catch(error => {
+            console.error('Erreur lors de l\'envoi de la notification :', error.response?.data || error);
+            toast.error('Erreur lors de l\'envoi de la notification de rupture de stock.');
+          });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: errorMessage,
+        });
+      }
     }
   };
+
   
 
   // Effect pour suivre les changements de taille de la fenêtre
@@ -102,20 +159,33 @@ function SortieStock() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+
 // Filtrage des commandes
 const filteredCommandes = commandes.filter((commande) => {
   const dateCommande = commande.updatedAt ? new Date(commande.updatedAt).toISOString().split("T")[0] : "";
   const clientNom = commande.clientId ? commande.clientId.nom : commande.commercialId ? commande.commercialId.nom : "N/A";
-  
 
+  const matchesSearchTerm = searchTerm === "" || (commande.referenceFacture && commande.referenceFacture.toLowerCase().includes(searchTerm.toLowerCase()));
+  const matchesClientType = clientType === "" || (clientType === "client" && commande.clientId) || (clientType === "commercial" && commande.commercialId);
+  const matchesStatutCommande = statutCommande === "" || commande.statut.toLowerCase() === statutCommande.toLowerCase();
+  const matchesSearchDate = searchDate === "" || dateCommande === searchDate;
 
-  return (
-    (searchTerm === "" || (commande.referenceFacture && commande.referenceFacture.toLowerCase().includes(searchTerm.toLowerCase()))) &&
-    (clientType === "" || (clientType === "client" && commande.clientId) || (clientType === "commercial" && commande.commercialId)) &&
-    (statutCommande === "" || commande.statut.toLowerCase() === statutCommande.toLowerCase()) &&
-    (searchDate === "" || dateCommande === searchDate)
-  );
+  return matchesSearchTerm && matchesClientType && matchesStatutCommande && matchesSearchDate;
 });
+
+// Tri des commandes par date
+const sortedCommandes = filteredCommandes.sort((a, b) => {
+  const dateA = a.updatedAt ? new Date(a.updatedAt) : new Date(0); // Date par défaut au cas où
+  const dateB = b.updatedAt ? new Date(b.updatedAt) : new Date(0); // Date par défaut au cas où
+
+  if (sortOrder === "asc") {
+    return dateA - dateB; // Tri croissant
+  } else {
+    return dateB - dateA; // Tri décroissant
+  }
+});
+
   return (
     <main className="center">
       <Sidebar />
@@ -253,6 +323,19 @@ const filteredCommandes = commandes.filter((commande) => {
 </div>
 
 <div className="modal-footer center">
+<label>Choisissez l'entrepôt :</label>
+<select
+  value={entrepotSelectionne}
+  onChange={(e) => setEntrepotSelectionne(e.target.value)}
+>
+  <option value="">Sélectionnez un entrepôt</option>
+  {entrepots.map((entrepot) => (
+    <option key={entrepot._id} value={entrepot._id}>
+      {entrepot.nom} - {entrepot.localisation}
+    </option>
+  ))}
+</select>
+
   <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
   {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && ( // Affiche le bouton seulement si la commande est terminée
     <button className="btn btn-info" onClick={validerVente}>

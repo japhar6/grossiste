@@ -28,7 +28,9 @@ const commandeSchema = new mongoose.Schema({
     },
     typeRemise: { type: String },
     valeurRemise: { type: Number },
-    referenceFacture: { type: String, unique: true }
+    referenceFacture: { type: String, unique: true },
+    dateSortie: { type: Date, default: null }  ,
+    entrepotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot' }
 }, { timestamps: true });
 
  // Hook pour générer la référence de facture

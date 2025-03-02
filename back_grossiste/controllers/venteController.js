@@ -1,10 +1,12 @@
 const Vente = require('../models/Ventes');
 const Commande = require('../models/Commandes');
 const Stock = require('../models/Stock');
+const Entrepot = require('../models/Entrepot');
 const Produit = require("../models/Produits");
 const VenteCom = require('../models/VenteComm');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
-
+// Controller pour l'historique des sorties
+const User = require('../models/User');  // Assurez-vous de bien inclure votre modèle User
 // Fonction de conversion d'unité
 function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
     // Trouver l'unité de départ
@@ -25,51 +27,54 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
     let nouvelleQuantite = quantite * (uniteCible.conversion / uniteSource.conversion);
     return { quantite: nouvelleQuantite, unite: uniteCible.nom };
 }
-
-// Le contrôleur de validation de vente
 exports.validerVente = async (req, res) => {
     try {
-        let { commandeId, magasinierId } = req.body;
+        let { commandeId, magasinierId, entrepotId } = req.body;
 
-        // Récupérer la commande validée par le magasinier
+        if (!entrepotId) {
+            return res.status(400).json({ message: "Veuillez sélectionner un entrepôt." });
+        }
+
+        // Vérifier si l'entrepôt existe bien et appartient au magasinier
+        let entrepot = await Entrepot.findOne({ _id: entrepotId, magasinier: magasinierId });
+        if (!entrepot) {
+            return res.status(403).json({ message: "Cet entrepôt ne vous appartient pas ou n'existe pas." });
+        }
+
+        // Récupérer la commande
         let commande = await Commande.findById(commandeId).populate('produits.produit');
         if (!commande) {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        // Vérifier si la commande est prête à sortir
         if (commande.statut !== 'payé') {
-            return res.status(400).json({ message: "La commande doit être validée par le caissier avant" });
+            return res.status(400).json({ message: "La commande doit être validée par le caissier avant." });
         }
 
-        // Créer une nouvelle vente
+        // Créer une vente
         let vente = new Vente({
             commandeId,
             produits: [],
             magasinierId,
-            statut: 'validée', // La vente est directement validée
+            entrepotId,  // Sauvegarder l'entrepôt utilisé
+            statut: 'validée',
             dateValidationMagasinier: Date.now(),
         });
 
-        // Réduire les quantités dans le stock en appliquant FIFO et en tenant compte des unités
+        // Réduction du stock
         await Promise.all(commande.produits.map(async (item) => {
-            let remainingQuantity = item.quantite;  // Quantité restante à réduire
+            let remainingQuantity = item.quantite;
             let produitId = item.produit._id;
-
-            // Trouver le produit pour récupérer les informations sur les unités et conversions
             let produit = await Produit.findById(produitId);
 
-            // Trouver tous les stocks du produit en question, triés par date d'entrée croissante (FIFO)
-            let stocks = await Stock.find({ produit: produitId }).sort({ dateEntree: 1 });
+            let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
 
             if (stocks.length === 0) {
-                throw new Error(`Le produit ${item.produit.nom} est épuisé dans le stock`);
+                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock.`);
             }
 
-            // Appliquer la conversion de l'unité choisie en l'unité minimale
             let { quantite: quantityInMinUnit, unite } = convertirUnite(remainingQuantity, item.uniteChoisie, produit.unites);
 
-            // Réduire les quantités de stock en respectant FIFO
             for (let i = 0; i < stocks.length; i++) {
                 let stock = stocks[i];
                 if (quantityInMinUnit <= 0) break;
@@ -77,26 +82,22 @@ exports.validerVente = async (req, res) => {
                 let availableQuantity = stock.quantite;
 
                 if (availableQuantity >= quantityInMinUnit) {
-                    // Si le stock courant est suffisant pour couvrir la vente, on réduit uniquement la quantité nécessaire
                     stock.quantite -= quantityInMinUnit;
                     stock.valeurTotale = stock.quantite * stock.prixUnitaire;
-                    await stock.save(); // Sauvegarder le stock après la réduction
-                    quantityInMinUnit = 0; // Plus de quantité à réduire
+                    await stock.save();
+                    quantityInMinUnit = 0;
                 } else {
-                    // Si le stock courant est insuffisant, on consomme tout ce stock et on passe au suivant
                     quantityInMinUnit -= availableQuantity;
-                    stock.quantite = 0; // Réduire complètement ce stock
+                    stock.quantite = 0;
                     stock.valeurTotale = 0;
-                    await stock.save(); // Sauvegarder la suppression du stock
+                    await stock.save();
                 }
             }
 
-            // Si la quantité demandée n'a pas été entièrement réduite, cela signifie qu'il n'y a pas assez de stock
             if (quantityInMinUnit > 0) {
-                throw new Error(`Quantité insuffisante pour le produit ${item.produit.nom}. Disponible: ${item.quantite - remainingQuantity}, Demandée: ${item.quantite}`);
+                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt sélectionné.`);
             }
 
-            // Ajouter la quantité convertie et l'unité à la vente
             vente.produits.push({
                 produit: item.produit._id,
                 quantite: item.quantite,
@@ -105,15 +106,13 @@ exports.validerVente = async (req, res) => {
             });
         }));
 
-        // Sauvegarder la vente
         await vente.save();
-
-        // Mettre à jour la commande avec le statut 'livrée'
         commande.statut = 'payé et livré';
+        commande.dateSortie = Date.now(); 
         await commande.save();
 
         res.status(200).json({
-            message: "Vente validée avec succès et commande marquée comme livrée",
+            message: "✅ Vente validée avec succès et commande marquée comme livrée",
             vente,
             produits: vente.produits.map(item => ({
                 produit: item.produit.nom,
@@ -121,6 +120,7 @@ exports.validerVente = async (req, res) => {
                 unite: item.unite
             })),
         });
+
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -206,57 +206,31 @@ exports.validerRetourProduits = async (req, res) => {
     }
 };
 
-// La fonction de conversion avec des logs pour suivre le processus
-const convertirQuantite = async (quantite, uniteVendu, produitId, uniteReference) => {
+exports.getAllVentes = async (req, res) => {
     try {
-        // Trouver les détails du produit à partir de son ID
-        const produitDetails = await Produit.findById(produitId);
-
-        if (!produitDetails) {
-            throw new Error(`Produit avec l'ID ${produitId} non trouvé.`);
+        // Récupérer toutes les ventes, incluant les produits et le magasinier
+        const ventes = await Vente.find()
+            .populate("magasinierId", "nom")  
+            .populate("entrepotId", "nom")// Limiter à la propriété 'nom' du magasinier
+            .populate({
+                path: "commandeId",              // Peupler la référence 'commandeId'
+                populate: [
+                    { path: "clientId", select: "nom email" },  // Peupler 'clientId' avec nom et email du client
+                    { path: "commercialId", select: "nom" },    // Peupler 'commercialId' avec nom du commercial
+                    { path: "vendeurId", select: "nom" },       // Peupler 'vendeurId' avec nom du vendeur
+                    { path: "paiement", select: "type montant" }, // Peupler 'paiement' avec type et montant
+                    { path: "produits.produit", select: "nom prix" } // Peupler 'produit' dans 'produits' avec nom et prix
+                ]
+            });
+        
+        if (ventes.length === 0) {
+            return res.status(404).json({ message: 'Aucune vente trouvée' });
         }
 
-        // Trouver les détails de l'unité de vente et de l'unité de référence
-        const uniteVenduDetails = produitDetails.unites.find(u => u.nom === uniteVendu);
-        const uniteReferenceDetails = produitDetails.unites.find(u => u.nom === uniteReference);
-
-        if (!uniteVenduDetails || !uniteReferenceDetails) {
-            throw new Error(`Les unités ${uniteVendu} ou ${uniteReference} ne sont pas trouvées.`);
-        }
-
-        // Récupérer les facteurs de conversion
-        const facteurConversionUniteVendu = uniteVenduDetails.conversion;
-        const facteurConversionUniteReference = uniteReferenceDetails.conversion;
-
-        // Affichage des unités et des facteurs de conversion
-        console.log(`Unité de vente : ${uniteVendu}`);
-        console.log(`Unité de référence : ${uniteReference}`);
-        console.log(`Facteur de conversion pour ${uniteVendu}: ${facteurConversionUniteVendu}`);
-        console.log(`Facteur de conversion pour ${uniteReference}: ${facteurConversionUniteReference}`);
-
-        // Si les unités sont les mêmes, aucune conversion nécessaire
-        if (uniteVendu === uniteReference) {
-            console.log(`Les unités sont identiques, aucune conversion nécessaire.`);
-            return quantite;
-        }
-
-        // Calcul de la conversion entre les unités
-        let quantiteConvertie;
-
-        // Si l'unité de vente est plus grande que l'unité de référence, on divise
-        if (facteurConversionUniteVendu > facteurConversionUniteReference) {
-            quantiteConvertie = quantite * facteurConversionUniteVendu / facteurConversionUniteReference;
-        }
-        // Sinon on multiplie
-        else {
-            quantiteConvertie = quantite * facteurConversionUniteReference / facteurConversionUniteVendu;
-        }
-
-        console.log(`Conversion de ${quantite} ${uniteVendu} en ${uniteReference} : ${quantiteConvertie}`);
-
-        return quantiteConvertie;
+        // Retourner les ventes
+        res.status(200).json(ventes);
     } catch (error) {
-        console.error(`Erreur de conversion : ${error.message}`);
-        throw new Error("Erreur lors de la conversion des unités.");
+        console.error(error);
+        res.status(500).json({ message: 'Erreur serveur' });
     }
 };

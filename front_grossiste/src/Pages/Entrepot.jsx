@@ -16,19 +16,30 @@ function Entrepot() {
   });
   const [editingEntrepotId, setEditingEntrepotId] = useState(null); 
   const nomInputRef = useRef(null);
+  // États de chargement
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+  
     if (token) {
-      // Récupérer tous les entrepôts
+      setLoadingEntrepots(true);
       axios
         .get("/api/entrepot", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
           setEntrepots(response.data);
-          
+          setLoadingEntrepots(false);
+        })
+        .catch((error) => {
+          console.error("Erreur chargement entrepôts", error);
+          setLoadingEntrepots(false);
+        });
+        setLoadingMagasiniers(true);
           // Récupérer tous les magasiniers sans filtre
           axios
             .get("/api/users/tout", {
@@ -39,19 +50,15 @@ function Entrepot() {
                 (user) => user.role === "magasinier"
               );
               setMagasiniersDisponibles(availableMagasiniers);
+              setLoadingMagasiniers(false);
+              
             })
             .catch((error) => {
               console.error("Erreur lors de la récupération des utilisateurs", error);
+              setLoadingMagasiniers(false);
             });
-        })
-        .catch((error) => {
-          console.error("Erreur lors de la récupération des entrepôts", error);
-          Swal.fire({
-            icon: "error",
-            title: "Erreur",
-            text: "Impossible de récupérer les entrepôts.",
-          });
-        });
+      
+        
     }
   }, [token]);
 
@@ -60,7 +67,7 @@ function Entrepot() {
       Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez remplir tous les champs." });
       return;
     }
-
+    setLoadingAction(false);
     const request = editingEntrepotId
       ? axios.put(`/api/entrepot/${editingEntrepotId}`, newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
@@ -77,7 +84,8 @@ function Entrepot() {
             : [...prev, response.data]
         );
         setNewEntrepot({ nom: "", localisation: "", type: "", magasinier: "" });
-        setEditingEntrepotId(null); // Réinitialiser l'ID d'édition
+        setEditingEntrepotId(null);
+        setLoadingAction(false); // Réinitialiser l'ID d'édition
         Swal.fire({
           icon: "success",
           title: editingEntrepotId ? "Entrepôt modifié!" : "Entrepôt ajouté!",
@@ -87,6 +95,7 @@ function Entrepot() {
         });
       })
       .catch((error) => {
+        setLoadingAction(false);
         Swal.fire({ icon: "error", title: "Erreur", text: "Une erreur est survenue lors de l'ajout ou de la modification de l'entrepôt." });
       });
   };
@@ -113,18 +122,20 @@ function Entrepot() {
     });
 
     if (result.isConfirmed) {
+      setLoadingAction(true);
       try {
         await axios.delete(`/api/entrepot/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
+        setLoadingAction(false);
         Swal.fire('Supprimé!', 'L\'entrepôt a été supprimé.', 'success').then(() => {
           setEntrepots((prev) => prev.filter((entrepot) => entrepot._id !== id)); 
         });
 
       } catch (error) {
+        setLoadingAction(false);
         console.error("Erreur de suppression", error);
         Swal.fire('Erreur', 'Une erreur s\'est produite lors de la suppression.', 'error');
       }
@@ -141,6 +152,13 @@ function Entrepot() {
             <h6 className="alert alert-info">
               <i className="fa fa-warehouse"></i> Liste des Entrepôts
             </h6>
+            {loadingEntrepots ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
             <div className="consultatio">
               <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                 <table className="table table-striped table-hover">
@@ -164,6 +182,7 @@ function Entrepot() {
                         <td>{entrepot.dateCreation}</td>
                         <td>
                           <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>
+                         
                             <i className="fas fa-pencil-alt"></i> Modifier
                           </button>
                           <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>
@@ -176,6 +195,7 @@ function Entrepot() {
                 </table>
               </div>
             </div>
+                )}
           </div>
 
           <div className="ajoutPersonnel">
@@ -218,9 +238,16 @@ function Entrepot() {
                 ))
               )}
             </select>
-            <button className="btn15 btn1-success" onClick={handleAddOrUpdateEntrepot}>
-              {editingEntrepotId ? "Modifier" : "Ajouter"}
-            </button>
+            <button className="btn15 btn1-success" onClick={handleAddOrUpdateEntrepot} disabled={loadingAction}>
+  {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+    editingEntrepotId ? "Modifier" : "Ajouter"
+  )}
+</button>
+
           </div>
         </div>
       </section>

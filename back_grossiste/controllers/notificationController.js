@@ -74,7 +74,21 @@ exports.markAsRead = async (req, res) => {
 };
 
 
-  
+exports.deleteNotification = async (req, res) => {
+  try {
+    const notificationId = req.params.id;  // Récupérer l'ID de la notification à supprimer
+    const deletedNotification = await Notification.findByIdAndDelete(notificationId);  // Suppression de la notification
+
+    if (!deletedNotification) {
+      return res.status(404).json({ message: 'Notification non trouvée' });
+    }
+
+    return res.status(200).json({ message: 'Notification supprimée avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la notification:', error);
+    return res.status(500).json({ message: 'Erreur serveur lors de la suppression de la notification' });
+  }
+};
 
 exports.envoyerNotificationAdmin = async (req, res) => {
   try {
@@ -113,3 +127,43 @@ exports.envoyerNotificationAdmin = async (req, res) => {
   }
 };
 
+exports.envoyerNotificationRuptureStock = async (req, res) => {
+  try {
+    const { produit, quantiteRestante, idClient } = req.body; // On récupère les informations nécessaires depuis le corps de la requête
+
+    if (!produit || !quantiteRestante) {
+      return res.status(400).json({ message: 'Le produit et la quantité restante sont requis.' });
+    }
+
+    // Créer un message personnalisé pour la notification
+    const message = `Alerte : Le produit ${produit} a atteint un stock faible de ${quantiteRestante} unités.`;
+
+    // Créer la notification de rupture de stock dans la base de données
+    const notification = new Notification({
+      message: message,
+      lue: false, // Par défaut, la notification est non lue
+      type: 'rupture_stock', // Spécifie que c'est une notification de rupture de stock
+      idClient: idClient || null, // Si un idClient est fourni, on l'ajoute à la notification, sinon on laisse null
+    });
+
+    await notification.save();
+
+    // Récupérer l'ObjectId de l'admin
+    const adminUser = await User.findOne({ role: 'admin' });
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Utilisateur admin non trouvé.' });
+    }
+
+    pusher.trigger('admin-channel', 'rupture_stock', {
+      message: message,
+      notificationId: notification._id,
+      produit: produit,
+      quantiteRestante: quantiteRestante,
+    });
+
+    res.status(201).json({ message: 'Notification de rupture de stock envoyée avec succès.', notification });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de la notification de rupture de stock:", error);
+    res.status(500).json({ message: "Erreur lors de l'envoi de la notification de rupture de stock", error: error.message });
+  }
+};

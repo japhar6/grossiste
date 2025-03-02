@@ -5,6 +5,8 @@ import "../Styles/Caisse.css";
 import Swal from 'sweetalert2';
 import axios from '../api/axios';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav";
+import generateInvoice from '../config/generateInvoice';
+import generateDiscountInvoice from '../config/generateCreditInvoice';
 
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
@@ -14,20 +16,20 @@ function Caisse() {
   const [allReferences, setAllReferences] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [modePaiement, setModePaiement] = useState("");
-    const [dateLimiteCredit, setDateLimiteCredit] = useState("");
-    const [referencePaiement, setReferencePaiement] = useState("");
-   
-    const handleChangeModePaiement = (e) => {
-      setModePaiement(e.target.value);
-    };
+  const [dateLimiteCredit, setDateLimiteCredit] = useState("");
+  const [referencePaiement, setReferencePaiement] = useState("");
+
+  const handleChangeModePaiement = (e) => {
+    setModePaiement(e.target.value);
+  };
 
   const playSound = () => {
-    const audio = new Audio(Sound); 
+    const audio = new Audio(Sound);
     audio.play();
   };
 
 
-  const idCaissier = localStorage.getItem("userid"); 
+  const idCaissier = localStorage.getItem("userid");
 
   useEffect(() => {
     const fetchReferences = async () => {
@@ -52,7 +54,7 @@ function Caisse() {
       );
       setSuggestions(filteredSuggestions);
     } else {
-      setSuggestions([]); 
+      setSuggestions([]);
     }
   };
 
@@ -82,7 +84,7 @@ function Caisse() {
       }
 
       setCommande(data);
-     
+
     } catch (error) {
       console.error("Erreur lors de la recherche de la commande :", error);
       setCommande(null);
@@ -99,21 +101,21 @@ function Caisse() {
 
   const validerPaiement = async () => {
     if (!commande) return;
-  
-// Si le type de client est "Commercial", définir le mode de paiement à "a credit" automatiquement
-   
+
+    // Si le type de client est "Commercial", définir le mode de paiement à "a credit" automatiquement
 
 
-if (commande.typeClient === "Client" && !modePaiement) {
-    Swal.fire({
+
+    if (commande.typeClient === "Client" && !modePaiement) {
+      Swal.fire({
         icon: 'warning',
         title: 'Alerte',
         text: 'Veuillez sélectionner un mode de paiement.',
-    });
-    return;
-}
-  
-  
+      });
+      return;
+    }
+
+
     // Vérifier que la référence de paiement est remplie si nécessaire
     if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
       Swal.fire({
@@ -123,7 +125,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
       });
       return;
     }
-  
+
     // Vérifier que la date limite est bien remplie si mode de paiement "à crédit"
     if (modePaiement === "a credit" && !dateLimiteCredit) {
       Swal.fire({
@@ -133,7 +135,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
       });
       return;
     }
-  
+
     if (commande.statut !== "en cours") {
       Swal.fire({
         icon: 'warning',
@@ -142,38 +144,42 @@ if (commande.typeClient === "Client" && !modePaiement) {
       });
       return;
     }
-    let typeClient = commande.typeClient; console.log("type",typeClient);
-  
+    let typeClient = commande.typeClient; console.log("type", typeClient);
 
-  
-  
+
+
+
     const data = {
       statut: typeClient === "Commercial" ? "non payé" : "payé complet",
-      modePaiement: modePaiement, 
+      modePaiement: modePaiement,
       totalPaye: commande.totalGeneral,
       referencePaiement,
-      dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null, 
+      dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null,
       idCaissier
     };
-  
+
     console.log("Données de paiement à envoyer:", data);
-  
+
     try {
       let url = `/api/paiement/ajouter/${commande._id}`;
       if (commande.typeClient === "Commercial") {
         url = `/api/paiementCom/commercial/${commande._id}`;
       }
-  
+
       const response = await axios.post(url, data, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-  
+
       if (response.status !== 200) {
         throw new Error("Échec du paiement");
       }
-  
+
+      // Générer la facture après la validation du paiement
+      generateInvoice(commande, modePaiement, referencePaiement, dateLimiteCredit, client, commercial);
+
+
       const result = response.data;
       Swal.fire({
         icon: 'success',
@@ -188,8 +194,8 @@ if (commande.typeClient === "Client" && !modePaiement) {
       setCommande(null);
       setClient(null);
       setCommercial(null);
-   
-  
+
+
     } catch (error) {
       console.error(error);
       Swal.fire({
@@ -199,7 +205,35 @@ if (commande.typeClient === "Client" && !modePaiement) {
       });
     }
   };
-  
+  const handleGenerateInvoice = async () => {
+    const { value: typeFacture } = await Swal.fire({
+      title: 'Choisir le type de facture',
+      input: 'select',
+      inputOptions: {
+        'normal': 'Facture Normale',
+        'remise': 'Facture de Remise'
+      },
+      inputPlaceholder: 'Sélectionner un type de facture',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Vous devez sélectionner un type de facture';
+        }
+      }
+    });
+
+    if (typeFacture === 'normal') {
+      // Appeler la fonction pour générer une facture normale
+      generateInvoice(commande, modePaiement, referencePaiement, dateLimiteCredit, client, commercial);
+    } else if (typeFacture === 'remise') {
+      // Appeler la fonction pour générer une facture de remise
+      generateDiscountInvoice(commande, client, commercial, modePaiement, referencePaiement, dateLimiteCredit);
+    }
+  };
+
+
+
+
   return (
     <main className="center">
       <Sidebar />
@@ -231,46 +265,46 @@ if (commande.typeClient === "Client" && !modePaiement) {
                       ))}
                     </ul>
                   )}
-                    <select
-  className="form-control mt-2"
-  value={modePaiement}
-  onChange={(e) => setModePaiement(e.target.value)}
->
-  <option value="">Sélectionner le mode de paiement</option>
-  <option value="espèce">Espèce</option>
-  <option value="mobile money">Mobile Money</option>
-  <option value="a credit">A Crédit</option>
-  <option value="virement bancaire">Virement bancaire</option>
-</select>
+                  <select
+                    className="form-control mt-2"
+                    value={modePaiement}
+                    onChange={(e) => setModePaiement(e.target.value)}
+                  >
+                    <option value="">Sélectionner le mode de paiement</option>
+                    <option value="espèce">Espèce</option>
+                    <option value="mobile money">Mobile Money</option>
+                    <option value="a credit">A Crédit</option>
+                    <option value="virement bancaire">Virement bancaire</option>
+                  </select>
 
                   {(modePaiement === "mobile money" || modePaiement === "virement bancaire") && (
-  <div className="form-group mt-3">
-    <label htmlFor="referencePaiement">
-      {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}
-    </label>
-    <input
-      type="text"
-      id="referencePaiement"
-      className="form-control"
-      placeholder="Entrez la référence de la facture"
-      value={referencePaiement}
-      onChange={(e) => setReferencePaiement(e.target.value)}
-    />
-  </div>
-)}
-{modePaiement === "a credit" && (
-  <div className="form-group">
-    <label htmlFor="dateLimiteCredit">Date limite de paiement</label>
-    <input
-      type="date"
-      id="dateLimiteCredit"
-      className="form-control"
-      value={dateLimiteCredit}
-      onChange={(e) => setDateLimiteCredit(e.target.value)}
-      required
-    />
-  </div>
-)}
+                    <div className="form-group mt-3">
+                      <label htmlFor="referencePaiement">
+                        {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}
+                      </label>
+                      <input
+                        type="text"
+                        id="referencePaiement"
+                        className="form-control"
+                        placeholder="Entrez la référence de la facture"
+                        value={referencePaiement}
+                        onChange={(e) => setReferencePaiement(e.target.value)}
+                      />
+                    </div>
+                  )}
+                  {modePaiement === "a credit" && (
+                    <div className="form-group">
+                      <label htmlFor="dateLimiteCredit">Date limite de paiement</label>
+                      <input
+                        type="date"
+                        id="dateLimiteCredit"
+                        className="form-control"
+                        value={dateLimiteCredit}
+                        onChange={(e) => setDateLimiteCredit(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
 
 
 
@@ -279,7 +313,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
                     Rechercher
                   </button>
                 </div>
-            
+
               </div>
 
               <div className="produits p-3">
@@ -290,8 +324,8 @@ if (commande.typeClient === "Client" && !modePaiement) {
                       <tr>
                         <th>{commande ? (commande.typeClient === "Commercial" ? "Commercial" : "Client") : "Client"}</th>
                         <th>Contact</th>
-                      
-                        
+
+
                         <th>Mode de paiement</th>
                       </tr>
                     </thead>
@@ -299,18 +333,21 @@ if (commande.typeClient === "Client" && !modePaiement) {
                       <tr>
                         <td>{commande?.typeClient === "Commercial" ? commercial?.nom : client?.nom}</td>
                         <td>{commande?.typeClient === "Commercial" ? commercial?.telephone : client?.telephone}</td>
-                      
-                      
+
+
                         <td>{modePaiement || "Non spécifié"}</td>
 
                       </tr>
                     </tbody>
                   </table>
                 </div>
-             
+
               </div>
             </div>
-
+            <div>
+              <button className="btno btn-primary" onClick={handleGenerateInvoice}>
+                Générer la Facture
+              </button>    </div>
             {commande && (
               <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
@@ -327,7 +364,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
                     {commande.produits.map((produit, index) => (
                       <tr key={index}>
                         <td>{produit.produit.nom}</td>
-                        <td>{produit.quantite}</td>
+                        <td>{produit.quantite} {produit.uniteChoisie}</td>
                         <td>{produit.prixdevente} Ariary</td>
                         <td>{produit.total} Ariary</td>
                       </tr>
@@ -335,7 +372,7 @@ if (commande.typeClient === "Client" && !modePaiement) {
                   </tbody>
                 </table>
                 <h6 className="total">Total : {commande.totalGeneral} Ariary</h6>
-             
+
 
                 <button className="btnVA btn-success mt-3" onClick={validerPaiement}>
                   Valider le paiement

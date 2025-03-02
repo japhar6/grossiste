@@ -2,7 +2,7 @@ const Achat = require("../models/Achats");
 const Produit = require("../models/Produits");
 const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
-const { ajouterOuMettreAJourStock } = require('./stockController'); 
+const { ajouterOuMettreAJourStock } = require('./stockController');
 const Stock = require('../models/Stock');
 const Entrepot = require('../models/Entrepot'); // Respecte la casse
 
@@ -94,7 +94,7 @@ exports.ajouterAchat = async (req, res) => {
         await panierExistant.save();
 
         // Envoyer la réponse
-        res.status(201).json({ 
+        res.status(201).json({
             message: "✅ Achat ajouté avec succès",
             achat: nouvelAchat,
             panier: panierExistant
@@ -128,14 +128,39 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
 exports.validerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;
-        const { entrepotId } = req.body;
+        const { entrepotId, modePaiement, dateLimiteCredit, referencePaiement } = req.body; // Déstructuration ici
 
         console.log("🔍 Validation du panier - ID du panier:", panierId, "Entrepôt:", entrepotId);
 
+        // Trouver le panier existant
         const panier = await Panier.findById(panierId);
         if (!panier) {
             return res.status(404).json({ message: "Panier non trouvé" });
         }
+
+        // Si un mode de paiement est fourni, mettez-le à jour dans le panier
+        if (modePaiement) {
+            panier.modePaiement = modePaiement;
+        }
+
+        // Si le mode de paiement est "a crédit", ajouter la date limite de crédit
+        if (modePaiement === "crédit" && dateLimiteCredit) {
+            panier.dateLimiteCredit = dateLimiteCredit;
+        }
+
+        // Si le mode de paiement est "virement bancaire" ou "mobile money", ajouter la référence de paiement et changer le statut à "payé"
+        if ((modePaiement === "virement bancaire" || modePaiement === "mobile money") && referencePaiement) {
+            panier.referencePaiement = referencePaiement;
+            panier.statut = "payé"; // Changer le statut à "payé" pour ces modes de paiement
+        }
+
+        // Si le mode de paiement est "espèce", changer directement le statut à "payé" sans référence de paiement
+        if (modePaiement === "espèce") {
+            panier.statut = "payé"; // Changer le statut à "payé" pour espèce
+        }
+
+        // Sauvegarder les informations mises à jour dans le panier
+        await panier.save();
 
         const achats = await Achat.find({ _id: { $in: panier.achats } }).populate('produit');
         if (achats.length === 0) {
@@ -151,15 +176,25 @@ exports.validerPanier = async (req, res) => {
             const prixUnitaire = achat.prixAchat || 0;
 
             // Conversion de la quantité avec ta fonction `convertirUnite`
-            const { quantite, unite } = convertirUnite(achat.quantite, achat.unite, achat.produit.unites);
+            const { quantite, unite } = convertirUnite(achat.quantiteTotale, achat.unite, achat.produit.unites);
 
-            console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantite} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
+            console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantiteTotale} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
 
             // Ajout ou mise à jour du stock
             await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, quantite, prixUnitaire, unite);
         }
 
-        res.status(200).json({ message: "Panier validé et stock mis à jour", achats });
+        // Réponse avec les détails du panier validé
+        res.status(200).json({
+            message: "Panier validé et stock mis à jour",
+            panier: {
+                modePaiement: panier.modePaiement,
+                dateLimiteCredit: panier.dateLimiteCredit,
+                referencePaiement: panier.referencePaiement,
+                achats
+            }
+        });
+
     } catch (error) {
         console.error("❌ Erreur lors de la validation du panier:", error);
         res.status(500).json({ message: "Erreur lors de la validation du panier", error: error.message });

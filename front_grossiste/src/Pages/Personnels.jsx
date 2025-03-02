@@ -24,8 +24,9 @@ function Personnels() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [roleCounts, setRoleCounts] = useState([]);
   const [showLicencies, setShowLicencies] = useState(false);
-
-
+  const [loadingAction, setLoadingAction] = useState(false);
+  const [error, setError] = useState('');
+  const [loadingList, setLoadingList] = useState(false);
 
   useEffect(() => {
     // Fonction pour récupérer le comptage des utilisateurs par rôle
@@ -33,10 +34,10 @@ function Personnels() {
       try {
         const response = await axios.get("/api/users/count-users-by-role");
         setRoleCounts(response.data); // Stocker les données dans l'état
-     
+
       } catch (error) {
         console.error("Erreur lors de la récupération des rôles :", error);
-     
+
       }
     };
 
@@ -45,36 +46,39 @@ function Personnels() {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoadingList(true);
       try {
         const token = localStorage.getItem("token");
         if (!token) {
           console.error("Aucun token trouvé !");
           return;
         }
-  
+
         const response = await axios.get("/api/users/tout/", {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
- 
+
+
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        const currentUserId = decodedToken.userId; 
-  
+        const currentUserId = decodedToken.userId;
+
 
         const filteredUsers = response.data.filter(user => user._id !== currentUserId);
         setUsers(filteredUsers);
+        setLoadingList(false);
       } catch (error) {
+        setLoadingList(false);
         console.error("Erreur de récupération des utilisateurs", error.response?.data || error.message);
       }
     };
-  
+
     fetchUsers();
   }, []);
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoadingAction(true);
     if (password !== confirmPassword) {
       Swal.fire({
         icon: "error",
@@ -101,7 +105,7 @@ function Personnels() {
           "Content-Type": "multipart/form-data",
         },
       });
-
+      setLoadingAction(false);
       Swal.fire({
         icon: "success",
         title: "Succès",
@@ -117,6 +121,7 @@ function Personnels() {
       setnumero_cin("");
       setPhoto(null);
     } catch (error) {
+      setLoadingAction(false);
       Swal.fire({
         icon: "error",
         title: "Erreur",
@@ -139,27 +144,29 @@ function Personnels() {
       showCancelButton: true,
       confirmButtonText: 'Oui, licencier!',
       cancelButtonText: 'Annuler',
-    });
+    });  
 
     if (result.isConfirmed) {
+      setLoadingAction(true);
       try {
         const token = localStorage.getItem("token");
-       
+
         await axios.put(`/api/users/licencier/${selectedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        setLoadingAction(false);
 
-     
         setUsers((prevUsers) => prevUsers.filter((user) => user._id !== selectedUser._id));
 
-      
+
         Swal.fire('Licencié!', 'L\'utilisateur a été mis dehors.', 'success');
         setShowModal(false);
       } catch (error) {
-        console.error("Erreur de suppression", error);
-        Swal.fire('Erreur', 'Une erreur s\'est produite lors de la suppression.', 'error');
+        setLoadingAction(false);
+        console.error("Erreur de licenciement", error);
+        Swal.fire('Erreur', 'Une erreur s\'est produite lors de la licenciement.', 'error');
       }
     }
   };
@@ -177,14 +184,14 @@ function Personnels() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-
+    setLoadingAction(true);
     const formData = new FormData();
     formData.append('nom', nom);
     formData.append('email', email);
     formData.append('numero_cin', numero_cin);
     formData.append('role', role);
     if (photo) formData.append('photo', photo);
-  
+
     try {
       const response = await axios.put(
         `/api/users/${selectedUser._id}`,
@@ -196,50 +203,50 @@ function Personnels() {
           },
         }
       );
-  
+
       Swal.fire("Succès", "L'utilisateur a été modifié avec succès !", "success")
-        .then(() => {
+        .then(() => {    setLoadingAction(true);
           setUsers(
             users.map((user) =>
               user._id === selectedUser._id ? response.data : user
             )
           );
           setShowEditModal(false);
-          window.location.reload(); 
+          window.location.reload();
         });
-    } catch (error) {
+    } catch (error) {    setLoadingAction(true);
       Swal.fire("Erreur", "Une erreur s'est produite lors de la modification.", "error");
     }
   };
-  
-  
+
+
   const filteredUsers = users.filter((user) =>
     (user.nom && user.nom.toLowerCase().includes(search.toLowerCase()) ||
-     user.email && user.email.toLowerCase().includes(search.toLowerCase())) &&
+      user.email && user.email.toLowerCase().includes(search.toLowerCase())) &&
     (roleFilter === "" || user.role === roleFilter)
   );
-  
+
 
   return (
     <>
       <header></header>
       <main className="center">
-        
+
         <Sidebar />
         <section className="contenue">
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
-            <h6 className='alert alert-success'>
-              <i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
-             <div className='center bg-light p-3 mini'>
-      {roleCounts.map((role, index) => (
-        <div key={index} className="perso m-2">
-          <div className="role-name font-weight-bold">{role._id}</div>
-          <div className="role-count">{role.count} Personnel{role.count > 1 ? "s" : ""}</div>
-        </div>
-      ))}
-    </div>
+              <h6 className='alert alert-success'>
+                <i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
+              <div className='center bg-light p-3 mini'>
+                {roleCounts.map((role, index) => (
+                  <div key={index} className="perso m-2">
+                    <div className="role-name font-weight-bold">{role._id}</div>
+                    <div className="role-count">{role.count} Personnel{role.count > 1 ? "s" : ""}</div>
+                  </div>
+                ))}
+              </div>
 
 
               <div className="filtrage bg-light p-3 mt-3">
@@ -268,51 +275,62 @@ function Personnels() {
                 </form>
               </div>
               <div>
-              <button 
-                          className="btn_lic m-2" 
-                          onClick={() => setShowLicencies(!showLicencies)}
-                        >
-                          {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
+                <button
+                  className="btn_lic m-2"
+                  onClick={() => setShowLicencies(!showLicencies)}
+                >
+                  {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
                 </button>
+
                 <Link to="/PersonnelsList"><button className="btn_lic w-50 ">Listes des personnels</button></Link>
               </div>
-                <div className="consultation">
-                <div className="table-container" style={{ overflowX: 'auto',overflowY:'auto' }}>
-                <table className="tablesa table-striped table-hover table-sm w-100">
 
-  <thead>
-    <tr>
-      <th className="p-1 text-nowrap">Nom</th>
-      <th className="p-1 text-nowrap">Email</th>
-      <th className="p-1 text-nowrap">Poste</th>
-      <th className="p-1 text-nowrap">Numero CIN</th>
-      <th className="p-1 text-nowrap">Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    {filteredUsers
-      .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
-      .map((user) => (
-        <tr key={user._id}>
-          <td className="p-1 text-nowrap">{user.nom}</td>
-          <td className="p-1 text-nowrap">{user.email}</td>
-          <td className="p-1 text-nowrap">{user.role}</td>
-          <td className="p-1 text-nowrap">{user.numero_cin}</td>
-          <td className="p-1 text-nowrap">
-            <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
-              <i className="fa fa-eye"style={{fontSize:"15px"}}></i>
-            </button>
-          </td>
-        </tr>
-      ))}
-  </tbody>
-</table>
+              {loadingList ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
+              <div className="consultation">
+              
+              
+                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                  <table className="tablesa table-striped table-hover table-sm w-100">
 
-</div></div>
+                    <thead>
+                      <tr>
+                        <th className="p-1 text-nowrap">Nom</th>
+                        <th className="p-1 text-nowrap">Email</th>
+                        <th className="p-1 text-nowrap">Poste</th>
+                        <th className="p-1 text-nowrap">Numero CIN</th>
+                        <th className="p-1 text-nowrap">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers
+                        .filter(user => showLicencies ? user.status === "licencié" : user.status === "actif")
+                        .map((user) => (
+                          <tr key={user._id}>
+                            <td className="p-1 text-nowrap">{user.nom}</td>
+                            <td className="p-1 text-nowrap">{user.email}</td>
+                            <td className="p-1 text-nowrap">{user.role}</td>
+                            <td className="p-1 text-nowrap">{user.numero_cin}</td>
+                            <td className="p-1 text-nowrap">
+                              <button className="btn btn-success btn-sm m-1" onClick={() => handleShowDetails(user)}>
+                                <i className="fa fa-eye" style={{ fontSize: "15px" }}></i>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+
+                </div></div>  )}
 
             </div>
 
-      
+
 
             <div className="ajoutPersonnel ">
               <h6 className="alert alert-success">
@@ -320,36 +338,36 @@ function Personnels() {
               </h6>
               <form onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="bg-light p-4">
-                <div className="form-floating mb-3">
-               
+                  <div className="form-floating mb-3">
+
                     <input type="text" className="form-control" required value={nom} onChange={(e) => setNom(e.target.value)} />
                     <label htmlFor="floatingInput">Nom complet</label>
 
                   </div>
                   <div className="form-floating mb-3">
-                        <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                        <label htmlFor="floatingInput">Email</label>
+                    <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <label htmlFor="floatingInput">Email</label>
                   </div>
-                  
-                  <div className="form-floating mb-3">
-                        <input
-                          type="text"
-                          className="form-control"
-                          required
-                          value={numero_cin}
-                          onChange={(e) => {
-                            let value = e.target.value.replace(/\D/g, ""); 
-                            value = value.slice(0, 12); 
-                            
-                            
-                            value = value.replace(/(\d{3})(?=\d)/g, "$1 ");
 
-                            setnumero_cin(value);
-                          }}
-                       
-                        />
-                        <label htmlFor="floatingInput">Numero_cin</label>
-                      </div>
+                  <div className="form-floating mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      required
+                      value={numero_cin}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\D/g, "");
+                        value = value.slice(0, 12);
+
+
+                        value = value.replace(/(\d{3})(?=\d)/g, "$1 ");
+
+                        setnumero_cin(value);
+                      }}
+
+                    />
+                    <label htmlFor="floatingInput">Numero_cin</label>
+                  </div>
 
                   <div className=" mb-3">
                     <label>Postes</label>
@@ -362,7 +380,7 @@ function Personnels() {
                     </select>
                   </div>
                   <div className="form-floating  mb-3">
-                    
+
                     <input type="password" className="form-control" required value={password} onChange={(e) => setPassword(e.target.value)} />
                     <label htmlFor="floatingInput">Mot de passe</label>
                   </div>
@@ -371,12 +389,19 @@ function Personnels() {
                     <label htmlFor="floatingInput">Confirmer le mot de passe</label>
                   </div>
                   <div className="mb-3">
-                  <label>Photo</label>
+                    <label>Photo</label>
                     <input type="file" className="form-control" accept="image/*"
                       onChange={(e) => setPhoto(e.target.files[0])} />
-                  
+
                   </div>
-                  <button className="btn1 btn1-success" type="submit">Enregistrer</button>
+                  <button className="btn1 btn1-success" type="submit"disabled={loadingAction}> 
+                    {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+    <span> Enregistrer  </span>
+  )}</button>
                 </div>
               </form>
             </div>
@@ -385,126 +410,132 @@ function Personnels() {
       </main>
 
       {/* Modal Détails de l'utilisateur */}
-      <Modal 
-        show={showModal} 
-        onHide={() => setShowModal(false)} 
-        centered 
+      <Modal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        centered
       >
-       <Modal.Header closeButton>
-  <Modal.Title>Détails de l'utilisateur</Modal.Title>
-</Modal.Header>
-<Modal.Body>
-  {selectedUser && (
-    <div className="user-card">
-      <div className="photo-cont">
-        <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
-        {selectedUser.photo}
-      </div>
-      <div className="user-info">
-        <p><strong>Nom:</strong> {selectedUser.nom}</p>
-        <p><strong>Email:</strong> {selectedUser.email}</p>
-        <p><strong>Poste:</strong> {selectedUser.role}</p>       
-        <p><strong>Numero CIN:</strong> {selectedUser.numero_cin}</p>
-        <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
-        
-        <div className="d-flex justify-content-between w-100">
-          {selectedUser.status !== "licencié" && (
-            <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
-              <i className="fa fa-edit"></i> Modifier
-            </Button>
-          )}
+        <Modal.Header closeButton>
+          <Modal.Title>Détails de l'utilisateur</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedUser && (
+            <div className="user-card">
+              <div className="photo-cont">
+                <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
+            
+              </div>
+              <div className="user-info">
+                <p><strong>Nom:</strong> {selectedUser.nom}</p>
+                <p><strong>Email:</strong> {selectedUser.email}</p>
+                <p><strong>Poste:</strong> {selectedUser.role}</p>
+                <p><strong>Numero CIN:</strong> {selectedUser.numero_cin}</p>
+                <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
 
-          {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
-            <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
-              <i className="fa fa-trash"></i> Licencier
-            </Button>
+                <div className="d-flex justify-content-between w-100">
+                  {selectedUser.status !== "licencié" && (
+                    <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
+                      <i className="fa fa-edit"></i> Modifier
+                    </Button>
+                  )}
+
+                  {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
+                    <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
+                      <i className="fa fa-trash"></i> Licencier
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-      </div>
-    </div>
-  )}
-</Modal.Body>
+        </Modal.Body>
 
       </Modal>
 
       {/* Modal Modification de l'utilisateur */}
-      <Modal 
-        show={showEditModal} 
-        onHide={() => setShowEditModal(false)} 
-        centered 
+      <Modal
+        show={showEditModal}
+        onHide={() => setShowEditModal(false)}
+        centered
       >
         <Modal.Header closeButton>
           <Modal.Title>Modifier l'employer</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-  {selectedUser && (
-    <form onSubmit={handleEditSubmit}>
-         <div className="photo-conter text-center">
-                 <img 
-                src={`http://localhost:5000${selectedUser.photo}`} 
-                alt="Photo de profil" 
-                className="user-photo" 
+          {selectedUser && (
+            <form onSubmit={handleEditSubmit}>
+              <div className="photo-conter text-center">
+                <img
+                  src={`http://localhost:5000${selectedUser.photo}`}
+                  alt="Photo de profil"
+                  className="user-photo"
                 />
-          </div>
-      <div className="mb-3">
-        <label>Nom complet</label>
-        <input 
-          type="text" 
-          className="form-control" 
-          value={nom} 
-          onChange={(e) => setNom(e.target.value)} 
-        />
-      </div>
-      <div className="mb-3">
-        <label>Email</label>
-        <input 
-          type="email" 
-          className="form-control" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-        />
-      </div>
-     
-      <div className="mb-3">
-        <label>Numero cin</label>
-        <input 
-          type="number" 
-          className="form-control" 
-          value={numero_cin} 
-          onChange={(e) => setnumero_cin(e.target.value)} 
-          required
-        />
-      </div>
-     
+              </div>
+              <div className="mb-3">
+                <label>Nom complet</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label>Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
 
-      <div className="mb-3">
-        <label>Photo</label>
-        <input 
-          type="file" 
-          className="form-control" 
-          accept="image/*"
-          onChange={(e) => setPhoto(e.target.files[0])} 
-        />
-      </div>
-      {selectedUser.role !== "admin" && (
-        <div className="mb-3">
-          <label>Rôle</label>
-          <select 
-            className="form-control" 
-            value={role} 
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="magasinier">Magasinier</option>
-            <option value="caissier">Caissier</option>
-            <option value="vendeur">Vendeur</option>
-            <option value="gestion_prix">Contrôleur de prix</option>
-          </select>
-        </div>
-      )}
-      <button className="btn btn-success" type="submit">Sauvegarder les modifications</button>
-    </form>
-  )}
-</Modal.Body>
+              <div className="mb-3">
+                <label>Numero cin</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={numero_cin}
+                  onChange={(e) => setnumero_cin(e.target.value)}
+                  required
+                />
+              </div>
+
+
+              <div className="mb-3">
+                <label>Photo</label>
+                <input
+                  type="file"
+                  className="form-control"
+                  accept="image/*"
+                  onChange={(e) => setPhoto(e.target.files[0])}
+                />
+              </div>
+              {selectedUser.role !== "admin" && (
+                <div className="mb-3">
+                  <label>Rôle</label>
+                  <select
+                    className="form-control"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="magasinier">Magasinier</option>
+                    <option value="caissier">Caissier</option>
+                    <option value="vendeur">Vendeur</option>
+                    <option value="gestion_prix">Contrôleur de prix</option>
+                  </select>
+                </div>
+              )}
+              <button className="btn btn-success" type="submit" disabled={loadingAction}>
+              {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (  <span> Sauvegarder les modifications  </span>
+  )}</button>
+            </form>
+          )}
+        </Modal.Body>
 
       </Modal>
     </>

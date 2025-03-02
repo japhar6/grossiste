@@ -153,6 +153,53 @@ exports.getPaiements = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+// Récupérer tous les paiements à crédit des clients et commerciaux
+exports.getPaiementsCredit = async (req, res) => {
+    try {
+        // Récupérer les paiements à crédit des clients
+        const paiementsClientsCredit = await Paiement.find({ modePaiement: "a credit" }).populate({
+            path: 'commandeId',
+            populate: [
+                { path: 'clientId', select: 'nom' },
+                { path: 'commercialId', select: 'nom' }
+            ]
+        }).populate({
+            path: 'idCaissier', select: 'nom'
+        });
+
+        // Récupérer les paiements à crédit des commerciaux
+        const paiementsCommerciauxCredit = await PaiementCommerciale.find({ modePaiement: "crédit" })
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' },
+                    { path: 'commercialId', select: 'nom' }
+                ]
+            }).populate({
+                path: 'idCaissier', select: 'nom'
+            });
+
+        // Combiner les résultats
+        const paiementsCredit = {
+            clients: paiementsClientsCredit.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu'
+            })),
+            commerciaux: paiementsCommerciauxCredit.map(paiement => ({
+                ...paiement.toObject(),
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
+                commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu'
+            }))
+        };
+
+        res.status(200).json(paiementsCredit);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des paiements à crédit:", error);
+        res.status(400).json({ message: error.message });
+    }
+};
+
 
 
 // Récupérer un paiement par son ID

@@ -35,11 +35,13 @@ import FactureNormal from './Components/FactureNormal.jsx';
 import FactureRemise from './Pages/FactureRemise.jsx';
 import HistoCA from './Pages/HistoC.jsx';
 import HistoVA from './Pages/HistoV.jsx';
+import HistoSortir from './Pages/HistoMaga.jsx';
 import Transfert from './Pages/Transfert.jsx';
 import TransfertAdmin from './Pages/TransfertAdmin.jsx';
 import PersonnelsList from './Pages/PersonnelsList.jsx';
 import Client from './Pages/Client.jsx';
 import Notification from './Components/Notifications.jsx';
+import HistoAcha from './Pages/HistoAcha.jsx';
 
 
 
@@ -68,11 +70,13 @@ function App() {
           <Route path='/SortieCommande' element={<SortieCommande />} />
           <Route path='/histovad' element={<HistoVA />} />
           <Route path='/histocad' element={<HistoCA />} />
+          <Route path='/histomad' element={<HistoSortir />} />
           <Route path='/PersonnelsList' element={<PersonnelsList />} />
           <Route path='/Client' element={<Client />} />
           <Route path='/inventaire' element={<Invetaire />} />
           <Route path='/creerinventaire' element={<CreerInventaire />} />
           <Route path='/notif' element={<Notification />} />
+          <Route path='/HistoAcha' element={<HistoAcha />} />
     
           
         </Route>

@@ -277,18 +277,20 @@ function ListeProduits() {
                               <td>
                                 {produitAModifier === produit._id ? (
                                   <button
-                                    className="btn btn-success"
+                                    className="btnpro btn-success"
                                     onClick={() => handleModifierPrix(produit._id)}
                                   >
                                     Enregistrer
                                   </button>
                                 ) : (
                                   <button
-                                    className="btn btn-primary"
-                                    onClick={() => setProduitAModifier(produit._id)}
-                                  >
-                                    Modifier
-                                  </button>
+                                  className="btnpro btn-danger"
+                                  onClick={() => setProduitAModifier(produit._id)}
+                                >
+                                  Modifier
+                                </button>
+                                
+                                
                                 )}
                               </td>
                             </tr>

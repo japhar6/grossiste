@@ -69,6 +69,7 @@ function Profil() {
       const formData = new FormData();
       formData.append("nom", updatedUser.nom);
       formData.append("email", updatedUser.email);
+      formData.append("password", updatedUser.password);
       if (selectedFile) {
         formData.append("photo", selectedFile);
       }
@@ -147,6 +148,15 @@ function Profil() {
                           />
                         </div>
                         <div className="form-group">
+                          <label>Mot de passe </label>
+                          <input
+                            type="text"
+                            name="password"
+                            value={updatedUser.password || ""}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                        <div className="form-group">
                           <label>Photo</label>
                           <input
                             type="file"
@@ -154,6 +164,7 @@ function Profil() {
                             onChange={handleFileChange}
                           />
                         </div>
+                        
                         <button onClick={handleSave}>Enregistrer</button>
                         <button onClick={() => setIsEditing(false)}>Annuler</button>
                       </>

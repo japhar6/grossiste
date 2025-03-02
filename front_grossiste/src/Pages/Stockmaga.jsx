@@ -17,6 +17,7 @@ function Stock() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [sortBy, setSortBy] = useState('nom'); 
+ const [notifiedProducts, setNotifiedProducts] = useState([]); // Nouveau state pour gérer les produits notifiés
 
     const [uniteSelectionnee, setUniteSelectionnee] = useState({});
     const [quantitesInitiales, setQuantitesInitiales] = useState({});
@@ -53,6 +54,67 @@ function Stock() {
     }));
   };
   
+
+  useEffect(() => {
+    const checkAndSendNotification = () => {
+      // Récupérer la date actuelle (au format "YYYY-MM-DD")
+      const today = new Date().toISOString().split('T')[0];
+    
+      // Vérifier uniquement les produits non notifiés ou dont la notification n'a pas été envoyée aujourd'hui
+      const ruptureDeStock = stocks.filter(stock => 
+        stock.quantite < stock.produit.quantiteMinimum && 
+        !notifiedProducts.includes(stock.produit._id) &&
+        !isNotificationSentToday(stock.produit._id, today)  // Vérifie si la notification a déjà été envoyée aujourd'hui
+      );
+    
+      if (ruptureDeStock.length > 0) {
+        ruptureDeStock.forEach(stock => {
+          if (stock.produit && stock.produit.nom && stock.quantite !== undefined) {
+            const data = {
+              "produit": stock.produit.nom,
+              "quantiteRestante": String(stock.quantite)
+            };
+    
+            console.log(data);  // Vérifiez les données avant l'envoi
+    
+            axios.post('/api/notif/rupture-stock', data)
+              .then(response => {
+                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom}!`);
+                // Marquer le produit comme notifié
+                setNotifiedProducts(prevState => [...prevState, stock.produit._id]);
+                localStorage.setItem('notifiedProducts', JSON.stringify([...notifiedProducts, stock.produit._id]));
+                // Enregistrer la notification avec la date dans le localStorage
+                storeNotificationSent(stock.produit._id, today);
+              })
+              .catch(error => {
+                console.error('Erreur lors de l\'envoi de la notification :', error.response?.data || error);
+                toast.error('Erreur lors de l\'envoi de la notification de rupture de stock.');
+              });
+          } else {
+            console.error("Produit ou quantite non définis:", stock);
+          }
+        });
+      }
+    };
+    
+    // Fonction pour vérifier si une notification a déjà été envoyée aujourd'hui
+    const isNotificationSentToday = (produitId, today) => {
+      const notifications = JSON.parse(localStorage.getItem('sentNotifications')) || [];
+      return notifications.some(notification => notification.produitId === produitId && notification.date === today);
+    };
+    
+    // Fonction pour enregistrer l'envoi de la notification avec la date
+    const storeNotificationSent = (produitId, today) => {
+      const notifications = JSON.parse(localStorage.getItem('sentNotifications')) || [];
+      notifications.push({ produitId, date: today });
+      localStorage.setItem('sentNotifications', JSON.stringify(notifications));
+    };
+    
+    
+
+    checkAndSendNotification();
+  }, [stocks, notifiedProducts]); 
+
   const convertirQuantiteMinimum = (quantiteMinimum, uniteSource, uniteCible) => {
     const source = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteSource));
     const cible = stocks.find(stock => stock.produit.unites.find(u => u.nom === uniteCible));
@@ -126,8 +188,7 @@ function Stock() {
       (dateFilter === '' || new Date(stock.dateEntree).toISOString().split('T')[0] === dateFilter)
     );
   });
-  const isRuptureDeStock = (stock) => {
-
+   const isRuptureDeStock = (stock) => {
     return stock.quantite < stock.produit.quantiteMinimum;
   };
 
@@ -242,9 +303,10 @@ function Stock() {
                     <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
                          <td>{stock.produit.codeProduit}</td>
                         <td>{stock.produit.nom}</td>
-                        <td>
-  {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
-</td>         <td>
+                    <td>
+                        {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
+                      </td>    
+                       <td>
                         <select
                           value={uniteSelectionnee[stock.produit._id] || ''}
                           onChange={(e) => handleUniteChange(stock.produit._id, e.target.value)}
@@ -260,9 +322,7 @@ function Stock() {
                         <td>{stock.produit.categorie}</td>
                         <td>{stock.produit.quantiteMinimum} {stock.unite}</td>
                     <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-                    <td>
-        {isRuptureDeStock(stock) && <span className="text-danger">Rupture de stock</span>}
-      </td>
+                
                       
                       </tr>
                     ))}

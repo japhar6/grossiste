@@ -37,6 +37,8 @@ function PriseCommande() {
   const [checkedProduits, setCheckedProduits] = useState({});
   const [produits, setProduits] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [entrepotId, setEntrepotId] = useState(null); // Initialisation de l'état pour l'ID de l'entrepôt
+
   const [categorie, setCategorie] = useState("");
   const [categories, setCategories] = useState([]);
   const [remisesClient, setRemisesClient] = useState(null);
@@ -296,8 +298,10 @@ function PriseCommande() {
       const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
       const quantiteDisponible = response.data.quantiteDisponible;
       const uniteDisponible = response.data.uniteNom || 'Unité par défaut';
+      const entrepotIdPrincipal = response.data.entrepotId;
 
       console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
+      setEntrepotId(entrepotIdPrincipal);
 
       // Comparer la quantité convertie avec la quantité disponible
       if (isChecked) {
@@ -323,15 +327,15 @@ function PriseCommande() {
             const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
             const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0;
             const uniteSecondaire = responseSecondaire.data.uniteNom || 'Unité par défaut';
-
+            const entrepotIdSecondaire = responseSecondaire.data.entrepotId
             // Afficher les informations de l'autre entrepôt pour débogage
-            console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire}`);
+            console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire} ${entrepotIdSecondaire}`);
             console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
-
+            setEntrepotId(entrepotIdSecondaire);
             if (quantiteConvertie > quantiteDisponibleSecondaire) {
               Swal.fire({
                 title: 'Quantité Insuffisante',
-                text: `Il n'en reste que ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans les autres entrepôts.`,
+                text: `La quantité maximale est ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
                 icon: 'warning',
                 confirmButtonText: 'OK',
               });
@@ -339,7 +343,7 @@ function PriseCommande() {
             } else {
               Swal.fire({
                 title: 'Quantité suffisante',
-                text: `Disponible dans (${response.data.entrepotNom})`,
+                text: `Disponible dans (${responseSecondaire.data.entrepotNom})`,
                 icon: 'info',
                 confirmButtonText: 'OK',
               });
@@ -479,7 +483,7 @@ function PriseCommande() {
         commercialId: typeClient === "Commercial" ? commercialId : null, // Dynamique pour commercial
         vendeurId,
         produits: produitsCommande,
-        statut,
+        statut,entrepotId
       };
 
       // Envoie la requête API pour créer la commande
