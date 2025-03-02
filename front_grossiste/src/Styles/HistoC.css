@@ -37,3 +37,13 @@
 .tableZA tbody tr:hover {
   background-color: #e2e6ea; /* Couleur de fond au survol */
 }
+@keyframes clignoter {
+  0% { background-color: red; color: white; }
+  50% { background-color: transparent; color: red; }
+  100% { background-color: red; color: white; }
+}
+
+.clignotant {
+  animation: clignoter 1s infinite alternate;
+  font-weight: bold;
+}

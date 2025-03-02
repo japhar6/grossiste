@@ -29,4 +29,5 @@ router.get('/vendeur/:vendeurId', commandeController.getCommandesByVendeur);
 
 router.get('/suggestions', commandeController.getSuggestions);
 router.get('/factmo', commandeController.getSuggestionscom);
+router.get('/factmocli', commandeController.getSuggestionscomcre);
 module.exports = router;

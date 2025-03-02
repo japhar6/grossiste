@@ -49,6 +49,9 @@ function AchatProduits() {
     const [fournisseurInfo, setFournisseurInfo] = useState(null);
 
     const [pourcentageManuel, setPourcentageManuel] = useState(0);
+    const [modePaiement, setModePaiement] = useState('');
+    const [dateLimiteCredit, setDateLimiteCredit] = useState('');
+    const [referencePaiement, setReferencePaiement] = useState('');
 
 
     const handleFournisseurChange = (e) => {
@@ -563,50 +566,81 @@ function AchatProduits() {
             }
         }
     };
+    const handleModePaiementChange = (e) => {
+        setModePaiement(e.target.value);
+        if (e.target.value !== 'a crédit') {
+            setDateLimiteCredit(''); // Réinitialiser la date limite de crédit si le mode de paiement n'est pas à crédit
+        }
+        if (e.target.value !== 'virement bancaire' && e.target.value !== 'mobile money') {
+            setReferencePaiement(''); // Réinitialiser la référence de paiement si le mode de paiement n'est pas virement ou mobile money
+        }
+    };
 
+    const handleDateLimiteCreditChange = (e) => {
+        setDateLimiteCredit(e.target.value);
+    };
+
+    const handleReferencePaiementChange = (e) => {
+        setReferencePaiement(e.target.value);
+    };
 
 
 
     const validerPanier = async () => {
+        if (!entrepot || !modePaiement) {
+            Swal.fire({
+                title: "Erreur",
+                text: "L'entrepôt et le mode de paiement sont obligatoires.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+    
+        // Si modePaiement est à crédit, vérifier la date limite
+        if (modePaiement === 'a crédit' && !dateLimiteCredit) {
+            Swal.fire({
+                title: "Erreur",
+                text: "La date limite de crédit est obligatoire pour un paiement à crédit.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+    
+        // Si modePaiement est virement bancaire ou mobile money, vérifier la référence
+        if ((modePaiement === 'virement bancaire' || modePaiement === 'mobile money') && !referencePaiement) {
+            Swal.fire({
+                title: "Erreur",
+                text: "La référence du paiement est obligatoire pour ce mode de paiement.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+            return;
+        }
+    
         try {
             const response = await axios.post(`/api/achats/valider/${panierId}`, {
                 entrepotId: entrepot, // Envoie des données ici
+                modePaiement: modePaiement,
+                dateLimiteCredit: dateLimiteCredit,
+                referencePaiement: referencePaiement,
             });
-
-            const data = response.data;
-
-            // Vérifier le statut de la réponse
+    
             if (response.status !== 200) {
-                throw new Error(data.message || "Erreur lors de la validation de l'achat");
+                throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
             }
-
-            // Afficher une alerte de succès
+    
             Swal.fire({
                 title: "Panier validé",
                 text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
                 icon: "success",
                 confirmButtonText: "OK",
             }).then(() => {
-                // Mettre à jour l'historique des achats
                 window.location.reload();
-                const achat = {
-                    fournisseur,
-                    date: new Date().toLocaleString(),
-                    total: panier.reduce((acc, item) => acc + item.total, 0),
-                    produits: panier,
-                };
-
-                // Ajouter l'achat à l'historique
-                setHistoriqueAchats([achat, ...historiqueAchats]);
-                // Réinitialiser le panier et le fournisseur
-                setPanierCreer(false);
-                setEntrepot("");
-                setFournisseur("");
-                setPanier([]);
             });
         } catch (error) {
             console.error("Erreur lors de la validation de l'achat :", error);
-            // Afficher un message d'erreur
             Swal.fire({
                 title: "Erreur",
                 text: error.response ? error.response.data.message : "Une erreur est survenue.",
@@ -615,6 +649,8 @@ function AchatProduits() {
             });
         }
     };
+    
+    
 
 
     const filteredHistorique = historiqueAchats.filter((achat) => {
@@ -1036,13 +1072,48 @@ function AchatProduits() {
                                                 ))}
                                             </select>
 
-                                        </div>
-                                        <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
+                                            {/* Sélectionner le mode de paiement */}
+                                            <select
+                                                className="form-control custom-select"
+                                                value={modePaiement}
+                                                onChange={handleModePaiementChange}
+                                            >
+                                                <option value="">Choisir mode de paiement</option>
+                                                <option value="crédit">A crédit</option>
+                                                <option value="virement bancaire">Virement bancaire</option>
+                                                <option value="mobile money">Mobile Money</option>
+                                                <option value="espèce">Espèce</option>
+                                            </select>
 
-                                            <button className="btn7 " onClick={validerPanier}>
+                                            {/* Date limite de crédit (afficher uniquement si modePaiement est à crédit) */}
+                                            {modePaiement === 'crédit' && (
+                                                <input
+                                                    type="date"
+                                                    placeholder="Entrer la date limite"
+                                                    className="form-control"
+                                                    value={dateLimiteCredit}
+                                                    onChange={handleDateLimiteCreditChange}
+                                                />
+                                            )}
+
+                                            {/* Référence de paiement (afficher si modePaiement est virement ou mobile money) */}
+                                            {(modePaiement === 'virement bancaire' || modePaiement === 'mobile money') && (
+                                                <input
+                                                    type="text"
+                                                    placeholder="Entrer la référence du paiement"
+                                                    className="form-control"
+                                                    value={referencePaiement}
+                                                    onChange={handleReferencePaiementChange}
+                                                />
+                                            )}
+                                        </div>
+
+                                        <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
+                                            <button className="btn7" onClick={validerPanier}>
                                                 Valider l'Achat
                                             </button>
                                         </div>
+
                                     </div>
                                 </div>
                             )}

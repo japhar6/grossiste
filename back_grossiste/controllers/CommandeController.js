@@ -200,6 +200,23 @@ exports.getSuggestionscom = async (req, res) => {
     }
 };
 
+exports.getSuggestionscomcre = async (req, res) => {
+    try {
+        // Rechercher toutes les commandes avec le statut "payé" et le type de client "Commercial"
+        const commandes = await Commande.find({
+            statut: "payé",
+            typeClient: "Commercial",
+            // Ajout de ":" pour spécifier la clé et sa valeur
+        }).sort({ createdAt: -1 }); // Tri par date décroissante
+
+        // Renvoie les références des commandes
+        const suggestions = commandes.map(commande => commande.referenceFacture);
+        res.status(200).json(suggestions);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des suggestions :", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des suggestions." });
+    }
+};
 
 
 // Récupérer une commande par sou référence

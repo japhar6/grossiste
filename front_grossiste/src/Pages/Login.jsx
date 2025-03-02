@@ -35,8 +35,7 @@ function Login() {
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('userid', data.user._id);
             localStorage.setItem('nom', data.user.nom);
-
-            setSuccess(true);
+      setLoading(false);
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':
@@ -93,7 +92,12 @@ function Login() {
                             <div className="hr"></div>
 
                             {/* Message d'erreur */}
-                            {error && <p className='text-danger text-center'>{error}</p>}
+                            {error &&  <div className="text-center">
+                                    <div className="spinner-border text-success mb-2" role="status">
+                                        <span className="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <p className='text-alert fw-bold'> {error}</p>
+                                </div>}
 
                             {/* Animation de chargement + Message de succès */}
                             {success && (
@@ -135,17 +139,18 @@ function Login() {
                                 </div>
                                 <div className='text-center'>
                                     {!success && (
-                                        <button type="submit" className='btn1 btn1-success p-3 mt-3 button' disabled={loading}>
-                                            {loading ? (
-                                                <span>
-                                                    <i className="fa fa-spinner fa-spin"></i> Connexion...
-                                                </span>
-                                            ) : (
-                                                <span>
-                                                    <i className='fa fa-check-circle'></i> Se connecter
-                                                </span>
-                                            )}
-                                        </button>
+                                      <button type="submit" className='btn1 btn1-success p-3 mt-3 button d-flex align-items-center justify-content-center' disabled={loading}>
+                                      {loading ? (
+                                          <div className="spinner-border text-light" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>
+                                              <i className='fa fa-check-circle'></i> Se connecter
+                                          </span>
+                                      )}
+                                  </button>
+                                  
                                     )}
                                 </div>
                             </form>

@@ -41,6 +41,7 @@ import TransfertAdmin from './Pages/TransfertAdmin.jsx';
 import PersonnelsList from './Pages/PersonnelsList.jsx';
 import Client from './Pages/Client.jsx';
 import Notification from './Components/Notifications.jsx';
+import HistoAcha from './Pages/HistoAcha.jsx';
 
 
 
@@ -75,6 +76,7 @@ function App() {
           <Route path='/inventaire' element={<Invetaire />} />
           <Route path='/creerinventaire' element={<CreerInventaire />} />
           <Route path='/notif' element={<Notification />} />
+          <Route path='/HistoAcha' element={<HistoAcha />} />
     
           
         </Route>

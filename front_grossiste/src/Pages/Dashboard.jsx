@@ -9,74 +9,38 @@ import axios from '../api/axios';
 
 function Dashboard() {
   const [fournisseursCount, setFournisseursCount] = useState(0);
-  const [produitCount, setproduitCount] = useState(0);
-  const [clientCount, setclientCount] = useState(0);
-  const [commandeCount, setcommandeCount] = useState(0);
-  
+  const [produitCount, setProduitCount] = useState(0);
+  const [clientCount, setClientCount] = useState(0);
+  const [commandeCount, setCommandeCount] = useState(0);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    // Fonction pour récupérer le nombre de fournisseurs
-    const fetchFournisseursCount = async () => {
+    const fetchData = async () => {
+      setLoading(true); // ✅ Active le mode chargement avant de faire les requêtes
+
       try {
-        const response = await axios.get('/api/fournisseurs/count');
-        const data = response.data;
-        setFournisseursCount(data.totalFournisseurs);
+        const [fournisseursRes, commandesRes, clientsRes, produitsRes] = await Promise.all([
+          axios.get('/api/fournisseurs/count'),
+          axios.get('/api/commandes/count'),
+          axios.get('/api/client/count'),
+          axios.get('/api/produits/count')
+        ]);
+
+        setFournisseursCount(fournisseursRes.data.totalFournisseurs);
+        setCommandeCount(commandesRes.data.totalcommande);
+        setClientCount(clientsRes.data.totalclient);
+        setProduitCount(produitsRes.data.totalProduits);
       } catch (error) {
-        console.error('Erreur lors du chargement des fournisseurs:', error);
+        console.error('Erreur lors du chargement des données:', error);
+        setError('Erreur lors du chargement des statistiques.');
+      } finally {
+        setLoading(false);// ✅ Désactive le chargement après la récupération
       }
     };
 
-    fetchFournisseursCount();
+    fetchData();
   }, []);
-
-
-
-  useEffect(() => {
-    // Fonction pour récupérer le nombre de fournisseurs
-    const fetchCommandecount = async () => {
-      try {
-        const response = await axios.get('/api/commandes/count');
-        const data = response.data;
-        setcommandeCount(data.totalcommande);
-      } catch (error) {
-        console.error('Erreur lors du chargement des fournisseurs:', error);
-      }
-    };
-
-    fetchCommandecount();
-  }, []);
-
-  useEffect(() => {
-    // Fonction pour récupérer le nombre de fournisseurs
-    const fetchClientCount = async () => {
-      try {
-        const response = await axios.get('/api/client/count');
-        const data = response.data;
-        setclientCount(data.totalclient);
-        console.log("countcli",data.totalclient);
-      } catch (error) {
-        console.error('Erreur lors du chargement des fournisseurs:', error);
-      }
-    };
-
-    fetchClientCount();
-  }, []);
-
-  useEffect(() => {
-    // Fonction pour récupérer le nombre de fournisseurs
-    const fetchproduitCount = async () => {
-      try {
-        const response = await axios.get('/api/produits/count');
-        const data = response.data;
-        setproduitCount(data.totalProduits);
-      } catch (error) {
-        console.error('Erreur lors du chargement des fournisseurs:', error);
-      }
-    };
-
-    fetchproduitCount();
-  }, []);
-
-
 
   return (
     <>
@@ -85,34 +49,52 @@ function Dashboard() {
         <Sidebar />
         <section className='contenue'>
           <Header />
-          <div className='stats-container'>
-            <div className='stat-card'>
-              <h1><i className='fa fa-users'></i> {clientCount}</h1>
-              <h6>Clients</h6>
+
+          {/* ✅ Affichage du chargement */}
+          {loading ? (
+            <div className="loading-container">
+        <div className="spinner-border text-primary" role="status">
+    <span className="visually-hidden">Chargement...</span>
+  </div>
             </div>
-            <div className='stat-card'>
-              <h1><i className='fa fa-truck'></i> {fournisseursCount}</h1>
-              <h6>Fournisseurs</h6>
-            </div>
-            <div className='stat-card'>
-              <h1><i className='fa fa-shopping-cart'></i> {commandeCount}</h1>
-              <h6>Commandes</h6>
-            </div>
-            <div className='stat-card'>  
-              <h1><i className='fa fa-box'></i> {produitCount}</h1>
-              <h6>Articles</h6>
-            </div>
+          ) : error ? ( // ✅ Affichage de l'erreur
+            <div className="alert alert-danger d-flex align-items-center" role="alert">
+            <i className="fa fa-exclamation-triangle me-2"></i> {error}
+            <button className="btn btn-outline-danger btn-sm ms-auto" onClick={() => window.location.reload()}>
+              Réessayer
+            </button>
           </div>
-          <div className='charts-wrapper'>
-            <div className='chart-box'>
-              <LineChart />
-            </div>
-            <div className='chart-box'>
-              <DonutChart />
-            </div>
-            
-          </div>
-          <ClientCredi />
+          ) : ( // ✅ Affichage des données une fois chargées
+            <>
+              <div className='stats-container'>
+                <div className='stat-card'>
+                  <h1><i className='fa fa-users'></i> {clientCount}</h1>
+                  <h6>Clients</h6>
+                </div>
+                <div className='stat-card'>
+                  <h1><i className='fa fa-truck'></i> {fournisseursCount}</h1>
+                  <h6>Fournisseurs</h6>
+                </div>
+                <div className='stat-card'>
+                  <h1><i className='fa fa-shopping-cart'></i> {commandeCount}</h1>
+                  <h6>Commandes</h6>
+                </div>
+                <div className='stat-card'>  
+                  <h1><i className='fa fa-box'></i> {produitCount}</h1>
+                  <h6>Articles</h6>
+                </div>
+              </div>
+              <div className='charts-wrapper'>
+                <div className='chart-box'>
+                  <LineChart />
+                </div>
+                <div className='chart-box'>
+                  <DonutChart />
+                </div>
+              </div>
+              <ClientCredi />
+            </>
+          )}
         </section>
       </main>
     </>
@@ -120,4 +102,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-

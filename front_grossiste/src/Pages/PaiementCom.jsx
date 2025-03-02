@@ -23,7 +23,7 @@ function PaiementCom() {
             useEffect(() => {
               const fetchReferences = async () => {
                 try {
-                  const response = await axios.get('/api/commandes/factmo'); // Votre route pour récupérer toutes les références
+                  const response = await axios.get('/api/commandes/factmocli'); // Votre route pour récupérer toutes les références
                   setAllReferences(response.data);
                 } catch (error) {
                   console.error("Erreur lors de la récupération des références :", error);
@@ -32,6 +32,8 @@ function PaiementCom() {
           
               fetchReferences();
             }, []);
+
+            
             const handleInputChange = (e) => {
               const value = e.target.value;
               setReferenceFacture(value);

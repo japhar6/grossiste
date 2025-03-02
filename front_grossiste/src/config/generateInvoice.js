@@ -46,7 +46,7 @@ doc.text(`N°: ${commande.referenceFacture}`, 100, 50); // Ajustement de la posi
     head: [columns],
     body: rows,
     margin: { top: 10, left: 10, right: 20, bottom: 0 },
-
+    theme: 'plain',  // Utilisation d'un thème simple sans couleurs
     styles: {
       fontSize: 7,  // Réduire la taille de la police encore plus si nécessaire
       cellPadding: 2,  // Augmenter légèrement le padding pour plus de lisibilité
