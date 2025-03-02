@@ -92,7 +92,7 @@ function SortieStock() {
       const response = await axios.post("/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
         magasinierId,
-        entrepotId: entrepotSelectionne, // On envoie l’entrepôt sélectionné
+        entrepotId: entrepotSelectionne,
       });
   
       Swal.fire({
@@ -102,24 +102,43 @@ function SortieStock() {
       }).then(() => {
         window.location.reload();
       });
-      playSound();  
   
+      playSound();
       setCommandes(commandes.filter(cmd => cmd._id !== commandeSelectionnee._id));
       setCommandeSelectionnee(null);
     } catch (error) {
       console.error("Erreur lors de la validation de la vente:", error);
       let errorMessage = error.response?.data.message || 'Échec de la validation de la vente.';
-      
-      // Détection des erreurs de rupture de stock
-      if (errorMessage.includes("rupture de stock") || errorMessage.includes("insuffisant")) {
-        errorMessage = "Le produit n'est pas disponible dans cet entrepôt.";
+  
+      // Vérifier si l'erreur concerne une rupture de stock
+      if (errorMessage.includes("🚨")) {
         Swal.fire({
-          icon: 'warning', // Affichage du type warning pour la rupture de stock
-          title: 'Avertissement',
-          text: errorMessage,
+          icon: 'warning',
+          title: 'Stock insuffisant',
+          html: `<b>${errorMessage}</b>`,
         });
+  
+        // Extraire le nom du produit en rupture de stock
+        const match = errorMessage.match(/"([^"]+)"/); // Récupère le nom du produit entre guillemets
+        const produitNom = match ? match[1] : "Produit inconnu";
+  
+        // Envoyer la notification à l'admin
+        const data = {
+          "produit": produitNom,
+          "quantiteRestante": "0" // Supposons que la quantité est 0 pour une rupture
+        };
+  
+        console.log("Envoi de la notification:", data);
+  
+        axios.post('/api/notif/rupture-stock', data)
+          .then(response => {
+            toast.warn(`Attention : Rupture de stock sur ${produitNom}!`);
+          })
+          .catch(error => {
+            console.error('Erreur lors de l\'envoi de la notification :', error.response?.data || error);
+            toast.error('Erreur lors de l\'envoi de la notification de rupture de stock.');
+          });
       } else {
-        // Gérer les autres erreurs
         Swal.fire({
           icon: 'error',
           title: 'Erreur',
@@ -128,6 +147,8 @@ function SortieStock() {
       }
     }
   };
+  
+  
   
 
   // Effect pour suivre les changements de taille de la fenêtre
