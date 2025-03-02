@@ -27,9 +27,14 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await axios.post('/api/users/login', { email, password });
-
-            const data = response.data;
+            const response = await axios.post('/api/users/login', {
+                email,
+                password
+            });
+    
+            const data = response.data; // Récupère directement les données
+    
+            // Stocke les informations dans le localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('email', data.user.email);
             localStorage.setItem('role', data.user.role);

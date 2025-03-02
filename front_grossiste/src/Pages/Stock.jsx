@@ -42,14 +42,12 @@ function Stock() {
 
   useEffect(() => {
     const checkAndSendNotification = () => {
-      // Récupérer la date actuelle (au format "YYYY-MM-DD")
       const today = new Date().toISOString().split('T')[0];
     
-      // Vérifier uniquement les produits non notifiés ou dont la notification n'a pas été envoyée aujourd'hui
       const ruptureDeStock = stocks.filter(stock => 
         stock.quantite < stock.produit.quantiteMinimum && 
         !notifiedProducts.includes(stock.produit._id) &&
-        !isNotificationSentToday(stock.produit._id, today)  // Vérifie si la notification a déjà été envoyée aujourd'hui
+        !isNotificationSentToday(stock.produit._id, today)
       );
     
       if (ruptureDeStock.length > 0) {
@@ -57,18 +55,19 @@ function Stock() {
           if (stock.produit && stock.produit.nom && stock.quantite !== undefined) {
             const data = {
               "produit": stock.produit.nom,
-              "quantiteRestante": String(stock.quantite)
+              "quantiteRestante": String(stock.quantite),
+              "entrepot": selectedEntrepot ? selectedEntrepot.nom : "Inconnu" // Ajout du nom de l'entrepôt
             };
     
-            console.log(data);  // Vérifiez les données avant l'envoi
+            console.log(data);
     
             axios.post('/api/notif/rupture-stock', data)
               .then(response => {
-                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom}!`);
-                // Marquer le produit comme notifié
+                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom} dans l'entrepôt ${selectedEntrepot ? selectedEntrepot.nom : "Inconnu"} !`);
+                
                 setNotifiedProducts(prevState => [...prevState, stock.produit._id]);
                 localStorage.setItem('notifiedProducts', JSON.stringify([...notifiedProducts, stock.produit._id]));
-                // Enregistrer la notification avec la date dans le localStorage
+    
                 storeNotificationSent(stock.produit._id, today);
               })
               .catch(error => {
@@ -76,11 +75,12 @@ function Stock() {
                 toast.error('Erreur lors de l\'envoi de la notification de rupture de stock.');
               });
           } else {
-            console.error("Produit ou quantite non définis:", stock);
+            console.error("Produit ou quantité non définis:", stock);
           }
         });
       }
     };
+    
     
     // Fonction pour vérifier si une notification a déjà été envoyée aujourd'hui
     const isNotificationSentToday = (produitId, today) => {
@@ -133,7 +133,32 @@ function Stock() {
     } finally {
       setLoading(false);
     }
+  };// Fonction pour gérer le changement d'unité
+  const handleUniteChange = (produitId, nouvelleUnite) => {
+    const produit = stocks.find(stock => stock.produit._id === produitId);
+    const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
+    const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
+
+    // Calcul de la nouvelle quantité en fonction de l'unité choisie
+    const quantiteStock = quantitesInitiales[produitId];
+    const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
+
+    // Si l'unité choisie est plus grande (ex: cartouche vers carton), divisez la quantité
+    const nouvelleQuantite = quantiteStock / conversion;
+
+    // Mettre à jour l'état avec la nouvelle quantité
+    setQuantiteAffichee(prevState => ({
+      ...prevState,
+      [produitId]: nouvelleQuantite,
+    }));
+
+    // Mettre à jour l'unité sélectionnée pour ce produit
+    setUniteSelectionnee(prevState => ({
+      ...prevState,
+      [produitId]: nouvelleUnite,
+    }));
   };
+
 
   const isRuptureDeStock = (stock) => {
     return stock.quantite < stock.produit.quantiteMinimum;

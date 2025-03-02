@@ -152,9 +152,26 @@ exports.validerRetourProduits = async (req, res) => {
                 throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom}`);
             }
 
+            // Affichage des détails de l'unité de retour et de l'unité du stock
+            console.log(`Produit retourné : ${item.produitId.nom}`);
+            console.log(`Unité de retour : ${item.unite}`);
+            console.log(`Unité de stock : ${stock.unite}`);
+            console.log(`Quantité retournée : ${item.quantiteRestante}`);
+
+            // Vérifier si l'unité du produit retourné correspond à l'unité du stock
+            if (item.unite !== stock.unite) {
+                // Convertir la quantité retournée dans l'unité du stock
+                console.log(`Les unités sont différentes, conversion nécessaire.`);
+                item.quantiteRestante = await convertirQuantite(item.quantiteRestante, item.unite, item.produitId._id, stock.unite);
+                console.log(`Quantité après conversion : ${item.quantiteRestante}`);
+            }
+
             // Ajouter la quantité retournée au stock
             stock.quantite += item.quantiteRestante;
             stock.valeurTotale = stock.quantite * stock.prixUnitaire;
+
+            console.log(`Quantité totale mise à jour dans le stock : ${stock.quantite}`);
+            console.log(`Valeur totale mise à jour du stock : ${stock.valeurTotale}`);
 
             await stock.save();
         }));

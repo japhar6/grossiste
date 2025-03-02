@@ -13,14 +13,22 @@ const NotificationsPage = () => {
     const loadNotifications = async () => {
       try {
         const response = await axios.get('/api/notif/notifications'); 
-        setNotifications(response.data);
+        
+        // Trier les notifications par date de création (du plus récent au plus ancien)
+        const sortedNotifications = response.data.sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+  
+        setNotifications(sortedNotifications);
+        console.log("Notifications triées :", sortedNotifications);
       } catch (error) {
         console.error('Erreur lors du chargement des notifications', error);
       }
     };
-
+  
     loadNotifications();
-  }, []);  
+  }, []);
+  
 
   const markAsRead = async (notificationId) => {
     try {
@@ -62,6 +70,11 @@ const NotificationsPage = () => {
     
       // Rediriger vers la page Client
       navigate(`/achat`);
+    }
+    else if (notification.type === 'besoin-transfert') {
+    
+      // Rediriger vers la page Client
+      navigate(`/transfertAdmin`);
     }
     
     else {
@@ -111,7 +124,7 @@ const NotificationsPage = () => {
                           deleteNotification(notification._id);
                         }}
                       >
-                        &#10005; {/* Symbole de la croix */}
+                        &#10005; 
                       </button>
                     </div>
                   </li>

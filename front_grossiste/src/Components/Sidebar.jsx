@@ -101,6 +101,7 @@ function Sidebar() {
                 { path: "/HistoAcha", icon: "fa-tags", text: "Historique des achats" },
                 { path: "/histomad", icon: "fa-tags", text: "Historique des Sorties des Produits" },
                         { path: "/inventaire", icon: faBox , text: "Inventaire" },
+            
     ];
 
     return (

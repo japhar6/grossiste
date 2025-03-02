@@ -1,11 +1,11 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import "../Styles/Caisse.css";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav";
+import axios from "../api/axios";
 
-import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
-import axios from '../api/axios';
 function PaiementCom() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -13,206 +13,247 @@ function PaiementCom() {
   const [produitsRetournes, setProduitsRetournes] = useState({});
   const [produitsVendus, setProduitsVendus] = useState([]);
   const [allReferences, setAllReferences] = useState([]);
-    const [suggestions, setSuggestions] = useState([]);
-  
+  const [suggestions, setSuggestions] = useState([]);
+  const [produitsMisesAJour, setProduitsMisesAJour] = useState([]);
+  const [prixVente, setPrixVente] = useState(0);
+  const [quantiteVendue, setQuantiteVendue] = useState('');
+  const [unites, setUnites] = useState([]);
+  const [selectedUniteName, setSelectedUniteName] = useState("");
+  const [quantity, setQuantity] = useState('');
+  const [unitesParProduit, setUnitesParProduit] = useState({});  // On gère un objet pour les unités par produit
 
+console.log("prix est",prixVente);
   const playSound = () => {
-                const audio = new Audio(Sound); 
-                audio.play();
-            };
-            useEffect(() => {
-              const fetchReferences = async () => {
-                try {
-                  const response = await axios.get('/api/commandes/factmocli'); // Votre route pour récupérer toutes les références
-                  setAllReferences(response.data);
-                } catch (error) {
-                  console.error("Erreur lors de la récupération des références :", error);
-                }
-              };
-          
-              fetchReferences();
-            }, []);
+    const audio = new Audio(Sound);
+    audio.play();
+  };
 
-            
-            const handleInputChange = (e) => {
-              const value = e.target.value;
-              setReferenceFacture(value);
-          
-              if (value) {
-                const filteredSuggestions = allReferences.filter(ref =>
-                  ref.toLowerCase().includes(value.toLowerCase())
-                );
-                setSuggestions(filteredSuggestions);
-              } else {
-                setSuggestions([]); // Réinitialisez les suggestions si l'input est vide
-              }
-            };
-            
-            const handleSuggestionClick = (suggestion) => {
-              setReferenceFacture(suggestion); // Mettez à jour l'input avec la suggestion choisie
-              setSuggestions([]); // Réinitialisez les suggestions après la sélection
-            };
-          
-  // Recherche de la commande en fonction de la référence
+  useEffect(() => {
+    const fetchReferences = async () => {
+      try {
+        const response = await axios.get("/api/commandes/factmo");
+        setAllReferences(response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des références :", error);
+      }
+    };
+
+    fetchReferences();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setReferenceFacture(value);
+
+    if (value) {
+      const filteredSuggestions = allReferences.filter((ref) =>
+        ref.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filteredSuggestions);
+    } else {
+      setSuggestions([]); // Réinitialisez les suggestions si l'input est vide
+    }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setReferenceFacture(suggestion); // Mettez à jour l'input avec la suggestion choisie
+    setSuggestions([]); // Réinitialisez les suggestions après la sélection
+  };
+
   const handleSearch = async () => {
     if (!referenceFacture) return; // Validation si la référence est vide
 
     try {
-        const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
+      const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
 
-        // Vérifie si la réponse est un succès
-        if (response.status !== 200) throw new Error("Commande non trouvée");
+      if (response.status !== 200) throw new Error("Commande non trouvée");
 
-        const data = response.data;
+      const data = response.data;
 
-        // Vérifie si le type de client est Commercial
-        if (data.typeClient === "Commercial") {
-            setCommercial(data.commercialId);
-        } else {
-            // Affiche une alerte si le type n'est pas Commercial
-            Swal.fire({
-                icon: 'warning',
-                title: 'Alerte',
-                text: 'Seules les références de facture de type commercial peuvent être traitées ici.',
-            });
-            setCommande(null);
-            setCommercial(null);
-            return; // Arrête le traitement si ce n'est pas commercial
-        }
-
-        // Mise à jour de l'état des commandes et des produits
-        setCommande(data);
-        setProduitsRetournes({});
-        setProduitsVendus([]);
-    } catch (error) {
-        console.error("Erreur lors de la recherche de la commande :", error);
-        
-        // Affiche un message d'erreur spécifique si la commande n'est pas trouvée
+      if (data.typeClient === "Commercial") {
+        setCommercial(data.commercialId);
+      } else {
         Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: error.response && error.response.status === 404 ? "Référence non trouvée." : "Erreur lors de la recherche de la commande",
+          icon: "warning",
+          title: "Alerte",
+          text: "Seules les références de facture de type commercial peuvent être traitées ici.",
         });
-
         setCommande(null);
         setCommercial(null);
-    }
-};
-
-
-  const handleQuantiteChange = (produitId, quantiteDisponible, e) => {
-    const quantite = parseInt(e.target.value) || 0; // Convertit en nombre, ou 0 si vide
-
-    if (produitId) {
-        if (quantite > quantiteDisponible) { // Vérification de la quantité disponible
-            Swal.fire({
-                icon: 'warning',
-                title: 'Alerte',
-                text: `La quantité saisie ne doit pas dépasser ${quantiteDisponible} pour ce produit.`,
-            });
-            // Réinitialiser l'input en le mettant à la quantité disponible
-            e.target.value = quantiteDisponible; // Réinitialiser l'input
-        } else {
-            setProduitsVendus((prev) => {
-                const updatedProduits = [...prev];
-                const index = updatedProduits.findIndex(p => p.produitId === produitId);
-                if (index >= 0) {
-                    updatedProduits[index].quantite = quantite;
-                } else {
-                    updatedProduits.push({ produitId, quantite });
-                }
-                return updatedProduits;
-            });
-        }
-    }
-};
-
-
-
-
-  // Calcul du total après retour de produits
-  const calculerTotalApresRetour = () => {
-    if (!commande || !commande.produits) return 0;
-  
-    return commande.produits.reduce((total, produit) => {
-      // Récupérer la quantité retournée ou 0 si aucune donnée n'est présente
-      const quantiteRetournee = parseInt(produitsRetournes[produit.produit.id] || 0, 10);
-      
-      // Vérifier que la quantité retournée est bien un nombre valide
-      if (isNaN(quantiteRetournee)) {
-        console.error(`Quantité retournée invalide pour le produit ${produit.produit.nom}`);
-        return total; // Si la quantité retournée est invalide, ignorer ce produit
+        return;
       }
-      
-      // Calculer la nouvelle quantité après retour
-      const nouvelleQuantite = Math.max(produit.quantite - quantiteRetournee, 0);
-      
-      // Calculer le total
-      return total + nouvelleQuantite * produit.prixUnitaire;
-    }, 0);
+
+      setCommande(data);
+      setProduitsRetournes({});
+      setProduitsVendus([]);
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: error.response && error.response.status === 404 ? "Référence non trouvée." : "Erreur lors de la recherche de la commande",
+      });
+      setCommande(null);
+      setCommercial(null);
+    }
+  };
+
+  const handlePrixVenteChange = (e, produitId) => {
+    const updatedPrixVente = e.target.value;
+  
+    console.log("Produit sélectionné:", produitId);
+    console.log("Prix de vente sélectionné:", updatedPrixVente);
+  
+    const unitesProduit = unitesParProduit[produitId] || [];
+    const selectedUnite = unitesProduit.find(unite => unite.prixdevente === parseFloat(updatedPrixVente));
+    const uniteName = selectedUnite ? selectedUnite.nom : "";
+  
+    console.log("Unité trouvée:", selectedUnite);
+    console.log("Nom de l'unité:", uniteName);
+  
+    setProduitsMisesAJour(prevState => {
+      const updatedProduits = prevState.map(produit => {
+        if (produit.produitId === produitId) {
+          console.log("Mise à jour du produit:", produitId);
+          return { ...produit, prixVente: updatedPrixVente, uniteVendu: uniteName };
+        }
+        return produit;
+      });
+  
+      console.log("Produits mis à jour:", updatedProduits);
+      return updatedProduits;
+    });
   };
   
-
-  // Validation de la commande et mise à jour de la vente
-  const handleValidation = async () => {
-    const produitsInvalides = produitsVendus.filter(p => !p.produitId || p.quantite <= 0);
-    if (produitsInvalides.length > 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Alerte',
-            text: "Certains produits sont invalides, assurez-vous que chaque produit a un ID valide et une quantité positive.",
-        });
-        return;
+  useEffect(() => {
+    if (commande?.produits?.length > 0) {
+      commande.produits.forEach(produit => {
+        if (produit.produit._id) {
+          fetchUnites(produit.produit._id);
+        }
+      });
     }
-
+  }, [commande]);
+  
+  const fetchUnites = async (id) => {
     try {
-        // Prépare les données à envoyer
-        const produitsVendusToSend = produitsVendus.map(produit => ({
+      const response = await axios.get(`/api/produits/recuperer/${id}`);
+      setUnitesParProduit(prevState => ({
+        ...prevState,
+        [id]: response.data.unites || []
+      }));
+    } catch (error) {
+      console.error('Erreur lors de la récupération des unités:', error);
+      setUnitesParProduit(prevState => ({
+        ...prevState,
+        [id]: [] // Réinitialise en cas d'erreur
+      }));
+    }
+  };
+  
+  
+  const handleQuantiteChange = (e, produitId) => {
+    const updatedQuantite = e.target.value;
+  
+    // Vérifie si la valeur est un nombre valide
+    const parsedQuantite = updatedQuantite ? parseInt(updatedQuantite, 10) : 0;
+  
+    if (!produitId) {
+      console.error("Produit ID manquant");
+      return;
+    }
+  
+    // Met à jour l'état de la quantité
+    setQuantity(parsedQuantite);
+  
+    // Met à jour la liste des produits avec la nouvelle quantité
+    setProduitsMisesAJour(prevState => {
+      const produitExist = prevState.find(produit => produit.produitId === produitId);
+  
+      if (produitExist) {
+        return prevState.map(produit =>
+          produit.produitId === produitId
+            ? { ...produit, quantite: parsedQuantite }
+            : produit
+        );
+      } else {
+        return [...prevState, { produitId, quantite: parsedQuantite }];
+      }
+    });
+  };
+  
+  
+  const handleValidation = async () => {
+    let montantTotalVendu = 0;
+
+    // Construire le tableau produitsVendus
+    const produitsVendus = produitsMisesAJour
+      .filter(produit => {
+        // Vérifier si la quantité est valide et que prixVente est bien défini
+        const prixVente = parseFloat(produit.prixVente); // Convertir en nombre
+        const isValid = produit.quantite > 0 && !isNaN(prixVente) && prixVente > 0;
+
+        console.log(`Quantité du produit ${produit.produitId}: ${produit.quantite}`);
+        console.log(`Valeur de prixVente: ${prixVente}`);
+        console.log(`Produit ${produit.produitId} validé: ${isValid}`);
+
+        if (!isValid) {
+          console.warn(`Produit ignoré : ${JSON.stringify(produit)}`);
+        }
+        return isValid;  
+      })
+      .map(produit => {
+        console.log("Commande produits:", JSON.stringify(commande.produits, null, 2));
+
+        // Recherche du produit dans la commande
+        const produitCommande = commande.produits.find(item => item.produit._id.toString() === produit.produitId.toString());
+
+        if (produitCommande) {
+          const prixVente = parseFloat(produit.prixVente);
+          const montantProduit = prixVente * produit.quantite;
+          montantTotalVendu += montantProduit;
+
+          console.log(`Produit ajouté : ${JSON.stringify(produit)}`);
+
+          return {
             produitId: produit.produitId,
             quantite: produit.quantite,
-        }));
-
-        const response = await axios.put(`/api/paiementCom/mettre-ajour/${referenceFacture}`, {
-            produitsVendus: produitsVendusToSend,
-        });
-
-        // Vérifiez le statut du paiement
-        if (response.data.message === "Le paiement doit être partiel pour pouvoir être mis à jour.") {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erreur',
-                text: "Le paiement est déjà complet.",
-            });
-            return; // Arrêtez l'exécution si le paiement est complet
+            prixVente: prixVente,
+            uniteVendu: produit.uniteVendu
+          };
+        } else {
+          console.warn(`Produit avec ID ${produit.produitId} non trouvé dans la commande.`);
+          return null;
         }
+      })
+      .filter(produit => produit !== null);  
 
-        Swal.fire({
-            icon: 'success',
-            title: 'Succès',
-            text: "Paiement et vente mis à jour avec succès",
+    if (produitsVendus.length === 0) {
+      console.warn("Aucun produit valide à mettre à jour.");
+      return;
+    }
+
+    console.log("Données envoyées à l'API:", JSON.stringify({ produitsVendus }, null, 2));
+
+    try {
+      const response = await axios.put(`/api/paiementCom/mettre-ajour/${referenceFacture}`, {
+        produitsVendus
+      });
+
+      Swal.fire("Succès", "Paiement mis à jour avec succès.", "success")
+        .then(() => {
+          window.location.reload();
         });
-        playSound();
-          // Réinitialisation des états après validation réussie
-          setReferenceFacture("");
-          setCommande(null);
-          setCommercial(null);
-          setProduitsRetournes({});
-          setProduitsVendus([]);
-       
+
     } catch (error) {
-        console.error("Erreur lors de la mise à jour du paiement :", error);
-
-        // Vérifiez si l'erreur contient une réponse
-        const errorMessage = error.response && error.response.data ? error.response.data.message : "Une erreur s'est produite lors de la mise à jour du paiement";
-        
-        Swal.fire({
-            icon: 'error',
-            title: 'Erreur',
-            text: errorMessage,
-        });
+      console.error("Erreur lors de la mise à jour du paiement:", error.response?.data || error.message);
+      Swal.fire("Erreur", error.response?.data?.message || "Une erreur est survenue lors de la mise à jour du paiement.", "error");
     }
 };
 
+  
+
+
+  
 
   return (
     <main className="center">
@@ -224,7 +265,6 @@ function PaiementCom() {
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Caisse
             </h6>
-
             <div className="commande-container d-flex justify-content-between">
               <div className="refcli">
                 <h6><i className="fa fa-user"></i> Référence de la commande du commercial</h6>
@@ -234,25 +274,24 @@ function PaiementCom() {
                     className="form-control"
                     placeholder="Entrer la référence"
                     value={referenceFacture}
-                    onChange={handleInputChange} // Changez ici
+                    onChange={handleInputChange}
                   />
                   {suggestions.length > 0 && (
                     <ul className="suggestions-list">
                       {suggestions.map((suggestion) => (
                         <li key={suggestion} onClick={() => handleSuggestionClick(suggestion)}>
-                          {suggestion}
+                          {suggestion} 
                         </li>
                       ))}
                     </ul>
                   )}
-                  <button className="btno btn-primary " onClick={handleSearch}>
+                  <button className="btno btn-primary" onClick={handleSearch}>
                     Rechercher
                   </button>
                 </div>
               </div>
-
               <div className="produits p-3">
-                <h6><i className="fa fa-box"></i> Détails du paiement </h6>
+                <h6><i className="fa fa-box"></i> Détails du paiement</h6>
                 <table className="tableCS mt-2">
                   <thead>
                     <tr>
@@ -271,53 +310,83 @@ function PaiementCom() {
                 </table>
               </div>
             </div>
-
             {commande && (
               <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                  <table className="tableCS table-bordered mt-2 text-center">
+                <div className="table-container" style={{ overflowX: "auto", overflowY: "auto" }}>
+                  <table className="table tableCS table-bordered mt-2 text-center">
                     <thead>
                       <tr>
                         <th>Nom du produit</th>
                         <th>Quantité</th>
                         <th>Prix Unitaire</th>
-                        <th>Produit vendu</th>
-                        <th>Action</th>
+                        <th>Unité dans Commande</th>
+                        <th>Quantité vendu</th>
+                        <th>Unité vendu</th>
                       </tr>
                     </thead>
                     <tbody>
-                    {commande.produits.map((produit, index) => {
-    const produitId = produit.produit._id; // Accès correct à l'ID du produit
-    const quantiteDisponible = produit.quantite; // Récupération de la quantité disponible directement
+  {commande.produits.map((produit, index) => {
+    if (!produit.produit._id) { 
+      console.error("Produit ID manquant pour le produit", produit);
+      return null; // Ignore ce produit s'il n'a pas d'ID
+    }
+
+    const produitMiseAJour = produitsMisesAJour.find(p => p.produitId === produit.produit._id) || {};
 
     return (
-        <tr key={index}>
-            <td>{produit.produit.nom}</td>
-            <td>{produit.quantite}</td>
-            <td>{produit.prixUnitaire} Ariary</td>
-            <td>
-                <input
-                    type="number"
-                    className="form-control"
-                    value={produitsVendus.find(p => p.produitId === produitId)?.quantite || 0} // Assurez-vous de gérer les valeurs undefined
-                    onChange={(e) => handleQuantiteChange(produitId, quantiteDisponible, e)} // Passer la quantité disponible à la fonction
-                />
-            </td>
-            <td>
-                <button className="btnAO btn-info" onClick={handleValidation}>Valider</button>
-            </td>
-        </tr>
-    );
-})}
+      <tr key={index}>
+        <td>{produit.produit.nom}</td>
+        <td>{produit.quantite}</td>
+        <td>{produit.prixdevente} Ariary</td>
+        <td>{produit.uniteChoisie || "N/A"}</td>
+        <td>
+          <input
+            type="number"
+            value={produitMiseAJour.quantite || 0}
+            onChange={(e) => handleQuantiteChange(e, produit.produit._id)}
+            placeholder="Quantité vendue"
+            className="form-control"
+          />
+        </td>
+        <td>
+  <select
+    value={produitMiseAJour.prixVente || ""}
+    onChange={(e) => handlePrixVenteChange(e, produit.produit._id)}
+  >
+    <option value="">Sélectionner unité</option>
+    {unitesParProduit[produit.produit._id]?.length > 0 ? (
+      unitesParProduit[produit.produit._id].map((unite, index) => (
+        <option key={index} value={unite.prixdevente}>
+          {unite.nom} (Prix: {unite.prixdevente} Ariary)
+        </option>
+      ))
+    ) : (
+      <option disabled>Aucune unité disponible</option>
+    )}
+  </select>
+  <p>Unité sélectionnée : {produitMiseAJour.prixVente || "Aucune"}</p>
+</td>
 
-                    </tbody>
+      </tr>
+    );
+  })}
+</tbody>
+
+
                   </table>
                 </div>
-                <h6 className="total">Montant restant: Ariary</h6>
-                <h6 className="total">Total à payer: {calculerTotalApresRetour()} Ariary</h6>
               </div>
             )}
+            <div className="montant-total">
+              <h6><i className="fa fa-money-bill-wave"></i> Montant Total Vendu</h6>
+              <p>{prixVente * quantiteVendue} Ariary</p>
+              <p>Unité sélectionnée : {selectedUniteName}</p>
+
+            </div>
+            <button className="btn btn-info w-50" onClick={handleValidation}>
+              Valider
+            </button>
           </div>
         </div>
       </section>

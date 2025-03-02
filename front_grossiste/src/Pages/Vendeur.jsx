@@ -4,7 +4,8 @@ import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 import axios from '../api/axios';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
@@ -261,6 +262,7 @@ function PriseCommande() {
 
 
   const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
+    console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
 
     if (!produit.uniteChoisie) {
       Swal.fire({
@@ -297,9 +299,11 @@ function PriseCommande() {
       const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
       const quantiteDisponible = response.data.quantiteDisponible;
       const uniteDisponible = response.data.unite || 'Unité par défaut';
-      const entrepotIdPrincipal = response.data.entrepotId
-      console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible} id de lentrepot principa ${entrepotIdPrincipal}`);
+      const entrepotIdPrincipal = response.data.entrepotId;
+
+      console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
       setEntrepotId(entrepotIdPrincipal);
+
       // Comparer la quantité convertie avec la quantité disponible
       if (isChecked) {
         if (quantiteConvertie > quantiteDisponible) {
@@ -330,14 +334,39 @@ function PriseCommande() {
             console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
             setEntrepotId(entrepotIdSecondaire);
             if (quantiteConvertie > quantiteDisponibleSecondaire) {
+              // Affichage de l'alerte Swal
               Swal.fire({
-                title: 'Quantité Insuffisante',
-                text: `La quantité maximale est ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
-                icon: 'warning',
-                confirmButtonText: 'OK',
+                  title: 'Quantité Insuffisante',
+                  text: `La quantité maximale disponible est de ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
+                  icon: 'warning',
+                  confirmButtonText: 'OK',
               });
-              return; // Ne pas ajouter à la commande
-            } else {
+          
+              // Construction du message de notification
+              const messageNotif = `⚠️ Le produit "${produit.nom}" est insuffisant dans l'entrepôt principal pour une commande. 
+              Il manque ${quantiteConvertie - quantiteDisponible} ${uniteDisponible}. 
+              Un transfert depuis l'entrepôt "${responseSecondaire.data.entrepotNom}" est nécessaire, ou un achat doit être envisagé.`;
+          
+              // Préparation des données pour l'API de notification
+              const notificationData = {
+                  message: messageNotif
+                  
+              };
+          
+              // Envoi de la notification à l'admin via ton API
+              axios.post('/api/notif/alert-notifications', notificationData)
+                  .then(response => {
+                      console.log("Notification envoyée avec succès :", response.data);
+                      toast.warn(`⚠️ Rupture : Besoin de transfert/achat pour ${produit.nom}.`);
+                  })
+                  .catch(error => {
+                      console.error("Erreur lors de l'envoi de la notification :", error.response?.data || error);
+                      toast.error('Erreur lors de l\'envoi de la notification.');
+                  });
+          
+              return; // On arrête ici après l'alerte et l'envoi de la notification
+          }
+           else {
               Swal.fire({
                 title: 'Quantité suffisante',
                 text: `Disponible dans (${responseSecondaire.data.entrepotNom})`,
@@ -385,9 +414,57 @@ function PriseCommande() {
   };
 
 
-  console.log("lid est",entrepotId);
 
-  
+  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
+
+  const valeurRemise = typeRemise === "remiseGlobale"
+    ? remisesClient?.remiseGlobale
+    : typeRemise === "remiseFixe"
+      ? remisesClient?.remiseFixe
+      : typeRemise === "remiseParProduit"
+        ? remisesClient?.remiseParProduit
+        : 0;
+
+  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+
+
+    // Remise par produit
+    if (typeRemise === 'remiseParProduit') {
+      const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
+
+      return prixFinal;
+    }
+
+    // Remise globale
+    if (typeRemise === 'remiseGlobale') {
+      return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
+    }
+
+    // Remise fixe (appliquée après)
+    return item.prix;
+  };
+
+  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
+    if (typeRemise === 'remiseFixe') {
+      // Appliquer la remise fixe sur le total de la commande
+      return totalCommande - valeurRemise;
+    } else if (typeRemise === 'remiseParProduit') {
+      // Appliquer la remise sur chaque produit (selon leur prix)
+      return commande.reduce((total, item) => {
+        const prixApresRemise = calculerPrixApresRemise(item, typeRemise, valeurRemise);
+        return total + (prixApresRemise * item.quantite);
+      }, 0);
+    } else if (typeRemise === 'remiseGlobale') {
+      // Appliquer la remise globale sur le total de la commande
+      return totalCommande - (totalCommande * (valeurRemise / 100));
+    }
+    return totalCommande; // Aucun changement si pas de remise
+  };
+
+  // Calculer le total final après application de la remise
+  const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
+
+
   const creerCommande = async () => {
     try {
       const vendeurId = localStorage.getItem("userid");
@@ -462,58 +539,6 @@ function PriseCommande() {
       });
     }
   };
-
-
-
-  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
-
-  const valeurRemise = typeRemise === "remiseGlobale"
-    ? remisesClient?.remiseGlobale
-    : typeRemise === "remiseFixe"
-      ? remisesClient?.remiseFixe
-      : typeRemise === "remiseParProduit"
-        ? remisesClient?.remiseParProduit
-        : 0;
-
-  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-
-
-    // Remise par produit
-    if (typeRemise === 'remiseParProduit') {
-      const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
-
-      return prixFinal;
-    }
-
-    // Remise globale
-    if (typeRemise === 'remiseGlobale') {
-      return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
-    }
-
-    // Remise fixe (appliquée après)
-    return item.prix;
-  };
-
-  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
-    if (typeRemise === 'remiseFixe') {
-      // Appliquer la remise fixe sur le total de la commande
-      return totalCommande - valeurRemise;
-    } else if (typeRemise === 'remiseParProduit') {
-      // Appliquer la remise sur chaque produit (selon leur prix)
-      return commande.reduce((total, item) => {
-        const prixApresRemise = calculerPrixApresRemise(item, typeRemise, valeurRemise);
-        return total + (prixApresRemise * item.quantite);
-      }, 0);
-    } else if (typeRemise === 'remiseGlobale') {
-      // Appliquer la remise globale sur le total de la commande
-      return totalCommande - (totalCommande * (valeurRemise / 100));
-    }
-    return totalCommande; // Aucun changement si pas de remise
-  };
-
-  // Calculer le total final après application de la remise
-  const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
-
 
   const getClientNom = (id) => {
     const client = clients.find(client => client._id === id);

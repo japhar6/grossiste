@@ -170,7 +170,7 @@ const openModal = (paiement) => {
                 <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>
                 <th>Caissier</th>
                 <th>Commercial</th>
-                <th>Mode de paiement</th>
+           
                 <th>Statut</th>
                 <th>Date</th>
                 <th>Détails</th>
@@ -182,8 +182,8 @@ const openModal = (paiement) => {
                   <tr key={index}>
                     <td>{paiement.referenceFacture}</td>
                     <td>{paiement.caissier}</td>
-                    <td>{paiement.commercial}</td> 
-                    <td>{paiement.modePaiement}</td>
+                    <td>{paiement.commercialNom}</td> 
+        
                     <td>{paiement.statut}</td>
                     <td>{paiement.date}</td>
                     <td>

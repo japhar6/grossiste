@@ -58,13 +58,10 @@ function Fournisseur() {
   
     // Si le type est "ristourne", ajouter les conditions
     if (type === "ristourne") {
-      if (ristourne && typeRistourne) {  // Vérifie que ces champs existent
+  
         formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
         formData.append("conditions[typeRistourne]", typeRistourne);
-      } else {
-        Swal.fire("Erreur", "Les informations de ristourne sont incomplètes.", "error");
-        return;  // Empêche l'envoi si les informations sont manquantes
-      }
+ 
     }
   
     // Si le type est "prix_libre", ne pas inclure de ristourne
