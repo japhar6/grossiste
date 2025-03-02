@@ -55,8 +55,7 @@ const moment = require('moment'); // Assure-toi d'installer moment.js
                 commercialId,
                 montant: montantCommission,
                 typeCommission,
-                periode,
-                statut: 'en_attente'
+                periode
             });
 
             await nouvelleCommission.save();

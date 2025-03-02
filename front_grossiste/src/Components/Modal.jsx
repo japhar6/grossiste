@@ -7,7 +7,7 @@ const Modal = ({ isOpen, onClose, ventes, commercialNom, commissions, onAddCommi
 
   const handleAddCommission = (commissionData) => {
     onAddCommission(commissionData);
-    setAddCommissionOpen(false); 
+    setAddCommissionOpen(false);
   };
 
   if (!isOpen) return null;
@@ -30,7 +30,11 @@ const Modal = ({ isOpen, onClose, ventes, commercialNom, commissions, onAddCommi
             <tbody>
               {ventes.map((vente) => (
                 <tr key={vente._id}>
-                  <td>{new Date(vente.dateVente).toLocaleString()}</td>
+                  <td>{new Date(vente.dateVente).toLocaleString('fr-FR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}</td>
                   <td>{vente.montantTotal} Ariary</td>
                   <td>
                     <ul>
@@ -52,51 +56,53 @@ const Modal = ({ isOpen, onClose, ventes, commercialNom, commissions, onAddCommi
         {/* Afficher les commissions */}
         <h3>Commissions de {commercialNom}</h3>
         {commissions && commissions.length > 0 ? (
-  <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-    <table className="ventes-table">
-      <thead>
-        <tr>
-          <th>Période</th>
-          <th>Type</th>
-          <th>Date</th>
-          <th>Montant</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        {commissions.map((commission) => (
-          <tr key={commission._id}>
-            <td>{commission.periode}</td>
-            <td>{commission.typeCommission}</td>
-            <td>{commission.dateCreation}</td>
-            <td>{commission.montant} Ariary</td>
-            <td>{commission.statut}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    
-    {/* Calcul du total des commissions */}
-    <div className="total-commissions">
-      <strong>Total des Commissions : </strong>
-      {commissions.reduce((total, commission) => total + parseFloat(commission.montant), 0)} Ariary
-    </div>
-  </div>
-) : (
-  <p>Aucune commission trouvée pour ce commercial.</p>
-)}
+          <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+            <table className="ventes-table">
+              <thead>
+                <tr>
+                  <th>Période</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                {commissions.map((commission) => (
+                  <tr key={commission._id}>
+                    <td>{commission.periode}</td>
+                    <td>{commission.typeCommission}</td>
+                    <td>{new Date(commission.dateCreation).toLocaleDateString('fr-FR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}</td>
+                    <td>{commission.montant} Ariary</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Calcul du total des commissions */}
+            <div className="total-commissions">
+              <strong>Total des Commissions : </strong>
+              {commissions.reduce((total, commission) => total + parseFloat(commission.montant), 0)} Ariary
+            </div>
+          </div>
+        ) : (
+          <p>Aucune commission trouvée pour ce commercial.</p>
+        )}
 
 
-<div className="modal-footer">
-  <button className="btn btn-primary" onClick={() => setAddCommissionOpen(true)}>Ajouter Commission</button>
-  <button className="btn btn-secondary" onClick={onClose}>Fermer</button>
-</div>
+        <div className="modal-footer">
+          <button className="btn btn-primary" onClick={() => setAddCommissionOpen(true)}>Ajouter Commission</button>
+          <button className="btn btn-secondary" onClick={onClose}>Fermer</button>
+        </div>
 
         {/* Modal d'ajout de commission */}
-        <AddCommissionModal 
-          isOpen={isAddCommissionOpen} 
-          onClose={() => setAddCommissionOpen(false)} 
-          onAddCommission={handleAddCommission} 
+        <AddCommissionModal
+          isOpen={isAddCommissionOpen}
+          onClose={() => setAddCommissionOpen(false)}
+          onAddCommission={handleAddCommission}
           commercialId={ventes[0]?.commercialId} // Assurez-vous que commercialId est passé correctement
         />
       </div>

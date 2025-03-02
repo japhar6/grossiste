@@ -390,130 +390,99 @@ exports.getTotalPaiementsParPeriode = async (req, res) => {
 
         switch (periode) {
             case 'journalier':
-                // Récupère la date actuelle à 00:00 et 23:59
-                dateDebut = new Date(maintenant);
-                dateDebut.setHours(0, 0, 0, 0);  // Met à 00:00
-                dateFin = new Date(maintenant);
-                dateFin.setHours(23, 59, 59, 999);  // Met à 23:59
+                dateDebut = new Date(maintenant.setHours(0, 0, 0, 0));
+                dateFin = new Date(maintenant.setHours(23, 59, 59, 999));
                 break;
 
             case 'hebdomadaire':
-                // Récupère le premier et dernier jour de la semaine
                 const premierJourSemaine = maintenant.getDate() - maintenant.getDay(); // Dimanche = 0
-                dateDebut = new Date(maintenant);
-                dateDebut.setDate(premierJourSemaine);
-                dateDebut.setHours(0, 0, 0, 0);  // Début de la semaine (dimanche)
-                dateFin = new Date(maintenant);
-                dateFin.setDate(premierJourSemaine + 6);  // Fin de la semaine (samedi)
-                dateFin.setHours(23, 59, 59, 999);  // Fin de la semaine
+                dateDebut = new Date(maintenant.setDate(premierJourSemaine));
+                dateDebut.setHours(0, 0, 0, 0);
+                dateFin = new Date(maintenant.setDate(premierJourSemaine + 6));
+                dateFin.setHours(23, 59, 59, 999);
                 break;
 
             case 'mensuel':
-                // Récupère le premier et dernier jour du mois
-                dateDebut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);  // Premier jour du mois
-                dateFin = new Date(maintenant.getFullYear(), maintenant.getMonth() + 1, 0);  // Dernier jour du mois
-                dateFin.setHours(23, 59, 59, 999);  // Fin du mois
+                dateDebut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+                dateFin = new Date(maintenant.getFullYear(), maintenant.getMonth() + 1, 0);
+                dateFin.setHours(23, 59, 59, 999);
                 break;
 
             case 'annuel':
-                // Récupère le premier et dernier jour de l'année
-                dateDebut = new Date(maintenant.getFullYear(), 0, 1);  // Premier jour de l'année
-                dateFin = new Date(maintenant.getFullYear(), 11, 31);  // Dernier jour de l'année
-                dateFin.setHours(23, 59, 59, 999);  // Fin de l'année
+                dateDebut = new Date(maintenant.getFullYear(), 0, 1);
+                dateFin = new Date(maintenant.getFullYear(), 11, 31);
+                dateFin.setHours(23, 59, 59, 999);
                 break;
 
             case 'global':
-                // Aucun filtre de date, on prend tout
-                const paiementsClients = await Paiement.find().populate({
-                    path: 'commandeId',
-                    populate: [
-                        { path: 'clientId', select: 'nom' },
-                        { path: 'commercialId', select: 'nom' }
-                    ]
-                }).populate({
-                    path: 'idCaissier', select: 'nom'
-                });
+                // Pas besoin de filtre par date, on prend tout
+                const tousPaiements = await Paiement.find({ modePaiement: { $ne: 'a credit' } });
+                const totalGlobalPaiements = tousPaiements.reduce((acc, paiement) => acc + paiement.totalPaiement, 0);
 
-                const totalGlobalClients = paiementsClients.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+                const tousPaiementsCommerciale = await PaiementCommerciale.find({ statut: { $ne: 'non payé' } });
+                const totalGlobalPaiementsCommerciale = tousPaiementsCommerciale.reduce((acc, paiementCommercial) => acc + paiementCommercial.montantPaye, 0);
 
-                const paiementsCommerciaux = await PaiementCommerciale.find().populate({
-                    path: 'commandeId',
-                    populate: [
-                        { path: 'clientId', select: 'nom' },
-                        { path: 'commercialId', select: 'nom' }
-                    ]
-                }).populate({
-                    path: 'idCaissier', select: 'nom'
-                });
-
-                const totalGlobalCommerciaux = paiementsCommerciaux.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+                // Calculer le nombre de clients et commerciaux uniques
+                const clients = new Set(tousPaiements.map(p => p.commandeId.toString())); // Paiements classiques
+                const commerciaux = new Set(tousPaiementsCommerciale.map(p => p.idCaissier.toString())); // Paiements commerciaux
 
                 return res.status(200).json({
                     periode: 'global',
-                    totalClients: totalGlobalClients,
-                    totalCommerciaux: totalGlobalCommerciaux,
-                    nombreClients: paiementsClients.length,
-                    nombreCommerciaux: paiementsCommerciaux.length
+                    totalPaiements: totalGlobalPaiements,
+                    totalPaiementsCommercial: totalGlobalPaiementsCommerciale,
+                    nombrePaiements: tousPaiements.length,
+                    nombrePaiementsCommercial: tousPaiementsCommerciale.length,
+                    nombreClients: clients.size,
+                    nombreCommerciaux: commerciaux.size
                 });
 
             default:
                 return res.status(400).json({ message: 'Période non valide' });
         }
 
-        // Filtrage des paiements par date pour les périodes autres que "global"
-        const modePaiementFiltre = req.query.modePaiement || "tous";  // Filtrage optionnel par mode de paiement
-
-        // Récupère les paiements clients
-        const paiementsClients = await Paiement.find({
-            datePaiement: {
+        // Si la période est différente de "global", on filtre par date et exclut les paiements "a credit"
+        const paiements = await Paiement.find({
+            createdAt: {
                 $gte: dateDebut,
                 $lte: dateFin
             },
-            ...(modePaiementFiltre !== "tous" && { modePaiement: modePaiementFiltre === "espèce" ? "espèce" : { $ne: "espèce" } })
-        }).populate({
-            path: 'commandeId',
-            populate: [
-                { path: 'clientId', select: 'nom' },
-                { path: 'commercialId', select: 'nom' }
-            ]
-        }).populate({
-            path: 'idCaissier', select: 'nom'
+            modePaiement: { $ne: 'a credit' }
         });
 
-        const totalClients = paiementsClients.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+        const totalPaiements = paiements.reduce((acc, paiement) => acc + paiement.totalPaiement, 0);
 
-        // Récupère les paiements commerciaux
-        const paiementsCommerciaux = await PaiementCommerciale.find({
-            datePaiement: {
+        // Paiements commerciaux, excluant ceux dont le statut est "non payé"
+        const paiementsCommerciale = await PaiementCommerciale.find({
+            createdAt: {
                 $gte: dateDebut,
                 $lte: dateFin
             },
-            ...(modePaiementFiltre !== "tous" && { modePaiement: modePaiementFiltre === "espèce" ? "espèce" : { $ne: "espèce" } })
-        }).populate({
-            path: 'commandeId',
-            populate: [
-                { path: 'clientId', select: 'nom' },
-                { path: 'commercialId', select: 'nom' }
-            ]
-        }).populate({
-            path: 'idCaissier', select: 'nom'
+            statut: { $ne: 'non payé' }
         });
 
-        const totalCommerciaux = paiementsCommerciaux.reduce((acc, paiement) => acc + paiement.montantPaye, 0);
+        const totalPaiementsCommerciale = paiementsCommerciale.reduce((acc, paiementCommercial) => acc + paiementCommercial.montantPaye, 0);
 
-        // Retourne la réponse avec les paiements clients et commerciaux
+        // Calculer le nombre de clients et commerciaux uniques
+        const clients = new Set(paiements.map(p => p.commandeId.toString())); // Paiements classiques
+        const commerciaux = new Set(paiementsCommerciale.map(p => p.idCaissier.toString())); // Paiements commerciaux
+
         res.status(200).json({
             periode,
-            totalClients,
-            totalCommerciaux,
-            nombreClients: paiementsClients.length,
-            nombreCommerciaux: paiementsCommerciaux.length
+            totalPaiements: totalPaiements,
+            totalPaiementsCommercial: totalPaiementsCommerciale,
+            nombrePaiements: paiements.length,
+            nombrePaiementsCommercial: paiementsCommerciale.length,
+            nombreClients: clients.size,
+            nombreCommerciaux: commerciaux.size
         });
 
     } catch (error) {
-        console.error("Erreur lors de la récupération des paiements:", error);
+        console.error(error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 };
+
+
+
 
 

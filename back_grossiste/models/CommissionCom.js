@@ -27,11 +27,6 @@ const commissioncomSchema = new mongoose.Schema({
   dateCreation: {
     type: Date,
     default: Date.now
-  },
-  statut: {
-    type: String,
-    enum: ['payée', 'en_attente'],
-    default: 'en_attente'
   }
 });
 
