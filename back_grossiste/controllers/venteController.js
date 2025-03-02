@@ -70,7 +70,7 @@ exports.validerVente = async (req, res) => {
             let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
 
             if (stocks.length === 0) {
-                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock.`);
+                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock dans l'entrepôt "${entrepot.nom}". Veuillez effectuer un transfert depuis un autre entrepôt ou effectuer un achat.`);
             }
 
             let { quantite: quantityInMinUnit, unite } = convertirUnite(remainingQuantity, item.uniteChoisie, produit.unites);
@@ -95,7 +95,7 @@ exports.validerVente = async (req, res) => {
             }
 
             if (quantityInMinUnit > 0) {
-                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt sélectionné.`);
+                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt "${entrepot.nom}".`);
             }
 
             vente.produits.push({
@@ -125,6 +125,8 @@ exports.validerVente = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 
 exports.validerRetourProduits = async (req, res) => {

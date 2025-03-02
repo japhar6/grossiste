@@ -89,6 +89,44 @@ exports.deleteNotification = async (req, res) => {
     return res.status(500).json({ message: 'Erreur serveur lors de la suppression de la notification' });
   }
 };
+exports.envoyeralertTransfertAdmin= async (req, res) =>{
+
+  try {
+    const { message, idClient } = req.body; // On attend maintenant aussi un idClient dans le corps de la requête
+
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ message: 'Le message de la notification est requis.' });
+    }
+
+    // Créer la notification dans la base de données
+    const notification = new Notification({
+      message: message,
+      lue: false,
+      type: 'besoin-transfert', // Par défaut, la notification n'est pas lue
+      idClient: idClient || null, // Si un idClient est fourni, on l'ajoute à la notification, sinon on le laisse à null
+    });
+
+    await notification.save();
+
+    // Récupérer l'ObjectId de l'admin
+    const adminUser = await User.findOne({ role: 'admin' });
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Utilisateur admin non trouvé.' });
+    }
+
+    // Envoyer un message de notification via Pusher
+    pusher.trigger('admin-channel', 'besoin-transfert', {
+      message: message,
+      notificationId: notification._id
+    });
+
+    res.status(201).json({ message: 'Notification envoyée avec succès.', notification });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de la notification:", error);
+    res.status(500).json({ message: "Erreur lors de l'envoi de la notification", error: error.message });
+  }
+
+}
 
 exports.envoyerNotificationAdmin = async (req, res) => {
   try {
@@ -125,18 +163,18 @@ exports.envoyerNotificationAdmin = async (req, res) => {
     console.error("Erreur lors de l'envoi de la notification:", error);
     res.status(500).json({ message: "Erreur lors de l'envoi de la notification", error: error.message });
   }
-};
+}; 
 
 exports.envoyerNotificationRuptureStock = async (req, res) => {
   try {
-    const { produit, quantiteRestante, idClient } = req.body; // On récupère les informations nécessaires depuis le corps de la requête
+    const { produit, quantiteRestante, entrepot,idClient } = req.body; // On récupère les informations nécessaires depuis le corps de la requête
 
     if (!produit || !quantiteRestante) {
       return res.status(400).json({ message: 'Le produit et la quantité restante sont requis.' });
     }
 
     // Créer un message personnalisé pour la notification
-    const message = `Alerte : Le produit ${produit} a atteint un stock faible de ${quantiteRestante} unités.`;
+    const message = `⚠️ Rupture de stock sur le produit ${produit} a atteint un stock faible de ${quantiteRestante} unités dans l'entrepôt ${entrepot}.`;
 
     // Créer la notification de rupture de stock dans la base de données
     const notification = new Notification({

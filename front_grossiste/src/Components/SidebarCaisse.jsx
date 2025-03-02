@@ -75,11 +75,12 @@ function SidebarVendeur(){
             }, []);
         
     const buttons = [
+     
 
         { path: "/caissier", icon: "fa-cash-register", text: "Caisse" },
         { path: "/histoc", icon: "fa-tags", text: "Historique des paiements" },
         { path: "/PaiementCom", icon: "fa-tags", text: "Paiement commerciaux" },
-    
+        { path: "/payerCredit", icon: "fa-cash-register", text: "Payer Les Crédits" },
       ];
     return(
         <>

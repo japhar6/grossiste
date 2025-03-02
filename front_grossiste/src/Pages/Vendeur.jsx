@@ -4,7 +4,8 @@ import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 import axios from '../api/axios';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
@@ -297,7 +298,7 @@ function PriseCommande() {
       // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
       const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
       const quantiteDisponible = response.data.quantiteDisponible;
-      const uniteDisponible = response.data.uniteNom || 'Unité par défaut';
+      const uniteDisponible = response.data.unite || 'Unité par défaut';
       const entrepotIdPrincipal = response.data.entrepotId;
 
       console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
@@ -333,14 +334,39 @@ function PriseCommande() {
             console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
             setEntrepotId(entrepotIdSecondaire);
             if (quantiteConvertie > quantiteDisponibleSecondaire) {
+              // Affichage de l'alerte Swal
               Swal.fire({
-                title: 'Quantité Insuffisante',
-                text: `La quantité maximale est ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
-                icon: 'warning',
-                confirmButtonText: 'OK',
+                  title: 'Quantité Insuffisante',
+                  text: `La quantité maximale disponible est de ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
+                  icon: 'warning',
+                  confirmButtonText: 'OK',
               });
-              return; // Ne pas ajouter à la commande
-            } else {
+          
+              // Construction du message de notification
+              const messageNotif = `⚠️ Le produit "${produit.nom}" est insuffisant dans l'entrepôt principal pour une commande. 
+              Il manque ${quantiteConvertie - quantiteDisponible} ${uniteDisponible}. 
+              Un transfert depuis l'entrepôt "${responseSecondaire.data.entrepotNom}" est nécessaire, ou un achat doit être envisagé.`;
+          
+              // Préparation des données pour l'API de notification
+              const notificationData = {
+                  message: messageNotif
+                  
+              };
+          
+              // Envoi de la notification à l'admin via ton API
+              axios.post('/api/notif/alert-notifications', notificationData)
+                  .then(response => {
+                      console.log("Notification envoyée avec succès :", response.data);
+                      toast.warn(`⚠️ Rupture : Besoin de transfert/achat pour ${produit.nom}.`);
+                  })
+                  .catch(error => {
+                      console.error("Erreur lors de l'envoi de la notification :", error.response?.data || error);
+                      toast.error('Erreur lors de l\'envoi de la notification.');
+                  });
+          
+              return; // On arrête ici après l'alerte et l'envoi de la notification
+          }
+           else {
               Swal.fire({
                 title: 'Quantité suffisante',
                 text: `Disponible dans (${responseSecondaire.data.entrepotNom})`,

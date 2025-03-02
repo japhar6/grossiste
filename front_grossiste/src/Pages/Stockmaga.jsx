@@ -57,14 +57,12 @@ function Stock() {
 
   useEffect(() => {
     const checkAndSendNotification = () => {
-      // Récupérer la date actuelle (au format "YYYY-MM-DD")
       const today = new Date().toISOString().split('T')[0];
     
-      // Vérifier uniquement les produits non notifiés ou dont la notification n'a pas été envoyée aujourd'hui
       const ruptureDeStock = stocks.filter(stock => 
         stock.quantite < stock.produit.quantiteMinimum && 
         !notifiedProducts.includes(stock.produit._id) &&
-        !isNotificationSentToday(stock.produit._id, today)  // Vérifie si la notification a déjà été envoyée aujourd'hui
+        !isNotificationSentToday(stock.produit._id, today)
       );
     
       if (ruptureDeStock.length > 0) {
@@ -72,18 +70,19 @@ function Stock() {
           if (stock.produit && stock.produit.nom && stock.quantite !== undefined) {
             const data = {
               "produit": stock.produit.nom,
-              "quantiteRestante": String(stock.quantite)
+              "quantiteRestante": String(stock.quantite),
+              "entrepot": entrepot ? entrepot.nom : "Inconnu" // Ajout du nom de l'entrepôt
             };
     
-            console.log(data);  // Vérifiez les données avant l'envoi
+            console.log(data);
     
             axios.post('/api/notif/rupture-stock', data)
               .then(response => {
-                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom}!`);
-                // Marquer le produit comme notifié
+                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom} dans l'entrepôt ${entrepot ? entrepot.nom : "Inconnu"} !`);
+                
                 setNotifiedProducts(prevState => [...prevState, stock.produit._id]);
                 localStorage.setItem('notifiedProducts', JSON.stringify([...notifiedProducts, stock.produit._id]));
-                // Enregistrer la notification avec la date dans le localStorage
+    
                 storeNotificationSent(stock.produit._id, today);
               })
               .catch(error => {
@@ -91,11 +90,13 @@ function Stock() {
                 toast.error('Erreur lors de l\'envoi de la notification de rupture de stock.');
               });
           } else {
-            console.error("Produit ou quantite non définis:", stock);
+            console.error("Produit ou quantité non définis:", stock);
           }
         });
       }
     };
+    
+  
     
     // Fonction pour vérifier si une notification a déjà été envoyée aujourd'hui
     const isNotificationSentToday = (produitId, today) => {
@@ -140,6 +141,7 @@ function Stock() {
 
     fetchEntrepots();
   }, [token, userId]);
+
 
   // Récupère les stocks de l'entrepôt sélectionné
   useEffect(() => {

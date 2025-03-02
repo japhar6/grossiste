@@ -125,7 +125,7 @@ function SortieStock() {
         // Envoyer la notification à l'admin
         const data = {
           "produit": produitNom,
-          "quantiteRestante": "0" // Supposons que la quantité est 0 pour une rupture
+          "quantiteRestante": "0" 
         };
   
         console.log("Envoi de la notification:", data);
@@ -148,6 +148,8 @@ function SortieStock() {
     }
   };
 
+  
+  
   
 
   // Effect pour suivre les changements de taille de la fenêtre

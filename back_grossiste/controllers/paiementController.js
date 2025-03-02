@@ -7,75 +7,87 @@ const { sendNotificationToAdmin } = require('../service/payementService'); // Se
 const mongoose = require("mongoose");
 exports.validerpayement = async (req, res) => {
     try {
-        const { id } = req.params;  // Référence de la commande (ex : "FACTCLI-001")
-        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit } = req.body; // Récupérer les données de la requête
+        const { id } = req.params; // ID de la commande (ou référence)
+        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit } = req.body; 
 
-        // Recherche de la commande par la référence de facture (id)
+        // Vérifier si l'ID est valide
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "ID de commande invalide" });
         }
 
+        // Trouver la commande par ID
         const commande = await Commande.findById(id);
 
         if (!commande) {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        // Si le mode de paiement est "mobile money" ou "virement bancaire", la référence de paiement est requise
-        if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
-            return res.status(400).json({ message: "La référence de paiement est requise pour ce mode de paiement" });
+        // Vérifier si la commande a une référence de facture
+        if (!commande.referenceFacture) {
+            return res.status(400).json({ message: "Référence de facture introuvable." });
         }
 
-        // Si le mode de paiement est "à crédit", vérifier que la date limite est fournie
+        // Vérifier si la référence de paiement est requise et fournie
+        if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
+            return res.status(400).json({ message: "La référence de paiement est requise pour ce mode de paiement." });
+        }
+
+        // Vérifier la date limite de crédit si paiement à crédit
         if (modePaiement === "a credit" && !dateLimiteCredit) {
             return res.status(400).json({ message: "La date limite de paiement à crédit est requise." });
         }
 
-        // Calcul du montant à payer (aucune remise, juste la somme totale de la commande)
-        let montantPaye = commande.totalGeneral;
+        // Déterminer le montant payé
+        let montantPaye = modePaiement === "a credit" ? 0 : commande.totalGeneral;
 
-        // Mettre à jour le statut de la commande à "payé"
-        commande.statut = "payé";
-        await commande.save();
+        // Déterminer le statut du paiement
+        let statutPaiement = modePaiement === "a credit" ? "non payé" : "payé complet";
+      
+     
 
-        // Si le mode de paiement est "mobile money" ou "virement bancaire", le statut du paiement sera "payé partielle"
-        let statutPaiement = "payé complet";
-       
-        // Créer un paiement avec le montant payé et d'autres détails, incluant le mode de paiement et la date limite pour les paiements à crédit
+            commande.statut = "payé";
+            await commande.save();
+     
+        // Créer le paiement
         const paiement = new Paiement({
-            commandeId: commande._id,  // Référence à l'ID de la commande
-            montantPaye: montantPaye,  // Montant payé basé sur la commande
-            totalPaiement: montantPaye,  // Le montant total payé est le même ici
-            statut: statutPaiement,  // Statut du paiement (payé partielle ou payé complet)
-            referencePaiement: referencePaiement,  // Référence de paiement, si nécessaire
+            commandeId: commande._id, 
+            montantPaye: montantPaye, 
+            totalPaiement: commande.totalGeneral,
+            statut: statutPaiement,
+            referenceFacture: commande.referenceFacture, 
+            referencePaiement: referencePaiement || null, 
             idCaissier: idCaissier,
-            modePaiement: modePaiement,  // Mode de paiement
-            dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null // Ajout de la date limite si le paiement est à crédit
+            modePaiement: modePaiement,
+            dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null,
+            datePaiement: modePaiement === "a credit" ? null : new Date()
         });
 
-        // Sauvegarder le paiement dans la base de données
+        // Sauvegarder le paiement
         await paiement.save();
 
+        // Associer le paiement à la commande
         commande.paiement = paiement._id;
         await commande.save();
 
-        // Réponse avec les détails du paiement validé
+        // Répondre avec les détails du paiement
         return res.status(200).json({
-            message: "Paiement validé avec succès",
+            message: "Paiement enregistré avec succès",
             paiement: {
                 commandeId: paiement.commandeId,
                 montantPaye: paiement.montantPaye,
                 statut: paiement.statut,
                 totalPaiement: paiement.totalPaiement,
                 referencePaiement: paiement.referencePaiement,
-                modePaiement: paiement.modePaiement, // Inclure le mode de paiement dans la réponse
-                dateLimiteCredit: paiement.dateLimiteCredit // Inclure la date limite de crédit dans la réponse si applicable
+                modePaiement: paiement.modePaiement,
+                dateLimiteCredit: paiement.dateLimiteCredit
             }
         });
+
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
+
 
 
 // Vérification des paiements à crédit et envoi de notifications
@@ -154,7 +166,7 @@ exports.getPaiements = async (req, res) => {
     }
 };
 // Récupérer tous les paiements à crédit des clients et commerciaux
-exports.getPaiementsCredit = async (req, res) => {
+exports.getPaiementsCredittout = async (req, res) => {
     try {
         // Récupérer les paiements à crédit des clients
         const paiementsClientsCredit = await Paiement.find({ modePaiement: "a credit" }).populate({
@@ -380,6 +392,95 @@ exports.getPaiementAvecCommande = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
+exports.getPaiementsCredit = async (req, res) => {
+    try {
+        // Récupérer les paiements dont le mode de paiement est "a credit"
+        const paiements = await Paiement.find({ modePaiement: "a credit" })
+            .populate({
+                path: "commandeId",
+                populate: [
+                    { path: "produits.produit", model: "Produit" }, 
+                    { path: "clientId", select: "nom" }, 
+                    { path: "commercialId", select: "nom" }
+                    
+                ]
+            })
+            .exec();
+
+        // Vérifier si aucun paiement à crédit n'est trouvé
+        if (paiements.length === 0) {
+            return res.status(404).json({ message: "Aucun paiement à crédit trouvé." });
+        }
+
+        // Répondre avec les paiements trouvés
+        return res.status(200).json(paiements);
+        
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+exports.mettreAJourPaiement = async (req, res) => {
+    try {
+        const { referenceFacture } = req.params; // Récupérer la référence de facture
+        const { modePaiement, referencePaiement } = req.body; // Mode de paiement et référence si nécessaire
+
+        // Trouver le paiement correspondant
+        const paiement = await Paiement.findOne({ referenceFacture });
+
+        if (!paiement) {
+            return res.status(404).json({ message: "Paiement non trouvé pour cette référence de facture." });
+        }
+
+        // Vérifier que le paiement est bien en mode "a credit"
+        if (paiement.modePaiement !== "a credit") {
+            return res.status(400).json({ message: "Ce paiement n'est pas en mode crédit." });
+        }
+
+        // Vérifier que le paiement n'est pas déjà réglé
+        if (paiement.statut === "payé complet") {
+            return res.status(400).json({ message: "Ce paiement a déjà été entièrement réglé." });
+        }
+
+        // Vérifier si la référence de paiement est requise pour certains modes
+        if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
+            return res.status(400).json({ message: "La référence de paiement est requise pour ce mode de paiement." });
+        }
+
+        // Mettre à jour le paiement avec le montant total et le statut
+        paiement.montantPaye = paiement.totalPaiement; // Montant payé = total
+        paiement.statut = "payé complet";
+        paiement.modePaiement = modePaiement;
+        paiement.referencePaiement = referencePaiement || paiement.referencePaiement;
+        paiement.datePaiement = new Date(); // Date de remboursement
+
+        // Sauvegarder le paiement mis à jour
+        await paiement.save();
+
+       
+
+        // Répondre avec les nouvelles informations du paiement
+        return res.status(200).json({
+            message: "Paiement à crédit remboursé avec succès",
+            paiement: {
+                referenceFacture: paiement.referenceFacture,
+                montantPaye: paiement.montantPaye,
+                statut: paiement.statut,
+                totalPaiement: paiement.totalPaiement,
+                modePaiement: paiement.modePaiement,
+                referencePaiement: paiement.referencePaiement,
+                datePaiement: paiement.datePaiement
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 exports.getTotalPaiementsParPeriode = async (req, res) => {
     try {

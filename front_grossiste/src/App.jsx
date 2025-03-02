@@ -42,6 +42,7 @@ import PersonnelsList from './Pages/PersonnelsList.jsx';
 import Client from './Pages/Client.jsx';
 import Notification from './Components/Notifications.jsx';
 import HistoAcha from './Pages/HistoAcha.jsx';
+import PayerCredit from './Pages/PayerClientcredi.jsx';
 
 
 
@@ -104,6 +105,8 @@ function App() {
           <Route path='/caissier' element={<Caissier />} />
           <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
+          <Route path='/payerCredit' element={<PayerCredit />} /> 
+
           <Route path='/PaiementCom' element={<PaiementCom />} />
           <Route path='/FactureNormal' element={<FactureNormal />} />
           <Route path='/FactureRemise' element={<FactureRemise />} />
