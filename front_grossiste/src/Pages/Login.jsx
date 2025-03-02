@@ -1,13 +1,11 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
-import { useNavigate ,Link} from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../Styles/Login.css';
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import axios from '../api/axios';
-import Logo from '../assets/logoo.png'
-
+import Logo from '../assets/logoo.png';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -22,6 +20,7 @@ function Login() {
         setShowPassword(prevState => !prevState); // Met à jour l'état pour afficher/masquer le mot de passe
         console.log('Show Password:', !showPassword); // Affiche l'état dans la console
     };
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -33,14 +32,7 @@ function Login() {
                 password
             });
     
-            // Pas besoin de faire await response.json()
             const data = response.data; // Récupère directement les données
-    
-            // Pas besoin de vérifier response.ok, Axios lancera une erreur si la réponse n'est pas 2xx
-            // Donc, tu peux supprimer ce bloc :
-            // if (!response.ok) {
-            //     throw new Error(data.message || 'Erreur de connexion');
-            // }
     
             // Stocke les informations dans le localStorage
             localStorage.setItem('token', data.token);
@@ -85,13 +77,12 @@ function Login() {
             setLoading(false);
         }
     };
-    
 
     return (
         <main className='mainLogin center'>
             <section className='login'>
                 <div className="container-fluid center cont">
-                    <div className='description p-5  text-center'>
+                    <div className='description p-5 text-center'>
                         <div className="center">
                             <img src={Logo} alt="" width={250} className='img-fluid'/>
                         </div>
@@ -101,8 +92,6 @@ function Login() {
                         </h1>
                         <p>Optimisez la gestion et la distribution des PPN... by <b className='fw-bold'>INNOV-T Madagascar</b></p>
                         <Link to="/inscription">
-
-                      
                         </Link>
                     </div>
                     <div className='formulaire p-5'>
@@ -131,25 +120,25 @@ function Login() {
                                         <label>Nom d'utilisateur</label>
                                     </div>
                                     <div className="form-floating mb-3" style={{ position: 'relative' }}>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        className="form-control"
-                                        placeholder="Password"
-                                        autoComplete="off"
-                                        required
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        style={{ paddingRight: '2.5rem' }}
-                                    />
-                                    <label>Mot de passe</label>
-                                    <span 
-                                        className="input-icon" 
-                                        onClick={togglePasswordVisibility} 
-                                        style={{ cursor: 'pointer', position: 'absolute', right: '20px', top: '20px' }}
-                                    >
-                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                                    </span>
-                                </div>
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            className="form-control"
+                                            placeholder="Password"
+                                            autoComplete="off"
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            style={{ paddingRight: '2.5rem' }}
+                                        />
+                                        <label>Mot de passe</label>
+                                        <span 
+                                            className="input-icon" 
+                                            onClick={togglePasswordVisibility} 
+                                            style={{ cursor: 'pointer', position: 'absolute', right: '20px', top: '20px' }}
+                                        >
+                                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className='text-center'>
                                     {!success && (

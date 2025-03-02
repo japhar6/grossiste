@@ -127,7 +127,6 @@ function HistoV() {
                     
                         
                         <th>Statut</th>
-                        <th>Fait par :</th>
                         <th>Montant Total</th>
                       </tr>
                     </thead>
@@ -152,11 +151,6 @@ function HistoV() {
 
                          
                             <td>{commande.statut}</td>
-                            <td>
-                              {commande.vendeurId && commande.vendeurId.nom
-                                ? commande.vendeurId.nom
-                                : "Inconnu"}
-                            </td>
                             <td>{commande.totalGeneral} ariary</td>
                           </tr>
                         );

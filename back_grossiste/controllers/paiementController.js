@@ -191,7 +191,7 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     { path: 'clientId', select: 'nom' },
                     { path: 'commercialId', select: 'nom' },
                     { path: 'produits.produit', select: 'nom prixUnitaire' },
-                    { path: 'modePaiement', select: 'modePaiement' }
+                 
                 ]
             });
 
@@ -217,7 +217,7 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     nom: produit.produit.nom,
                     prixUnitaire: produit.produit.prixUnitaire
                 })) || [],
-                modePaiement: paiement.commandeId?.modePaiement || 'Inconnu',
+                modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
                 referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire') 
                     ? paiement.referencePaiement 

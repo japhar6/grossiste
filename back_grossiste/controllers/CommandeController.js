@@ -210,12 +210,15 @@ exports.getCommandeByref = async (req, res) => {
             commande = await Commande.findOne({ referenceFacture })
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
-                .populate("produits.produit", "nom");
+                .populate("produits.produit", "nom")
+                .populate("paiement", "modePaiement"); // Ajout de modePaiement
         } else {
             commande = await Commande.findById(req.params.id)
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
-                .populate("produits.produit", "nom");
+                .populate("produits.produit", "nom")
+                .populate("paiement", "modePaiement"); // Ajout de modePaiement
+
         }
 
         if (!commande) {

@@ -127,8 +127,6 @@ exports.validerVente = async (req, res) => {
 };
 
 
-
-
 exports.validerRetourProduits = async (req, res) => {
     try {
         const { venteComId, magasinierId } = req.body;
@@ -152,9 +150,26 @@ exports.validerRetourProduits = async (req, res) => {
                 throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom}`);
             }
 
+            // Affichage des détails de l'unité de retour et de l'unité du stock
+            console.log(`Produit retourné : ${item.produitId.nom}`);
+            console.log(`Unité de retour : ${item.unite}`);
+            console.log(`Unité de stock : ${stock.unite}`);
+            console.log(`Quantité retournée : ${item.quantiteRestante}`);
+
+            // Vérifier si l'unité du produit retourné correspond à l'unité du stock
+            if (item.unite !== stock.unite) {
+                // Convertir la quantité retournée dans l'unité du stock
+                console.log(`Les unités sont différentes, conversion nécessaire.`);
+                item.quantiteRestante = await convertirQuantite(item.quantiteRestante, item.unite, item.produitId._id, stock.unite);
+                console.log(`Quantité après conversion : ${item.quantiteRestante}`);
+            }
+
             // Ajouter la quantité retournée au stock
-            stock.quantité += item.quantiteRestante;
-            stock.valeurTotale = stock.quantité * stock.prixUnitaire;
+            stock.quantite += item.quantiteRestante;
+            stock.valeurTotale = stock.quantite * stock.prixUnitaire;
+
+            console.log(`Quantité totale mise à jour dans le stock : ${stock.quantite}`);
+            console.log(`Valeur totale mise à jour du stock : ${stock.valeurTotale}`);
 
             await stock.save();
         }));
@@ -188,5 +203,60 @@ exports.validerRetourProduits = async (req, res) => {
 
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+};
+
+// La fonction de conversion avec des logs pour suivre le processus
+const convertirQuantite = async (quantite, uniteVendu, produitId, uniteReference) => {
+    try {
+        // Trouver les détails du produit à partir de son ID
+        const produitDetails = await Produit.findById(produitId);
+
+        if (!produitDetails) {
+            throw new Error(`Produit avec l'ID ${produitId} non trouvé.`);
+        }
+
+        // Trouver les détails de l'unité de vente et de l'unité de référence
+        const uniteVenduDetails = produitDetails.unites.find(u => u.nom === uniteVendu);
+        const uniteReferenceDetails = produitDetails.unites.find(u => u.nom === uniteReference);
+
+        if (!uniteVenduDetails || !uniteReferenceDetails) {
+            throw new Error(`Les unités ${uniteVendu} ou ${uniteReference} ne sont pas trouvées.`);
+        }
+
+        // Récupérer les facteurs de conversion
+        const facteurConversionUniteVendu = uniteVenduDetails.conversion;
+        const facteurConversionUniteReference = uniteReferenceDetails.conversion;
+
+        // Affichage des unités et des facteurs de conversion
+        console.log(`Unité de vente : ${uniteVendu}`);
+        console.log(`Unité de référence : ${uniteReference}`);
+        console.log(`Facteur de conversion pour ${uniteVendu}: ${facteurConversionUniteVendu}`);
+        console.log(`Facteur de conversion pour ${uniteReference}: ${facteurConversionUniteReference}`);
+
+        // Si les unités sont les mêmes, aucune conversion nécessaire
+        if (uniteVendu === uniteReference) {
+            console.log(`Les unités sont identiques, aucune conversion nécessaire.`);
+            return quantite;
+        }
+
+        // Calcul de la conversion entre les unités
+        let quantiteConvertie;
+
+        // Si l'unité de vente est plus grande que l'unité de référence, on divise
+        if (facteurConversionUniteVendu > facteurConversionUniteReference) {
+            quantiteConvertie = quantite * facteurConversionUniteVendu / facteurConversionUniteReference;
+        }
+        // Sinon on multiplie
+        else {
+            quantiteConvertie = quantite * facteurConversionUniteReference / facteurConversionUniteVendu;
+        }
+
+        console.log(`Conversion de ${quantite} ${uniteVendu} en ${uniteReference} : ${quantiteConvertie}`);
+
+        return quantiteConvertie;
+    } catch (error) {
+        console.error(`Erreur de conversion : ${error.message}`);
+        throw new Error("Erreur lors de la conversion des unités.");
     }
 };

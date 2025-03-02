@@ -76,28 +76,28 @@ function Stock() {
     const produit = stocks.find(stock => stock.produit._id === produitId);
     const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
     const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
-    
+
     // Calcul de la nouvelle quantité en fonction de l'unité choisie
     const quantiteStock = quantitesInitiales[produitId];
     const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
-  
+
     // Si l'unité choisie est plus grande (ex: cartouche vers carton), divisez la quantité
     const nouvelleQuantite = quantiteStock / conversion;
-  
+
     // Mettre à jour l'état avec la nouvelle quantité
     setQuantiteAffichee(prevState => ({
       ...prevState,
       [produitId]: nouvelleQuantite,
     }));
-  
+
     // Mettre à jour l'unité sélectionnée pour ce produit
     setUniteSelectionnee(prevState => ({
       ...prevState,
       [produitId]: nouvelleUnite,
     }));
   };
-  
-  
+
+
   const isRuptureDeStock = (stock) => {
 
     return stock.quantite < stock.produit.quantiteMinimum;
@@ -210,18 +210,18 @@ function Stock() {
                     <th>Quantité</th>
                     <th>Unité</th>
                     <th>Catégorie</th>
-                      <th>Quantite Minimum</th>
-                      <th>Date d'ajout</th>
+                    <th>Quantite Minimum</th>
+                    <th>Date d'ajout</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedStocks.map(stock => (
-                      <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
+                    <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
                       <td>{stock.produit.nom}</td>
                       <td>{stock.produit.categorie}</td>
                       <td>
-  {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
-</td>
+                        {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
+                      </td>
 
                       <td>
                         <select
@@ -237,11 +237,11 @@ function Stock() {
                         </select>
                       </td>
                       <td>{stock.produit.categorie}</td>
-                        <td>{stock.produit.quantiteMinimum} {stock.unite}</td>
-                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
-                        <td>
-        {isRuptureDeStock(stock) && <span className="text-danger">Rupture de stock</span>}
-      </td>
+                      <td>{stock.produit.quantiteMinimum} {stock.unite}</td>
+                      <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                      <td>
+                        {isRuptureDeStock(stock) && <span className="text-danger">Rupture de stock</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

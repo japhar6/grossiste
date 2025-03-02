@@ -1,560 +1,560 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 import axios from '../api/axios';
- 
+
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
-           const [newPerson, setNewPerson] = useState({
+  const [newPerson, setNewPerson] = useState({
     nom: "",
     telephone: "",
     adresse: "",
     nif: "",
     stat: "",
     nifStatImage: null, // Stocke l'image
-});
+  });
 
-const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'image
+  const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'image
 
-              const playSound = () => {
-                const audio = new Audio(Sound); 
-                audio.play();
-            };
-            
+  const playSound = () => {
+    const audio = new Audio(Sound);
+    audio.play();
+  };
 
-              // Définir l'état pour les produits sélectionnés
-                const [commande, setCommande] = useState([]);
-                const [typeQuantite, setTypeQuantite] = useState("");
-                const [selectedId, setSelectedId] = useState("");
-                const [type, setType] = useState(""); 
-              const [isNew, setIsNew] = useState(false); 
-              const [selectedPerson, setSelectedPerson] = useState("");
-              const [clients, setClients] = useState([]);
-              const [commerciaux, setCommerciaux] = useState([]);
-              const [checkedProduits, setCheckedProduits] = useState({});
-              const [produits, setProduits] = useState([]);
-              const [searchTerm, setSearchTerm] = useState("");
-              const [categorie, setCategorie] = useState("");
-              const [categories, setCategories] = useState([]);
-              const [remisesClient, setRemisesClient] = useState(null);
-              const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
-              const [produitsDesactives, setProduitsDesactives] = useState({}); // {idProduit: true/false}
 
-              useEffect(() => {
-                const fetchRemisesClient = async () => {
-                  if (selectedPerson) {
-                    try {
-                      const response = await axios.get(`/api/client/recuperer/${selectedPerson}`);
-                      setRemisesClient(response.data.remises);  // Récupère les remises du client
-                      
-                      // Vérifie quel type de remise existe et met à jour le typeRemise
-                      if (response.data.remises.remiseGlobale > 0) {
-                        setTypeRemise("remiseGlobale");
-                      } else if (response.data.remises.remiseFixe > 0) {
-                        setTypeRemise("remiseFixe");
-                      } else if (response.data.remises.remiseParProduit > 0) {
-                        setTypeRemise("remiseParProduit");
-                      } else {
-                        setTypeRemise(null); // Aucune remise spéciale
-                      }
-                      
-                    } catch (error) {
-                      console.error("Erreur lors de la récupération des remises du client", error);
-                    }
-                  }
-                };
-              
-                fetchRemisesClient();
-              }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
-              
+  // Définir l'état pour les produits sélectionnés
+  const [commande, setCommande] = useState([]);
+  const [typeQuantite, setTypeQuantite] = useState("");
+  const [selectedId, setSelectedId] = useState("");
+  const [type, setType] = useState("");
+  const [isNew, setIsNew] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState("");
+  const [clients, setClients] = useState([]);
+  const [commerciaux, setCommerciaux] = useState([]);
+  const [checkedProduits, setCheckedProduits] = useState({});
+  const [produits, setProduits] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categorie, setCategorie] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [remisesClient, setRemisesClient] = useState(null);
+  const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
+  const [produitsDesactives, setProduitsDesactives] = useState({}); // {idProduit: true/false}
 
-          
+  useEffect(() => {
+    const fetchRemisesClient = async () => {
+      if (selectedPerson) {
+        try {
+          const response = await axios.get(`/api/client/recuperer/${selectedPerson}`);
+          setRemisesClient(response.data.remises);  // Récupère les remises du client
 
-                                const handleSelectChange = (e) => {
-                                  const id = e.target.value;
-                                  setSelectedPerson(id);
-                                  setSelectedId(id); 
-                                  setIsNew(id === "new");
+          // Vérifie quel type de remise existe et met à jour le typeRemise
+          if (response.data.remises.remiseGlobale > 0) {
+            setTypeRemise("remiseGlobale");
+          } else if (response.data.remises.remiseFixe > 0) {
+            setTypeRemise("remiseFixe");
+          } else if (response.data.remises.remiseParProduit > 0) {
+            setTypeRemise("remiseParProduit");
+          } else {
+            setTypeRemise(null); // Aucune remise spéciale
+          }
 
-                                  console.log("ID sélectionné :", id);
-                                };
-                                useEffect(() => {
-                                  fetchClients();
-                                  fetchCommerciaux();
-                                }, []);
-                                useEffect(() => {
-                                
-                                  fetchProduits();
-                                }, []);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des remises du client", error);
+        }
+      }
+    };
 
-                                const fetchClients = async () => {
-                                  try {
-                                    const response = await axios.get("/api/client/");
-                                    setClients(response.data);
-                                  } catch (error) {
-                                    console.error("Erreur lors de la récupération des clients", error);
-                                  }
-                                };
+    fetchRemisesClient();
+  }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
 
-                                const fetchCommerciaux = async () => {
-                                  try {
-                                    const response = await axios.get("/api/comercial");
-                                    setCommerciaux(response.data);
-                                  } catch (error) {
-                                    console.error("Erreur lors de la récupération des commerciaux", error);
-                                  }
-                                };
 
-                                // Créer une personne (client ou commercial)
-                                const creerPersonne = async () => {
-                                  try {
-                                    // Vérification des données envoyées
-                                    console.log("Données envoyées :", newPerson);
 
-                                    // Validation des champs selon le type (client ou commercial)
-                                    if (type === "client") {
-                                      
-                                      if (!newPerson.nom ) {
-                                        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
-                                        return;
-                                      }
-                                    } else if (type === "commercial") {
-                                      // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
-                                      if (!newPerson.nom || !newPerson.telephone || !newPerson.email || !newPerson.type) {
-                                        Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
-                                        return;
-                                      }
-                                    }
-                                 
-                                         
-    const formData = new FormData();
-    
-    // Ajouter les données à FormData
-    for (const key in newPerson) {
-      formData.append(key, newPerson[key]);
+
+  const handleSelectChange = (e) => {
+    const id = e.target.value;
+    setSelectedPerson(id);
+    setSelectedId(id);
+    setIsNew(id === "new");
+
+    console.log("ID sélectionné :", id);
+  };
+  useEffect(() => {
+    fetchClients();
+    fetchCommerciaux();
+  }, []);
+  useEffect(() => {
+
+    fetchProduits();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get("/api/client/");
+      setClients(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des clients", error);
+    }
+  };
+
+  const fetchCommerciaux = async () => {
+    try {
+      const response = await axios.get("/api/comercial");
+      setCommerciaux(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des commerciaux", error);
+    }
+  };
+
+  // Créer une personne (client ou commercial)
+  const creerPersonne = async () => {
+    try {
+      // Vérification des données envoyées
+      console.log("Données envoyées :", newPerson);
+
+      // Validation des champs selon le type (client ou commercial)
+      if (type === "client") {
+
+        if (!newPerson.nom) {
+          Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
+          return;
+        }
+      } else if (type === "commercial") {
+        // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
+        if (!newPerson.nom || !newPerson.telephone || !newPerson.email || !newPerson.type) {
+          Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
+          return;
+        }
+      }
+
+
+      const formData = new FormData();
+
+      // Ajouter les données à FormData
+      for (const key in newPerson) {
+        formData.append(key, newPerson[key]);
+      }
+
+
+      // Déterminer l'URL selon le type (client ou commercial)
+      const url = type === "client" ? "/api/client/" : "/api/comercial/";
+
+      // Envoi de la requête POST avec FormData
+      const response = await axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      if (response.data) {
+        Swal.fire(
+          {
+            icon: "success",
+            title: "Succès",
+            text: `${type === "client" ? "Client" : "Commercial"} créé avec succès !`,
+
+
+          });
+
+
+        if (type === "client") {
+          setClients((prevClients) => [
+            ...prevClients,
+            { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
+          ]);
+        } else {
+          setCommerciaux((prevCommerciaux) => [
+            ...prevCommerciaux,
+            { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
+          ]);
+        }
+
+        // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
+        const updatedList = await axios.get(url);  // Recharger les données à partir de l'API
+        if (type === "client") {
+          setClients(updatedList.data);
+        } else {
+          setCommerciaux(updatedList.data);
+        }
+
+        // Sélectionner le nouvel élément
+        setSelectedPerson(response.data._id);
+        setIsNew(false);
+
+
+
+
+        setNewPerson({
+          nom: '',
+          telephone: '',
+          adresse: '',
+          email: '',
+          type: '',
+        });
+
+
+        setSelectedPerson(null);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
+      Swal.fire("Erreur", "Une erreur s'est produite", "error");
+    }
+  };
+
+  const Annuler = async () => {
+
+    setIsNew(false);
+  }
+  const handleKeyDown = (produit, e) => {
+    if (e.key === "Enter") {
+      handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
+    }
+  };
+
+  const fetchProduits = async () => {
+    try {
+      const response = await axios.get("/api/produits/afficher");
+      setProduits(response.data);
+
+      // Extraire les catégories uniques
+      const categoriesUniq = [
+        ...new Set(response.data.map((produit) => produit.categorie)),
+      ];
+      setCategories(categoriesUniq);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des produits", error);
+    }
+  };
+
+  // Filtrer les produits en fonction de la recherche et de la catégorie
+  const produitsFiltres = produits.filter((p) => {
+    const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategorie = categorie ? p.categorie === categorie : true;
+    return matchesRecherche && matchesCategorie;
+  });
+  const convertirQuantiteEnUniteSelectionnee = (produitId, nouvelleUnite, quantitesInitiales) => {
+    // Recherche du produit
+    const produit = stocks.find(stock => stock.produit._id === produitId);
+    if (!produit) return 0; // Si le produit n'est pas trouvé, retourne 0
+
+    // Trouver les unités
+    const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
+    const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
+
+    if (!uniteSelectionneeProduit || !uniteStockProduit) return 0; // Vérifier que les unités existent
+
+    // Récupérer la quantité initiale en fonction du produit
+    const quantiteStock = quantitesInitiales[produitId];
+    if (quantiteStock === undefined || quantiteStock <= 0) return 0; // Vérifier que la quantité est valide
+
+    // Calcul de la conversion entre les unités
+    const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
+
+    // Conversion de la quantité
+    const nouvelleQuantite = quantiteStock / conversion;
+
+    return nouvelleQuantite;
+  };
+
+
+  const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
+    console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
+
+    if (!produit.uniteChoisie) {
+      Swal.fire({
+        title: 'Unité non sélectionnée',
+        text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+      });
+      return; // Ne rien faire si l'unité n'est pas sélectionnée
     }
 
-    
-                                    // Déterminer l'URL selon le type (client ou commercial)
-                                    const url = type === "client" ? "/api/client/" : "/api/comercial/";
-                                    
-                                       // Envoi de la requête POST avec FormData
-    const response = await axios.post(url, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
+    // Ne rien faire si la quantité demandée est inférieure ou égale à 0
+    if (quantite <= 0) return;
+
+    try {
+      // Trouver l'unité avec la plus grande conversion (la plus petite unité)
+      const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
+        return prev.conversion > current.conversion ? prev : current;
+      });
+
+      console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
+
+      // Comparer l'unité choisie avec l'unité la plus petite
+      let quantiteConvertie = quantite;
+      if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
+        // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
+        quantiteConvertie = quantite * uniteLaPlusPetite.conversion;
+        console.log(`Quantité convertie : ${quantiteConvertie}`);
+      } else {
+        console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
       }
-    });
-                                    if (response.data) {
-                                      Swal.fire(
-                                        {
-                                        icon: "success",
-                                        title: "Succès",
-                                        text: `${type === "client" ? "Client" : "Commercial"} créé avec succès !`,
-                                        
-                                  
-                                        });
-                                    
-                                    
-                                      if (type === "client") {
-                                        setClients((prevClients) => [
-                                          ...prevClients,
-                                          { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
-                                        ]);
-                                      } else {
-                                        setCommerciaux((prevCommerciaux) => [
-                                          ...prevCommerciaux,
-                                          { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
-                                        ]);
-                                      }
 
-                                      // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
-                                      const updatedList = await axios.get(url);  // Recharger les données à partir de l'API
-                                      if (type === "client") {
-                                        setClients(updatedList.data);
-                                      } else {
-                                        setCommerciaux(updatedList.data);
-                                      }
+      // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
+      const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
+      const quantiteDisponible = response.data.quantiteDisponible;
+      const uniteDisponible = response.data.uniteNom || 'Unité par défaut';
 
-                                      // Sélectionner le nouvel élément
-                                      setSelectedPerson(response.data._id);
-                                      setIsNew(false);
+      console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
 
-                                    
-                                   
-         
-                                      setNewPerson({
-                                        nom: '',
-                                        telephone: '',
-                                        adresse: '', 
-                                        email: '',
-                                        type: '',
-                                      });
-                                      
-                           
-                                      setSelectedPerson(null); 
-                                    }
-                                  } catch (error) {
-                                    console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
-                                    Swal.fire("Erreur", "Une erreur s'est produite", "error");
-                                  }
-                                };
+      // Comparer la quantité convertie avec la quantité disponible
+      if (isChecked) {
+        if (quantiteConvertie > quantiteDisponible) {
+          const result = await Swal.fire({
+            title: 'Quantité Insuffisante',
+            text: `Il n'en reste que (${quantiteDisponible} ${uniteDisponible}) dans l'entrepôt principal. Donc il en manque ${quantiteConvertie - quantiteDisponible}  ${uniteDisponible}.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Choisir un autre entrepôt',
+            customClass: {
+              confirmButton: 'btn btn-success',
+              cancelButton: 'btn btn-danger'
+            },
+            buttonsStyling: false,
+          });
 
-                                const Annuler = async () => {
-                                    
-                                  setIsNew(false);
-                                  }
-                                  const handleKeyDown = (produit, e) => {
-                                    if (e.key === "Enter") {
-                                      handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
-                                    }
-                                  };
+          if (result.isConfirmed) {
+            return; // Ne pas ajouter à la commande
+          } else if (result.isDismissed) {
+            // Choisir un autre entrepôt
+            const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
+            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0;
+            const uniteSecondaire = responseSecondaire.data.uniteNom || 'Unité par défaut';
 
-                                const fetchProduits = async () => {
-                                  try {
-                                    const response = await axios.get("/api/produits/afficher");
-                                    setProduits(response.data);
+            // Afficher les informations de l'autre entrepôt pour débogage
+            console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire}`);
+            console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
 
-                                    // Extraire les catégories uniques
-                                    const categoriesUniq = [
-                                      ...new Set(response.data.map((produit) => produit.categorie)),
-                                    ];
-                                    setCategories(categoriesUniq); 
-                                  } catch (error) {
-                                    console.error("Erreur lors de la récupération des produits", error);
-                                  }
-                                };
+            if (quantiteConvertie > quantiteDisponibleSecondaire) {
+              Swal.fire({
+                title: 'Quantité Insuffisante',
+                text: `Il n'en reste que ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans les autres entrepôts.`,
+                icon: 'warning',
+                confirmButtonText: 'OK',
+              });
+              return; // Ne pas ajouter à la commande
+            } else {
+              Swal.fire({
+                title: 'Quantité suffisante',
+                text: `Disponible dans (${response.data.entrepotNom})`,
+                icon: 'info',
+                confirmButtonText: 'OK',
+              });
+              setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+              setCommande((prevCommande) => {
+                const existant = prevCommande.find((item) => item._id === produit._id);
+                const unite = produit.uniteChoisie || (produit.unites && produit.unites.length > 0 ? produit.unites[0].nom : "Unité par défaut");
+                if (existant) {
+                  return prevCommande.map((item) =>
+                    item._id === produit._id
+                      ? { ...item, quantite: item.quantite + quantite, typeQuantite, unite }
+                      : item
+                  );
+                } else {
+                  return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente, unite }];
+                }
+              });
+            }
+          }
+        } else {
+          setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+          setCommande((prevCommande) => {
+            const existant = prevCommande.find((item) => item._id === produit._id);
+            if (existant) {
+              return prevCommande.map((item) =>
+                item._id === produit._id
+                  ? { ...item, quantite: item.quantite + quantite, typeQuantite }
+                  : item
+              );
+            } else {
+              return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
+            }
+          });
+        }
+      } else {
+        setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
+        setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la quantité disponible", error);
+    }
+  };
 
-                                // Filtrer les produits en fonction de la recherche et de la catégorie
-                                const produitsFiltres = produits.filter((p) => {
-                                  const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
-                                  const matchesCategorie = categorie ? p.categorie === categorie : true;
-                                  return matchesRecherche && matchesCategorie;
-                                });
-                                const convertirQuantiteEnUniteSelectionnee = (produitId, nouvelleUnite, quantitesInitiales) => {
-                                  // Recherche du produit
-                                  const produit = stocks.find(stock => stock.produit._id === produitId);
-                                  if (!produit) return 0; // Si le produit n'est pas trouvé, retourne 0
-                                
-                                  // Trouver les unités
-                                  const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
-                                  const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
-                                  
-                                  if (!uniteSelectionneeProduit || !uniteStockProduit) return 0; // Vérifier que les unités existent
-                                  
-                                  // Récupérer la quantité initiale en fonction du produit
-                                  const quantiteStock = quantitesInitiales[produitId];
-                                  if (quantiteStock === undefined || quantiteStock <= 0) return 0; // Vérifier que la quantité est valide
-                                
-                                  // Calcul de la conversion entre les unités
-                                  const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
-                                
-                                  // Conversion de la quantité
-                                  const nouvelleQuantite = quantiteStock / conversion;
-                                
-                                  return nouvelleQuantite;
-                                };
 
-                                
-                                const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
-                                  console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
-                                  
-                                  if (!produit.uniteChoisie) {
-                                    Swal.fire({
-                                      title: 'Unité non sélectionnée',
-                                      text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
-                                      icon: 'warning',
-                                      confirmButtonText: 'OK',
-                                    });
-                                    return; // Ne rien faire si l'unité n'est pas sélectionnée
-                                  }
-                                
-                                  // Ne rien faire si la quantité demandée est inférieure ou égale à 0
-                                  if (quantite <= 0) return;
-                                
-                                  try {
-                                    // Trouver l'unité avec la plus grande conversion (la plus petite unité)
-                                    const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
-                                      return prev.conversion > current.conversion ? prev : current;
-                                    });
-                                
-                                    console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
-                                    
-                                    // Comparer l'unité choisie avec l'unité la plus petite
-                                    let quantiteConvertie = quantite;
-                                    if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
-                                      // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
-                                      quantiteConvertie = quantite * uniteLaPlusPetite.conversion;
-                                      console.log(`Quantité convertie : ${quantiteConvertie}`);
-                                    } else {
-                                      console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
-                                    }
-                                
-                                    // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
-                                    const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
-                                    const quantiteDisponible = response.data.quantiteDisponible;
-                                    const uniteDisponible = response.data.uniteNom || 'Unité par défaut';
-                                
-                                    console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
-                                
-                                    // Comparer la quantité convertie avec la quantité disponible
-                                    if (isChecked) {
-                                      if (quantiteConvertie > quantiteDisponible) {
-                                        const result = await Swal.fire({
-                                          title: 'Quantité Insuffisante',
-                                          text: `Il n'en reste que (${quantiteDisponible} ${uniteDisponible}) dans l'entrepôt principal. Donc il en manque ${quantiteConvertie - quantiteDisponible}  ${uniteDisponible}.`,
-                                          icon: 'warning',
-                                          showCancelButton: true,
-                                          confirmButtonText: 'OK',
-                                          cancelButtonText: 'Choisir un autre entrepôt',
-                                          customClass: {
-                                            confirmButton: 'btn btn-success',
-                                            cancelButton: 'btn btn-danger'
-                                          },
-                                          buttonsStyling: false,
-                                        });
-                                
-                                        if (result.isConfirmed) {
-                                          return; // Ne pas ajouter à la commande
-                                        } else if (result.isDismissed) {
-                                          // Choisir un autre entrepôt
-                                          const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
-                                          const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0;
-                                          const uniteSecondaire = responseSecondaire.data.uniteNom || 'Unité par défaut';
-                                
-                                          // Afficher les informations de l'autre entrepôt pour débogage
-                                          console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire}`);
-                                          console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
-                                
-                                          if (quantiteConvertie > quantiteDisponibleSecondaire) {
-                                            Swal.fire({
-                                              title: 'Quantité Insuffisante',
-                                              text: `Il n'en reste que ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans les autres entrepôts.`,
-                                              icon: 'warning',
-                                              confirmButtonText: 'OK',
-                                            });
-                                            return; // Ne pas ajouter à la commande
-                                          } else {
-                                            Swal.fire({
-                                              title: 'Quantité suffisante',
-                                              text: `Disponible dans (${response.data.entrepotNom})`,
-                                              icon: 'info',
-                                              confirmButtonText: 'OK',
-                                            });
-                                            setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-                                            setCommande((prevCommande) => {
-                                              const existant = prevCommande.find((item) => item._id === produit._id);
-                                              const unite = produit.uniteChoisie || (produit.unites && produit.unites.length > 0 ? produit.unites[0].nom : "Unité par défaut");
-                                              if (existant) {
-                                                return prevCommande.map((item) =>
-                                                  item._id === produit._id
-                                                    ? { ...item, quantite: item.quantite + quantite, typeQuantite, unite }
-                                                    : item
-                                                );
-                                              } else {
-                                                return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente, unite }];
-                                              }
-                                            });
-                                          }
-                                        }
-                                      } else {
-                                        setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-                                        setCommande((prevCommande) => {
-                                          const existant = prevCommande.find((item) => item._id === produit._id);
-                                          if (existant) {
-                                            return prevCommande.map((item) =>
-                                              item._id === produit._id
-                                                ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                                                : item
-                                            );
-                                          } else {
-                                            return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
-                                          }
-                                        });
-                                      }
-                                    } else {
-                                      setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
-                                      setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
-                                    }
-                                  } catch (error) {
-                                    console.error("Erreur lors de la récupération de la quantité disponible", error);
-                                  }
-                                };
-                                
-     
-                                  
-                                const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
 
-                                const valeurRemise = typeRemise === "remiseGlobale"
-                                    ? remisesClient?.remiseGlobale
-                                    : typeRemise === "remiseFixe"
-                                        ? remisesClient?.remiseFixe
-                                        : typeRemise === "remiseParProduit"
-                                            ? remisesClient?.remiseParProduit
-                                            : 0;
-                                
-                                const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-                                  
-                                
-                                    // Remise par produit
-                                    if (typeRemise === 'remiseParProduit') {
-                                        const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
-                                  
-                                        return prixFinal;
-                                    }
-                                
-                                    // Remise globale
-                                    if (typeRemise === 'remiseGlobale') {
-                                        return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
-                                    }
-                                
-                                    // Remise fixe (appliquée après)
-                                    return item.prix;
-                                };
-                                
-                                const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
-                                    if (typeRemise === 'remiseFixe') {
-                                        // Appliquer la remise fixe sur le total de la commande
-                                        return totalCommande - valeurRemise;
-                                    } else if (typeRemise === 'remiseParProduit') {
-                                        // Appliquer la remise sur chaque produit (selon leur prix)
-                                        return commande.reduce((total, item) => {
-                                            const prixApresRemise = calculerPrixApresRemise(item, typeRemise, valeurRemise);
-                                            return total + (prixApresRemise * item.quantite);
-                                        }, 0);
-                                    } else if (typeRemise === 'remiseGlobale') {
-                                        // Appliquer la remise globale sur le total de la commande
-                                        return totalCommande - (totalCommande * (valeurRemise / 100));
-                                    }
-                                    return totalCommande; // Aucun changement si pas de remise
-                                };
-                                
-                                // Calculer le total final après application de la remise
-                                const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
-                     
+  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
 
-                                  const creerCommande = async () => {
-                                    try {
-                                      const vendeurId = localStorage.getItem("userid");
-                                      const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
-                                      
-                                      if (!selectedPersonId) {
-                                        Swal.fire({
-                                          title: "Erreur",
-                                          text: "Aucun client ou commercial sélectionné.",
-                                          icon: "error",
-                                          confirmButtonText: "OK",
-                                        });
-                                        return;
-                                      }
-                                      
-                                      const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
-                                      const commercialId = type === "commercial" ? selectedPersonId : null;
-                                      const typeClient = type === "client" ? "Client" : "Commercial";
-                                      const statut = "en cours"; // Le statut initial de la commande
-                                      
-                                      if (!vendeurId) {
-                                        Swal.fire({
-                                          title: "Erreur",
-                                          text: "ID du vendeur non trouvé.",
-                                          icon: "error",
-                                          confirmButtonText: "OK",
-                                        });
-                                        return;
-                                      }
-                                      
-                                      // Crée les produits à partir de l'état de commande
-                                      const produitsCommande = commande.map((item) => ({
-                                        produit: item._id,
-                                        quantite: item.quantite,
-                                        uniteChoisie: item.uniteChoisie || "Unité par défaut", // Si une unité est choisie, sinon "Unité par défaut"
-                                      }));
-                                  
-                                      // Préparer les données de la commande
-                                      const commandeData = {
-                                        typeClient,
-                                        clientId: typeClient === "Client" ? clientId : null, // Dynamique selon le type de client
-                                        commercialId: typeClient === "Commercial" ? commercialId : null, // Dynamique pour commercial
-                                        vendeurId,
-                                        produits: produitsCommande,
-                                        statut,
-                                      };
-                                  
-                                      // Envoie la requête API pour créer la commande
-                                      const response = await axios.post("/api/commandes/ajouter", commandeData);
-                                      console.log("Commande créée avec succès:", response.data);
-                                      
-                                      // Affichage d'une notification de succès
-                                      Swal.fire({
-                                        title: "Commande créée avec succès",
-                                        text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
-                                        icon: "success",
-                                        confirmButtonText: "OK",
-                                      }).then(() => {
-                                        window.location.reload(); // Recharger la page après avoir cliqué sur OK
-                                      });
-                                      playSound();  
-                                      // Réinitialisation de la commande après la création
-                                      setCommande([]);
-                                      
-                                    } catch (error) {
-                                      console.error("Erreur lors de la création de la commande:", error);
-                                      Swal.fire({
-                                        title: "Erreur",
-                                        text: "Une erreur s'est produite lors de la création de la commande.",
-                                        icon: "error",
-                                        confirmButtonText: "OK",
-                                      });
-                                    }
-                                  };
-                                  
-                                  const getClientNom = (id) => {
-                                    const client = clients.find(client => client._id === id);
-                                    return client ? client.nom : '';
-                                  };
-                               
-                                  const vendeurNom = localStorage.getItem("nom"); 
-                                  const vendeurId = localStorage.getItem("userid"); 
-                                  const handleDemandeRemise = async () => {
-                                    if (!selectedPerson) {
-                                      alert("Veuillez sélectionner un client !");
-                                      return;
-                                    }
-                                  
-                                    const clientNom = getClientNom(selectedPerson);
-                                    console.log("Nom du client:", clientNom);
-                                    console.log("Id:", selectedId);
-                                    if (!vendeurNom) {
-                                      alert("Nom du vendeur non trouvé dans localStorage.");
-                                      return;
-                                    }
-                                  
-                                    // Message incluant le nom du client
-                                    const message = `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`;
-                                  
-                                    try {
-                                      const response = await axios.post("/api/notif/envoie-notifications", {
-                                        message: message, // Envoie le message complet
-                                        idClient: selectedId// Envoi l'ID du client sélectionné
-                                      }, {
-                                        headers: {
-                                          "Content-Type": "application/json"
-                                        }
-                                      });
-                                  
-                                      console.log("Réponse de l'API:", response.data);
-                                      alert("Demande de remise envoyée !");
-                                    } catch (error) {
-                                      console.error("Erreur lors de l'envoi de la notification", error);
-                                      alert("Une erreur est survenue. Veuillez réessayer.");
-                                    }
-                                  };
+  const valeurRemise = typeRemise === "remiseGlobale"
+    ? remisesClient?.remiseGlobale
+    : typeRemise === "remiseFixe"
+      ? remisesClient?.remiseFixe
+      : typeRemise === "remiseParProduit"
+        ? remisesClient?.remiseParProduit
+        : 0;
 
-                                  
-                            
-                                  
+  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+
+
+    // Remise par produit
+    if (typeRemise === 'remiseParProduit') {
+      const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
+
+      return prixFinal;
+    }
+
+    // Remise globale
+    if (typeRemise === 'remiseGlobale') {
+      return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
+    }
+
+    // Remise fixe (appliquée après)
+    return item.prix;
+  };
+
+  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
+    if (typeRemise === 'remiseFixe') {
+      // Appliquer la remise fixe sur le total de la commande
+      return totalCommande - valeurRemise;
+    } else if (typeRemise === 'remiseParProduit') {
+      // Appliquer la remise sur chaque produit (selon leur prix)
+      return commande.reduce((total, item) => {
+        const prixApresRemise = calculerPrixApresRemise(item, typeRemise, valeurRemise);
+        return total + (prixApresRemise * item.quantite);
+      }, 0);
+    } else if (typeRemise === 'remiseGlobale') {
+      // Appliquer la remise globale sur le total de la commande
+      return totalCommande - (totalCommande * (valeurRemise / 100));
+    }
+    return totalCommande; // Aucun changement si pas de remise
+  };
+
+  // Calculer le total final après application de la remise
+  const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
+
+
+  const creerCommande = async () => {
+    try {
+      const vendeurId = localStorage.getItem("userid");
+      const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
+
+      if (!selectedPersonId) {
+        Swal.fire({
+          title: "Erreur",
+          text: "Aucun client ou commercial sélectionné.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
+      const commercialId = type === "commercial" ? selectedPersonId : null;
+      const typeClient = type === "client" ? "Client" : "Commercial";
+      const statut = "en cours"; // Le statut initial de la commande
+
+      if (!vendeurId) {
+        Swal.fire({
+          title: "Erreur",
+          text: "ID du vendeur non trouvé.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      // Crée les produits à partir de l'état de commande
+      const produitsCommande = commande.map((item) => ({
+        produit: item._id,
+        quantite: item.quantite,
+        uniteChoisie: item.uniteChoisie || "Unité par défaut", // Si une unité est choisie, sinon "Unité par défaut"
+      }));
+
+      // Préparer les données de la commande
+      const commandeData = {
+        typeClient,
+        clientId: typeClient === "Client" ? clientId : null, // Dynamique selon le type de client
+        commercialId: typeClient === "Commercial" ? commercialId : null, // Dynamique pour commercial
+        vendeurId,
+        produits: produitsCommande,
+        statut,
+      };
+
+      // Envoie la requête API pour créer la commande
+      const response = await axios.post("/api/commandes/ajouter", commandeData);
+      console.log("Commande créée avec succès:", response.data);
+
+      // Affichage d'une notification de succès
+      Swal.fire({
+        title: "Commande créée avec succès",
+        text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        window.location.reload(); // Recharger la page après avoir cliqué sur OK
+      });
+      playSound();
+      // Réinitialisation de la commande après la création
+      setCommande([]);
+
+    } catch (error) {
+      console.error("Erreur lors de la création de la commande:", error);
+      Swal.fire({
+        title: "Erreur",
+        text: "Une erreur s'est produite lors de la création de la commande.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
+  const getClientNom = (id) => {
+    const client = clients.find(client => client._id === id);
+    return client ? client.nom : '';
+  };
+
+  const vendeurNom = localStorage.getItem("nom");
+  const vendeurId = localStorage.getItem("userid");
+  const handleDemandeRemise = async () => {
+    if (!selectedPerson) {
+      alert("Veuillez sélectionner un client !");
+      return;
+    }
+
+    const clientNom = getClientNom(selectedPerson);
+    console.log("Nom du client:", clientNom);
+    console.log("Id:", selectedId);
+    if (!vendeurNom) {
+      alert("Nom du vendeur non trouvé dans localStorage.");
+      return;
+    }
+
+    // Message incluant le nom du client
+    const message = `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`;
+
+    try {
+      const response = await axios.post("/api/notif/envoie-notifications", {
+        message: message, // Envoie le message complet
+        idClient: selectedId// Envoi l'ID du client sélectionné
+      }, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      console.log("Réponse de l'API:", response.data);
+      alert("Demande de remise envoyée !");
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de la notification", error);
+      alert("Une erreur est survenue. Veuillez réessayer.");
+    }
+  };
+
+
+
+
 
   return (
     <main className="center">
@@ -563,192 +563,192 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
         <Header />
         <div className="p-3 content center">
           <div className="mini-star p-3">
-            
+
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Prise de Commande
             </h6>
             <div className="form-group mt-3">
-  <label>Type :</label>
-  <select
-    className="form-control"
-    value={type}
-    onChange={(e) => {
-      setType(e.target.value);
-      setIsNew(false);
-      setSelectedPerson("");
-      setTypeRemise(null);  // Réinitialise le type de remise à chaque changement de type
-    }}
-  >
-    <option value="">Choisir un type</option>
-    <option value="client">Client</option>
-    <option value="commercial">Commercial</option>
-  </select>
-</div>
+              <label>Type :</label>
+              <select
+                className="form-control"
+                value={type}
+                onChange={(e) => {
+                  setType(e.target.value);
+                  setIsNew(false);
+                  setSelectedPerson("");
+                  setTypeRemise(null);  // Réinitialise le type de remise à chaque changement de type
+                }}
+              >
+                <option value="">Choisir un type</option>
+                <option value="client">Client</option>
+                <option value="commercial">Commercial</option>
+              </select>
+            </div>
 
-    
+
             <div className="commande-container d-flex justify-content-between">
               {/* Informations Client (colonne gauche) */}
               <div className="client-info w-50 p-3">
                 <h6><i className="fa fa-user"></i> Informations Client</h6>
                 <div className="form-group mt-3">
-                {type && (
-      <div className="form-group mt-3">
-        <label>{type === "client" ? "Sélectionner un client" : "Sélectionner un commercial"}</label>
-        <select className="form-control" value={selectedPerson} onChange={handleSelectChange}>
-          <option value="">Sélectionner</option>
-          {(type === "client" ? clients : commerciaux).map((p) => (
-            <option key={p._id} value={p._id}>
-              {p.nom} - {p.telephone}
-            </option>
-          ))}
-          <option value="new">Ajouter un nouveau {type}</option>
-        </select>
- 
-      </div>
-    )}
-</div>
-{type === "client" && selectedPerson && selectedPerson !== "new" && (
-  <button className="btn btn-success" onClick={handleDemandeRemise}>
-    Demander remise
-  </button>
-)}
+                  {type && (
+                    <div className="form-group mt-3">
+                      <label>{type === "client" ? "Sélectionner un client" : "Sélectionner un commercial"}</label>
+                      <select className="form-control" value={selectedPerson} onChange={handleSelectChange}>
+                        <option value="">Sélectionner</option>
+                        {(type === "client" ? clients : commerciaux).map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.nom} - {p.telephone}
+                          </option>
+                        ))}
+                        <option value="new">Ajouter un nouveau {type}</option>
+                      </select>
 
-
-{/* Affichage du formulaire si "Nouveau client" est sélectionné */}
-{isNew && (
-   <div className="container mt-3" style={{ marginLeft:'-25px', padding: '20px', overflow: 'hidden' }}>
-   <div className="form-group">
-       <div className="row">
-           <div className="col-12">
-               <input
-                   type="text"
-                   className="form-control"
-                   placeholder={`Nom du ${type}`}
-                   value={newPerson.nom}
-                   onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
-               />
-           </div>
-
-           <div className="col-12 mt-2">
-               <input
-                   type="text"
-                   className="form-control"
-                   placeholder="Téléphone"
-                   value={newPerson.telephone}
-                   onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
-               />
-           </div>
-
-           {type === "client" && (
-               
-               
-               <>
-               <div className="col-12 mt-2">
-                   <input
-                       type="text"
-                       className="form-control"
-                       placeholder="Adresse"
-                       value={newPerson.adresse}
-                       onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
-                   />
-               </div>
-                   <div className="col-12 mt-2">
-                   <input
-                       type="text"
-                       className="form-control"
-                       placeholder="NIF"
-                       value={newPerson.nif}
-                       onChange={(e) => setNewPerson({ ...newPerson, nif: e.target.value })}
-                   />
-               </div>
-               <div className="col-12 mt-2">
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="STAT"
-                    value={newPerson.stat}
-                    onChange={(e) => setNewPerson({ ...newPerson, stat: e.target.value })}
-                />
-            </div>
-            <div className="col-12 mt-2">
-                <label className="form-label">Image NIF/STAT</label>
-                <input
-                    type="file"
-                    className="form-control"
-                    accept="image/*"
-                    onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                            setNewPerson({ ...newPerson, nifStatImage: file });
-
-                            // Prévisualisation de l'image
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                                setPreviewImage(reader.result);
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    }}
-                />
-            </div>
-            {previewImage && (
-                <div className="col-12 mt-2">
-                    <img src={previewImage} alt="Aperçu" className="img-fluid" style={{ maxHeight: "200px" }} />
+                    </div>
+                  )}
                 </div>
-            )}
-               </>
-               
-           )}
-
-           {type === "commercial" && (
-               <>
-                   <div className="col-12 mt-2">
-                       <input
-                           type="email"
-                           className="form-control"
-                           placeholder="Email"
-                           value={newPerson.email}
-                           onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
-                       />
-                   </div>
-                   <div className="col-12 mt-2">
-                       <input
-                           type="text"
-                           className="form-control"
-                           placeholder="Type (commercial)"
-                           value={newPerson.type}
-                           onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
-                       />
-                   </div>
-               </>
-           )}
-
-           <div className="col-12 mt-3">
-               <button
-                   className="btn btn-success"
-                   onClick={creerPersonne}
-               >
-                   Créer {type === "client" ? "Client" : "Commercial"}
-               </button>
-               <button
-                   className="btn btn-success"
-                   onClick={Annuler}
-               >
-                  Annuler
-               </button>
-           </div>
-       </div>
-   </div>
-</div>
+                {type === "client" && selectedPerson && selectedPerson !== "new" && (
+                  <button className="btn btn-success" onClick={handleDemandeRemise}>
+                    Demander remise
+                  </button>
+                )}
 
 
-  )}
+                {/* Affichage du formulaire si "Nouveau client" est sélectionné */}
+                {isNew && (
+                  <div className="container mt-3" style={{ marginLeft: '-25px', padding: '20px', overflow: 'hidden' }}>
+                    <div className="form-group">
+                      <div className="row">
+                        <div className="col-12">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={`Nom du ${type}`}
+                            value={newPerson.nom}
+                            onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-12 mt-2">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Téléphone"
+                            value={newPerson.telephone}
+                            onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
+                          />
+                        </div>
+
+                        {type === "client" && (
+
+
+                          <>
+                            <div className="col-12 mt-2">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Adresse"
+                                value={newPerson.adresse}
+                                onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
+                              />
+                            </div>
+                            <div className="col-12 mt-2">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="NIF"
+                                value={newPerson.nif}
+                                onChange={(e) => setNewPerson({ ...newPerson, nif: e.target.value })}
+                              />
+                            </div>
+                            <div className="col-12 mt-2">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="STAT"
+                                value={newPerson.stat}
+                                onChange={(e) => setNewPerson({ ...newPerson, stat: e.target.value })}
+                              />
+                            </div>
+                            <div className="col-12 mt-2">
+                              <label className="form-label">Image NIF/STAT</label>
+                              <input
+                                type="file"
+                                className="form-control"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    setNewPerson({ ...newPerson, nifStatImage: file });
+
+                                    // Prévisualisation de l'image
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                      setPreviewImage(reader.result);
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </div>
+                            {previewImage && (
+                              <div className="col-12 mt-2">
+                                <img src={previewImage} alt="Aperçu" className="img-fluid" style={{ maxHeight: "200px" }} />
+                              </div>
+                            )}
+                          </>
+
+                        )}
+
+                        {type === "commercial" && (
+                          <>
+                            <div className="col-12 mt-2">
+                              <input
+                                type="email"
+                                className="form-control"
+                                placeholder="Email"
+                                value={newPerson.email}
+                                onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                              />
+                            </div>
+                            <div className="col-12 mt-2">
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Type (commercial)"
+                                value={newPerson.type}
+                                onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
+                              />
+                            </div>
+                          </>
+                        )}
+
+                        <div className="col-12 mt-3">
+                          <button
+                            className="btn btn-success"
+                            onClick={creerPersonne}
+                          >
+                            Créer {type === "client" ? "Client" : "Commercial"}
+                          </button>
+                          <button
+                            className="btn btn-success"
+                            onClick={Annuler}
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                )}
 
 
 
 
-              
-                  {type === "client" && remisesClient && typeRemise && (
+
+                {type === "client" && remisesClient && typeRemise && (
                   <div className="remises-info mt-3 m-2">
                     <h6>Type de remise du client :</h6>
                     {typeRemise === "remiseGlobale" && <label>Remise Globale : {remisesClient.remiseGlobale}%</label>}
@@ -762,193 +762,193 @@ const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'i
               <div className="produits w-50 p-3">
                 <h6><i className="fa fa-box"></i> Produits Disponibles</h6>
                 <div className="d-flex">
-  <input
-    type="text"
-    className="form-control"
-    placeholder="Rechercher un produit..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
-  <select
-    className="form-control"
-    value={categorie}
-    onChange={(e) => setCategorie(e.target.value)}
-  >
-    <option value="">Toutes les catégories</option>
-    {categories.map((cat, index) => (
-      <option key={index} value={cat}>
-        {cat}
-      </option>
-    ))}
-  </select>
-</div>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Rechercher un produit..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <select
+                    className="form-control"
+                    value={categorie}
+                    onChange={(e) => setCategorie(e.target.value)}
+                  >
+                    <option value="">Toutes les catégories</option>
+                    {categories.map((cat, index) => (
+                      <option key={index} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
 
-            <div className="table-container">
-              <table className="tablepro mt-2">
-                                                        <thead>
-                                                          <tr>
-                                                            <th>Nom</th>
-                                                            <th>Type</th>
-                                                            <th>Prix</th>
-                                                            <th>Quantité</th>
-                                                            <th>Unité</th>
-                                                            <th>Ajouter</th>
-                                                          </tr>
-                                                        </thead>
-                                                        <tbody>
+                <div className="table-container">
+                  <table className="tablepro mt-2">
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Prix</th>
+                        <th>Quantité</th>
+                        <th>Unité</th>
+                        <th>Ajouter</th>
+                      </tr>
+                    </thead>
+                    <tbody>
 
-                                                          {searchTerm ? (
-                                                          
-                                                            produitsFiltres.length === 0 ? (
-                                                              <tr>
-                                                                <td colSpan="6" className="text-center">Aucun produit trouvé</td>
-                                                              </tr>
-                                                            ) : (
-                                                              produitsFiltres.map((p) => (
-                                                                <tr key={p._id}>
-                                                                <td className="margin-left-mobile">{p.nom}</td>
-                                                                <td className="margin-left-mobile">{p.categorie}</td>
-                                                                <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
-<td>
-  <input
-    type="number"
-    min="1"
-    className="form-control"
-    onChange={(e) => {
-      const updatedProduit = { ...p };  // Crée une copie de l'objet produit
-      updatedProduit.quantiteTemp = parseInt(e.target.value) || 1;
-      setProduits((prevProduits) =>
-        prevProduits.map((prod) =>
-          prod._id === updatedProduit._id ? updatedProduit : prod
-        )
-      );
-    }}
-    onKeyDown={(e) => handleKeyDown(p, e)}
-  />
-</td>
-<td>
-<select
-  className="form-control"
-  onChange={(e) => {
-    const selectedUnite = e.target.value;
-    const updatedProduit = { ...p }; // Crée une copie de l'objet produit
+                      {searchTerm ? (
 
-    // Met à jour l'unité temporaire dans la copie du produit
-    updatedProduit.uniteChoisie = selectedUnite;
+                        produitsFiltres.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="text-center">Aucun produit trouvé</td>
+                          </tr>
+                        ) : (
+                          produitsFiltres.map((p) => (
+                            <tr key={p._id}>
+                              <td className="margin-left-mobile">{p.nom}</td>
+                              <td className="margin-left-mobile">{p.categorie}</td>
+                              <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
+                              <td>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  className="form-control"
+                                  onChange={(e) => {
+                                    const updatedProduit = { ...p };  // Crée une copie de l'objet produit
+                                    updatedProduit.quantiteTemp = parseInt(e.target.value) || 1;
+                                    setProduits((prevProduits) =>
+                                      prevProduits.map((prod) =>
+                                        prod._id === updatedProduit._id ? updatedProduit : prod
+                                      )
+                                    );
+                                  }}
+                                  onKeyDown={(e) => handleKeyDown(p, e)}
+                                />
+                              </td>
+                              <td>
+                                <select
+                                  className="form-control"
+                                  onChange={(e) => {
+                                    const selectedUnite = e.target.value;
+                                    const updatedProduit = { ...p }; // Crée une copie de l'objet produit
 
-    // Recherche l'unité sélectionnée dans la liste des unités
-    const selectedUniteObj = updatedProduit.unites.find((unite) => unite.nom === selectedUnite);
+                                    // Met à jour l'unité temporaire dans la copie du produit
+                                    updatedProduit.uniteChoisie = selectedUnite;
 
-    // Si une unité valide est trouvée, met à jour le prix
-    if (selectedUniteObj) {
-      updatedProduit.prixdevente = selectedUniteObj.prixdevente; // Mise à jour du prix
-    } else {
-      console.error(`Unité introuvable pour le produit ${updatedProduit.nom}`);
-    }
+                                    // Recherche l'unité sélectionnée dans la liste des unités
+                                    const selectedUniteObj = updatedProduit.unites.find((unite) => unite.nom === selectedUnite);
 
-    // Met à jour l'état avec la copie modifiée du produit
-    setProduits((prevProduits) =>
-      prevProduits.map((prod) =>
-        prod._id === updatedProduit._id ? updatedProduit : prod
-      )
-    );
-  }}
-  value={p.uniteChoisie || ""}
->
-  <option value="">Veuillez sélectionner l'unité</option>
-  {p.unites && p.unites.length > 0 ? (
-    p.unites.map((unite, index) => (
-      <option key={index} value={unite.nom}>
-        {unite.nom}
-      </option>
-    ))
-  ) : (
-    <option value="">Pas d'unité disponible</option>
-  )}
-</select>
+                                    // Si une unité valide est trouvée, met à jour le prix
+                                    if (selectedUniteObj) {
+                                      updatedProduit.prixdevente = selectedUniteObj.prixdevente; // Mise à jour du prix
+                                    } else {
+                                      console.error(`Unité introuvable pour le produit ${updatedProduit.nom}`);
+                                    }
 
-</td>
-                                                                  <td>
-                                                                    <div className="input-checkbox-container">
-                                                                    <input
-                                                        type="checkbox"
-                                                        className="checkbox-large"
-                                                        checked={checkedProduits[p._id] || false}
-                                                        onChange={(e) =>
-                                                          handleCheckboxChange(
-                                                            p,
-                                                            p.quantiteTemp || 1,
-                                                            typeQuantite,
-                                                            e.target.checked
-                                                          )
-                                                        }
-                                                      />
+                                    // Met à jour l'état avec la copie modifiée du produit
+                                    setProduits((prevProduits) =>
+                                      prevProduits.map((prod) =>
+                                        prod._id === updatedProduit._id ? updatedProduit : prod
+                                      )
+                                    );
+                                  }}
+                                  value={p.uniteChoisie || ""}
+                                >
+                                  <option value="">Veuillez sélectionner l'unité</option>
+                                  {p.unites && p.unites.length > 0 ? (
+                                    p.unites.map((unite, index) => (
+                                      <option key={index} value={unite.nom}>
+                                        {unite.nom}
+                                      </option>
+                                    ))
+                                  ) : (
+                                    <option value="">Pas d'unité disponible</option>
+                                  )}
+                                </select>
+
+                              </td>
+                              <td>
+                                <div className="input-checkbox-container">
+                                  <input
+                                    type="checkbox"
+                                    className="checkbox-large"
+                                    checked={checkedProduits[p._id] || false}
+                                    onChange={(e) =>
+                                      handleCheckboxChange(
+                                        p,
+                                        p.quantiteTemp || 1,
+                                        typeQuantite,
+                                        e.target.checked
+                                      )
+                                    }
+                                  />
 
 
-                                                                    </div>
-                                                                  </td>
-                                                                </tr>
-                                                              ))
-                                                            )
-                                                          ) : (
-                                                            // Si searchTerm est vide, ne rien afficher
-                                                            <tr>
-                                                              <td colSpan="6" className="text-center">Veuillez entrer un terme de recherche</td>
-                                                            </tr>
-                                                          )}
-                                                        </tbody>
-                                                      </table>
-                                                      </div>     
-                                             </div>
-                                        </div>
-                                       
-                                          {/* Récapitulatif de la Commande */}
-                                          <div className="commande mt-4">
-  <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )
+                      ) : (
+                        // Si searchTerm est vide, ne rien afficher
+                        <tr>
+                          <td colSpan="6" className="text-center">Veuillez entrer un terme de recherche</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
 
-  <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-    <table className="table table-bordered mt-2">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Quantité</th>
-          <th>Unité</th>
-          <th>Prix Unitaire</th>
-          <th>Prix Unitaire après remise</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {commande.map((item, index) => (
-          <tr key={index}>
-            <td>{item.nom}</td>
-            <td>{item.quantite}</td>
-            <td>{item.uniteChoisie}</td>
-            <td>{item.prixdevente} Ariary</td>
-            <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
-            <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+            {/* Récapitulatif de la Commande */}
+            <div className="commande mt-4">
+              <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
 
-  <h6 className="total">
-    Total: {totalCommande} Ariary
-  </h6>
-  <h6 className="total">
-    Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
-  </h6>
-  <button className="btn btn-success mt-3" onClick={creerCommande}>
-    Enregistrer la Commande
-  </button>
-</div>
+              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                <table className="table table-bordered mt-2">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Quantité</th>
+                      <th>Unité</th>
+                      <th>Prix Unitaire</th>
+                      <th>Prix Unitaire après remise</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {commande.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.nom}</td>
+                        <td>{item.quantite}</td>
+                        <td>{item.uniteChoisie}</td>
+                        <td>{item.prixdevente} Ariary</td>
+                        <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+                        <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-                                        </div>
-                                      </div>
-                                    </section>
-                                  </main>
+              <h6 className="total">
+                Total: {totalCommande} Ariary
+              </h6>
+              <h6 className="total">
+                Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
+              </h6>
+              <button className="btn btn-success mt-3" onClick={creerCommande}>
+                Enregistrer la Commande
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
 

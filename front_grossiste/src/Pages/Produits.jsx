@@ -18,6 +18,7 @@ function ListeProduits() {
   const [orderBy, setOrderBy] = useState("nom");
   const [order, setOrder] = useState("asc");
 
+
   const filtrerProduits = () => {
     return produits.filter((produit) => {
       const correspondanceRecherche =
