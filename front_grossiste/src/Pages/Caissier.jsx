@@ -257,9 +257,9 @@ function Caisse() {
                     onChange={handleInputChange} // Changez ici
                   />
                   {suggestions.length > 0 && (
-                    <ul className="suggestions-list">
+                          <ul className="list-group">
                       {suggestions.map((suggestion) => (
-                        <li key={suggestion} onClick={() => handleSuggestionClick(suggestion)}>
+                        <li key={suggestion}  className="list-group-item" style={{marginTop:'-13px'}} onClick={() => handleSuggestionClick(suggestion)}>
                           {suggestion}
                         </li>
                       ))}
