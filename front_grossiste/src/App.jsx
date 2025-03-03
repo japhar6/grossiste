@@ -112,7 +112,7 @@ function App() {
           <Route path='/FactureNormal' element={<FactureNormal />} />
           <Route path='/FactureRemise' element={<FactureRem />} />
           <Route path="/facture" element={<Facture />} />
-          <Route path="/factureR" element={<FactureRem />} /> 
+
         </Route>
 
       </Routes>
