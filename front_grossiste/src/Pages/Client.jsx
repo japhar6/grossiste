@@ -2,36 +2,56 @@ import React, { useState, useEffect } from "react";
 import axios from '../api/axios';
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Spinner } from 'react-bootstrap';
 import Swal from "sweetalert2"; // Importation de SweetAlert
 
 function ClientsList() {
     const [clients, setClients] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [newClient, setNewClient] = useState({
         nom: '',
         telephone: '',
         adresse: '',
         typeRemise: 'remiseFixe',
-        remiseValeur: 0
+        remiseValeur: 0,
+        nif: '',
+        stat: '',
+        nifStatImage: null
     });
+    const [sortOrder, setSortOrder] = useState("asc");
     const [currentClient, setCurrentClient] = useState({});
-   
-   
-   
- 
+    const [filteredClients, setFilteredClients] = useState([]);
+    const [filters, setFilters] = useState({ name: '', type: '', date: '' });
+  const [loadingList, setLoadingList] = useState(false);
+     const [loadingAction, setLoadingAction] = useState(false);
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    };
+    const handleSort = () => {
+        const sortedClients = [...clients].sort((a, b) => {
+            return sortOrder === "asc" ? a.nom.localeCompare(b.nom) : b.nom.localeCompare(a.nom);
+        });
+        setClients(sortedClients);
+        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    };
+
     
     useEffect(() => {
-        // Récupérer les clients depuis l'API
+        setLoadingList(true);
         axios.get("/api/client/")
             .then(response => {
                 setClients(response.data);
+                setLoadingList(false); // <-- Ici, il faut mettre à false
             })
-            .catch(error => {
+            .catch(error => { 
                 console.error("Il y a eu une erreur lors de la récupération des clients : ", error);
+                setLoadingList(false); // <-- Ici aussi en cas d'erreur
             });
     }, []);
+    
 
     useEffect(() => {
         const idClient = localStorage.getItem('idClient');
@@ -56,13 +76,8 @@ function ClientsList() {
     
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
-
     const handleEditShow = (client) => {
-        setCurrentClient({
-            ...client,
-            typeRemise: client.remises.remiseFixe ? 'remiseFixe' : client.remises.remiseParProduit ? 'remiseParProduit' : 'remiseGlobale',
-            remiseValeur: client.remises.remiseFixe || client.remises.remiseParProduit || client.remises.remiseGlobale
-        });
+        setCurrentClient(client);
         setShowEditModal(true);
     };
     const handleEditClose = () => setShowEditModal(false);
@@ -71,6 +86,10 @@ function ClientsList() {
         const { name, value } = e.target;
         setNewClient({ ...newClient, [name]: value });
     };
+    const handleFileChange = (e) => {
+        setNewClient({ ...newClient, nifStatImage: e.target.files[0] });
+    };
+    
 
     const handleEditChange = (e) => {
         const { name, value } = e.target;
@@ -83,9 +102,9 @@ function ClientsList() {
             remiseFixe: newClient.typeRemise === 'remiseFixe' ? Number(newClient.remiseValeur) : 0,
             remiseParProduit: newClient.typeRemise === 'remiseParProduit' ? Number(newClient.remiseValeur) : 0,
             remiseGlobale: newClient.typeRemise === 'remiseGlobale' ? Number(newClient.remiseValeur) : 0
-        };
+        };  setLoading(true);
 
-        try {
+        try {  
             const response = await axios.post("/api/client/ajouter", {
                 nom: newClient.nom,
                 telephone: newClient.telephone,
@@ -93,7 +112,7 @@ function ClientsList() {
                 remises
             });
             setClients([...clients, response.data]);
-            handleClose();
+            handleClose();  setLoading(false);
             Swal.fire({
                 icon: 'success',
                 title: 'Client ajouté avec succès!',
@@ -101,18 +120,19 @@ function ClientsList() {
                 timer: 1500
             });
         } catch (error) {
-            console.error("Erreur lors de l'ajout du client :", error);
+            console.error("Erreur lors de l'ajout du client :", error);  setLoading(false);
         }
     };
-
     const handleEditSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+    
         const remises = {
             remiseFixe: currentClient.typeRemise === 'remiseFixe' ? Number(currentClient.remiseValeur) : 0,
             remiseParProduit: currentClient.typeRemise === 'remiseParProduit' ? Number(currentClient.remiseValeur) : 0,
             remiseGlobale: currentClient.typeRemise === 'remiseGlobale' ? Number(currentClient.remiseValeur) : 0
         };
-
+    
         try {
             const response = await axios.put(`/api/client/modifier/${currentClient._id}`, {
                 nom: currentClient.nom,
@@ -120,22 +140,57 @@ function ClientsList() {
                 adresse: currentClient.adresse,
                 remises
             });
+    
             setClients(clients.map(client => client._id === currentClient._id ? response.data.client : client));
             handleEditClose();
             localStorage.removeItem('idClient');
+            
             Swal.fire({
                 icon: 'success',
                 title: 'Client modifié avec succès!',
                 showConfirmButton: false,
                 timer: 1500
             });
+    
+            setLoading(false); // Correct
         } catch (error) {
             console.error("Erreur lors de la modification du client :", error);
+            setLoading(false); // Ajouté pour éviter que `loading` reste `true`
         }
     };
+    
+
+    useEffect(() => {
+        let filtered = clients;
+    
+        // Filtrage par nom
+        if (filters.name) {
+            filtered = filtered.filter(client => 
+                client.nom.toLowerCase().includes(filters.name.toLowerCase())
+            );
+        }
+    
+        // Filtrage par adresse (avec une correspondance partielle)
+        if (filters.adresse) {
+            filtered = filtered.filter(client => 
+                client.adresse.toLowerCase().includes(filters.adresse.toLowerCase())
+            );
+        }
+    
+        // Filtrage par date (en s'assurant que la date est au bon format)
+        if (filters.date) {
+            filtered = filtered.filter(client => 
+                new Date(client.dateInscription).toISOString().split('T')[0] === filters.date
+            );
+        }
+    
+        setFilteredClients(filtered); // Mise à jour des clients filtrés
+    }, [filters, clients]);
+    
 
     const handleDelete = async (id) => {
         // SweetAlert pour confirmation avant suppression
+        setLoading(true);
         Swal.fire({
             title: 'Êtes-vous sûr?',
             text: "Cette action est irréversible!",
@@ -153,10 +208,10 @@ function ClientsList() {
                         'Le client a été supprimé.',
                         'success'
                     ).then(() => {
-                        window.location.reload();
+                        window.location.reload();    setLoading(false);
                     });
                 } catch (error) {
-                    console.error("Erreur lors de la suppression du client :", error);
+                    console.error("Erreur lors de la suppression du client :", error);    setLoading(false);
                 }
             }
         });
@@ -173,52 +228,66 @@ function ClientsList() {
                     <div className="p-3 content center">
                         <div className="mini-stat p-3">
                             <h6 className="alert alert-info text-start">Liste des clients</h6>
-
+                            {loading && <Spinner animation="border" />}
                             <div className="filter-container mb-3 d-flex flex-wrap justify-content-between">
-                                <div className="flex-fill mb-2">
-                                    <label className="form-label">
-                                        Filtrer par nom :
-                                        <input type="text" className="form-control" />
-                                    </label>
-                                </div>
-                                <div className="flex-fill mb-2">
-                                    <label className="form-label">
-                                        Filtrer par type de client :
-                                        <select className="form-control">
-                                            <option value="">Tous les clients</option>
-                                            <option value="">Client particulier</option>
-                                            <option value="">Client simple</option>
-                                        </select>
-                                    </label>
-                                </div>
-                                <div className="flex-fill mb-2">
-                                    <label className="form-label">
-                                        Filtrer par date d'ajout :
-                                        <input type="date" className="form-control" />
-                                    </label>
-                                </div>
-                            </div>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            placeholder="Filtrer par nom" 
+                            className="form-control mb-2"
+                            value={filters.name} 
+                            onChange={handleFilterChange} 
+                        />
+                     <input 
+                            type="text" 
+                            name="adresse" 
+                            className="form-control mb-2"
+                            value={filters.adresse} 
+                            onChange={handleFilterChange} 
+                        />
+                
+                        <input 
+                            type="date" 
+                            name="date" 
+                            className="form-control mb-2"
+                            value={filters.date} 
+                            onChange={handleFilterChange} 
+                        />
+                    </div>
 
-                            <button className="btn btn-primary" onClick={handleShow}>
-                                Ajouter un client
-                            </button>
+                    <button 
+    className="btn btn-primary w-100 d-block mx-auto" 
+    onClick={handleShow} 
+    disabled={loading}
+>
+    {loading ? <Spinner as="span" animation="border" size="sm" /> : "Ajouter un client"}
+</button>
 
+                            {loadingList ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
                             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                                 <table className="tableZA table-striped">
                                     <thead className="table-light">
                                         <tr>
-                                            <th>Nom</th>
+                                        <th onClick={handleSort} style={{ cursor: 'pointer' }}>Nom {sortOrder === "asc" ? "▲" : "▼"}</th>
                                             <th>Téléphone</th>
                                             <th>Adresse</th>
                                             <th>Date d'ajout</th>
                                             <th>Remise fixe</th>
                                             <th>Remise par produit</th>
                                             <th>Remise prix global</th>
+                                            <th>Nif</th>
+                                            <th>Stat</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {clients.map(client => (
+                                        {filteredClients.map(client => (
                                             <tr key={client._id}>
                                                 <td>{client.nom}</td>
                                                 <td>{client.telephone}</td>
@@ -227,6 +296,8 @@ function ClientsList() {
                                                 <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}</td>
                                                 <td>{client.remises ? client.remises.remiseParProduit : 'Pas de remise'}%</td>
                                                 <td>{client.remises ? client.remises.remiseGlobale : 'Pas de remise'}Ariary</td>
+                                                <td>{client.nif }</td>
+                                                <td>{client.star}</td>
                                                 <td>
                                                     <button className="btn btn-warning m-1"  onClick={() => handleEditShow(client)}>
                                                         <i className="fas fa-edit"></i>
@@ -239,7 +310,7 @@ function ClientsList() {
                                         ))}
                                     </tbody>
                                 </table>
-                            </div>
+                            </div>  )}
                         </div>
                     </div>
                 </section>
@@ -275,8 +346,26 @@ function ClientsList() {
                             <Form.Label>Valeur de la remise</Form.Label>
                             <Form.Control type="number" name="remiseValeur" value={newClient.remiseValeur} onChange={handleChange} />
                         </Form.Group>
+                        <Form.Group>
+                            <Form.Label>NIF</Form.Label>
+                            <Form.Control type="text" name="nif" value={newClient.nif} onChange={handleChange} />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>STAT</Form.Label>
+                            <Form.Control type="text" name="stat" value={newClient.stat} onChange={handleChange} />
+                        </Form.Group>
+                        <Form.Group>
+    <Form.Label>Image (NIF/STAT)</Form.Label>
+    <Form.Control 
+        type="file" 
+        name="nifStatImage" 
+        accept="image/*" 
+        onChange={handleFileChange} 
+    />
+</Form.Group>
+
                         <Button variant="primary" type="submit" className="mt-3">
-                            Ajouter
+                        {loading ? <Spinner as="span" animation="border" size="sm" /> : "Ajouter"}
                         </Button>
                     </Form>
                 </Modal.Body>
@@ -312,13 +401,22 @@ function ClientsList() {
                 <Form.Label>Valeur de la remise</Form.Label>
                 <Form.Control type="number" name="remiseValeur" value={currentClient.remiseValeur} onChange={handleEditChange} />
             </Form.Group>
+            <Form.Group>
+                            <Form.Label>NIF</Form.Label>
+                            <Form.Control type="text" name="nif" value={newClient.nif} onChange={handleChange} />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>STAT</Form.Label>
+                            <Form.Control type="text" name="stat" value={newClient.stat} onChange={handleChange} />
+                        </Form.Group>
+                        
             <Button 
     variant="primary" 
     type="submit" 
     className="mt-3 px-4 py-2 rounded-pill shadow-lg" 
     style={{ backgroundColor: '#007bff', border: 'none' }}
 >
-    Modifier
+{loading ? <Spinner as="span" animation="border" size="sm" /> : "Modifier"}
 </Button>
 <Button 
     variant="secondary" 

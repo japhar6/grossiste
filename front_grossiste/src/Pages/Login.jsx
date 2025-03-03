@@ -40,7 +40,7 @@ function Login() {
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('userid', data.user._id);
             localStorage.setItem('nom', data.user.nom);
-      setLoading(false);
+            setSuccess(true);      setLoading(false);
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':

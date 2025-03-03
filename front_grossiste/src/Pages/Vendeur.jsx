@@ -24,7 +24,9 @@ function PriseCommande() {
     const audio = new Audio(Sound);
     audio.play();
   };
-
+ const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
 
   // Définir l'état pour les produits sélectionnés
   const [commande, setCommande] = useState([]);
@@ -111,99 +113,115 @@ function PriseCommande() {
     }
   };
 
-  // Créer une personne (client ou commercial)
   const creerPersonne = async () => {
+    setLoadingAction(true);
     try {
       // Vérification des données envoyées
       console.log("Données envoyées :", newPerson);
-
+  
+      let response; // Déclare la variable response ici pour l'utiliser plus tard
+  
       // Validation des champs selon le type (client ou commercial)
       if (type === "client") {
-
         if (!newPerson.nom) {
           Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
           return;
         }
-      } else if (type === "commercial") {
-        // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
-        if (!newPerson.nom || !newPerson.telephone || !newPerson.email || !newPerson.type) {
-          Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
-          return;
+  
+        // Envoi avec FormData pour le client
+        const formData = new FormData();
+        for (const key in newPerson) {
+          formData.append(key, newPerson[key]);
         }
-      }
-
-
-      const formData = new FormData();
-
-      // Ajouter les données à FormData
-      for (const key in newPerson) {
-        formData.append(key, newPerson[key]);
-      }
-
-
-      // Déterminer l'URL selon le type (client ou commercial)
-      const url = type === "client" ? "/api/client/" : "/api/comercial/";
-
-      // Envoi de la requête POST avec FormData
-      const response = await axios.post(url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+  
+        // Afficher les données dans le formData pour vérifier
+        for (const [key, value] of formData.entries()) {
+          console.log(key, value);
         }
-      });
-      if (response.data) {
-        Swal.fire(
-          {
+  
+        const url = "/api/client/";
+  
+        response = await axios.post(url, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+  
+        if (response.data) {
+          Swal.fire({
             icon: "success",
             title: "Succès",
-            text: `${type === "client" ? "Client" : "Commercial"} créé avec succès !`,
-
-
+            text: "Client créé avec succès !",
           });
-
-
-        if (type === "client") {
           setClients((prevClients) => [
             ...prevClients,
             { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
           ]);
-        } else {
+          // Recharger la liste des clients
+          const updatedList = await axios.get(url);
+          setClients(updatedList.data);
+        }
+      } else if (type === "commercial") {
+        if (!newPerson.nom || !newPerson.telephone || !newPerson.email) {
+          Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
+          return;
+        }
+  
+        // Envoi avec JSON pour le commercial
+        const url = "/api/comercial/";
+  
+        response = await axios.post(url, newPerson, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        console.log(response.data);
+        if (response.data) {
+          Swal.fire({
+            icon: "success",
+            title: "Succès",
+            text: "Commercial créé avec succès !",
+          });
           setCommerciaux((prevCommerciaux) => [
             ...prevCommerciaux,
             { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
           ]);
-        }
-
-        // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
-        const updatedList = await axios.get(url);  // Recharger les données à partir de l'API
-        if (type === "client") {
-          setClients(updatedList.data);
-        } else {
+          // Recharger la liste des commerciaux
+          const updatedList = await axios.get(url);
           setCommerciaux(updatedList.data);
         }
-
-        // Sélectionner le nouvel élément
+      }
+  
+      if (response && response.data) {
         setSelectedPerson(response.data._id);
         setIsNew(false);
-
-
-
-
-        setNewPerson({
-          nom: '',
-          telephone: '',
-          adresse: '',
-          email: '',
-          type: '',
-        });
-
-
-        setSelectedPerson(null);
       }
+  
+      // Reset les champs de saisie
+      setNewPerson({
+        nom: '',
+        telephone: '',
+        adresse: '',
+        email: '',
+        type: '',
+      });
+  
+      setSelectedPerson(null);
+  
     } catch (error) {
       console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
-      Swal.fire("Erreur", "Une erreur s'est produite", "error");
+      if (error.response && error.response.data) {
+        Swal.fire("Erreur", `Détails: ${error.response.data.message || error.response.data}`, "error");
+      } else {
+        Swal.fire("Erreur", "Une erreur s'est produite", "error");
+      }
+    } finally {
+      setLoadingAction(false); // Assurez-vous que le chargement soit désactivé dans tous les cas (réussi ou en échec)
     }
   };
+  
+  
+  
 
   const Annuler = async () => {
 
@@ -464,12 +482,12 @@ function PriseCommande() {
   // Calculer le total final après application de la remise
   const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
 
-
   const creerCommande = async () => {
+    setLoadingAction(true);
     try {
       const vendeurId = localStorage.getItem("userid");
       const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
-
+  
       if (!selectedPersonId) {
         Swal.fire({
           title: "Erreur",
@@ -479,12 +497,12 @@ function PriseCommande() {
         });
         return;
       }
-
+  
       const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
       const commercialId = type === "commercial" ? selectedPersonId : null;
       const typeClient = type === "client" ? "Client" : "Commercial";
       const statut = "en cours"; // Le statut initial de la commande
-
+  
       if (!vendeurId) {
         Swal.fire({
           title: "Erreur",
@@ -492,16 +510,17 @@ function PriseCommande() {
           icon: "error",
           confirmButtonText: "OK",
         });
+        setLoadingAction(false); // Mettre ici pour garantir que l'état de chargement s'arrête en cas d'erreur
         return;
       }
-
+  
       // Crée les produits à partir de l'état de commande
       const produitsCommande = commande.map((item) => ({
         produit: item._id,
         quantite: item.quantite,
         uniteChoisie: item.uniteChoisie || "Unité par défaut", // Si une unité est choisie, sinon "Unité par défaut"
       }));
-
+  
       // Préparer les données de la commande
       const commandeData = {
         typeClient,
@@ -509,13 +528,14 @@ function PriseCommande() {
         commercialId: typeClient === "Commercial" ? commercialId : null, // Dynamique pour commercial
         vendeurId,
         produits: produitsCommande,
-        statut,entrepotId
+        statut,
+        entrepotId,
       };
-
+  
       // Envoie la requête API pour créer la commande
       const response = await axios.post("/api/commandes/ajouter", commandeData);
       console.log("Commande créée avec succès:", response.data);
-
+  
       // Affichage d'une notification de succès
       Swal.fire({
         title: "Commande créée avec succès",
@@ -525,10 +545,10 @@ function PriseCommande() {
       }).then(() => {
         window.location.reload(); // Recharger la page après avoir cliqué sur OK
       });
-      playSound();
-      // Réinitialisation de la commande après la création
-      setCommande([]);
-
+  
+      playSound(); // Assurez-vous que cette fonction est définie et fonctionne comme prévu
+      setCommande([]); // Réinitialisation de la commande après la création
+  
     } catch (error) {
       console.error("Erreur lors de la création de la commande:", error);
       Swal.fire({
@@ -537,8 +557,11 @@ function PriseCommande() {
         icon: "error",
         confirmButtonText: "OK",
       });
+    } finally {
+      setLoadingAction(false); // Garantie d'arrêter le chargement même en cas d'erreur
     }
   };
+  
 
   const getClientNom = (id) => {
     const client = clients.find(client => client._id === id);
@@ -552,6 +575,7 @@ function PriseCommande() {
       alert("Veuillez sélectionner un client !");
       return;
     }
+    setLoadingAction(true);
 
     const clientNom = getClientNom(selectedPerson);
     console.log("Nom du client:", clientNom);
@@ -567,18 +591,19 @@ function PriseCommande() {
     try {
       const response = await axios.post("/api/notif/envoie-notifications", {
         message: message, // Envoie le message complet
-        idClient: selectedId// Envoi l'ID du client sélectionné
+        idClient: selectedId
       }, {
         headers: {
           "Content-Type": "application/json"
         }
-      });
-
+      });   setLoadingAction(false);
+   
       console.log("Réponse de l'API:", response.data);
       alert("Demande de remise envoyée !");
     } catch (error) {
       console.error("Erreur lors de l'envoi de la notification", error);
       alert("Une erreur est survenue. Veuillez réessayer.");
+      setLoadingAction(false);
     }
   };
 
@@ -638,9 +663,15 @@ function PriseCommande() {
                   )}
                 </div>
                 {type === "client" && selectedPerson && selectedPerson !== "new" && (
-                  <button className="btn btn-success" onClick={handleDemandeRemise}>
-                    Demander remise
-                  </button>
+                  <button className="btn btn-success" onClick={handleDemandeRemise}disabled={loadingAction}>
+                   {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+     "Envoyer demande"
+  )}
+</button>
                 )}
 
 
@@ -757,8 +788,16 @@ function PriseCommande() {
                           <button
                             className="btn btn-success"
                             onClick={creerPersonne}
+                            disabled={loadingAction}
                           >
-                            Créer {type === "client" ? "Client" : "Commercial"}
+                     {loadingAction ? (
+  <>
+    <span className="spinner-border spinner-border-sm"></span> Chargement...
+  </>
+) : (
+  `Créer ${type === "client" ? "Client" : "Commercial"}`
+)}
+
                           </button>
                           <button
                             className="btn btn-success"
@@ -970,8 +1009,15 @@ function PriseCommande() {
               <h6 className="total">
                 Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
               </h6>
-              <button className="btn btn-success mt-3" onClick={creerCommande}>
-                Enregistrer la Commande
+              <button className="btn btn-success mt-3" onClick={creerCommande} disabled={loadingAction}>
+              
+                {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+"  Enregistrer la Commande"
+  )}
               </button>
             </div>
 

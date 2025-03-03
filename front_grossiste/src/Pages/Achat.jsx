@@ -6,7 +6,7 @@ import Header from "../Components/Navbar";
 import Swal from "sweetalert2";
 import Select from 'react-select';
 import HistoriqueAchats from "../Components/HistoriqueAchats";
-
+import { Modal, Button, Form ,Spinner} from "react-bootstrap";
 import axios from '../api/axios';
 
 function AchatProduits() {
@@ -17,7 +17,7 @@ function AchatProduits() {
     const [unitesOptions, setUnitesOptions] = useState([]); // État pour les options d'unités
     const [unite, setUnite] = useState(null); // État pour l'unité sélectionnée
     const [prixAchatInitial, setPrixAchatInitial] = useState(0); // Ajoutez cette ligne
-
+   const [loadingAction, setLoadingAction] = useState(false);
     const [panier, setPanier] = useState([]);
     const [panierCreer, setPanierCreer] = useState(false);
     const [produit, setProduit] = useState("");
@@ -157,7 +157,7 @@ function AchatProduits() {
 
     const [produitsOptions, setProduitsOptions] = useState([]);
 
-    const handleAjoutProduit = async (e) => {
+    const handleAjoutProduit = async (e) => {setLoadingAction(true);
         e.preventDefault();
 
         // Vérifier si toutes les unités ont les champs requis
@@ -193,7 +193,7 @@ function AchatProduits() {
         try {
             // Envoi du produit à l'API pour ajout avec Axios
             const response = await axios.post("/api/produits/ajouter", produit);
-
+ 
             Swal.fire({
                 icon: 'success',
                 title: 'Produit ajouté avec succès',
@@ -212,7 +212,7 @@ function AchatProduits() {
             setNouvelleCategorie("");
             setAjouterCategorie(false);
             setAfficherFormulaireProduit(false);
-
+            setLoadingAction(false);
             // Récupérer les produits du fournisseur
             if (fournisseur) {
                 const produitsResponse = await axios.get(`/api/produits/fournisseur/${fournisseur}`);
@@ -235,7 +235,7 @@ function AchatProduits() {
                     });
                 }
             }
-        } catch (error) {
+        } catch (error) {setLoadingAction(false);
             console.error("Erreur lors de l'ajout du produit:", error.response?.data || error.message);
             Swal.fire({
                 icon: 'error',
@@ -413,7 +413,7 @@ function AchatProduits() {
 
     };
     const creerNouveauPanier = async () => {
-        setPanierCreer(true);
+        setPanierCreer(true); setLoadingAction(true);
         const panierData = {
             fournisseur,
             produits: panier,
@@ -427,7 +427,7 @@ function AchatProduits() {
 
             if (data?.message === "Panier créé avec succès" && data.panier?._id) {
                 setPanierId(data.panier._id);
-
+                setLoadingAction(false);
                 setPanier([]);
                 setFournisseur("");
 
@@ -437,7 +437,7 @@ function AchatProduits() {
                     icon: "success",
                     confirmButtonText: "OK",
                 });
-            } else {
+            } else { setLoadingAction(false);
                 throw new Error(data.message || "Impossible de créer le panier.");
             }
         } catch (error) {
@@ -458,6 +458,7 @@ function AchatProduits() {
 
 
     const ajouterAuPanier = async () => {
+        setLoadingAction(true);
         const quantiteNumerique = Number(quantite);
 
         // Vérification que la quantité est un nombre valide
@@ -468,6 +469,7 @@ function AchatProduits() {
                 icon: "warning",
                 confirmButtonText: "OK",
             });
+            setLoadingAction(false);
             return;
         }
 
@@ -491,6 +493,7 @@ function AchatProduits() {
                     icon: "error",
                     confirmButtonText: "OK",
                 });
+                setLoadingAction(false); 
                 return; // Sortir de la fonction si la mise à jour échoue
             }
         }
@@ -525,6 +528,7 @@ function AchatProduits() {
                         icon: "success",
                         confirmButtonText: "OK",
                     });
+                    setLoadingAction(false); 
                 } else {
                     Swal.fire({
                         title: "Succès",
@@ -532,6 +536,7 @@ function AchatProduits() {
                         icon: "success",
                         confirmButtonText: "OK",
                     });
+                    setLoadingAction(false); 
                 }
 
                 fetchAchats();
@@ -564,6 +569,7 @@ function AchatProduits() {
                     confirmButtonText: "OK",
                 });
             }
+            setLoadingAction(false); 
         }
     };
     const handleModePaiementChange = (e) => {
@@ -585,15 +591,15 @@ function AchatProduits() {
     };
 
 
-
     const validerPanier = async () => {
+        setLoadingAction(true); // Démarre le chargement
         if (!entrepot || !modePaiement) {
             Swal.fire({
                 title: "Erreur",
                 text: "L'entrepôt et le mode de paiement sont obligatoires.",
                 icon: "error",
                 confirmButtonText: "OK",
-            });
+            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
     
@@ -604,7 +610,7 @@ function AchatProduits() {
                 text: "La date limite de crédit est obligatoire pour un paiement à crédit.",
                 icon: "error",
                 confirmButtonText: "OK",
-            });
+            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
     
@@ -615,13 +621,13 @@ function AchatProduits() {
                 text: "La référence du paiement est obligatoire pour ce mode de paiement.",
                 icon: "error",
                 confirmButtonText: "OK",
-            });
+            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
     
         try {
             const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                entrepotId: entrepot, // Envoie des données ici
+                entrepotId: entrepot, 
                 modePaiement: modePaiement,
                 dateLimiteCredit: dateLimiteCredit,
                 referencePaiement: referencePaiement,
@@ -637,6 +643,7 @@ function AchatProduits() {
                 icon: "success",
                 confirmButtonText: "OK",
             }).then(() => {
+                setLoadingAction(false); // Arrêter le chargement après succès
                 window.location.reload();
             });
         } catch (error) {
@@ -646,10 +653,9 @@ function AchatProduits() {
                 text: error.response ? error.response.data.message : "Une erreur est survenue.",
                 icon: "error",
                 confirmButtonText: "OK",
-            });
+            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
         }
     };
-    
     
 
 
@@ -710,8 +716,19 @@ function AchatProduits() {
                             </h6>
                             {!panierCreer && (
                                 <div className="filtrage bg-light p-3 mt-3">
-                                    <button className="btn btn-success btn-lg" onClick={creerNouveauPanier}>
-                                        Créer un Nouveau Panier
+
+                                    <button className="btn btn-success btn-lg" disabled={loadingAction} onClick={creerNouveauPanier}>
+                                        
+                                        
+                                    {loadingAction ? (
+                                          <div className="spinner-border text-light" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>
+                                              <i className='fa fa-check-circle'></i> Créer un Nouveau Panier
+                                          </span>
+                                      )}
                                     </button>
 
                                 </div>
@@ -925,19 +942,30 @@ function AchatProduits() {
                                                 >
                                                     Ajouter une unité
                                                 </button>
-
-                                                <button
+                                                               
+                                       <button
                                                     className="btn btn-primary"
                                                     onClick={handleAjoutProduit}
+                                                    disabled={loadingAction}
                                                 >
-                                                    Ajouter
+                                                     {loadingAction ? (
+                                          <div className="spinner-border text-light" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>
+                                              Ajouter
+                                          </span>
+                                      )}
+                                          
                                                 </button>
 
                                                 <button
                                                     className="btn btn-danger"
                                                     onClick={() => setAfficherFormulaireProduit(false)}
                                                 >
-                                                    Annuler
+                                                   
+                                                   Annuler
                                                 </button>
                                             </div>
 
@@ -994,7 +1022,20 @@ function AchatProduits() {
                                                 disabled={!fournisseur}
                                             />
 
-                                            <button className="btn btn-primary mt-3" onClick={ajouterAuPanier}>Ajouter au Panier</button>
+
+                                            <button className="btn btn-primary mt-3" onClick={ajouterAuPanier} disabled={loadingAction}>
+                                                
+                                                
+                                            {loadingAction ? (
+                                          <div className="spinner-border text-light" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>
+                                             Ajouter au Panier
+                                          </span>
+                                      )}
+                                                </button>
                                         </div>
 
 
@@ -1108,9 +1149,19 @@ function AchatProduits() {
                                             )}
                                         </div>
 
-                                        <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
+                                        <div className="button-group" disabled={loadingAction} style={{ display: 'flex', gap: '10px' }}>
                                             <button className="btn7" onClick={validerPanier}>
-                                                Valider l'Achat
+                                              
+                                            {loadingAction ? (
+                                          <div className="spinner-border text-light" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>    Valider l'Achat
+                                                               </span>
+                                      )}
+                                              
+                                            
                                             </button>
                                         </div>
 

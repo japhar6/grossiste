@@ -20,7 +20,9 @@ function CreerInventaire() {
   const [entrepots, setEntrepots] = useState([]);
   const [selectedEntrepot, setSelectedEntrepot] = useState('');
   const [entrepot, setEntrepot] = useState(null);
-
+ const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userid");
@@ -49,7 +51,7 @@ function CreerInventaire() {
 
     const fetchEntrepotAndStocks = async () => {
       setLoading(true);
-      try {
+      try { setLoadingEntrepots(true);
         const entrepotResponse = await axios.get(`/api/entrepot/${selectedEntrepot}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -58,10 +60,12 @@ function CreerInventaire() {
         const stocksResponse = await axios.get(`/api/stocks/stocks/${selectedEntrepot}`);
         setStocks(stocksResponse.data);
         setLoading(false);
+        setLoadingEntrepots(false);
       } catch (error) {
         toast.error('Erreur lors du chargement des données.');
         setError('Erreur lors du chargement des données.');
         setLoading(false);
+        setLoadingEntrepots(false);
       }
     };
 
@@ -78,7 +82,7 @@ function CreerInventaire() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoadingAction(true);
     if (!selectedProduct) {
       Swal.fire({
         icon: 'error',
@@ -125,8 +129,9 @@ function CreerInventaire() {
           navigate('/inventaire');
           window.location.reload();
         });
+        setLoadingAction(false);
       } else {
-        toast.error('Erreur lors de l\'enregistrement de l\'inventaire.');
+        toast.error('Erreur lors de l\'enregistrement de l\'inventaire.'); setLoadingAction(false);
       }
     } catch (error) {
       console.error('Erreur:', error.response ? error.response.data : error.message);
@@ -158,7 +163,13 @@ function CreerInventaire() {
                 </select>
               </div>
 
-              {loading ? <p>Chargement des stocks...</p> : (
+              {loadingEntrepots ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
                 <table className="table table-striped table-bordered mt-3">
                   <thead>
                     <tr>
@@ -227,7 +238,20 @@ function CreerInventaire() {
 
  
 
-          <button type="submit" className="btn15 btn-success">Enregistrer l'Inventaire</button>
+          <button type="submit" className="btn15 btn-success"disabled={loadingAction}>
+          {loadingAction ? (
+                                          <div className="spinner-border text-light" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>
+                                              <i className='fa fa-check-circle'></i> Enregistrer l'Inventaire
+                                          </span>
+                                      )}
+            
+            
+            
+            </button>
           <button 
   type="button" 
   className="btn15 btn-warning" 

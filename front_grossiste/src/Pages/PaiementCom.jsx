@@ -279,7 +279,7 @@ console.log("prix est",prixVente);
                   {suggestions.length > 0 && (
                     <ul className="suggestions-list">
                       {suggestions.map((suggestion) => (
-                        <li key={suggestion} onClick={() => handleSuggestionClick(suggestion)}>
+                        <li key={suggestion} className="list-group-item"  onClick={() => handleSuggestionClick(suggestion)}>
                           {suggestion} 
                         </li>
                       ))}

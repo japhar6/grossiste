@@ -29,11 +29,26 @@ const personnelSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    salaire: {
+    salaireBrut: {
         type: Number,
         required: true,
-        min: 0 // Empêche les valeurs négatives
-    }
+        min: 0
+    },
+    modePaiement: {
+        type: String,
+        enum: ['journalier', 'hebdomadaire', 'mensuel'],
+        required: true
+    },
+    historiquePaiements: [{
+        periode: String, 
+        montant: Number,
+        datePaiement: Date,
+        statutPaiement: { 
+            type: String, 
+            enum: ['Payé', 'En attente'], 
+            default: 'Payé' 
+        }
+    }]
 }, {
     timestamps: true
 });

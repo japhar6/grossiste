@@ -18,7 +18,9 @@ function Caisse() {
   const [modePaiement, setModePaiement] = useState("");
   const [dateLimiteCredit, setDateLimiteCredit] = useState("");
   const [referencePaiement, setReferencePaiement] = useState("");
-
+ const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
   };
@@ -257,9 +259,9 @@ function Caisse() {
                     onChange={handleInputChange} // Changez ici
                   />
                   {suggestions.length > 0 && (
-                    <ul className="suggestions-list">
+                          <ul className="list-group">
                       {suggestions.map((suggestion) => (
-                        <li key={suggestion} onClick={() => handleSuggestionClick(suggestion)}>
+                        <li key={suggestion}  className="list-group-item" style={{marginTop:'-13px'}} onClick={() => handleSuggestionClick(suggestion)}>
                           {suggestion}
                         </li>
                       ))}

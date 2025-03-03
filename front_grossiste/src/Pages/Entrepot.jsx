@@ -67,7 +67,7 @@ function Entrepot() {
       Swal.fire({ icon: "error", title: "Erreur", text: "Veuillez remplir tous les champs." });
       return;
     }
-    setLoadingAction(false);
+    setLoadingAction(true);
     const request = editingEntrepotId
       ? axios.put(`/api/entrepot/${editingEntrepotId}`, newEntrepot, {
           headers: { Authorization: `Bearer ${token}` },
