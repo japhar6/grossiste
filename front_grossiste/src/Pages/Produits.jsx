@@ -3,6 +3,7 @@ import "../Styles/Produit.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import axios from '../api/axios';
+import { Modal, Button, Form ,Spinner} from "react-bootstrap";
 
 function ListeProduits() {
   const [produits, setProduits] = useState([]);
@@ -17,7 +18,9 @@ function ListeProduits() {
   const [dateAjout, setDateAjout] = useState("");
   const [orderBy, setOrderBy] = useState("nom");
   const [order, setOrder] = useState("asc");
-
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   const filtrerProduits = () => {
     return produits.filter((produit) => {
@@ -45,10 +48,11 @@ function ListeProduits() {
   }, []);
 
   const fetchProduits = async () => {
+    setLoadingEntrepots(true);
     try {
       const response = await axios.get("/api/produits/afficher");
       setProduits(response.data);
-      
+      setLoadingEntrepots(false);
       const categoriesUniq = [...new Set(response.data.map((produit) => produit.categorie))];
       setCategories(categoriesUniq);
       
@@ -57,7 +61,7 @@ function ListeProduits() {
         initialUnites[produit._id] = produit.unites[0]?.nom;
       });
       setUniteSelectionnee(initialUnites);
-    } catch (error) {
+    } catch (error) { setLoadingEntrepots(false);
       console.error("Erreur lors de la récupération des produits", error);
     }
   };
@@ -75,7 +79,7 @@ function ListeProduits() {
     const uniteNomDachat = uniteSelectionnee[produitId]; 
     const uniteNomVente = uniteSelectionnee[produitId]; 
     const quantiteMinimum = quantiteMinimumModifier[produitId];
-
+    setLoadingAction(true);
     const updates = {};
 
     if (prixDachat !== undefined) {
@@ -93,34 +97,40 @@ function ListeProduits() {
     }
 
     try {
+      // Effectuer les mises à jour
       if (updates.prixDachat) {
         await axios.put(`/api/produits/produits/maodi/${produitId}`, {
           prixDachat: updates.prixDachat,
           uniteNom: updates.uniteNomDachat,
         });
       }
-
+  
       if (updates.prixdevente) {
         await axios.put(`/api/produits/produits/modifier-prix-vente/${produitId}`, {
           prixdevente: updates.prixdevente,
           uniteNom: updates.uniteNomVente,
         });
       }
-
+  
       if (updates.quantiteMinimum) {
         await axios.put(`/api/produits/produits/modifier-quantite-minimum/${produitId}`, {
           quantiteMinimum: updates.quantiteMinimum,
         });
       }
-
-      // Réinitialisez les prix modifiés après la mise à jour
+  
+      // Réinitialiser les prix modifiés après la mise à jour
       setPrixAchatModifier((prev) => ({ ...prev, [produitId]: undefined }));
       setPrixVenteModifier((prev) => ({ ...prev, [produitId]: undefined }));
       setProduitAModifier(null);
-
+  
+      // Rafraîchir les produits
       fetchProduits();
+      
     } catch (error) {
       console.error("Erreur lors de la mise à jour des prix et de la quantité minimum:", error);
+    } finally {
+      // Désactiver le loading après la fin de l'opération
+      setLoadingAction(false);
     }
   };
 
@@ -167,6 +177,13 @@ function ListeProduits() {
                   />
                 </form>
               </div>
+              {loadingEntrepots ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
               <div className="consultatiof">
                 <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                   <table className="tableSt mt-3">
@@ -275,24 +292,32 @@ function ListeProduits() {
                                 )}
                               </td>
                               <td>
-                                {produitAModifier === produit._id ? (
-                                  <button
-                                    className="btnpro btn-success"
-                                    onClick={() => handleModifierPrix(produit._id)}
-                                  >
-                                    Enregistrer
-                                  </button>
-                                ) : (
-                                  <button
-                                  className="btnpro btn-danger"
-                                  onClick={() => setProduitAModifier(produit._id)}
-                                >
-                                  Modifier
-                                </button>
-                                
-                                
-                                )}
-                              </td>
+  {produitAModifier === produit._id ? (
+    <>
+      {loadingAction ? (
+        <button className="btnpro btn-success" disabled>
+          <Spinner animation="border" size="sm" /> Enregistrement...
+        </button>
+      ) : (
+        <button
+          className="btnpro btn-success"
+          onClick={() => handleModifierPrix(produit._id)}
+        >
+          Enregistrer
+        </button>
+      )}
+    </>
+  ) : (
+    <button
+      className="btnpro btn-danger"
+      onClick={() => setProduitAModifier(produit._id)}
+    >
+      Modifier
+    </button>
+  )}
+</td>
+
+
                             </tr>
                           );
                         })}
@@ -300,7 +325,7 @@ function ListeProduits() {
                     )}
                   </table>
                 </div>
-              </div>
+              </div> )}
             </div>
           </div>
         </section>

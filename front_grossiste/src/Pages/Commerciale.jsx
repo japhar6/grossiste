@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 import "../Styles/Commerciale.css";
 import Sidebar from '../Components/Sidebar';
 import Header from '../Components/Navbar';
-import Modal from '../Components/Modal';
+import Modalila from '../Components/Modal';
+import { Modal, Button, Form, Spinner } from 'react-bootstrap';
 
 const GestionCommerciaux = () => {
   const [commerciaux, setCommerciaux] = useState([]);
@@ -20,14 +21,18 @@ const GestionCommerciaux = () => {
     condition: 'greaterThanOrEqual', // Par défaut à "Supérieur ou égal"
   });
 
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   useEffect(() => {
+    setLoadingEntrepots(true);
     const fetchCommerciauxAvecVentes = async () => {
       try {
         const response = await axios.get('/api/comercial/');
-        setCommerciaux(response.data);
+        setCommerciaux(response.data);setLoadingEntrepots(false);
         setFilteredCommerciaux(response.data); // Initialiser le tableau filtré
-      } catch (error) {
+      } catch (error) {setLoadingEntrepots(false);
         console.error("Erreur lors de la récupération des commerciaux :", error);
       }
     };
@@ -53,6 +58,7 @@ const GestionCommerciaux = () => {
 
   const handleRowClick = async (commercialId, commercialNom) => {
     setCommercialNom(commercialNom);
+    setLoadingEntrepots(true);
 
     try {
       const response = await axios.get(`/api/paiementCom/performance/commercial/${commercialId}`);
@@ -69,7 +75,7 @@ const GestionCommerciaux = () => {
 
       setVentesDetails(response.data);
       setModalOpen(true); // Ouvre le modal même s'il n'y a pas de vente
-
+      setLoadingEntrepots(false);
       // Récupérez les commissions
       try {
         const responseCommissions = await axios.get(`/api/commission/commercial/${commercialId}`);
@@ -89,19 +95,20 @@ const GestionCommerciaux = () => {
         text: error.response ? error.response.data.message : error.message || "Une erreur s'est produite lors de la récupération des données.",
         icon: 'error',
         confirmButtonText: 'OK'
-      });
+      });setLoadingEntrepots(false);
     }
   };
 
 
 
   const handleAddCommission = async (commissionData) => {
+    setLoadingAction(true);
     try {
       await axios.post('/api/commission/commissions/calculer', commissionData);
       Swal.fire('Succès', 'Commission ajoutée avec succès', 'success');
-      setModalOpen(false);
+      setModalOpen(false);  setLoadingAction(true);
     } catch (error) {
-      Swal.fire('Erreur', 'Échec de l\'ajout de la commission', 'error');
+      Swal.fire('Erreur', 'Échec de l\'ajout de la commission', 'error');  setLoadingAction(true);
     }
   };
 
@@ -140,7 +147,18 @@ const GestionCommerciaux = () => {
               onChange={(e) => setFilter({ ...filter, ventes: e.target.value })}
             />
           </div>
-
+          {loadingEntrepots ? (
+              
+              <div
+                className="spinner-border text-primary"
+                role="status"
+                style={{ marginTop: '150px',marginLeft: '30%' }}
+              >
+                <span className="visually-hidden">Chargement...</span>
+              </div>
+           
+            
+            ) : (
           <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
             <table className="table-striped">
               <thead>
@@ -181,8 +199,8 @@ const GestionCommerciaux = () => {
               </tbody>
 
             </table>
-          </div>
-          <Modal
+          </div>)}
+          <Modalila
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
             ventes={ventesDetails}

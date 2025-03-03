@@ -16,7 +16,9 @@ function Fournisseur() {
   const [ristourne, setRistourne] = useState('');
   const [typeRistourne, setTypeRistourne] = useState('');
   const [logo, setLogo] = useState(null);
-  
+    const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const nomRef = useRef(null);
   const [filterNom, setFilterNom] = useState("");  
@@ -27,28 +29,21 @@ function Fournisseur() {
     fetchFournisseurs();
   }, []);
 
-  const fetchFournisseurs = async () => {
+  const fetchFournisseurs = async () => {      setLoadingEntrepots(true);
     try {
       const response = await axios.get("/api/fournisseurs/tous");
       setFournisseurs(response.data);
       setFilteredFournisseurs(response.data);  
+      setLoadingEntrepots(false);
     } catch (error) {
       console.error("Erreur lors de la récupération des fournisseurs", error);
+      setLoadingEntrepots(true);
     }
-  };
-  const handleSubmit = async (e) => {
+  };const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingAction(true);  // Mise à jour de l'état au début de l'action
   
     // Vérifie si toutes les valeurs sont présentes
-    console.log("Nom: ", nom);
-    console.log("Type: ", type);
-    console.log("Ristourne: ", ristourne);
-    console.log("TypeRistourne: ", typeRistourne);
-    console.log("Telephone: ", telephone);
-    console.log("Email: ", email);
-    console.log("Adresse: ", adresse);
-    console.log("Logo: ", logo);
-  
     const formData = new FormData();
     formData.append("nom", nom);
     formData.append("type", type);
@@ -58,10 +53,8 @@ function Fournisseur() {
   
     // Si le type est "ristourne", ajouter les conditions
     if (type === "ristourne") {
-  
-        formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
-        formData.append("conditions[typeRistourne]", typeRistourne);
- 
+      formData.append("conditions[ristourne]", parseFloat(ristourne) || 0);
+      formData.append("conditions[typeRistourne]", typeRistourne);
     }
   
     // Si le type est "prix_libre", ne pas inclure de ristourne
@@ -86,14 +79,19 @@ function Fournisseur() {
         });
         Swal.fire("Modifié!", "Le fournisseur a été modifié avec succès.", "success");
       } else {
-        // Ajout
+        // Ajout 
         await axios.post("/api/fournisseurs", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         Swal.fire("Ajouté!", "Le fournisseur a été ajouté avec succès.", "success");
       }
+  
+      // Recharge les fournisseurs après l'ajout ou la modification
       fetchFournisseurs();
+  
+      // Réinitialise le formulaire
       resetForm();
+  
     } catch (error) {
       console.error("Erreur lors de l'enregistrement du fournisseur", error);
       if (error.response) {
@@ -102,10 +100,12 @@ function Fournisseur() {
       } else {
         Swal.fire("Erreur", "Une erreur est survenue lors de la demande au serveur.", "error");
       }
+    } finally {
+      // Arrête l'état de chargement à la fin de l'action (réussie ou échouée)
+      setLoadingAction(false);
     }
   };
   
-
   const handleDelete = async (id) => {
     const confirmDelete = await Swal.fire({
       title: "Êtes-vous sûr ?",
@@ -204,7 +204,13 @@ function Fournisseur() {
                   </select>
                 </form>
               </div>
-
+              {loadingEntrepots ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
               <div className="consultationF">
               <div className="table-responsives" style={{ overflowX: 'hidden',overflowY:'auto' }}>
 
@@ -271,6 +277,7 @@ function Fournisseur() {
                 </table>
               </div>
             </div>
+             )}
             </div>
 
             {/* Formulaire d'ajout/modification du fournisseur */}
@@ -371,9 +378,15 @@ function Fournisseur() {
                       onChange={(e) => setLogo(e.target.files[0])}
                     />
                   </div>
-                  <button className="btn12 btn1-success" type="submit">
-                    {editingId ? "Modifier" : "Enregistrer"}
-                  </button>
+                  <button className="btn15 btn1-success" type="submit" disabled={loadingAction}>
+  {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+    editingId ? "Modifier" : "Ajouter"
+  )}
+</button>
                 </div>
               </form>
             </div>

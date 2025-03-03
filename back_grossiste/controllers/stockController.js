@@ -63,7 +63,7 @@ exports.getQuantiteProduitById = async (req, res) => {
 
     // Si aucun stock n'est trouvé pour ce produit
     if (stockData.length === 0) {
-      return res.status(404).json({ message: "Produit non trouvé dans aucun stock" });
+      return res.status(200).json({ quantiteDisponible: 0, message: "Produit non trouvé dans aucun stock" });
     }
 
     // Parcours des stocks pour identifier l'entrepôt principal

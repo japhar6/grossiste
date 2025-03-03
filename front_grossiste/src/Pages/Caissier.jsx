@@ -18,7 +18,9 @@ function Caisse() {
   const [modePaiement, setModePaiement] = useState("");
   const [dateLimiteCredit, setDateLimiteCredit] = useState("");
   const [referencePaiement, setReferencePaiement] = useState("");
-
+ const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
   };

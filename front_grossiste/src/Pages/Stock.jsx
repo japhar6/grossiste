@@ -263,6 +263,8 @@ function Stock() {
             ) : error ? (
               <p className="text-center mt-3 text-danger">{error}</p>
             ) : (
+              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+              
               <table className="tableSt table-bordered mt-3">
                 <thead>
                   <tr>
@@ -304,6 +306,7 @@ function Stock() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </section>

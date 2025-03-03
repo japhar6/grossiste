@@ -13,15 +13,19 @@ const TransfertAdmin = () => {
   const [entrepotSourceFiltre, setEntrepotSourceFiltre] = useState('');
   const [entrepotDestinationFiltre, setEntrepotDestinationFiltre] = useState('');
   const [dateFiltre, setDateFiltre] = useState('');
-
+  const [loadingAction, setLoadingAction] = useState(false);
+  const [loadingActionS, setLoadingActionS] = useState(false);
+    const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem("token");
+    setLoadingEntrepots(true);
     axios.get(`/api/entrepot/`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(response => setEntrepots(response.data))
       .catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
-  }, []);
+      setLoadingEntrepots(false);
+  }, []); 
 
   useEffect(() => {
     fetchHistoriqueTransferts();
@@ -38,6 +42,7 @@ const TransfertAdmin = () => {
       console.error("L'objet transfert ou la propriété statutAdmin est manquant");
       return;
     }
+    setLoadingAction(true);
 
     Swal.fire({
       title: 'Confirmer',
@@ -54,8 +59,10 @@ const TransfertAdmin = () => {
           .then(() => {
             toast.success(`Transfert ${statut.toLowerCase()} avec succès.`);
             fetchHistoriqueTransferts();
+            setLoadingAction(false);
           })
           .catch(() => toast.error('Erreur de validation.'));
+          setLoadingAction(false);
       }
     });
   };
@@ -118,7 +125,14 @@ const TransfertAdmin = () => {
   </div>
 </div>
 
-
+<div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+{loadingEntrepots ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
             <table className="table table-bordered table-striped">
               <thead className="thead-dark">
                 <tr>
@@ -145,14 +159,26 @@ const TransfertAdmin = () => {
       <td>
   {transfert.statutAdmin === 'en attente' && (
     <div className="d-flex justify-content-around">
-      <button className="btn btn-success custom-button" style={{ marginRight: '10px' }} onClick={() => handleValidation(transfert, 'Validé')}>
-        Valider
+      <button className="btn btn-success custom-button" disabled={loadingAction} style={{ marginRight: '10px' }} onClick={() => handleValidation(transfert, 'Validé')}>
+      {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+   "Valider"
+  )}
       </button>
-      <button className="btn btn-danger custom-button" onClick={() => handleValidation(transfert, 'Rejeté')}>
-        Rejeter
+      <button className="btn btn-danger custom-button" disabled={loadingAction} onClick={() => handleValidation(transfert, 'Rejeté')}>
+      {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+   "Refuser"
+  )}
       </button>
     </div>
-  )}
+  )} 
 </td>
 
 
@@ -161,7 +187,9 @@ const TransfertAdmin = () => {
 </tbody>
 
             </table>
-          </div>
+
+)}
+            </div> </div>
         </div>
       </section>
     </main>

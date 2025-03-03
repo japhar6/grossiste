@@ -17,6 +17,8 @@ function Profil() {
   const usId = localStorage.getItem("userid");
 
 
+    const [loadingAction, setLoadingAction] = useState(false);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -58,7 +60,7 @@ function Profil() {
 
 
   const handleSave = async () => {
-    try {
+    try {setLoadingAction(true);
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("Token non trouvé!");
@@ -79,7 +81,7 @@ function Profil() {
 
       setUser(response.data);
       setIsEditing(false);
-
+      setLoadingAction(true);
     
       Swal.fire({
         title: "Succès!",
@@ -91,7 +93,7 @@ function Profil() {
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour du profil", error.response?.data || error.message);
-
+      setLoadingAction(true);
       // Affichage SweetAlert2 - Erreur
       Swal.fire({
         title: "Erreur!",
@@ -103,7 +105,11 @@ function Profil() {
   };
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return   <div className="loading-container">
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Chargement...</span>
+    </div>
+  </div>;
   }
 
   return (
@@ -154,7 +160,15 @@ function Profil() {
                             onChange={handleFileChange}
                           />
                         </div>
-                        <button onClick={handleSave}>Enregistrer</button>
+                        <button onClick={handleSave} disabled={loadingAction}>
+                        {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+    "Enregistrer"
+  )}
+                        </button>
                         <button onClick={() => setIsEditing(false)}>Annuler</button>
                       </>
                     ) : (

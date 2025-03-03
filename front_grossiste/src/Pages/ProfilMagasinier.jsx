@@ -16,7 +16,7 @@ function Profil() {
   const navigate = useNavigate();
   const usId = localStorage.getItem("userid");
 
-
+  const [loadingAction, setLoadingAction] = useState(false);
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -58,6 +58,7 @@ function Profil() {
 
 
   const handleSave = async () => {
+    setLoadingAction(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -80,7 +81,7 @@ function Profil() {
       setUser(response.data);
       setIsEditing(false);
 
-    
+      setLoadingAction(false);
       Swal.fire({
         title: "Succès!",
         text: "Votre profil a été mis à jour.",
@@ -91,7 +92,7 @@ function Profil() {
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour du profil", error.response?.data || error.message);
-
+      setLoadingAction(false);
       // Affichage SweetAlert2 - Erreur
       Swal.fire({
         title: "Erreur!",
@@ -103,7 +104,11 @@ function Profil() {
   };
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return   <div className="loading-container">
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Chargement...</span>
+    </div>
+  </div>;
   }
 
   return (
@@ -154,7 +159,15 @@ function Profil() {
                             onChange={handleFileChange}
                           />
                         </div>
-                        <button onClick={handleSave}>Enregistrer</button>
+                        <button onClick={handleSave} disabled={loadingAction}>
+                        {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+ "Enregistrer"
+  )}
+                        </button>
                         <button onClick={() => setIsEditing(false)}>Annuler</button>
                       </>
                     ) : (

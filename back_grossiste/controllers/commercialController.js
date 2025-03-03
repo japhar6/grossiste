@@ -5,11 +5,12 @@ exports.createCommercial = async (req, res) => {
     try {
         const { nom, email, telephone, type } = req.body;
     
-        // Vérifie si les champs sont valides
-        if (!nom || !telephone || !email || !type) {
-          return res.status(400).json({ message: "Les champs sont manquants" });
+        const existingCommercial = await Commercial.findOne({ email: req.body.email });
+        if (existingCommercial) {
+          return res.status(400).json({ message: "Cet email est déjà utilisé. Veuillez en choisir un autre." });
         }
     
+        
         // Créer un nouveau commercial
         const newCommercial = new Commercial({ nom, email, telephone, type });
     

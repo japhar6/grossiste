@@ -7,12 +7,11 @@ const commercialSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true,
-        unique: true
+        required: false
     },
     telephone: {
         type: String,
-        required: true
+        required: false
     },
     statut: {
         type: String,
@@ -23,7 +22,7 @@ const commercialSchema = new mongoose.Schema({
         default: Date.now,
     },
     type : {
-        type: String, required : true 
+        type: String, required : false 
     }
 }, { timestamps: true });
 

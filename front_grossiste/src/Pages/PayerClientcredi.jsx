@@ -45,7 +45,7 @@ function Caisse() {
   // Valider le paiement
   const validerPaiement = async () => {
     if (!modePaiement) {
-      Swal.fire("Erreur", "Veuillez sélectionner un mode de paiement", "error");
+      Swal.fire("Info", "Veuillez sélectionner un mode de paiement", "info");
       return;
     }
 
@@ -76,11 +76,11 @@ function Caisse() {
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Caisse
             </h6>
-
+            
             {/* Saisie de la référence de commande */}
-            <div className="commande-container d-flex justify-content-between">
-              <div className="refcli">
-                <h6><i className="fa fa-user"></i> Référence de la commande</h6>
+            <div className="commande-container">
+              <div className="refcli bg-light" style={{boxShadow:'0 0 3px gray',borderRadius:'7px'}}>
+                <h6 className="alert alert-success" style={{width1:'100%',textAlign:'left'}}><i className="fa fa-user"></i> Référence de la commande</h6>
                 <div className="form-group">
                   <input
                     type="text"
@@ -106,38 +106,50 @@ function Caisse() {
 
             {/* Affichage des détails de la commande */}
             {paiement && commande && (
-              <div className="details mt-4">
-                <h6><i className="fa fa-box"></i> Détails du paiement</h6>
-                <p>Mode de paiement: {paiement.modePaiement}</p>
-                <p>Total à payer: {paiement.totalPaiement} Ariary</p>
-                <p>Statut: {paiement.statut}</p>
+              <div className="details mt-4 bg-light p-3" style={{textAlign:'left',boxShadow:'0 0 3px gray',borderRadius:'5px'}}>
+                <h6><i className="fa fa-box"></i> Détails du paiement </h6>
+                <p className="alert alert-light">Mode de paiement : {paiement.modePaiement}</p>
+                <p className="alert alert-light">Total à payer  : {paiement.totalPaiement} Ariary</p>
+                <p className="alert alert-light">Statut : {paiement.statut}</p>
+                {paiement?.dateLimiteCredit ? (
+  <p className="alert alert-light">
+    Date d'échéance de paiement : {paiement.dateLimiteCredit}
+  </p>
+) : (
+  <p className="alert alert-warning">Aucune date d'échéance définie</p>
+)}
+
 
                 {/* Affichage du nom du client ou du commercial */}
-                <h6><i className="fa fa-user"></i> Client / Commercial</h6>
-                <p>{commande.clientId?.nom || commande.commercialId?.nom || "N/A"}</p>
+                <h6 className="alert alert-success"><i className="fa fa-user"></i> Client / Commercial</h6>
+                <p className="alert alert-light">{commande.clientId?.nom || commande.commercialId?.nom || "N/A"}</p>
 
                 {/* Détails des produits */}
-                <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-                <table className="tableCS table-bordered mt-2 text-center">
-                  <thead>
-                    <tr>
-                      <th>Nom du produit</th>
-                      <th>Quantité</th>
-                      <th>Prix Unitaire</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commande.produits.map((item, index) => (
-                      <tr key={index}>
-                        <td>{item.produit?.nom}</td>
-                        <td>{item.quantite}</td>
-                        <td>{item.prixdevente}</td>
-                        <td>{item.total}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <h6 className="alert alert-info"><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
+                
+                <div style={{overflowX:'scroll'}}>
+                    <table className="tableCS table-bordered mt-2 text-center table">
+                    <thead>
+                        <tr>
+                        <th className="bg-success text-light">Nom du produit</th>
+                        <th className="bg-success text-light">Quantité</th>
+                        <th className="bg-success text-light">Prix Unitaire</th>
+                        <th className="bg-success text-light">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {commande.produits.map((item, index) => (
+                        <tr key={index}>
+                            <td>{item.produit?.nom}</td>
+                            <td>{item.quantite}</td>
+                            <td>{item.prixdevente}</td>
+                            <td>{item.total}</td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+
+                </div>
 
                 {/* Sélection du mode de paiement */}
                 <select

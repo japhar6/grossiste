@@ -7,6 +7,11 @@ router.post('/ajouter', personnelController.ajouterPersonnel);         // Ajoute
 router.get('/afficher', personnelController.getAllPersonnels);         // Récupérer tous les personnels
 router.get('/recup/:id', personnelController.getPersonnelById);      // Récupérer un personnel par ID
 router.put('/modifier/:id', personnelController.updatePersonnel);       // Mettre à jour un personnel
-router.delete('/supprimer/:id', personnelController.deletePersonnel);    // Supprimer un personnel
+router.delete('/supprimer/:id', personnelController.deletePersonnel); 
+router.get('/:id/historique-paiements', personnelController.getHistoriquePaiements); // Voir l'historique des paiements d'un employé   // Supprimer un personnel
+router.get('/recuppay/:id', personnelController.getHistoriquePaiements);  
+// 🔹 Routes pour la gestion des paiements
+router.post('/faire/:id/paiements', personnelController.enregistrerPaiement);  // Enregistrer un paiement de salaire
+
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal as BootstrapModal, Button, Form } from 'react-bootstrap';
+import { Modal as BootstrapModal, Button, Form,Spinner  } from 'react-bootstrap';
 
 const AddCommissionModal = ({ isOpen, onClose, onAddCommission, commercialId }) => {
   const [commissionData, setCommissionData] = useState({
@@ -8,16 +8,25 @@ const AddCommissionModal = ({ isOpen, onClose, onAddCommission, commercialId }) 
     montant: '',
     periode: '',
   });
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleAddCommissionChange = (e) => {
     const { name, value } = e.target;
     setCommissionData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddCommissionSubmit = (e) => {
+   const handleAddCommissionSubmit = (e) => {
     e.preventDefault();
-    onAddCommission(commissionData);
-    onClose();
+    setIsLoading(true); // Déclenche le chargement
+    onAddCommission(commissionData)
+      .then(() => {
+        setIsLoading(false); // Termine le chargement après la soumission
+        onClose(); // Ferme la modal
+      })
+      .catch((error) => {
+        console.error('Erreur lors de l\'ajout de la commission:', error);
+        setIsLoading(false); // Termine le chargement en cas d'erreur
+      });
   };
 
   if (!isOpen) return null;
@@ -71,9 +80,14 @@ const AddCommissionModal = ({ isOpen, onClose, onAddCommission, commercialId }) 
           <Button 
             variant="primary" 
             type="submit" 
-            style={{ padding: '5px 10px', fontSize: '14px' }} // Style pour mobile
+            style={{ padding: '5px 10px', fontSize: '14px' }}
+            disabled={isLoading} // Désactive le bouton pendant le chargement
           >
-            Ajouter Commission
+            {isLoading ? (
+              <Spinner animation="border" size="sm" /> // Affiche un spinner pendant le chargement
+            ) : (
+              'Ajouter Commission'
+            )}
           </Button>
         </Form>
       </BootstrapModal.Body>
