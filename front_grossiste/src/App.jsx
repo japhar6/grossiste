@@ -45,6 +45,7 @@ import HistoAcha from './Pages/HistoAcha.jsx';
 import PayerCredit from './Pages/PayerClientcredi.jsx';
 import FactureRem from './Pages/FactRemise.jsx';
 import Facture from "./Pages/Fact.jsx";
+import FactureCom  from "./Pages/FactPaiement.jsx";
 import ChiffreAffaire from './Pages/ChiffreAffaire.jsx';
 
 
@@ -116,7 +117,7 @@ function App() {
           <Route path='/FactureNormal' element={<FactureNormal />} />
           <Route path='/FactureRemise' element={<FactureRem />} />
           <Route path="/facture" element={<Facture />} />
-
+          <Route path="/facturepaiement" element={<FactureCom />} />
         </Route>
 
       </Routes>

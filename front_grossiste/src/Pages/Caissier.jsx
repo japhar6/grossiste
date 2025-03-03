@@ -195,75 +195,75 @@ function Caisse() {
     }
   };
   
-  const navigate = useNavigate();
-  const handleGenerateInvoice = async () => {
-    const { value: typeFacture, isDismissed } = await Swal.fire({
-      title: "🧾 Sélectionnez le type de facture",
-      html: `
-        <div style="text-align: left;">
-          <label>
-            <input type="radio" name="typeFacture" value="normal" style="margin-right: 8px;"> 📜 Facture Normale
-          </label>
-          <br>
-          <label>
-            <input type="radio" name="typeFacture" value="remise" style="margin-right: 8px;"> 💰 Facture de Remise
-          </label>
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "✅ Valider",
-      cancelButtonText: "❌ Annuler",
-      confirmButtonColor: "#28a745",
-      cancelButtonColor: "#d33",
-      preConfirm: () => {
-        const selectedType = document.querySelector('input[name="typeFacture"]:checked');
-        if (!selectedType) {
-          Swal.showValidationMessage("⚠️ Vous devez sélectionner un type de facture !");
-          return false;
+    const navigate = useNavigate();
+    const handleGenerateInvoice = async () => {
+      const { value: typeFacture, isDismissed } = await Swal.fire({
+        title: "🧾 Sélectionnez le type de facture",
+        html: `
+          <div style="text-align: left;">
+            <label>
+              <input type="radio" name="typeFacture" value="normal" style="margin-right: 8px;"> 📜 Facture Normale
+            </label>
+            <br>
+            <label>
+              <input type="radio" name="typeFacture" value="remise" style="margin-right: 8px;"> 💰 Facture de Remise
+            </label>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: "✅ Valider",
+        cancelButtonText: "❌ Annuler",
+        confirmButtonColor: "#28a745",
+        cancelButtonColor: "#d33",
+        preConfirm: () => {
+          const selectedType = document.querySelector('input[name="typeFacture"]:checked');
+          if (!selectedType) {
+            Swal.showValidationMessage("⚠️ Vous devez sélectionner un type de facture !");
+            return false;
+          }
+          return selectedType.value;
         }
-        return selectedType.value;
-      }
-    });
-  
-    // Si l'utilisateur annule, arrêter ici
-    if (isDismissed || !typeFacture) {
-      console.log("Annulation de la génération de facture.");
-      return;
-    }
-  
-    // Valider le paiement avant de générer la facture
-    const paiementValidationResult = await validerPaiement();
-  
-    if (paiementValidationResult) {
-      const factureUrl = typeFacture === "normal" ? "/facture" : "/factureR";
-      const queryParams = new URLSearchParams();
-  
-      if (commande) queryParams.set("commande", JSON.stringify(commande));
-      if (modePaiement) queryParams.set("modePaiement", modePaiement);
-      if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
-      if (dateLimiteCredit) queryParams.set("dateLimiteCredit", dateLimiteCredit);
-  
-      if (client) {
-        queryParams.set("client", JSON.stringify(client));
-      } else if (commercial) {
-        queryParams.set("commercial", JSON.stringify(commercial));
-      }
-  
-      // Ouvrir la page de facture dans un nouvel onglet
-      const factureWindow = window.open(`${factureUrl}?${queryParams.toString()}`, "_blank");
-  
-      if (factureWindow) {
-        factureWindow.focus();
-      }
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: "Le paiement n'a pas été validé.",
       });
-    }
-  };
-  
+    
+      // Si l'utilisateur annule, arrêter ici
+      if (isDismissed || !typeFacture) {
+        console.log("Annulation de la génération de facture.");
+        return;
+      }
+    
+      // Valider le paiement avant de générer la facture
+      const paiementValidationResult = await validerPaiement();
+    
+      if (paiementValidationResult) {
+        const factureUrl = typeFacture === "normal" ? "/facture" : "/FactureRemise";
+        const queryParams = new URLSearchParams();
+    
+        if (commande) queryParams.set("commande", JSON.stringify(commande));
+        if (modePaiement) queryParams.set("modePaiement", modePaiement);
+        if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
+        if (dateLimiteCredit) queryParams.set("dateLimiteCredit", dateLimiteCredit);
+    
+        if (client) {
+          queryParams.set("client", JSON.stringify(client));
+        } else if (commercial) {
+          queryParams.set("commercial", JSON.stringify(commercial));
+        }
+    
+        // Ouvrir la page de facture dans un nouvel onglet
+        const factureWindow = window.open(`${factureUrl}?${queryParams.toString()}`, "_blank");
+    
+        if (factureWindow) {
+          factureWindow.focus();
+        }
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: "Le paiement n'a pas été validé.",
+        });
+      }
+    };
+    
   
 
   

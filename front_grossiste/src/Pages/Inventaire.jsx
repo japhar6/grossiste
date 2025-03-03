@@ -72,16 +72,15 @@ function VisualiserInventaires() {
     fetchInventaires();
   }, [token, userId]);
 
-  // Filtrage des inventaires
   const filteredInventaires = inventaires.filter(inventaire => {
     const produitMatch = filtreProduit ? inventaire.produit.nom.toLowerCase().includes(filtreProduit.toLowerCase()) : true;
     const entrepotMatch = filtreEntrepot ? inventaire.entrepot.nom === filtreEntrepot : true;
     const raisonMatch = filtreRaison ? inventaire.raisonAjustement.toLowerCase().includes(filtreRaison.toLowerCase()) : true;
     const dateMatch = filtreDate ? new Date(inventaire.dateInventaire).toLocaleDateString() === new Date(filtreDate).toLocaleDateString() : true;
-
+  
     return produitMatch && entrepotMatch && raisonMatch && dateMatch;
   });
-
+  
   return (
     <>
       <ToastContainer />
@@ -146,7 +145,8 @@ function VisualiserInventaires() {
                     {filteredInventaires.map(inventaire => (
                       <tr key={inventaire._id}>
                         <td>{inventaire.entrepot.nom}</td> 
-                        <td>{inventaire.produit.nom}</td> 
+                        <td>{inventaire.produit ? inventaire.produit.nom : 'Produit non disponible'}</td>
+
                         <td>{inventaire.quantitéInitiale}</td>
                         <td>{inventaire.quantitéFinale}</td>
                         <td>{inventaire.raisonAjustement}</td>

@@ -24,10 +24,7 @@ exports.register = async (req, res) => {
   exports.createAdmin = async (req, res) => {
     try {
       // Vérifier si un admin existe déjà
-      const adminExists = await User.findOne({ role: "admin" });
-      if (adminExists) {
-        return res.status(400).json({ message: "❌ Un admin existe déjà !" });
-      }
+     
 
       // Extraire les informations du body
       const { nom, email, password, role,numero_cin } = req.body;
