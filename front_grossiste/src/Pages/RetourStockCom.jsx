@@ -39,50 +39,50 @@ function RetourStockCom() {
 
   // Fonction pour récupérer les ventes d'un commercial
   // Fonction pour récupérer les ventes à partir de commercialId et commandeId
-const fetchVentesByInfo = (commercialId, commandeId) => {
-  if (!commercialId || !commandeId) {
-    console.error("Le commercialId ou commandeId est undefined ou invalide.");
-    return Promise.reject("Le commercialId ou commandeId est undefined ou invalide.");
-  }
+  const fetchVentesByInfo = (commercialId, commandeId) => {
+    if (!commercialId || !commandeId) {
+      console.error("Le commercialId ou commandeId est undefined ou invalide.");
+      return Promise.reject("Le commercialId ou commandeId est undefined ou invalide.");
+    }
 
-  return axios.get(`/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
-    .then(response => {
-      console.log("Ventes récupérées pour le commercial et la commande:", response.data);
-      setVentes(response.data);
-      setError(""); // Réinitialiser l'erreur en cas de succès
-      return response.data;
-    })
-    .catch(error => {
-      console.error("Erreur lors de la récupération des ventes :", error);
-      setError("Erreur lors de la récupération des ventes.");
-      return Promise.reject(error);
-    });
-};
-
-// Ouverture du modal et récupération des ventes
-const openModal = (paiement) => {
-  if (paiement.commercial && paiement.commande) {
-    console.log("Paiement trouvé:", paiement);
-
-    // Récupérer les ventes avec commercialId et commandeId
-    fetchVentesByInfo(paiement.commercial, paiement.commande)
-      .then(ventes => {
-        // Une fois les ventes récupérées, on met à jour modalData
-        setModalData({
-          paiement: paiement,  // Données du paiement
-          ventes: ventes       // Données des ventes récupérées
-        });
-        console.log("Ventes récupérées:", ventes); // Vérifier que les ventes sont bien récupérées
+    return axios.get(`/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
+      .then(response => {
+        console.log("Ventes récupérées pour le commercial et la commande:", response.data);
+        setVentes(response.data);
+        setError(""); // Réinitialiser l'erreur en cas de succès
+        return response.data;
       })
       .catch(error => {
-        console.error("Erreur lors de la récupération des ventes:", error);
-        setError("Impossible de récupérer les ventes.");
+        console.error("Erreur lors de la récupération des ventes :", error);
+        setError("Erreur lors de la récupération des ventes.");
+        return Promise.reject(error);
       });
-  } else {
-    console.error("Commercial ID ou Commande ID est indéfini pour paiement:", paiement);
-    setError("ID du commercial ou de la commande non trouvé.");
-  }
-};
+  };
+
+  // Ouverture du modal et récupération des ventes
+  const openModal = (paiement) => {
+    if (paiement.commercial && paiement.commande) {
+      console.log("Paiement trouvé:", paiement);
+
+      // Récupérer les ventes avec commercialId et commandeId
+      fetchVentesByInfo(paiement.commercial, paiement.commande)
+        .then(ventes => {
+          // Une fois les ventes récupérées, on met à jour modalData
+          setModalData({
+            paiement: paiement,  // Données du paiement
+            ventes: ventes       // Données des ventes récupérées
+          });
+          console.log("Ventes récupérées:", ventes); // Vérifier que les ventes sont bien récupérées
+        })
+        .catch(error => {
+          console.error("Erreur lors de la récupération des ventes:", error);
+          setError("Impossible de récupérer les ventes.");
+        });
+    } else {
+      console.error("Commercial ID ou Commande ID est indéfini pour paiement:", paiement);
+      setError("ID du commercial ou de la commande non trouvé.");
+    }
+  };
 
 
   const handleReturnValidation = () => {
@@ -139,26 +139,26 @@ const openModal = (paiement) => {
               <i className="fa fa-search"></i> Filtrage
             </h6>
             <form className="center">
-              <input 
-                type="text" 
-                className="form-control p-1 mt-2 m-1" 
-                placeholder="Recherche de commande" 
-                value={searchQuery} 
+              <input
+                type="text"
+                className="form-control p-1 mt-2 m-1"
+                placeholder="Recherche de commande"
+                value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)} // Mise à jour de la recherche
               />
-              <select 
-                className="form-control mt-2 m-1 p-1" 
-                value={status} 
+              <select
+                className="form-control mt-2 m-1 p-1"
+                value={status}
                 onChange={(e) => setStatus(e.target.value)} // Mise à jour du statut
               >
                 <option value="">Statut de la commande</option>
                 <option value="partiel">Partiel</option>
                 <option value="complet">Complet</option>
               </select>
-              <input 
-                type="date" 
-                className="form-control mt-2 m-1 p-1" 
-                value={date} 
+              <input
+                type="date"
+                className="form-control mt-2 m-1 p-1"
+                value={date}
                 onChange={(e) => setDate(e.target.value)} // Mise à jour de la date
               />
             </form>
@@ -170,7 +170,7 @@ const openModal = (paiement) => {
                 <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>
                 <th>Caissier</th>
                 <th>Commercial</th>
-           
+
                 <th>Statut</th>
                 <th>Date</th>
                 <th>Détails</th>
@@ -182,8 +182,8 @@ const openModal = (paiement) => {
                   <tr key={index}>
                     <td>{paiement.referenceFacture}</td>
                     <td>{paiement.caissier}</td>
-                    <td>{paiement.commercialNom}</td> 
-        
+                    <td>{paiement.commercialNom}</td>
+
                     <td>{paiement.statut}</td>
                     <td>{paiement.date}</td>
                     <td>
@@ -249,11 +249,11 @@ const openModal = (paiement) => {
                 </div>
 
                 <div className="modal-footer center">
-  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-  {modalData && modalData.paiement.statut !== "Produits retourner" && ( // Condition pour afficher le bouton
-    <button className="btn btn-info" onClick={handleReturnValidation}>Valider le retour</button>
-  )}
-</div>
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  {modalData && modalData.paiement.statut !== "Produits retourner" && ( // Condition pour afficher le bouton
+                    <button className="btn btn-info" onClick={handleReturnValidation}>Valider le retour</button>
+                  )}
+                </div>
 
               </div>
             </div>

@@ -43,6 +43,7 @@ import Client from './Pages/Client.jsx';
 import Notification from './Components/Notifications.jsx';
 import HistoAcha from './Pages/HistoAcha.jsx';
 import PayerCredit from './Pages/PayerClientcredi.jsx';
+import ChiffreAffaire from './Pages/ChiffreAffaire.jsx';
 
 
 
@@ -78,7 +79,7 @@ function App() {
           <Route path='/creerinventaire' element={<CreerInventaire />} />
           <Route path='/notif' element={<Notification />} />
           <Route path='/HistoAcha' element={<HistoAcha />} />
-    
+          <Route path='/ChiffreAffaire' element={<ChiffreAffaire />} />
           
         </Route>
 

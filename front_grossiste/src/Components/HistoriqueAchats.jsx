@@ -4,6 +4,9 @@ import axios from "../api/axios";
 const HistoriqueAchats = () => {
     const [achats, setAchats] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [searchDate, setSearchDate] = useState("");
+    const [searchCategory, setSearchCategory] = useState("");
+    const [searchEntrepot, setSearchEntrepot] = useState("");
 
     useEffect(() => {
         const fetchAchats = async () => {
@@ -17,43 +20,84 @@ const HistoriqueAchats = () => {
         fetchAchats();
     }, []);
 
-    // Vérification de sécurité pour éviter les erreurs
-    const filteredAchats = achats.filter(achat => 
-        achat.fournisseur?.nom?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredAchats = achats.filter(achat =>
+        (achat.produit?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            achat.fournisseur?.nom?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        (searchDate === "" || new Date(achat.dateAchat).toLocaleDateString() === new Date(searchDate).toLocaleDateString()) &&
+        (searchCategory === "" || achat.produit?.categorie === searchCategory) &&
+        (searchEntrepot === "" || achat.entrepot === searchEntrepot)
     );
 
-    // Fonction pour obtenir l'unité la plus grande en fonction de la conversion
     const getLargestUnit = (product) => {
-        if (!product?.unites || product.unites.length === 0) return "Aucune unité"; // Si aucune unité
+        if (!product?.unites || product.unites.length === 0) return "Aucune unité";
 
-        // Trouver l'unité avec la plus grande conversion
-        const largestUnit = product.unites.reduce((prev, current) => 
-            (prev.conversion < current.conversion ? prev : current) // La plus petite conversion = la plus grande unité
+        const largestUnit = product.unites.reduce((prev, current) =>
+            (prev.conversion < current.conversion ? prev : current)
         );
 
         return largestUnit.nom || "Inconnu";
     };
 
+    // Collect unique categories and entrepots for filtering
+    const categories = [...new Set(achats.map(achat => achat.produit?.categorie))];
+    const entrepots = [...new Set(achats.map(achat => achat.entrepot))];
+
     return (
         <div>
             <h2>Historique des Achats</h2>
-            <input
-                type="text"
-                className="form-control p-2 mt-3 m-2"
-                placeholder="Rechercher par fournisseur"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <div className="center">
+                <input
+                    type="text"
+                    className="form-control p-2 mt-3 m-2"
+                    placeholder="Rechercher fournisseur ou produit"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <input
+                    type="date"
+                    className="form-control p-2 mt-3 m-2"
+                    value={searchDate}
+                    onChange={(e) => setSearchDate(e.target.value)}
+                />
+                <select
+                    className="form-control p-2 mt-3 m-2"
+                    value={searchCategory}
+                    onChange={(e) => setSearchCategory(e.target.value)}
+                >
+                    <option value="">Sélectionner une catégorie</option>
+                    {categories.map((category, index) => (
+                        <option key={index} value={category}>
+                            {category}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    className="form-control p-2 mt-3 m-2"
+                    value={searchEntrepot}
+                    onChange={(e) => setSearchEntrepot(e.target.value)}
+                >
+                    <option value="">Sélectionner un entrepôt</option>
+                    {entrepots.map((entrepot, index) => (
+                        <option key={index} value={entrepot._id}>
+                            {entrepot.nom}
+                        </option>
+                    ))}
+                </select>
+
+            </div>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                 <div className="table-responsive table-striped">
                     <table className="tableSt mt-3">
                         <thead>
                             <tr>
+                                <th>Code produit</th>
                                 <th>Produit</th>
+                                <th>Catégorie</th>
                                 <th>Fournisseur</th>
                                 <th>Quantité</th>
-                                <th>Prix</th>
-                           
+                                <th>Entrepôt</th>
+                                <th>Prix d'achat</th>
+                                <th>Total</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
@@ -61,17 +105,24 @@ const HistoriqueAchats = () => {
                             {filteredAchats.length > 0 ? (
                                 filteredAchats.map((achat) => (
                                     <tr key={achat._id}>
+                                        <td>{achat.produit?.codeProduit || "Inconnu"}</td>
                                         <td>{achat.produit?.nom || "Inconnu"}</td>
+                                        <td>{achat.produit?.categorie || "Non spécifiée"}</td>
                                         <td>{achat.fournisseur?.nom || "Non spécifié"}</td>
                                         <td>{achat.quantite} {getLargestUnit(achat.produit)}</td>
-                                        <td>{achat.prixAchat} Ariary</td>
-                                      
-                                        <td>{new Date(achat.dateAchat).toLocaleDateString()}</td>
+                                        <td>{achat.entrepot?.nom || "Non spécifié"}</td>
+                                        <td>{achat.prixAchat.toLocaleString()} Ar</td>
+                                        <td>{achat.total.toLocaleString()} Ar</td>
+                                        <td>{new Date(achat.dateAchat).toLocaleDateString('fr-FR', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}</td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6">Aucun achat trouvé</td>
+                                    <td colSpan="9">Aucun achat trouvé</td>
                                 </tr>
                             )}
                         </tbody>

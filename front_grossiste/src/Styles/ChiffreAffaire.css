@@ -1,0 +1,20 @@
+.icone{
+    margin-left: 65%;
+}
+.prof{
+    margin-left: 80%;
+}
+.nombre{
+    height: 15vh;
+    width: 100;
+}
+.chiffre{
+    width: 21%;
+    height: 20vh;
+    box-shadow: 0 0 15px rgba(128, 128, 128, 0.34);
+    border-radius: 15px;
+}
+.ico{
+    margin-top: -2vh;
+    margin-left: 50%;
+}

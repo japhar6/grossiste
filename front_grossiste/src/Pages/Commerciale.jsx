@@ -149,7 +149,6 @@ const GestionCommerciaux = () => {
                   <th>Email</th>
                   <th>Téléphone</th>
                   <th>Statut</th>
-                  <th>Type</th>
                   <th>Date d'Inscription</th>
                   <th>Ventes Réalisées</th>
                 </tr>
@@ -162,7 +161,6 @@ const GestionCommerciaux = () => {
                       <td>{commercial.email}</td>
                       <td>{commercial.telephone}</td>
                       <td>{commercial.type}</td>
-                      <td>{commercial.statut}</td>
                       <td>{new Date(commercial.dateInscription).toLocaleDateString('fr-FR', {
                         year: 'numeric',
                         month: 'long',
