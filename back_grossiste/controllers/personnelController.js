@@ -185,3 +185,94 @@ exports.deletePersonnel = async (req, res) => {
         res.status(500).json({ message: 'Suppression échouée.' });
     }
 };
+
+exports.getTotalSalaireParPeriode = async (req, res) => {
+    try {
+        const { periode } = req.params; // "journalier", "hebdomadaire", "mensuel", "annuel", "global"
+
+        let dateDebut, dateFin;
+
+        const maintenant = new Date();
+
+        switch (periode) {
+            case 'journalier':
+                dateDebut = new Date(maintenant.setHours(0, 0, 0, 0));
+                dateFin = new Date(maintenant.setHours(23, 59, 59, 999));
+                break;
+
+            case 'hebdomadaire':
+                const premierJourSemaine = maintenant.getDate() - maintenant.getDay(); // Dimanche = 0
+                dateDebut = new Date(maintenant.setDate(premierJourSemaine));
+                dateDebut.setHours(0, 0, 0, 0);
+                dateFin = new Date(maintenant.setDate(premierJourSemaine + 6));
+                dateFin.setHours(23, 59, 59, 999);
+                break;
+
+            case 'mensuel':
+                dateDebut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+                dateFin = new Date(maintenant.getFullYear(), maintenant.getMonth() + 1, 0);
+                dateFin.setHours(23, 59, 59, 999);
+                break;
+
+            case 'annuel':
+                dateDebut = new Date(maintenant.getFullYear(), 0, 1);
+                dateFin = new Date(maintenant.getFullYear(), 11, 31);
+                dateFin.setHours(23, 59, 59, 999);
+                break;
+
+            case 'global':
+                const tousPaiements = await Personnel.aggregate([
+                    { $unwind: "$historiquePaiements" },
+                    {
+                        $group: {
+                            _id: null,
+                            totalSalaire: { $sum: "$historiquePaiements.montant" },
+                            nombreSalaire: { $sum: 1 },
+                            personnelPayes: { $addToSet: "$_id" }
+                        }
+                    }
+                ]);
+
+                return res.status(200).json({
+                    periode: 'global',
+                    totalSalaire: tousPaiements[0]?.totalSalaire || 0,
+                    nombreSalaire: tousPaiements[0]?.nombreSalaire || 0,
+                    nombrePersonnelPayes: tousPaiements[0]?.personnelPayes.length || 0
+                });
+
+            default:
+                return res.status(400).json({ message: 'Période non valide' });
+        }
+
+        const paiements = await Personnel.aggregate([
+            { $unwind: "$historiquePaiements" },
+            {
+                $match: {
+                    "historiquePaiements.datePaiement": {
+                        $gte: dateDebut,
+                        $lte: dateFin
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalSalaire: { $sum: "$historiquePaiements.montant" },
+                    nombreSalaire: { $sum: 1 },
+                    personnelPayes: { $addToSet: "$_id" }
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            periode,
+            totalSalaire: paiements[0]?.totalSalaire || 0,
+            nombreSalaire: paiements[0]?.nombreSalaire || 0,
+            nombrePersonnelPayes: paiements[0]?.personnelPayes.length || 0
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};

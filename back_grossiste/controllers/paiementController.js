@@ -1,7 +1,7 @@
 const Paiement = require("../models/Paiement");
 const Commande = require("../models/Commandes");
 const PaiementCommerciale = require("../models/PaimentCommerciale");
-const { sendNotificationToAdmin } = require('../service/payementService'); // Service de notification
+const { sendNotificationToAdmin } = require('../service/payementService');
 
 
 const mongoose = require("mongoose");
