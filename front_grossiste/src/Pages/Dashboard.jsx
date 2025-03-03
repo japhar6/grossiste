@@ -66,33 +66,43 @@ function Dashboard() {
           </div>
           ) : ( // ✅ Affichage des données une fois chargées
             <>
-              <div className='stats-container'>
-                <div className='stat-card'>
-                  <h1><i className='fa fa-users'></i> {clientCount}</h1>
+             <div className="stats-container">
+                <div className="stat-card bg-success text-light">
+                  <h1>
+                    <i className="fa fa-users"></i> {clientCount}
+                  </h1>
                   <h6>Clients</h6>
                 </div>
-                <div className='stat-card'>
-                  <h1><i className='fa fa-truck'></i> {fournisseursCount}</h1>
+                <div className="stat-card bg-primary">
+                  <h1>
+                    <i className="fa fa-truck"></i> {fournisseursCount}
+                  </h1>
                   <h6>Fournisseurs</h6>
                 </div>
-                <div className='stat-card'>
-                  <h1><i className='fa fa-shopping-cart'></i> {commandeCount}</h1>
+                <div className="stat-card bg-secondary">
+                  <h1>
+                    <i className="fa fa-shopping-cart"></i> {commandeCount}
+                  </h1>
                   <h6>Commandes</h6>
                 </div>
-                <div className='stat-card'>  
-                  <h1><i className='fa fa-box'></i> {produitCount}</h1>
+                <div className="stat-card bg-success">
+                  <h1>
+                    <i className="fa fa-box"></i> {produitCount}
+                  </h1>
                   <h6>Articles</h6>
                 </div>
               </div>
-              <div className='charts-wrapper'>
-                <div className='chart-box'>
+              <div className="charts-wrapper">
+                <div className="chart-box">
                   <LineChart />
                 </div>
-                <div className='chart-box'>
+                <div className="chart-box">
                   <DonutChart />
                 </div>
               </div>
-              <ClientCredi />
+              <div className="p-5 bg-light mt-4">
+                <ClientCredi />
+              </div>
             </>
           )}
         </section>

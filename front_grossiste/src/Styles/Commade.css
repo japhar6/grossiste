@@ -1,8 +1,8 @@
 .mini-star {
   width: 100%;
   padding: 20px;
-  background-color: #F7F7F7; /* Blanc cassé */
-  overflow-y: auto; 
+  background-color: #f7f7f7; /* Blanc cassé */
+  overflow-y: auto;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Ombre légère */
 }
 
@@ -16,7 +16,7 @@
 /* === CONTAINER PRINCIPAL POUR MISE EN PAGE CÔTE À CÔTE === */
 .commande-container {
   display: flex;
-  gap: 20px;  /* Espace entre les deux sections */
+  gap: 20px; /* Espace entre les deux sections */
   flex-wrap: wrap;
   margin-top: 20px;
 }
@@ -24,7 +24,7 @@
 /* === CLIENT INFO (COLONNE GAUCHE) === */
 .client-info {
   flex: 1;
-  max-width: 35%;  /* La colonne client prendra 35% de l'espace */
+  max-width: 35%; /* La colonne client prendra 35% de l'espace */
   background: #ffffff;
   border-radius: 10px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -62,8 +62,9 @@
 }
 
 /* Grand écran : Affichage en ligne */
-.infocli, .produits {
-  flex: 1;  /* Chaque section prend 50% */
+.infocli,
+.produits {
+  flex: 1; /* Chaque section prend 50% */
   min-width: 45%;
   padding: 20px;
 }
@@ -71,7 +72,7 @@
 /* === PRODUITS (COLONNE DROITE) === */
 .produits {
   flex: 2;
-  max-width: 70%; 
+  max-width: 70%;
   padding: 20px;
   background: #ffffff;
   border-radius: 10px;
@@ -108,7 +109,6 @@
 .commande-table td {
   padding: 12px 8px; /* Ajuste l'espacement entre les cellules dans la commande */
 }
-
 
 .product-table th {
   background-color: #007bff;
@@ -197,14 +197,14 @@
   }
 
   .commande-container {
-    flex-direction: column; 
+    flex-direction: column;
   }
 
   .client-info,
   .produits {
-    width: 100vw !important; 
+    width: 100vw !important;
     padding: 30px;
-  }  
+  }
 
   .form-control {
     width: 100%; /* Assurer que les champs prennent toute la largeur */
@@ -218,30 +218,32 @@
 
   .client-info,
   .produits {
-    max-width: 100%;  /* Chaque section prend 100% sur mobile */
+    max-width: 100%; /* Chaque section prend 100% sur mobile */
   }
-/* Ajoute de l'espacement entre les colonnes sur mobile */
-.product-table th,
-.product-table td {
-  padding: 26px 10px; /* Augmente l'espacement entre les cellules */
-}
+  /* Ajoute de l'espacement entre les colonnes sur mobile */
+  .product-table th,
+  .product-table td {
+    padding: 26px 10px; /* Augmente l'espacement entre les cellules */
+  }
 
-.commande-table th,
-.commande-table td {
-  padding: 26px 10px; /* Augmente l'espacement entre les cellules dans la commande */
-}
+  .commande-table th,
+  .commande-table td {
+    padding: 26px 10px; /* Augmente l'espacement entre les cellules dans la commande */
+  }
 
-/* Ajuste la largeur des colonnes pour plus d'espace */
-.product-table,
-.commande-table {
-  width: calc(100% + 40px); /* Augmente la largeur pour ajouter de l'espace pour le défilement */
-  margin-left: -20px; /* Ajuste pour compenser la largeur augmentée */
-}
+  /* Ajuste la largeur des colonnes pour plus d'espace */
+  .product-table,
+  .commande-table {
+    width: calc(
+      100% + 40px
+    ); /* Augmente la largeur pour ajouter de l'espace pour le défilement */
+    margin-left: -20px; /* Ajuste pour compenser la largeur augmentée */
+  }
 
   .tablepro input.form-control {
     width: 80%; /* Réduire la largeur à 80% de leur conteneur */
     max-width: 150px; /* Limiter la largeur maximale */
-    margin: 0 auto; 
+    margin: 0 auto;
     height: 40px; /* Centrer l'input horizontalement */
   }
 
@@ -270,8 +272,8 @@
 }
 
 .input-checkbox-container .checkbox-large {
-  height: 30px;  /* Ajuste la taille du checkbox */
-  width: 20px;   /* Ajuste la largeur du checkbox */
+  height: 30px; /* Ajuste la taille du checkbox */
+  width: 20px; /* Ajuste la largeur du checkbox */
   margin: 0;
   cursor: pointer;
   margin-top: 12px;
@@ -279,15 +281,16 @@
 }
 
 .checkbox-large:checked {
-  background-color: #007bff;  /* Couleur de fond quand coché */
-  border-color: #007bff;      /* Bordure de la couleur */
+  background-color: #007bff; /* Couleur de fond quand coché */
+  border-color: #007bff; /* Bordure de la couleur */
 }
 
 .checkbox-large:checked:before {
   background-color: #ffffff; /* Couleur de l'icône (coché) */
 }
 
-.client-info, .produits {
+.client-info,
+.produits {
   padding: 15px;
 }
 

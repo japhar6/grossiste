@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link,useLocation } from 'react-router-dom';
 import '../Styles/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -23,7 +23,7 @@ function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const [hidden, setHidden] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
+    const location = useLocation(); 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
@@ -126,6 +126,7 @@ function Sidebar() {
                                   to={button.path} 
                                   key={index} 
                                   className="btn btn-light p-3 d-flex align-items-center mb-2 sidebar-item"
+                                  
                               >
                                   <FontAwesomeIcon icon={button.icon} className="text-success fw-bold" />
                                   {!collapsed && <span className="ms-2">{button.text}</span>}

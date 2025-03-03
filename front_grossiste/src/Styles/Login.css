@@ -1,137 +1,135 @@
-@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap");
 
-
-
-.login{
-    height: auto;
-    width: 80%;
-    border-radius: 10px;
-    /* box-shadow: 0 0 5px gray; */
-    background-color: #fbfbfc77;
-
+.login {
+  height: auto;
+  width: 80%;
+  border-radius: 10px;
+  /* box-shadow: 0 0 5px gray; */
+  background-color: #fbfbfc77;
 }
-.mainLogin{
-    height: 100vh;
-    width: 100%;
-    /* background: rgb(247,247,247);
+.mainLogin {
+  height: 100vh;
+  width: 100%;
+  /* background: rgb(247,247,247);
     background: radial-gradient(circle, rgba(247,247,247,1) 0%, rgb(255, 255, 255) 100%); */
 }
-.description{
-    width: 70%;
-    /* margin-right: 5%; */
+.description {
+  width: 70%;
+  /* margin-right: 5%; */
 }
-.description h1{
-    font-size: 4.5rem !important;
-    font-family: 'Kanit', sans-serif !important;
+.description h1 {
+  font-size: 4.5rem !important;
+  font-family: "Kanit", sans-serif !important;
 }
-.formulaire{
-    width: auto;
-    height: auto;
+.formulaire {
+  width: auto;
+  height: auto;
 }
-.form{
-    height: 100%;
-    background-color: white;
-    width: 100%;
-    box-shadow: 0 0 5px rgba(128, 128, 128, 0.628);
-    border-radius: 10px;
+.form {
+  height: 100%;
+  background-color: white;
+  width: 100%;
+  box-shadow: 0 0 5px rgba(128, 128, 128, 0.628);
+  border-radius: 10px;
 }
-.form h1{
-    font-size: 2.2em;
+.form h1 {
+  font-size: 2.2em;
 }
-.button{
-    width: 100% !important;
+.button {
+  width: 100% !important;
 }
 .gradient-text {
-    background: linear-gradient(90deg, #19cd5e, #0d97d7); /* Couleurs du dégradé */
-    -webkit-background-clip: text; /* Applique le dégradé au texte */
-    -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
-    font-weight: bold; /* Épaissir le texte */
-
+  background: linear-gradient(
+    90deg,
+    #19cd5e,
+    #0d97d7
+  ); /* Couleurs du dégradé */
+  -webkit-background-clip: text; /* Applique le dégradé au texte */
+  -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
+  font-weight: bold; /* Épaissir le texte */
 }
-.gradient{
-    background: linear-gradient(90deg, #19cd5e, #544adb); /* Couleurs du dégradé */
-    -webkit-background-clip: text; /* Applique le dégradé au texte */
-    -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
-    font-size: 4rem; /* Taille du texte */
-    font-weight: bold; /* Épaissir le texte */
+.gradient {
+  background: linear-gradient(
+    90deg,
+    #19cd5e,
+    #544adb
+  ); /* Couleurs du dégradé */
+  -webkit-background-clip: text; /* Applique le dégradé au texte */
+  -webkit-text-fill-color: transparent; /* Rend le texte transparent pour afficher le dégradé */
+  font-size: 4rem; /* Taille du texte */
+  font-weight: bold; /* Épaissir le texte */
 }
-  
-
-
 
 /* Resppnsive */
 
-@media (max-width:1180px) {
-    .cont{
-        display: block !important;
-    }
-    .description{
-        width: 100% !important;
-        margin-right: 0% !important;
-    }
-    .formulaire{
-        width: 100% !important;
-        padding: 7% !important;
-        padding-bottom: 12vh !important;
-    }
-    .form{
-        width: 100% !important;
-        height: auto !important;
-        padding: 7% !important;
-    }
-    .login{
-        width: 100%;
-        height: auto !important;
-        padding-top: 30vh !important;
-   
-    }
-    .login {
-        width: 100%; /* Prend toute la largeur */
-        max-width: 600px; /* Limite la largeur pour les grands écrans */
-        padding: 20px; /* Ajoute un remplissage */
-    }
-    .gradient{
-        font-size: 1rem;
-    }
-    .description h1{
-        font-size: 0.1rem !important;
-    }
-    .description p{
-        font-size: 0.8em;
-    }
-    .description button {
-        font-size: 0.8em;
-        width: 100%;
-        margin-top: 0% !important;
-    };
-    .mainLogin{
-        height: auto !important;
-    }
-    
+@media (max-width: 1180px) {
+  .cont {
+    display: block !important;
+  }
+  .description {
+    width: 100% !important;
+    margin-right: 0% !important;
+  }
+  .formulaire {
+    width: 100% !important;
+    padding: 7% !important;
+    padding-bottom: 12vh !important;
+  }
+  .form {
+    width: 100% !important;
+    height: auto !important;
+    padding: 7% !important;
+  }
+  .login {
+    width: 100%;
+    height: auto !important;
+    padding-top: 30vh !important;
+  }
+  .login {
+    width: 100%; /* Prend toute la largeur */
+    max-width: 600px; /* Limite la largeur pour les grands écrans */
+    padding: 20px; /* Ajoute un remplissage */
+  }
+  .gradient {
+    font-size: 1rem;
+  }
+  .description h1 {
+    font-size: 0.1rem !important;
+  }
+  .description p {
+    font-size: 0.8em;
+  }
+  .description button {
+    font-size: 0.8em;
+    width: 100%;
+    margin-top: 0% !important;
+  }
+  .mainLogin {
+    height: auto !important;
+  }
 }
 /* Responsive */
 @media (max-width: 768px) {
-    .description h1 {
-        font-size: 1.8rem; 
-        text-align: center;
-    
-    }
-.login{
+  .description h1 {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  .login {
     margin-top: -200px;
-}
-    .description{
-        top:100px;
-        text-align: center;
-    }
-    .gradient {
-        font-size: 2rem; /* Réduit encore plus pour les très petits écrans */
-    }
+  }
+  .description {
+    top: 100px;
+    text-align: center;
+  }
+  .gradient {
+    font-size: 2rem; /* Réduit encore plus pour les très petits écrans */
+  }
 
-    .description p {
-        font-size: 0.9em; /* Ajuste la taille du texte descriptif */
-    }
+  .description p {
+    font-size: 0.9em; /* Ajuste la taille du texte descriptif */
+  }
 
-    .form button {
-        font-size: 0.9em; /* Ajuste la taille du texte du bouton */
-    }
+  .form button {
+    font-size: 0.9em; /* Ajuste la taille du texte du bouton */
+  }
 }

@@ -4,23 +4,40 @@
   background-color: white; /* Contexte visuel */
   padding: 20px; /* Ajoutez un peu de remplissage pour le confort */
 }
-
-
+.ajouP{
+  width: auto !important;
+}
+.filP{
+  box-shadow: 0 0 6px gray;
+  border-radius: 10px;
+}
 /* Empêcher le débordement sur mobile */
 
-.mini-stat{
-    height: 90vh;
-    width: 70%;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
-    margin-right: 1%;
+.mini-stat {
+  height: 90vh;
+  width: 70%;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 3px rgba(128, 128, 128, 0.294);
+  margin-right: 1%;
+  text-align: left !important;
 }
-.ajoutPersonnel form label{
-    font-size: 0.8em;
+.mini-stat h3{
+  width: 100%;
+  text-align: left;
 }
-.ajoutPersonnel form button{
-    width: 100%;
+.ajoutPersonnel form label {
+  font-size: 0.8em;
+}
+.ajoutPersonnel form button {
+  width: 100%;
+}
+.ajoutPersonnel h6 {
+  font-size: 1em;
+}
+.mini-stat h6 {
+  text-align: left !important;
+  font-size: 1em;
 }
 .role-name {
   font-size: 1.2rem;
@@ -43,9 +60,9 @@
   flex: 1;
   min-width: 180px; /* Assure une bonne taille minimale */
   max-width: 220px; /* Empêche d'être trop large */
-  height: 10vh;
+  height: auto;
   border-radius: 5px;
-  background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%);
+  /* background: linear-gradient(90deg, rgb(81, 173, 173) 50%, rgb(56, 114, 127) 100%); */
   color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
@@ -53,13 +70,13 @@
   cursor: pointer;
 }
 
-
 /* Assure que .mini ne pousse pas ajoutPersonnel hors de l'écran */
 .mini {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   width: 100%;
+  height: auto;
 }
 
 /* Ajoute une largeur minimale pour éviter qu'il ne disparaisse */
@@ -71,76 +88,65 @@
 .perso:hover {
   transform: scale(1.05);
 }
-.mini{
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
-    border-radius: 5px;
+.mini {
+  box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
+  border-radius: 5px;
 }
-.filtrage{
-    box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
-    border-radius: 5px;
+.filtrage {
+  box-shadow: 0 0 3px rgba(128, 128, 128, 0.464);
+  border-radius: 5px;
 }
-
 
 /* Modal centré */
 .custom-modal .modal-dialog {
-    max-width: 500px;
-    margin: 1.75rem auto;
-  }
-  
-  /* Carte de personnel */
-  /* Style général du modal */
-  .user-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .photo-cont {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .user-photo {
-    max-width: 100%;
-    height: auto;
-    border-radius: 50%; /* Pour une photo de profil ronde */
-  }
-  
-  .user-info {
-    width: 100%;
-    padding: 15px;
-    box-sizing: border-box;
-  }
-  
-/* Conteneur de la photo */
-.photo-container {
-  background: #a30b0b ;
-}  
-
-/* Image de profil */
-.user-photo {
-  width:280px !important;
-  height: 250px !important ;
-  object-fit: cover;
-}
-.user-photo {
- 
-  border-radius: 50%;  
-  border: 3px solid #007bff; 
+  max-width: 500px;
+  margin: 1.75rem auto;
 }
 
+/* Carte de personnel */
+/* Style général du modal */
+.user-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-/* Informations de l'utilisateur */
+.photo-cont {
+  width: 100%;
+  justify-content: center;
+}
+
 .user-info {
-  text-align: center;
   width: 100%;
 }
 
-.user-info p {
-  margin: 5px 0;
-  font-size: 16px;
-  color: #333;
+/* Conteneur de la photo */
+.photo-container {
+  background: #a30b0b;
+}
+
+/* Image de profil */
+.user-photo {
+  width: 4cm !important;
+  height: 4cm !important ;
+}
+.user-photo {
+  border-radius: 50%;
+  border: 3px solid #007bff;
+}
+
+/* Informations de l'utilisateur */
+.user-info {
+  width: 100%;
+}
+.user-info p{
+  text-align: left !important;
+  margin-top: -4vh !important;
+  width: 100%;
+}
+.infos h2 {
+  text-align: left !important;
+  font-size: 1em !important;
 }
 
 .user-info strong {
@@ -177,53 +183,62 @@ button.variant-danger {
   background-color: #dc3545;
   color: white;
 }
-
-
+.perso {
+  width: 100% !important; /* Deux cartes par ligne sur mobile */
+  height: auto;
+  background-color: rgb(0, 128, 68) !important;
+} 
 @media (max-width: 768px) {
   .mini-stat {
     display: flex;
     flex-direction: column;
+  }
+  .mini-stat h3{
+    font-size: 0.8em !important;
   }
   .ajoutPersonnel {
     margin-top: 20px; /* Ajoutez un peu d'espace au-dessus pour la visibilité */
     position: relative; /* Changez position en relative si nécessaire */
     width: 100%; /* Assurez-vous qu'il prend toute la largeur */
   }
-
+  .btn_lic{
+    font-size: 0.8em;
+    width: 100% !important;
+  }
   .contenue {
     overflow-y: auto; /* Permet le défilement vertical */
   }
-
-
+  .ajouP{
+    width: 100% !important;
+    font-size: 0.8em !important;
+  }
   .mini,
   .perso-container-bottom {
     flex-wrap: wrap;
     justify-content: center;
   }
-
-  .perso {
-    width: 48%; /* Deux cartes par ligne sur mobile */
-    height: 8vh;
+  .listP{
+    width: 20cm !important;
   }
+  .perso {
+    width: 50% !important; /* Deux cartes par ligne sur mobile */
+    height: auto;
+    background-color: rgb(0, 128, 122) !important;
+  } 
 
   .perso-container-bottom {
     order: 1; /* Assure que les cartes en bas restent bien positionnées */
   }
-  
-  
+
   .consultation td:nth-child(5) {
-    display: table-cell ;
+    display: table-cell;
     text-align: center;
   }
   .consultation th:nth-child(5) {
     display: table-cell !important;
     text-align: center;
   }
-
 }
-
-
-
 
 /* GRAND ÉCRAN - Alignement horizontal */
 @media (min-width: 769px) {
@@ -232,19 +247,17 @@ button.variant-danger {
     justify-content: center; /* Centrage des cartes */
   }
 
-      .tablesa {
-        font-size: 10px; /* Réduit la taille du texte */
-      }
-      .tablesa th,
-      .tablesa td {
-        padding: 2px; /* Réduit l'espace dans les cellules */
-      }
-      .tablesa button {
-        font-size: 8px; /* Réduit la taille des boutons */
-        padding: 2px 5px; /* Réduit l'espace dans les boutons */
-      }
-    
-    
+  .tablesa {
+    font-size: 10px; /* Réduit la taille du texte */
+  }
+  .tablesa th,
+  .tablesa td {
+    padding: 2px; /* Réduit l'espace dans les cellules */
+  }
+  .tablesa button {
+    font-size: 8px; /* Réduit la taille des boutons */
+    padding: 2px 5px; /* Réduit l'espace dans les boutons */
+  }
 
   .perso-container-bottom {
     display: none; /* Masque la section du bas sur grand écran */

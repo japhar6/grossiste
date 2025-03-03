@@ -318,7 +318,7 @@ function ClientsList() {
 
             <Modal show={showModal} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Ajouter un nouveau client</Modal.Title>
+                <Modal.Title className="gradient-text">Ajouter un nouveau client</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
@@ -373,7 +373,7 @@ function ClientsList() {
 
             <Modal show={showEditModal} onHide={handleEditClose}>
     <Modal.Header closeButton>
-        <Modal.Title>Modifier le client</Modal.Title>
+    <Modal.Title className="gradient-text">Modifier le client</Modal.Title>
     </Modal.Header>
     <Modal.Body>
         <Form onSubmit={handleEditSubmit}>
