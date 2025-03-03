@@ -163,12 +163,13 @@ const GestionCommerciaux = () => {
             <table className="table-striped">
               <thead>
                 <tr>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  <th>Téléphone</th>
-                  <th>Statut</th>
-                  <th>Date d'Inscription</th>
-                  <th>Ventes Réalisées</th>
+                <th className='bg-success'>Nom</th>
+                  <th className='bg-success'>Email</th>
+                  <th className='bg-success'>Téléphone</th>
+                  <th className='bg-success'>Statut</th>
+                  <th className='bg-success'>Type</th>
+                  <th className='bg-success'>Date d'Inscription</th>
+                  <th className='bg-success'>Ventes Réalisées</th>
                 </tr>
               </thead>
               <tbody>

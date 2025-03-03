@@ -119,7 +119,7 @@ function ChiffreAffaire() {
                             <div className="card text-center shadow-sm">
                                 <div className="card-body">
                                     <h5 className="card-title">💵 Total Paiements</h5>
-                                    <p className="display-6 text-success fw-bold">{formatCurrency(chiffreAffaire.totalPaiements)} Ariary</p>
+                                    <p className="display-6 text-success fw-bold">{formatCurrency(chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial)} Ariary</p>
                                 </div>
                             </div>
                         </div>
@@ -136,10 +136,10 @@ function ChiffreAffaire() {
                         <div className="col-md-4">
                             <div className="card text-center shadow-sm">
                                 <div className="card-body">
-                                    <h5 className="card-title">📉 Bénéfice Net</h5>
+                                    <h5 className="card-title">📉 Chiffre d'affaire</h5>
                                     <p className="display-6 text-primary fw-bold">
-                                        {formatCurrency(chiffreAffaire.totalPaiements -
-                                            (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire))} Ariary
+                                        {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
+                                        (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire))} Ariary
                                     </p>
                                 </div>
                             </div>
@@ -178,6 +178,16 @@ function ChiffreAffaire() {
                                 <div className="card-body">
                                     <h5 className="card-title">📦 Nombre d'Achats Effectués</h5>
                                     <p className="display-6 text-danger fw-bold">{chiffreAffaire.nombreAchats}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-4 mt-3">
+                            <div className="card text-center shadow-sm">
+                                <div className="card-body">
+                                    <h5 className="card-title">📦 Bénéfice net</h5>
+                                    <p className="display-6 text-success fw-bold">{formatCurrency((chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire)-
+                                    (chiffreAffaire.totalAchats)
+                                )}</p>
                                 </div>
                             </div>
                         </div>
