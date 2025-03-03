@@ -22,7 +22,6 @@ router.get('/totals/:periode', paiementController.getTotalPaiementsParPeriode);
 
 router.put("/payer/:referenceFacture", paiementController.mettreAJourPaiement);
 router.get("/credit", paiementController.getPaiementsCredit);
-
-
+router.get("/prod", paiementController.getProduitsLesPlusVendus);
 router.get('/check-payments-due', paiementController.checkPaymentsDue);
 module.exports = router;

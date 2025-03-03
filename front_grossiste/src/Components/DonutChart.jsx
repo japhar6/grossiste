@@ -1,7 +1,31 @@
-import 'react';
+import React, { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
+import axios from "../api/axios"; // Assure-toi que le chemin est correct
 
 const DonutChart = () => {
+  const [data, setData] = useState({
+    produitsLesPlusVendus: [],
+    autresProduits: []
+  });
+
+  useEffect(() => {
+    // Effectuer la requête pour obtenir les produits les plus vendus et les autres
+    axios.get('/api/paiement/prod')
+      .then(response => {
+        const { produitsLesPlusVendus, autresProduits } = response.data;
+
+        // Mettre à jour l'état avec les données reçues
+        setData({
+          produitsLesPlusVendus,
+          autresProduits
+        });
+      })
+      .catch(error => {
+        console.error("Erreur lors de la récupération des produits les plus vendus:", error);
+      });
+  }, []);
+
+  // Préparer les données pour le graphique
   const options = {
     chart: {
       type: 'donut',
@@ -9,8 +33,8 @@ const DonutChart = () => {
         show: false, // Supprime la barre d'outils
       },
     },
-    labels: ['Produit A', 'Produit B', 'Produit C', 'Produit D'], // Catégories statiques
     legend: {
+      show: true, // Assurer que la légende est visible
       position: 'bottom',
       labels: {
         useSeriesColors: true,
@@ -41,14 +65,14 @@ const DonutChart = () => {
         colors: ['#fff'], // Couleur du texte des labels à l'intérieur du donut
       },
     },
-    colors: ['#1E90FF', '#FFB6B6', '#98FB98', '#D8B2D1'], // Couleurs douces et distinctes
+    colors: ['#1E90FF', '#FF6347', '#FFD700', '#32CD32', '#8A2BE2', '#FF1493'], // Couleurs modifiées pour plus de diversité
     fill: {
       type: 'gradient',
       gradient: {
         shade: 'dark',
         type: 'linear',
         shadeIntensity: 0.5,
-        gradientToColors: ['#1E90FF', '#FFB6B6', '#98FB98', '#D8B2D1'], // Dégradé subtil entre ces couleurs
+        gradientToColors: ['#1E90FF', '#FF6347', '#FFD700', '#32CD32', '#8A2BE2'], // Dégradé subtil entre ces couleurs
         inverseColors: false,
         opacityFrom: 1,
         opacityTo: 1,
@@ -70,9 +94,26 @@ const DonutChart = () => {
     },
   };
 
-  const series = [40, 25, 20, 15]; // Données statiques en pourcentage
+  // Préparer les séries et les labels
+  const series = [
+    ...data.produitsLesPlusVendus.map(produit => produit.totalVendu),
+    ...data.autresProduits.map(produit => produit.totalVendu)
+  ];
 
-  return <Chart options={options} series={series} type="donut" height="400" />;
+  const labels = [
+    ...data.produitsLesPlusVendus.map(produit => produit.nom),
+    'Autres Produits'
+  ];
+
+  return (
+    <div>
+      {data.produitsLesPlusVendus.length > 0 ? (
+        <Chart options={{...options, labels}} series={series} type="donut" height="400" />
+      ) : (
+        <p>Chargement des données...</p>
+      )}
+    </div>
+  );
 };
 
 export default DonutChart;

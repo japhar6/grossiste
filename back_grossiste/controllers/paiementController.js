@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params; // ID de la commande (ou référence)
-        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit } = req.body; 
+        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit } = req.body;
 
         // Vérifier si l'ID est valide
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -42,20 +42,20 @@ exports.validerpayement = async (req, res) => {
 
         // Déterminer le statut du paiement
         let statutPaiement = modePaiement === "a credit" ? "non payé" : "payé complet";
-      
-     
 
-            commande.statut = "payé";
-            await commande.save();
-     
+
+
+        commande.statut = "payé";
+        await commande.save();
+
         // Créer le paiement
         const paiement = new Paiement({
-            commandeId: commande._id, 
-            montantPaye: montantPaye, 
+            commandeId: commande._id,
+            montantPaye: montantPaye,
             totalPaiement: commande.totalGeneral,
             statut: statutPaiement,
-            referenceFacture: commande.referenceFacture, 
-            referencePaiement: referencePaiement || null, 
+            referenceFacture: commande.referenceFacture,
+            referencePaiement: referencePaiement || null,
             idCaissier: idCaissier,
             modePaiement: modePaiement,
             dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null,
@@ -93,29 +93,29 @@ exports.validerpayement = async (req, res) => {
 // Vérification des paiements à crédit et envoi de notifications
 exports.checkPaymentsDue = async (req, res) => {
     try {
-      // Récupérer tous les paiements à crédit
-      const payments = await Payment.find({ modePaiement: 'à crédit' });
-      const today = moment(); // Date actuelle
-  
-      // Parcours des paiements à crédit
-      payments.forEach(payment => {
-        const dateLimite = moment(payment.dateLimiteCredit); // Date limite du paiement
-  
-        // Si la date limite est dépassée
-        if (dateLimite.isBefore(today)) {
-          // Envoie la notification à l'admin
-          sendNotificationToAdmin(payment);
-        }
-      });
-  
-      // Répondre que le processus a été effectué
-      res.status(200).json({ message: 'Vérification des paiements effectuée avec succès.' });
+        // Récupérer tous les paiements à crédit
+        const payments = await Payment.find({ modePaiement: 'à crédit' });
+        const today = moment(); // Date actuelle
+
+        // Parcours des paiements à crédit
+        payments.forEach(payment => {
+            const dateLimite = moment(payment.dateLimiteCredit); // Date limite du paiement
+
+            // Si la date limite est dépassée
+            if (dateLimite.isBefore(today)) {
+                // Envoie la notification à l'admin
+                sendNotificationToAdmin(payment);
+            }
+        });
+
+        // Répondre que le processus a été effectué
+        res.status(200).json({ message: 'Vérification des paiements effectuée avec succès.' });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Une erreur est survenue lors de la vérification des paiements.' });
+        console.error(error);
+        res.status(500).json({ message: 'Une erreur est survenue lors de la vérification des paiements.' });
     }
-  };
-  
+};
+
 
 
 // Récupérer tous les paiements des client 
@@ -129,20 +129,20 @@ exports.getPaiements = async (req, res) => {
                 { path: 'commercialId', select: 'nom' }
             ]
         }).populate({
-            path:'idCaissier',select:'nom'
+            path: 'idCaissier', select: 'nom'
         });
 
         // Récupérer les paiements commerciaux
         const paiementsCommerciaux = await PaiementCommerciale.find()
-        .populate({
-            path: 'commandeId',
-            populate: [
-                { path: 'clientId', select: 'nom' },
-                { path: 'commercialId', select: 'nom' }
-            ]
-        }).populate({
-            path:'idCaissier',select:'nom'
-        });
+            .populate({
+                path: 'commandeId',
+                populate: [
+                    { path: 'clientId', select: 'nom' },
+                    { path: 'commercialId', select: 'nom' }
+                ]
+            }).populate({
+                path: 'idCaissier', select: 'nom'
+            });
 
         // Combiner les deux résultats
         const paiements = {
@@ -250,7 +250,7 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     { path: 'clientId', select: 'nom' },
                     { path: 'commercialId', select: 'nom' },
                     { path: 'produits.produit', select: 'nom prixUnitaire' },
-                 
+
                 ]
             });
 
@@ -265,8 +265,8 @@ exports.getPaiementsParCaissier = async (req, res) => {
                 })) || [],
                 modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
-                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire') 
-                    ? paiement.referencePaiement 
+                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire')
+                    ? paiement.referencePaiement
                     : null
             })),
             commerciaux: paiementsCommerciaux.map(paiement => ({
@@ -278,8 +278,8 @@ exports.getPaiementsParCaissier = async (req, res) => {
                 })) || [],
                 modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
-                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire') 
-                    ? paiement.referencePaiement 
+                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire')
+                    ? paiement.referencePaiement
                     : null
             }))
         };
@@ -333,7 +333,7 @@ exports.getPaiementAvecCommande = async (req, res) => {
                     { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
                     { path: 'commercialId', select: 'nom' }, // Récupérer le nom du commercial
                     { path: 'produits.produit', select: 'nom' }, // Nom et prix unitaire des produits
-                    { path: 'modePaiement', select: 'modePaiement' } 
+                    { path: 'modePaiement', select: 'modePaiement' }
                 ]
             });
 
@@ -345,7 +345,7 @@ exports.getPaiementAvecCommande = async (req, res) => {
                     { path: 'clientId', select: 'nom' }, // Récupérer le nom du client
                     { path: 'commercialId', select: 'nom' }, // Récupérer le nom du commercial
                     { path: 'produits.produit', select: 'nom' }, // Nom et prix unitaire des produits
-                    { path: 'modePaiement', select: 'modePaiement' } 
+                    { path: 'modePaiement', select: 'modePaiement' }
                 ]
             });
 
@@ -401,10 +401,10 @@ exports.getPaiementsCredit = async (req, res) => {
             .populate({
                 path: "commandeId",
                 populate: [
-                    { path: "produits.produit", model: "Produit" }, 
-                    { path: "clientId", select: "nom" }, 
+                    { path: "produits.produit", model: "Produit" },
+                    { path: "clientId", select: "nom" },
                     { path: "commercialId", select: "nom" }
-                    
+
                 ]
             })
             .exec();
@@ -416,7 +416,7 @@ exports.getPaiementsCredit = async (req, res) => {
 
         // Répondre avec les paiements trouvés
         return res.status(200).json(paiements);
-        
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -460,7 +460,7 @@ exports.mettreAJourPaiement = async (req, res) => {
         // Sauvegarder le paiement mis à jour
         await paiement.save();
 
-       
+
 
         // Répondre avec les nouvelles informations du paiement
         return res.status(200).json({
@@ -582,6 +582,67 @@ exports.getTotalPaiementsParPeriode = async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 };
+
+exports.getProduitsLesPlusVendus = async (req, res) => {
+    try {
+        // Récupérer les paiements clients
+        const paiementsClients = await Paiement.find().populate({
+            path: 'commandeId',
+            populate: { path: 'produits.produit', select: 'nom' } // Correction ici
+        });
+
+        // Récupérer les paiements commerciaux
+        const paiementsCommerciaux = await PaiementCommerciale.find().populate({
+            path: 'commandeId',
+            populate: { path: 'produits.produit', select: 'nom' } // Correction ici aussi
+        });
+
+        // Fusionner les produits des deux types de paiements
+        const tousLesProduits = [
+            ...paiementsClients.flatMap(p => p.commandeId?.produits || []),
+            ...paiementsCommerciaux.flatMap(p => p.commandeId?.produits || []),
+        ];
+
+        // Filtrer uniquement les produits vendus
+        const produitsVendusCommerciaux = tousLesProduits.filter(p => p.quantite > 0);
+
+        // Regrouper par produit et compter les quantités vendues
+        const produitsVendus = produitsVendusCommerciaux.reduce((acc, produit) => {
+            const { produit: produitInfo, quantite } = produit;
+            if (!acc[produitInfo._id]) {
+                acc[produitInfo._id] = {
+                    nom: produitInfo.nom,
+                    totalVendu: 0
+                };
+            }
+            acc[produitInfo._id].totalVendu += quantite;
+            return acc;
+        }, {});
+
+        // Transformer en tableau et trier par nombre de ventes
+        const produitsTries = Object.values(produitsVendus).sort((a, b) => b.totalVendu - a.totalVendu);
+
+        // Récupérer les 5 produits les plus vendus
+        const produitsLesPlusVendus = produitsTries.slice(0, 5);
+
+        // Récupérer les autres produits (tout ce qui n'est pas dans les 5 premiers)
+        const autresProduits = produitsTries.slice(5).map(produit => ({
+            nom: produit.nom,
+            totalVendu: produit.totalVendu
+        }));
+
+        // Ajouter les autres produits dans la réponse
+        res.status(200).json({
+            produitsLesPlusVendus,
+            autresProduits
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des produits les plus vendus:", error);
+        res.status(500).json({ message: "Erreur serveur" });
+    }
+};
+
+
 
 
 
