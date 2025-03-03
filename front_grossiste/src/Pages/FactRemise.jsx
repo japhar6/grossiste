@@ -14,7 +14,7 @@ function FactureRem() {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
 
-    // Essayez de récupérer et de traiter les données, avec un contrôle d'erreur.
+   
     try {
       const commandeData = queryParams.get("commande")
         ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
@@ -37,21 +37,22 @@ function FactureRem() {
     }
   }, []);
   
-  useEffect(() => {
-    if (commande && client) {
-      setTimeout(() => {
-        window.print(); // Imprime après 2 secondes
+   useEffect(() => {
+      if (commande) {
         setTimeout(() => {
-          window.close(); // Ferme l'onglet après l'impression
-        }, 1000); // 1 seconde après l'impression
-      }, 2000); // Attente de 2 secondes avant impression
-    }
-  }, [commande, client]);
-  // Vérifier si les données sont chargées avant de les utiliser
-  if (!commande || !client) {
-    return <div>Chargement...</div>; // Affiche un message de chargement jusqu'à ce que les données soient disponibles
-  }
+          window.print(); // Imprime après 2 secondes
+          setTimeout(() => {
+            window.close(); // Ferme l'onglet après l'impression
+          }, 1000); // 1 seconde après impression
+        }, 2000);
+      }
+    }, [commande]);
   
+    if (!commande) {
+      return <div>Chargement...</div>;
+    }
+  
+    const clientOuCommercial = client || commercial;
 
   return (
     <div className="facture-container">
@@ -71,10 +72,10 @@ function FactureRem() {
             <strong>Date :</strong> {new Date().toLocaleDateString()}
           </p>
           <p>
-            <strong>Client :</strong> {client?.nom || " Non spécifié"}
+          <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
           </p>
           <p>
-            <strong>Adresse :</strong> {client?.adresse || " Non spécifié"}
+            <strong>Adresse :</strong>    {clientOuCommercial?.adresse || "..................."}
           </p>
           <p>
             <strong>Mode de paiement :</strong> {modePaiement || "............."}
