@@ -134,11 +134,11 @@ function VisualiserInventaires() {
                 <table className="table table-striped table-bordered">
                   <thead>
                     <tr>
-                      <th>Entrepot</th>
+                    <th className="bg-success">Entrepot</th>
                       <th>Produit</th>
-                      <th>Quantité Initiale</th>
+                      <th className="bg-success"> Quantité Initiale</th>
                       <th>Quantité Finale</th>
-                      <th>Raison d'Ajustement</th>
+                      <th className="bg-success">Raison d'Ajustement</th>
                       <th>Date de Création</th>
                     </tr>
                   </thead>

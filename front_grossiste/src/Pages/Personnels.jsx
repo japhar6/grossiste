@@ -239,11 +239,13 @@ function Personnels() {
             <div className="mini-stat p-3">
               <h6 className='alert alert-success'>
                 <i className='fa fa-line-chart'></i> Mini-statistique de vos personnels</h6>
-              <div className='center bg-light p-3 mini'>
+                <div className="center bg-light p-3 mini">
                 {roleCounts.map((role, index) => (
-                  <div key={index} className="perso m-2">
+                  <div key={index} className="perso m-2 p-3">
                     <div className="role-name font-weight-bold">{role._id}</div>
-                    <div className="role-count">{role.count} Personnel{role.count > 1 ? "s" : ""}</div>
+                    <div className="role-count">
+                      {role.count} Personnel{role.count > 1 ? "s" : ""}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -275,15 +277,21 @@ function Personnels() {
                 </form>
               </div>
               <div>
-                <button
+              <button
                   className="btn_lic m-2"
                   onClick={() => setShowLicencies(!showLicencies)}
                 >
-                  {showLicencies ? "Afficher les employés actifs" : "Afficher les licenciés"}
+                  <i className="fa fa-list"> </i>
+                  {showLicencies
+                    ? " Afficher les employés actifs"
+                    : " Afficher les licenciés"}
                 </button>
 
-                <Link to="/PersonnelsList"><button className="btn_lic w-50 ">Listes des personnels</button></Link>
-              </div>
+                <Link to="/PersonnelsList">
+                  <button className="btn_lic btn-success" style={{width:'auto'}}>
+                    <i className="fa fa-list"></i> Listes des personnels
+                  </button>
+                </Link>      </div>
 
               {loadingList ? (
               <div className="loading-container">
@@ -339,13 +347,23 @@ function Personnels() {
               <form onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="bg-light p-4">
                   <div className="form-floating mb-3">
-
-                    <input type="text" className="form-control" required value={nom} onChange={(e) => setNom(e.target.value)} />
+                    <input
+                      type="text"
+                      className="form-control"
+                      required
+                      value={nom}
+                      onChange={(e) => setNom(e.target.value)}
+                    />
                     <label htmlFor="floatingInput">Nom complet</label>
-
                   </div>
                   <div className="form-floating mb-3">
-                    <input type="email" className="form-control" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <input
+                      type="email"
+                      className="form-control"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                     <label htmlFor="floatingInput">Email</label>
                   </div>
 
@@ -359,49 +377,75 @@ function Personnels() {
                         let value = e.target.value.replace(/\D/g, "");
                         value = value.slice(0, 12);
 
-
                         value = value.replace(/(\d{3})(?=\d)/g, "$1 ");
 
                         setnumero_cin(value);
                       }}
-
                     />
                     <label htmlFor="floatingInput">Numero_cin</label>
                   </div>
 
                   <div className=" mb-3">
                     <label>Postes</label>
-                    <select className="form-control" value={role} onChange={(e) => setRole(e.target.value)}>
+                    <select
+                      className="form-control"
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                    >
                       <option value="">Sélectionner un poste</option>
                       <option value="magasinier">Magasinier</option>
                       <option value="caissier">Caissier</option>
                       <option value="vendeur">Vendeur (Réception)</option>
-                      <option value="gestion_prix">Contrôleur de produit</option>
+                      <option value="gestion_prix">
+                        Contrôleur de produit
+                      </option>
                     </select>
                   </div>
                   <div className="form-floating  mb-3">
-
-                    <input type="password" className="form-control" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <input
+                      type="password"
+                      className="form-control"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                     <label htmlFor="floatingInput">Mot de passe</label>
                   </div>
                   <div className="form-floating  mb-3">
-                    <input type="password" className="form-control" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                    <label htmlFor="floatingInput">Confirmer le mot de passe</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <label htmlFor="floatingInput">
+                      Confirmer le mot de passe
+                    </label>
                   </div>
                   <div className="mb-3">
                     <label>Photo</label>
-                    <input type="file" className="form-control" accept="image/*"
-                      onChange={(e) => setPhoto(e.target.files[0])} />
-
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="image/*"
+                      onChange={(e) => setPhoto(e.target.files[0])}
+                    />
                   </div>
-                  <button className="btn1 btn1-success" type="submit"disabled={loadingAction}> 
+                  <button
+                    className="btn1 btn1-success"
+                    type="submit"
+                    disabled={loadingAction}
+                  >
                     {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
-    <span> Enregistrer  </span>
-  )}</button>
+                      <>
+                        <span className="spinner-border spinner-border-sm"></span>{" "}
+                        Chargement...
+                      </>
+                    ) : (
+                      <span> Enregistrer </span>
+                    )}
+                  </button>
                 </div>
               </form>
             </div>
@@ -410,47 +454,66 @@ function Personnels() {
       </main>
 
       {/* Modal Détails de l'utilisateur */}
-      <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        centered
-      >
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Détails de l'utilisateur</Modal.Title>
+          <Modal.Title className="gradient-text">Détails de l'utilisateur</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedUser && (
             <div className="user-card">
-              <div className="photo-cont">
-                <img src={`http://localhost:5000${selectedUser.photo}`} alt="Photo de profil" className="user-photo" />
-            
+              <div className="photo-cont mb-5 center">
+                <img
+                  src={`http://localhost:5000${selectedUser.photo}`}
+                  alt="Photo de profil"
+                  className="user-photo"
+                />
               </div>
               <div className="user-info">
-                <p><strong>Nom:</strong> {selectedUser.nom}</p>
-                <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Poste:</strong> {selectedUser.role}</p>
-                <p><strong>Numero CIN:</strong> {selectedUser.numero_cin}</p>
-                <p><strong>Embauché le:</strong> {selectedUser.createdAt}</p>
+                <p className="alert alert-light">
+                  <strong>Nom:</strong> {selectedUser.nom}
+                </p>
+                <p className="alert alert-light">
+                  <strong>Email:</strong> {selectedUser.email}
+                </p>
+                <p className="alert alert-light">
+                  <strong>Poste:</strong> {selectedUser.role}
+                </p>
+                <p className="alert alert-light">
+                  <strong>Numero CIN:</strong> {selectedUser.numero_cin}
+                </p>
+                <p className="alert alert-light">
+                  <strong>Embauché le:</strong> {selectedUser.createdAt}
+                </p>
 
                 <div className="d-flex justify-content-between w-100">
                   {selectedUser.status !== "licencié" && (
-                    <Button variant="warning" onClick={handleEdit} className="mt-3 mr-2">
+                    <Button
+                      variant="warning"
+                      onClick={handleEdit}
+                      className="mt-3 mr-2"
+                    >
                       <i className="fa fa-edit"></i> Modifier
                     </Button>
                   )}
 
-                  {selectedUser.role !== "admin" && selectedUser.status?.trim().toLowerCase() !== "licencié" && (
-                    <Button variant="danger" onClick={handleLicencier} className="mt-3 ml-2">
-                      <i className="fa fa-trash"></i> Licencier
-                    </Button>
-                  )}
+                  {selectedUser.role !== "admin" &&
+                    selectedUser.status?.trim().toLowerCase() !==
+                      "licencié" && (
+                      <Button
+                        variant="danger"
+                        onClick={handleLicencier}
+                        className="mt-3 ml-2"
+                      >
+                        <i className="fa fa-trash"></i> Licencier
+                      </Button>
+                    )}
                 </div>
               </div>
             </div>
           )}
         </Modal.Body>
-
       </Modal>
+
 
       {/* Modal Modification de l'utilisateur */}
       <Modal
@@ -459,7 +522,7 @@ function Personnels() {
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Modifier l'employer</Modal.Title>
+          <Modal.Title className="gradient-text">Modifier l'employer</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedUser && (
@@ -501,7 +564,6 @@ function Personnels() {
                 />
               </div>
 
-
               <div className="mb-3">
                 <label>Photo</label>
                 <input
@@ -526,17 +588,23 @@ function Personnels() {
                   </select>
                 </div>
               )}
-              <button className="btn btn-success" type="submit" disabled={loadingAction}>
-              {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (  <span> Sauvegarder les modifications  </span>
-  )}</button>
+              <button
+                className="btn btn-success"
+                type="submit"
+                disabled={loadingAction}
+              >
+                {loadingAction ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm"></span>{" "}
+                    Chargement...
+                  </>
+                ) : (
+                  <span> Sauvegarder les modifications </span>
+                )}
+              </button>
             </form>
           )}
         </Modal.Body>
-
       </Modal>
     </>
   );

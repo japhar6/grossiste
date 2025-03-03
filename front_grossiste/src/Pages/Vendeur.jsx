@@ -24,9 +24,9 @@ function PriseCommande() {
     const audio = new Audio(Sound);
     audio.play();
   };
- const [loadingEntrepots, setLoadingEntrepots] = useState(false);
-    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
-    const [loadingAction, setLoadingAction] = useState(false);
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   // Définir l'état pour les produits sélectionnés
   const [commande, setCommande] = useState([]);
@@ -118,35 +118,35 @@ function PriseCommande() {
     try {
       // Vérification des données envoyées
       console.log("Données envoyées :", newPerson);
-  
+
       let response; // Déclare la variable response ici pour l'utiliser plus tard
-  
+
       // Validation des champs selon le type (client ou commercial)
       if (type === "client") {
         if (!newPerson.nom) {
           Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
           return;
         }
-  
+
         // Envoi avec FormData pour le client
         const formData = new FormData();
         for (const key in newPerson) {
           formData.append(key, newPerson[key]);
         }
-  
+
         // Afficher les données dans le formData pour vérifier
         for (const [key, value] of formData.entries()) {
           console.log(key, value);
         }
-  
+
         const url = "/api/client/";
-  
+
         response = await axios.post(url, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         });
-  
+
         if (response.data) {
           Swal.fire({
             icon: "success",
@@ -166,10 +166,10 @@ function PriseCommande() {
           Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
           return;
         }
-  
+
         // Envoi avec JSON pour le commercial
         const url = "/api/comercial/";
-  
+
         response = await axios.post(url, newPerson, {
           headers: {
             'Content-Type': 'application/json',
@@ -191,12 +191,12 @@ function PriseCommande() {
           setCommerciaux(updatedList.data);
         }
       }
-  
+
       if (response && response.data) {
         setSelectedPerson(response.data._id);
         setIsNew(false);
       }
-  
+
       // Reset les champs de saisie
       setNewPerson({
         nom: '',
@@ -205,9 +205,9 @@ function PriseCommande() {
         email: '',
         type: '',
       });
-  
+
       setSelectedPerson(null);
-  
+
     } catch (error) {
       console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
       if (error.response && error.response.data) {
@@ -219,9 +219,9 @@ function PriseCommande() {
       setLoadingAction(false); // Assurez-vous que le chargement soit désactivé dans tous les cas (réussi ou en échec)
     }
   };
-  
-  
-  
+
+
+
 
   const Annuler = async () => {
 
@@ -354,37 +354,37 @@ function PriseCommande() {
             if (quantiteConvertie > quantiteDisponibleSecondaire) {
               // Affichage de l'alerte Swal
               Swal.fire({
-                  title: 'Quantité Insuffisante',
-                  text: `La quantité maximale disponible est de ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
-                  icon: 'warning',
-                  confirmButtonText: 'OK',
+                title: 'Quantité Insuffisante',
+                text: `La quantité maximale disponible est de ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
+                icon: 'warning',
+                confirmButtonText: 'OK',
               });
-          
+
               // Construction du message de notification
               const messageNotif = `⚠️ Le produit "${produit.nom}" est insuffisant dans l'entrepôt principal pour une commande. 
               Il manque ${quantiteConvertie - quantiteDisponible} ${uniteDisponible}. 
               Un transfert depuis l'entrepôt "${responseSecondaire.data.entrepotNom}" est nécessaire, ou un achat doit être envisagé.`;
-          
+
               // Préparation des données pour l'API de notification
               const notificationData = {
-                  message: messageNotif
-                  
+                message: messageNotif
+
               };
-          
+
               // Envoi de la notification à l'admin via ton API
               axios.post('/api/notif/alert-notifications', notificationData)
-                  .then(response => {
-                      console.log("Notification envoyée avec succès :", response.data);
-                      toast.warn(`⚠️ Rupture : Besoin de transfert/achat pour ${produit.nom}.`);
-                  })
-                  .catch(error => {
-                      console.error("Erreur lors de l'envoi de la notification :", error.response?.data || error);
-                      toast.error('Erreur lors de l\'envoi de la notification.');
-                  });
-          
+                .then(response => {
+                  console.log("Notification envoyée avec succès :", response.data);
+                  toast.warn(`⚠️ Rupture : Besoin de transfert/achat pour ${produit.nom}.`);
+                })
+                .catch(error => {
+                  console.error("Erreur lors de l'envoi de la notification :", error.response?.data || error);
+                  toast.error('Erreur lors de l\'envoi de la notification.');
+                });
+
               return; // On arrête ici après l'alerte et l'envoi de la notification
-          }
-           else {
+            }
+            else {
               Swal.fire({
                 title: 'Quantité suffisante',
                 text: `Disponible dans (${responseSecondaire.data.entrepotNom})`,
@@ -487,7 +487,7 @@ function PriseCommande() {
     try {
       const vendeurId = localStorage.getItem("userid");
       const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
-  
+
       if (!selectedPersonId) {
         Swal.fire({
           title: "Erreur",
@@ -497,12 +497,12 @@ function PriseCommande() {
         });
         return;
       }
-  
+
       const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
       const commercialId = type === "commercial" ? selectedPersonId : null;
       const typeClient = type === "client" ? "Client" : "Commercial";
       const statut = "en cours"; // Le statut initial de la commande
-  
+
       if (!vendeurId) {
         Swal.fire({
           title: "Erreur",
@@ -513,14 +513,14 @@ function PriseCommande() {
         setLoadingAction(false); // Mettre ici pour garantir que l'état de chargement s'arrête en cas d'erreur
         return;
       }
-  
+
       // Crée les produits à partir de l'état de commande
       const produitsCommande = commande.map((item) => ({
         produit: item._id,
         quantite: item.quantite,
         uniteChoisie: item.uniteChoisie || "Unité par défaut", // Si une unité est choisie, sinon "Unité par défaut"
       }));
-  
+
       // Préparer les données de la commande
       const commandeData = {
         typeClient,
@@ -531,11 +531,11 @@ function PriseCommande() {
         statut,
         entrepotId,
       };
-  
+
       // Envoie la requête API pour créer la commande
       const response = await axios.post("/api/commandes/ajouter", commandeData);
       console.log("Commande créée avec succès:", response.data);
-  
+
       // Affichage d'une notification de succès
       Swal.fire({
         title: "Commande créée avec succès",
@@ -545,10 +545,10 @@ function PriseCommande() {
       }).then(() => {
         window.location.reload(); // Recharger la page après avoir cliqué sur OK
       });
-  
+
       playSound(); // Assurez-vous que cette fonction est définie et fonctionne comme prévu
       setCommande([]); // Réinitialisation de la commande après la création
-  
+
     } catch (error) {
       console.error("Erreur lors de la création de la commande:", error);
       Swal.fire({
@@ -561,7 +561,7 @@ function PriseCommande() {
       setLoadingAction(false); // Garantie d'arrêter le chargement même en cas d'erreur
     }
   };
-  
+
 
   const getClientNom = (id) => {
     const client = clients.find(client => client._id === id);
@@ -596,8 +596,8 @@ function PriseCommande() {
         headers: {
           "Content-Type": "application/json"
         }
-      });   setLoadingAction(false);
-   
+      }); setLoadingAction(false);
+
       console.log("Réponse de l'API:", response.data);
       alert("Demande de remise envoyée !");
     } catch (error) {
@@ -663,15 +663,15 @@ function PriseCommande() {
                   )}
                 </div>
                 {type === "client" && selectedPerson && selectedPerson !== "new" && (
-                  <button className="btn btn-success" onClick={handleDemandeRemise}disabled={loadingAction}>
-                   {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
-     "Envoyer demande"
-  )}
-</button>
+                  <button className="btn btn-success" onClick={handleDemandeRemise} disabled={loadingAction}>
+                    {loadingAction ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm"></span> Chargement...
+                      </>
+                    ) : (
+                      "Envoyer demande"
+                    )}
+                  </button>
                 )}
 
 
@@ -790,13 +790,13 @@ function PriseCommande() {
                             onClick={creerPersonne}
                             disabled={loadingAction}
                           >
-                     {loadingAction ? (
-  <>
-    <span className="spinner-border spinner-border-sm"></span> Chargement...
-  </>
-) : (
-  `Créer ${type === "client" ? "Client" : "Commercial"}`
-)}
+                            {loadingAction ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm"></span> Chargement...
+                              </>
+                            ) : (
+                              `Créer ${type === "client" ? "Client" : "Commercial"}`
+                            )}
 
                           </button>
                           <button
@@ -857,12 +857,12 @@ function PriseCommande() {
                   <table className="tablepro mt-2">
                     <thead>
                       <tr>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>Prix</th>
-                        <th>Quantité</th>
-                        <th>Unité</th>
-                        <th>Ajouter</th>
+                      <th className="bg-success text-light p-3">Nom</th>
+                        <th className="bg-success text-light p-3">Type</th>
+                        <th className="bg-success text-light p-3">Prix</th>
+                        <th className="bg-success text-light p-3">Quantité</th>
+                        <th className="bg-success text-light p-3">Unité</th>
+                        <th className="bg-success text-light p-3">Ajouter</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -871,7 +871,7 @@ function PriseCommande() {
 
                         produitsFiltres.length === 0 ? (
                           <tr>
-                            <td colSpan="6" className="text-center">Aucun produit trouvé</td>
+                            <td colSpan="6" className="text-center" style={{marginTop:'10px !important'}}>Aucun produit trouvé</td>
                           </tr>
                         ) : (
                           produitsFiltres.map((p) => (
@@ -963,7 +963,7 @@ function PriseCommande() {
                       ) : (
                         // Si searchTerm est vide, ne rien afficher
                         <tr>
-                          <td colSpan="6" className="text-center">Veuillez entrer un terme de recherche</td>
+                          <td colSpan="6" className="text-center" style={{marginTop:'10px !important'}}>Veuillez entrer un terme de recherche</td>
                         </tr>
                       )}
                     </tbody>
@@ -974,18 +974,18 @@ function PriseCommande() {
 
             {/* Récapitulatif de la Commande */}
             <div className="commande mt-4">
-              <h6><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+            <h6 className="alert alert-info"><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
 
               <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                 <table className="table table-bordered mt-2">
                   <thead>
                     <tr>
-                      <th>Nom</th>
-                      <th>Quantité</th>
-                      <th>Unité</th>
-                      <th>Prix Unitaire</th>
-                      <th>Prix Unitaire après remise</th>
-                      <th>Total</th>
+                    <th className="bg-success text-light">Nom</th>
+                      <th className="bg-success text-light">Quantité</th>
+                      <th className="bg-success text-light">Unité</th>
+                      <th className="bg-success text-light">Prix Unitaire</th>
+                      <th className="bg-success text-light">Prix Unitaire après remise</th>
+                      <th className="bg-success text-light">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1003,21 +1003,21 @@ function PriseCommande() {
                 </table>
               </div>
 
-              <h6 className="total">
-                Total: {totalCommande} Ariary
-              </h6>
-              <h6 className="total">
+            
+              <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
+              <h5 className="total" style={{ width: 'auto' }}>
+             
                 Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
-              </h6>
-              <button className="btn btn-success mt-3" onClick={creerCommande} disabled={loadingAction}>
-              
+              </h5>
+              <button className="btn btn-success mt-3"  style={{ width: 'auto', float: 'right' }} onClick={creerCommande} disabled={loadingAction}>
+
                 {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
-"  Enregistrer la Commande"
-  )}
+                  <>
+                    <span className="spinner-border spinner-border-sm"></span> Chargement...
+                  </>
+                ) : (
+                  "  Enregistrer la Commande"
+                )}
               </button>
             </div>
 

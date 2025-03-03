@@ -6,7 +6,7 @@ import Header from "../Components/Navbar";
 import Swal from "sweetalert2";
 import Select from 'react-select';
 import HistoriqueAchats from "../Components/HistoriqueAchats";
-import { Modal, Button, Form ,Spinner} from "react-bootstrap";
+import { Modal, Button, Form, Spinner } from "react-bootstrap";
 import axios from '../api/axios';
 
 function AchatProduits() {
@@ -17,7 +17,7 @@ function AchatProduits() {
     const [unitesOptions, setUnitesOptions] = useState([]); // État pour les options d'unités
     const [unite, setUnite] = useState(null); // État pour l'unité sélectionnée
     const [prixAchatInitial, setPrixAchatInitial] = useState(0); // Ajoutez cette ligne
-   const [loadingAction, setLoadingAction] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
     const [panier, setPanier] = useState([]);
     const [panierCreer, setPanierCreer] = useState(false);
     const [produit, setProduit] = useState("");
@@ -157,7 +157,8 @@ function AchatProduits() {
 
     const [produitsOptions, setProduitsOptions] = useState([]);
 
-    const handleAjoutProduit = async (e) => {setLoadingAction(true);
+    const handleAjoutProduit = async (e) => {
+        setLoadingAction(true);
         e.preventDefault();
 
         // Vérifier si toutes les unités ont les champs requis
@@ -193,13 +194,13 @@ function AchatProduits() {
         try {
             // Envoi du produit à l'API pour ajout avec Axios
             const response = await axios.post("/api/produits/ajouter", produit);
- 
+
             Swal.fire({
                 icon: 'success',
                 title: 'Produit ajouté avec succès',
                 showConfirmButton: true,
                 timer: 2000 // Optionnel, pour fermer l'alerte après 2 secondes
-            });
+            })
 
             // Réinitialiser le formulaire ici
             setNouveauProduit({
@@ -235,7 +236,8 @@ function AchatProduits() {
                     });
                 }
             }
-        } catch (error) {setLoadingAction(false);
+        } catch (error) {
+            setLoadingAction(false);
             console.error("Erreur lors de l'ajout du produit:", error.response?.data || error.message);
             Swal.fire({
                 icon: 'error',
@@ -437,7 +439,8 @@ function AchatProduits() {
                     icon: "success",
                     confirmButtonText: "OK",
                 });
-            } else { setLoadingAction(false);
+            } else {
+                setLoadingAction(false);
                 throw new Error(data.message || "Impossible de créer le panier.");
             }
         } catch (error) {
@@ -493,7 +496,7 @@ function AchatProduits() {
                     icon: "error",
                     confirmButtonText: "OK",
                 });
-                setLoadingAction(false); 
+                setLoadingAction(false);
                 return; // Sortir de la fonction si la mise à jour échoue
             }
         }
@@ -528,7 +531,7 @@ function AchatProduits() {
                         icon: "success",
                         confirmButtonText: "OK",
                     });
-                    setLoadingAction(false); 
+                    setLoadingAction(false);
                 } else {
                     Swal.fire({
                         title: "Succès",
@@ -536,7 +539,7 @@ function AchatProduits() {
                         icon: "success",
                         confirmButtonText: "OK",
                     });
-                    setLoadingAction(false); 
+                    setLoadingAction(false);
                 }
 
                 fetchAchats();
@@ -569,7 +572,7 @@ function AchatProduits() {
                     confirmButtonText: "OK",
                 });
             }
-            setLoadingAction(false); 
+            setLoadingAction(false);
         }
     };
     const handleModePaiementChange = (e) => {
@@ -602,7 +605,7 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-    
+
         // Si modePaiement est à crédit, vérifier la date limite
         if (modePaiement === 'a crédit' && !dateLimiteCredit) {
             Swal.fire({
@@ -613,7 +616,7 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-    
+
         // Si modePaiement est virement bancaire ou mobile money, vérifier la référence
         if ((modePaiement === 'virement bancaire' || modePaiement === 'mobile money') && !referencePaiement) {
             Swal.fire({
@@ -624,19 +627,19 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-    
+
         try {
             const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                entrepotId: entrepot, 
+                entrepotId: entrepot,
                 modePaiement: modePaiement,
                 dateLimiteCredit: dateLimiteCredit,
                 referencePaiement: referencePaiement,
             });
-    
+
             if (response.status !== 200) {
                 throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
             }
-    
+
             Swal.fire({
                 title: "Panier validé",
                 text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
@@ -656,7 +659,7 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
         }
     };
-    
+
 
 
     const filteredHistorique = historiqueAchats.filter((achat) => {
@@ -717,18 +720,19 @@ function AchatProduits() {
                             {!panierCreer && (
                                 <div className="filtrage bg-light p-3 mt-3">
 
-                                    <button className="btn btn-success btn-lg" disabled={loadingAction} onClick={creerNouveauPanier}>
-                                        
-                                        
-                                    {loadingAction ? (
-                                          <div className="spinner-border text-light" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>
-                                              <i className='fa fa-check-circle'></i> Créer un Nouveau Panier
-                                          </span>
-                                      )}
+                                    <button   className="btn btn-success panierr"
+                    style={{ width: "auto" }} disabled={loadingAction} onClick={creerNouveauPanier}>
+
+
+                                        {loadingAction ? (
+                                            <div className="spinner-border text-light" role="status">
+                                                <span className="visually-hidden">Chargement...</span>
+                                            </div>
+                                        ) : (
+                                            <span>
+                                                <i className='fa fa-check-circle'></i> Créer un Nouveau Panier
+                                            </span>
+                                        )}
                                     </button>
 
                                 </div>
@@ -942,30 +946,30 @@ function AchatProduits() {
                                                 >
                                                     Ajouter une unité
                                                 </button>
-                                                               
-                                       <button
+
+                                                <button
                                                     className="btn btn-primary"
                                                     onClick={handleAjoutProduit}
                                                     disabled={loadingAction}
                                                 >
-                                                     {loadingAction ? (
-                                          <div className="spinner-border text-light" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>
-                                              Ajouter
-                                          </span>
-                                      )}
-                                          
+                                                    {loadingAction ? (
+                                                        <div className="spinner-border text-light" role="status">
+                                                            <span className="visually-hidden">Chargement...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span>
+                                                            Ajouter
+                                                        </span>
+                                                    )}
+
                                                 </button>
 
                                                 <button
                                                     className="btn btn-danger"
                                                     onClick={() => setAfficherFormulaireProduit(false)}
                                                 >
-                                                   
-                                                   Annuler
+
+                                                    Annuler
                                                 </button>
                                             </div>
 
@@ -1023,19 +1027,20 @@ function AchatProduits() {
                                             />
 
 
-                                            <button className="btn btn-primary mt-3" onClick={ajouterAuPanier} disabled={loadingAction}>
-                                                
-                                                
-                                            {loadingAction ? (
-                                          <div className="spinner-border text-light" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>
-                                             Ajouter au Panier
-                                          </span>
-                                      )}
-                                                </button>
+                                            <button   className="btn btn-success mt-3"
+                        style={{width:'auto'}}onClick={ajouterAuPanier} disabled={loadingAction}>
+
+
+                                                {loadingAction ? (
+                                                    <div className="spinner-border text-light" role="status">
+                                                        <span className="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                ) : (
+                                                    <span>
+                                                        Ajouter au Panier
+                                                    </span>
+                                                )}
+                                            </button>
                                         </div>
 
 
@@ -1064,17 +1069,17 @@ function AchatProduits() {
                                         <table id="table-to-export" className="tableSo table-striped">
                                             <thead>
                                                 <tr>
-                                                    <th>Produit</th>
-                                                    <th>Quantité Initiale</th>
+                                                <th className="bg-success">Total</th>
+                                                    <th className="bg-success">Quantité Initiale</th>
                                                     {fournisseurInfo?.type === "ristourne" && (
                                                         <>
-                                                            <th>Produits offerts</th>
-                                                            <th>Quantité Finale</th>
+                                                            <th className="bg-success">Produits offerts</th>
+                                                            <th className="bg-success">Quantité Finale</th>
                                                         </>
                                                     )}
-                                                    <th>Unité</th>
-                                                    <th>Prix d'Achat</th>
-                                                    <th>Total</th>
+                                                    <th className="bg-success">Unité</th>
+                                                    <th className="bg-success">Prix d'Achat</th>
+                                                    <th className="bg-success">Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1150,18 +1155,18 @@ function AchatProduits() {
                                         </div>
 
                                         <div className="button-group" disabled={loadingAction} style={{ display: 'flex', gap: '10px' }}>
-                                            <button className="btn7" onClick={validerPanier}>
-                                              
-                                            {loadingAction ? (
-                                          <div className="spinner-border text-light" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>    Valider l'Achat
-                                                               </span>
-                                      )}
-                                              
-                                            
+                                            <button className="btn7 btn-success" onClick={validerPanier}>
+
+                                                {loadingAction ? (
+                                                    <div className="spinner-border text-light" role="status">
+                                                        <span className="visually-hidden">Chargement...</span>
+                                                    </div>
+                                                ) : (
+                                                    <span>    Valider l'Achat
+                                                    </span>
+                                                )}
+
+
                                             </button>
                                         </div>
 

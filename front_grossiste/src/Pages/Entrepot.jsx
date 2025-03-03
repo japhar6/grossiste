@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"; 
+import React, { useState, useEffect, useRef } from "react";
 import axios from '../api/axios';
 import Swal from "sweetalert2";
 import "../Styles/Entrepot.css";
@@ -14,7 +14,7 @@ function Entrepot() {
     type: "",
     magasinier: "",
   });
-  const [editingEntrepotId, setEditingEntrepotId] = useState(null); 
+  const [editingEntrepotId, setEditingEntrepotId] = useState(null);
   const nomInputRef = useRef(null);
   // États de chargement
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
@@ -24,7 +24,7 @@ function Entrepot() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-  
+
     if (token) {
       setLoadingEntrepots(true);
       axios
@@ -39,26 +39,26 @@ function Entrepot() {
           console.error("Erreur chargement entrepôts", error);
           setLoadingEntrepots(false);
         });
-        setLoadingMagasiniers(true);
-          // Récupérer tous les magasiniers sans filtre
-          axios
-            .get("/api/users/tout", {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((userResponse) => {
-              const availableMagasiniers = userResponse.data.filter(
-                (user) => user.role === "magasinier"
-              );
-              setMagasiniersDisponibles(availableMagasiniers);
-              setLoadingMagasiniers(false);
-              
-            })
-            .catch((error) => {
-              console.error("Erreur lors de la récupération des utilisateurs", error);
-              setLoadingMagasiniers(false);
-            });
-      
-        
+      setLoadingMagasiniers(true);
+      // Récupérer tous les magasiniers sans filtre
+      axios
+        .get("/api/users/tout", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((userResponse) => {
+          const availableMagasiniers = userResponse.data.filter(
+            (user) => user.role === "magasinier"
+          );
+          setMagasiniersDisponibles(availableMagasiniers);
+          setLoadingMagasiniers(false);
+
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la récupération des utilisateurs", error);
+          setLoadingMagasiniers(false);
+        });
+
+
     }
   }, [token]);
 
@@ -70,11 +70,11 @@ function Entrepot() {
     setLoadingAction(true);
     const request = editingEntrepotId
       ? axios.put(`/api/entrepot/${editingEntrepotId}`, newEntrepot, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        headers: { Authorization: `Bearer ${token}` },
+      })
       : axios.post("/api/entrepot", newEntrepot, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
     request
       .then((response) => {
@@ -107,8 +107,8 @@ function Entrepot() {
       type: entrepot.type,
       magasinier: entrepot.magasinier ? entrepot.magasinier._id : "",
     });
-    setEditingEntrepotId(entrepot._id); 
-    nomInputRef.current.focus(); 
+    setEditingEntrepotId(entrepot._id);
+    nomInputRef.current.focus();
   };
 
   const handleSupprimer = async (id) => {
@@ -131,7 +131,7 @@ function Entrepot() {
         });
         setLoadingAction(false);
         Swal.fire('Supprimé!', 'L\'entrepôt a été supprimé.', 'success').then(() => {
-          setEntrepots((prev) => prev.filter((entrepot) => entrepot._id !== id)); 
+          setEntrepots((prev) => prev.filter((entrepot) => entrepot._id !== id));
         });
 
       } catch (error) {
@@ -159,75 +159,75 @@ function Entrepot() {
                 </div>
               </div>
             ) : (
-            <div className="consultatio">
-              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                <table className="table table-striped table-hover">
-                  <thead>
-                    <tr>
-                      <th>Nom</th>
-                      <th>Localisation</th>
-                      <th>Type</th>
-                      <th>Responsable</th>
-                      <th>Date de création</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {entrepots.map((entrepot) => (
-                      <tr key={entrepot._id}>
-                        <td>{entrepot.nom}</td>
-                        <td>{entrepot.localisation}</td>
-                        <td>{entrepot.type}</td>
-                        <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
-                        <td>{entrepot.dateCreation}</td>
-                        <td>
-                          <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>
-                         
-                            <i className="fas fa-pencil-alt"></i> Modifier
-                          </button>
-                          <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>
-                            <i className="fas fa-times"></i> Supprimer
-                          </button>
-                        </td>
+              <div className="consultatio">
+                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                  <table className="table table-striped table-hover">
+                    <thead>
+                      <tr>
+                        <th>Nom</th>
+                        <th>Localisation</th>
+                        <th>Type</th>
+                        <th>Responsable</th>
+                        <th>Date de création</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {entrepots.map((entrepot) => (
+                        <tr key={entrepot._id}>
+                          <td>{entrepot.nom}</td>
+                          <td>{entrepot.localisation}</td>
+                          <td>{entrepot.type}</td>
+                          <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
+                          <td>{entrepot.dateCreation}</td>
+                          <td>
+                            <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>
+
+                              <i className="fas fa-pencil-alt"></i> Modifier
+                            </button>
+                            <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>
+                              <i className="fas fa-times"></i> Supprimer
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-                )}
+            )}
           </div>
 
           <div className="ajoutPersonnel">
             <h6 className="alert alert-info">
               <i className="fa fa-plus"></i> {editingEntrepotId ? "Modifier un Entrepôt" : "Ajouter un Entrepôt"}
             </h6>
-            <input 
-              type="text" 
-              placeholder="Nom de l'entrepôt" 
-              value={newEntrepot.nom} 
-              onChange={(e) => setNewEntrepot({ ...newEntrepot, nom: e.target.value })} 
-              className="form-control mb-3" 
-              ref={nomInputRef} 
+            <input
+              type="text"
+              placeholder="Nom de l'entrepôt"
+              value={newEntrepot.nom}
+              onChange={(e) => setNewEntrepot({ ...newEntrepot, nom: e.target.value })}
+              className="form-control mb-3"
+              ref={nomInputRef}
             />
-            <input 
-              type="text" 
-              placeholder="Localisation" 
-              value={newEntrepot.localisation} 
-              onChange={(e) => setNewEntrepot({ ...newEntrepot, localisation: e.target.value })} 
-              className="form-control mb-3" 
+            <input
+              type="text"
+              placeholder="Localisation"
+              value={newEntrepot.localisation}
+              onChange={(e) => setNewEntrepot({ ...newEntrepot, localisation: e.target.value })}
+              className="form-control mb-3"
             />
-            <select 
-              className="form-control mb-3" 
-              value={newEntrepot.type} 
+            <select
+              className="form-control mb-3"
+              value={newEntrepot.type}
               onChange={(e) => setNewEntrepot({ ...newEntrepot, type: e.target.value })}>
               <option value="">Sélectionnez un type</option>
               <option value="principal">Principal</option>
               <option value="secondaire">Secondaire</option>
             </select>
-            <select 
-              className="form-control mb-3" 
-              value={newEntrepot.magasinier} 
+            <select
+              className="form-control mb-3"
+              value={newEntrepot.magasinier}
               onChange={(e) => setNewEntrepot({ ...newEntrepot, magasinier: e.target.value })}>
               <option value="">Sélectionnez un magasinier</option>
               {magasiniersDisponibles.length === 0 ? (
@@ -239,14 +239,14 @@ function Entrepot() {
               )}
             </select>
             <button className="btn15 btn1-success" onClick={handleAddOrUpdateEntrepot} disabled={loadingAction}>
-  {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
-    editingEntrepotId ? "Modifier" : "Ajouter"
-  )}
-</button>
+              {loadingAction ? (
+                <>
+                  <span className="spinner-border spinner-border-sm"></span> Chargement...
+                </>
+              ) : (
+                editingEntrepotId ? "Modifier" : "Ajouter"
+              )}
+            </button>
 
           </div>
         </div>

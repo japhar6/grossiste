@@ -1,6 +1,6 @@
 
 .profil-container {
-    max-width: 1200px;
+    width: 50%;
     margin: 0 auto;
     padding: 20px;
     background-color: #f8f9fa;
@@ -12,8 +12,6 @@
   .user-profile {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
   }
   
   .user-profile h2 {
@@ -44,7 +42,12 @@
     height: 100%;
     object-fit: cover;
   }
-  
+  .profilee{
+    text-align: left;
+  }
+  .profilee p{
+    margin-top: 0vh !important;
+  }
   .info-details {
     flex-grow: 1;
     max-width: 500px;
@@ -56,9 +59,7 @@
     justify-content: center;
   }
   
-  .info-details p {
-    margin: 10px 0;
-  }
+
   
   .info-details strong {
     color: #3498db;
@@ -122,6 +123,20 @@
     .info-details {
       max-width: 100%;
       text-align: center;
+    }
+    .profil-container{
+      width: 100%;
+      margin: 1%;
+    }
+    .profilee p{
+      margin-top: 1vh !important;
+    }
+    .info-details label{
+      text-align: left;
+    }
+    .info-details input{
+      background-color: white;
+      padding: 15px;
     }
   }
   

@@ -3,7 +3,7 @@
   background: #ffffff;
   border-radius: 8px;
   padding: 20px;
-  overflow-x:hidden ;
+  overflow-x: hidden;
   overflow-y: scroll;
 }
 
@@ -17,12 +17,13 @@
   overflow-y: scroll !important; /* Permet le défilement vertical */
 }
 
-.content
-{  overflow-y: scroll !important;
-
+.content {
+  overflow-y: scroll !important;
 }
 /* Uniformisation des champs de saisie et des selects */
-input.form-control, select.form-control, .react-select__control {
+input.form-control,
+select.form-control,
+.react-select__control {
   width: 100%;
   padding: 12px 15px;
   border-radius: 8px;
@@ -37,7 +38,7 @@ input.form-control, select.form-control, .react-select__control {
 input.form-control:focus,
 select.form-control:focus,
 .react-select__control--is-focused {
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
   outline: none;
 }
@@ -64,6 +65,10 @@ select.form-control:focus,
 
 .quantite-section input {
   flex: 1;
+}
+.pan {
+  width: 10cm !important;
+  font-size: 0.8em !important;
 }
 
 /* Style des boutons */
@@ -101,26 +106,23 @@ button.btn-primary {
 }
 @media (max-width: 768px) {
   .custom-select {
-      width: 100%; /* Assurez-vous que le select prend toute la largeur */
-      font-size: 10px !important; /* Ajustez la taille de la police si nécessaire */
+    width: 100%; /* Assurez-vous que le select prend toute la largeur */
+    font-size: 10px !important; /* Ajustez la taille de la police si nécessaire */
   }
 }
-
 
 @media (min-width: 768px) {
   .button-group {
     margin-left: 70%;
     margin-top: 20px;
-    
   }
-  
-.btn7 {
-  width: 300px;
-  }
-  
-  .total-text {
 
- margin-left:86%;
+  .btn7 {
+    width: 300px;
+  }
+ 
+  .total-text {
+    margin-left: 86%;
   }
 }
 .custom-select {
@@ -128,9 +130,8 @@ button.btn-primary {
   overflow-y: auto; /* Active le défilement vertical */
 }
 
-
 .btn7 {
-height: 40px;
+  height: 40px;
 }
 button.btn-primary:hover {
   background-color: #2649aa;
@@ -156,7 +157,6 @@ button.btn-success:hover {
   margin-top: 20px;
 }
 
-
 .table-striped tr:nth-child(even) {
   background-color: #f9f9f9;
 }
@@ -168,8 +168,14 @@ button.btn-success:hover {
     flex: 1 1 100%; /* Utilise 100% de la largeur pour chaque section */
     margin-bottom: 15px; /* Ajoute un espace entre les sections */
   }
+  .panierr{
+    font-size: 0.7em !important;
+    width: 100% !important;
+  }
+  .content .btn{
+    width: 10cm !important;
+  }
 }
-
 
 .achat-container {
   display: flex;

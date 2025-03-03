@@ -43,13 +43,13 @@ function Stock() {
   useEffect(() => {
     const checkAndSendNotification = () => {
       const today = new Date().toISOString().split('T')[0];
-    
-      const ruptureDeStock = stocks.filter(stock => 
-        stock.quantite < stock.produit.quantiteMinimum && 
+
+      const ruptureDeStock = stocks.filter(stock =>
+        stock.quantite < stock.produit.quantiteMinimum &&
         !notifiedProducts.includes(stock.produit._id) &&
         !isNotificationSentToday(stock.produit._id, today)
       );
-    
+
       if (ruptureDeStock.length > 0) {
         ruptureDeStock.forEach(stock => {
           if (stock.produit && stock.produit.nom && stock.quantite !== undefined) {
@@ -58,16 +58,16 @@ function Stock() {
               "quantiteRestante": String(stock.quantite),
               "entrepot": selectedEntrepot ? selectedEntrepot.nom : "Inconnu" // Ajout du nom de l'entrepôt
             };
-    
+
             console.log(data);
-    
+
             axios.post('/api/notif/rupture-stock', data)
               .then(response => {
                 toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom} dans l'entrepôt ${selectedEntrepot ? selectedEntrepot.nom : "Inconnu"} !`);
-                
+
                 setNotifiedProducts(prevState => [...prevState, stock.produit._id]);
                 localStorage.setItem('notifiedProducts', JSON.stringify([...notifiedProducts, stock.produit._id]));
-    
+
                 storeNotificationSent(stock.produit._id, today);
               })
               .catch(error => {
@@ -80,22 +80,22 @@ function Stock() {
         });
       }
     };
-    
-    
+
+
     // Fonction pour vérifier si une notification a déjà été envoyée aujourd'hui
     const isNotificationSentToday = (produitId, today) => {
       const notifications = JSON.parse(localStorage.getItem('sentNotifications')) || [];
       return notifications.some(notification => notification.produitId === produitId && notification.date === today);
     };
-    
+
     // Fonction pour enregistrer l'envoi de la notification avec la date
     const storeNotificationSent = (produitId, today) => {
       const notifications = JSON.parse(localStorage.getItem('sentNotifications')) || [];
       notifications.push({ produitId, date: today });
       localStorage.setItem('sentNotifications', JSON.stringify(notifications));
     };
-    
-    
+
+
 
     checkAndSendNotification();
   }, [stocks, notifiedProducts]); // Se déclenche lorsque les stocks ou les produits notifiés changent
@@ -198,9 +198,9 @@ function Stock() {
         <section className='contenue'>
           <Header />
           <div className="mini-statr p-3 content">
-            <h5 className='alert alert-success'>
+            <h6 className='alert alert-success'>
               <i className='fa fa-line-chart'></i> Stock
-            </h5>
+            </h6>
 
             <div className="form-group">
               <label htmlFor="entrepotSelect">Sélectionner un entrepôt :</label>
@@ -215,9 +215,9 @@ function Stock() {
             </div>
 
             {selectedEntrepot && (
-              <div className="alert alert-info mt-3">
+              <h6 className="alert alert-success mt-3">
                 <strong>Géré par le Magasinier :</strong> {magasinier || 'Aucun'}
-              </div>
+                </h6>
             )}
 
             {selectedEntrepot && (
@@ -264,48 +264,48 @@ function Stock() {
               <p className="text-center mt-3 text-danger">{error}</p>
             ) : (
               <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-              
-              <table className="tableSt table-bordered mt-3">
-                <thead>
-                  <tr>
-                    <th>Nom du produit</th>
-                    <th>Catégorie</th>
-                    <th>Quantité</th>
-                    <th>Unité</th>
-                    <th>Catégorie</th>
-                    <th>Quantite Minimum</th>
-                    <th>Date d'ajout</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedStocks.map(stock => (
-                    <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
-                      <td>{stock.produit.nom}</td>
-                      <td>{stock.produit.categorie}</td>
-                      <td>
-                        {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
-                      </td>
 
-                      <td>
-                        <select
-                          value={uniteSelectionnee[stock.produit._id] || ''}
-                          onChange={(e) => handleUniteChange(stock.produit._id, e.target.value)}
-                          className="form-control"
-                        >
-                          {stock.produit.unites.map(unite => (
-                            <option key={unite.nom} value={unite.nom}>
-                              {unite.nom}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>{stock.produit.categorie}</td>
-                      <td>{stock.produit.quantiteMinimum}</td>
-                      <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                <table className="tableSt table-bordered mt-3">
+                  <thead>
+                    <tr>
+                    <th className="bg-success">Nom du produit</th>
+                      <th className="bg-success">Catégorie</th>
+                      <th className="bg-success">Quantité</th>
+                      <th className="bg-success">Unité</th>
+                      <th className="bg-success">Catégorie</th>
+                      <th className="bg-success">Quantite Minimum</th>
+                      <th className="bg-success">Date d'ajout</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {sortedStocks.map(stock => (
+                      <tr key={stock._id} className={isRuptureDeStock(stock) ? 'clignoter' : ''}>
+                        <td>{stock.produit.nom}</td>
+                        <td>{stock.produit.categorie}</td>
+                        <td>
+                          {quantiteAffichee[stock.produit._id]} {uniteSelectionnee[stock.produit._id] || stock.produit.unites[0].nom}
+                        </td>
+
+                        <td>
+                          <select
+                            value={uniteSelectionnee[stock.produit._id] || ''}
+                            onChange={(e) => handleUniteChange(stock.produit._id, e.target.value)}
+                            className="form-control"
+                          >
+                            {stock.produit.unites.map(unite => (
+                              <option key={unite.nom} value={unite.nom}>
+                                {unite.nom}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>{stock.produit.categorie}</td>
+                        <td>{stock.produit.quantiteMinimum}</td>
+                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

@@ -32,7 +32,7 @@ import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
 import FactureNormal from './Components/FactureNormal.jsx';
-import FactureRemise from './Pages/FactureRemise.jsx';
+
 import HistoCA from './Pages/HistoC.jsx';
 import HistoVA from './Pages/HistoV.jsx';
 import HistoSortir from './Pages/HistoMaga.jsx';
@@ -43,8 +43,8 @@ import Client from './Pages/Client.jsx';
 import Notification from './Components/Notifications.jsx';
 import HistoAcha from './Pages/HistoAcha.jsx';
 import PayerCredit from './Pages/PayerClientcredi.jsx';
-
-
+import FactureRem from './Pages/FactRemise.jsx';
+import Facture from "./Pages/Fact.jsx";
 
 function App() {
   return (
@@ -78,8 +78,8 @@ function App() {
           <Route path='/creerinventaire' element={<CreerInventaire />} />
           <Route path='/notif' element={<Notification />} />
           <Route path='/HistoAcha' element={<HistoAcha />} />
-    
-          
+
+
         </Route>
 
         {/* Routes VENDEUR */}
@@ -95,9 +95,9 @@ function App() {
           <Route path='/profilm' element={<ProfilM />} />
           <Route path='/RetourStockCom' element={<RetourStockCom />} />
           <Route path='/stockma' element={<StockMaga />} />
-         
+
           <Route path='/transfert' element={<Transfert />} />
-   
+
         </Route>
 
         {/* Routes CAISSIER */}
@@ -105,12 +105,14 @@ function App() {
           <Route path='/caissier' element={<Caissier />} />
           <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
-          <Route path='/payerCredit' element={<PayerCredit />} /> 
+          <Route path='/payerCredit' element={<PayerCredit />} />
 
           <Route path='/PaiementCom' element={<PaiementCom />} />
           <Route path='/FactureNormal' element={<FactureNormal />} />
-          <Route path='/FactureRemise' element={<FactureRemise />} />
-          </Route>
+          <Route path='/FactureRemise' element={<FactureRem />} />
+          <Route path="/facture" element={<Facture />} />
+          <Route path="/factureR" element={<FactureRem />} /> 
+        </Route>
 
       </Routes>
     </BrowserRouter>
