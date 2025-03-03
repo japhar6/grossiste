@@ -5,7 +5,7 @@ import Sidebar from "../Components/SidebarMagasinier";
 import Header from "../Components/NavbarM";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
-
+import Swal from 'sweetalert2';
 function RetourStockCom() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [paiements, setPaiements] = useState([]);
@@ -15,7 +15,9 @@ function RetourStockCom() {
   const [searchQuery, setSearchQuery] = useState(""); // État pour la recherche
   const [status, setStatus] = useState(""); // État pour le statut
   const [date, setDate] = useState(""); // État pour la date
-
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
   // Resize handler pour gérer la responsivité
   useEffect(() => {
     const handleResize = () => {
@@ -26,18 +28,20 @@ function RetourStockCom() {
   }, []);
 
   // Récupération des paiements commerciaux depuis l'API
-  useEffect(() => {
+  useEffect(() => {      setLoadingEntrepots(true);
     axios.get("/api/paiementCom/info")
       .then(response => {
         setPaiements(response.data);
+        setLoadingEntrepots(false);
       })
-      .catch(error => {
+      
+      .catch(error => {      setLoadingEntrepots(false);
         console.error("Erreur lors de la récupération des paiements :", error);
         setError("Erreur lors de la récupération des paiements.");
       });
   }, []);
 
-  // Fonction pour récupérer les ventes d'un commercial
+
   // Fonction pour récupérer les ventes à partir de commercialId et commandeId
   const fetchVentesByInfo = (commercialId, commandeId) => {
     if (!commercialId || !commandeId) {
@@ -86,6 +90,7 @@ function RetourStockCom() {
 
 
   const handleReturnValidation = () => {
+    setLoadingAction(true);
     const magasinierId = localStorage.getItem("userid"); // Récupérer magasinierId
     console.log("Magasinier ID:", magasinierId); // Vérification
 
@@ -102,16 +107,36 @@ function RetourStockCom() {
       magasinierId: magasinierId,
       venteComId: venteComId,
     };
-
+  
     axios.post("/api/ventes/retour", returnData)
       .then(response => {
         console.log("Retour validé avec succès", response.data);
-        // Mettre à jour l'UI ou notifier l'utilisateur si nécessaire
-        setError(""); // Réinitialiser l'erreur
+        setLoadingAction(false);
+        setError(""); 
+         // Afficher un message de succès avec SweetAlert
+      Swal.fire({
+        icon: 'success',
+        title: 'Retour validé',
+        text: 'Le retour a été validé avec succès.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#28a745',
+      }).then(() => {
+        // Recharger la page après un délai de 2 secondes
+        window.location.reload();
+      });
       })
       .catch(error => {
+        setLoadingAction(true);
         console.error("Erreur lors de la validation du retour:", error);
         setError("Erreur lors de la validation du retour.");
+           // Afficher un message d'erreur avec SweetAlert
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: 'Une erreur est survenue lors de la validation du retour.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#d33',
+      });
       });
   };
 
@@ -162,7 +187,13 @@ function RetourStockCom() {
                 onChange={(e) => setDate(e.target.value)} // Mise à jour de la date
               />
             </form>
-          </div>
+          </div>  {loadingEntrepots ? (
+              <div className="loading-container">
+                <div className="spinner-border text-primary " role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
 
           <table className="tableMa table-striped mt-3">
             <thead>
@@ -205,7 +236,7 @@ function RetourStockCom() {
                 </tr>
               )}
             </tbody>
-          </table>
+          </table>)}
 
           {/* Modal pour afficher les détails */}
           <div className="modal fade" id="ProduitRetour" tabIndex="-1" aria-labelledby="ProduitRetourLabel" aria-hidden="true">
@@ -249,9 +280,17 @@ function RetourStockCom() {
                 </div>
 
                 <div className="modal-footer center">
-                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                  <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" >Fermer</button>
                   {modalData && modalData.paiement.statut !== "Produits retourner" && ( // Condition pour afficher le bouton
-                    <button className="btn btn-info" onClick={handleReturnValidation}>Valider le retour</button>
+                    <button className="btn btn-info" onClick={handleReturnValidation}disabled={loadingAction}>
+                         {loadingAction ? (
+                <>
+                  <span className="spinner-border spinner-border-sm"></span> Chargement...
+                </>
+              ) : (
+" Valider le retour"
+              )}
+                     </button>
                   )}
                 </div>
 

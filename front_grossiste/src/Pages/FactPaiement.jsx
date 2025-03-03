@@ -41,8 +41,8 @@ function Facture() {
         window.print(); // Imprime après 2 secondes
         setTimeout(() => {
           window.close(); // Ferme l'onglet après l'impression
-        }, 1000); // 1 seconde après impression
-      }, 2000);
+        }, 500); // 1 seconde après impression
+      }, 900);
     }
   }, [commande]);
 
@@ -70,7 +70,7 @@ function Facture() {
             <strong>Date :</strong> {new Date().toLocaleDateString()}
           </p>
           <p>
-            <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
+            <strong>Commerciale :</strong> {clientOuCommercial?.nom || "Non spécifié"}
           </p>
           <p>
             <strong>Adresse :</strong>{" "}
@@ -100,7 +100,7 @@ function Facture() {
           <thead>
             <tr>
               <th>Qté</th>
-              <th>Colisage</th>
+              <th>Unité</th>
               <th>Désignation</th>
               <th>Dépôt</th>
               <th>PU</th>
