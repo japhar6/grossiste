@@ -83,7 +83,8 @@ exports.ajouterAchat = async (req, res) => {
             total,
             panier: panierExistant._id,
             ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false,
-            unite // Ajout de l'unité à l'achat
+            unite,
+            entrepot: null
         });
 
         await nouvelAchat.save();
@@ -182,6 +183,9 @@ exports.validerPanier = async (req, res) => {
 
             // Ajout ou mise à jour du stock
             await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, quantite, prixUnitaire, unite);
+
+            achat.entrepot = entrepotId; // Ajout de l'entrepôt à l'achat
+            await achat.save();
         }
 
         // Réponse avec les détails du panier validé
@@ -207,7 +211,10 @@ exports.validerPanier = async (req, res) => {
 // Afficher tous les achats
 exports.afficherAchats = async (req, res) => {
     try {
-        const achats = await Achat.find().populate("produit fournisseur");
+        const achats = await Achat.find()
+        .populate('entrepot') 
+        .populate('produit')  
+        .populate('fournisseur');
         res.status(200).json(achats);
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la récupération des achats", error });

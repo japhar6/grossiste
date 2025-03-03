@@ -1,5 +1,7 @@
 const express = require('express');
 const { calculerEtAjouterCommission } = require('../controllers/commissionsController'); // Assure-toi que le chemin est correct
+const commissionsController = require('../controllers/commissionsController');
+
 const router = express.Router();
 const mongoose = require('mongoose');
 // Nouvelle route pour calculer la commission d'un commercial
@@ -28,4 +30,7 @@ router.get('/commercial/:commercialId', async (req, res) => {
 });
 
 router.post('/commissions/calculer', calculerEtAjouterCommission);
+router.get('/totals/:periode', commissionsController.getTotalCommissionsParPeriode);
+
+
 module.exports = router;

@@ -85,6 +85,7 @@ function Sidebar() {
 
     const buttons = [
         { path: "/admin", icon: faChartLine, text: "Tableau de bord" },
+        { path: "/ChiffreAffaire", icon: faChartBar, text: "Chiffre d'affaire" },
         { path: "/personnel", icon: faUsers, text: "Personnels" },
         { path: "/fournisseur", icon: faTruck, text: "Fournisseur" },
         { path: "/produit", icon: faTags, text: "Article et produits" },
@@ -95,7 +96,6 @@ function Sidebar() {
         { path: "/Client", icon: faUserFriends, text: "Gestion des Clients" },
          
         { path: "/transfertAdmin", icon: faTruckLoading, text: "Gestion des Transferts" },
-        { path: "/chiffre-affaire", icon: faChartBar, text: "Chiffre d'affaire" },
                 { path: "/histovad", icon: faTags, text: "Historique des commandes" },
                 { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
                 { path: "/HistoAcha", icon: "fa-tags", text: "Historique des achats" },

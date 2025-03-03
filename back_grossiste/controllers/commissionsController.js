@@ -73,6 +73,75 @@ const moment = require('moment'); // Assure-toi d'installer moment.js
         }
     };
 
-
-// Route pour calculer et ajouter la commission
+    exports.getTotalCommissionsParPeriode = async (req, res) => {
+        try {
+            const { periode } = req.params; // "journalier", "hebdomadaire", "mensuel", "annuel", "global"
+        
+            let dateDebut, dateFin;
+        
+            const maintenant = new Date();
+        
+            switch (periode) {
+                case 'journalier':
+                    dateDebut = new Date(maintenant.setHours(0, 0, 0, 0)); // Début de la journée
+                    dateFin = new Date(maintenant.setHours(23, 59, 59, 999)); // Fin de la journée
+                    break;
+        
+                case 'hebdomadaire':
+                    const premierJourSemaine = maintenant.getDate() - maintenant.getDay(); // Dimanche = 0
+                    dateDebut = new Date(maintenant.setDate(premierJourSemaine));
+                    dateDebut.setHours(0, 0, 0, 0);
+                    dateFin = new Date(maintenant.setDate(premierJourSemaine + 6));
+                    dateFin.setHours(23, 59, 59, 999);
+                    break;
+        
+                case 'mensuel':
+                    dateDebut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+                    dateFin = new Date(maintenant.getFullYear(), maintenant.getMonth() + 1, 0);
+                    dateFin.setHours(23, 59, 59, 999);
+                    break;
+        
+                case 'annuel':
+                    dateDebut = new Date(maintenant.getFullYear(), 0, 1);
+                    dateFin = new Date(maintenant.getFullYear(), 11, 31);
+                    dateFin.setHours(23, 59, 59, 999);
+                    break;
+        
+                case 'global':
+                    // Pas de filtre par date, on prend toutes les commissions
+                    const toutesLesCommissions = await CommissionCom.find();
+                    const totalGlobal = toutesLesCommissions.reduce((acc, commission) => acc + commission.montant, 0);
+                    return res.status(200).json({
+                        periode: 'global',
+                        totalCommissions: totalGlobal,
+                        nombreCommissions: toutesLesCommissions.length
+                    });
+        
+                default:
+                    return res.status(400).json({ message: 'Période non valide' });
+            }
+        
+            // Si la période est différente de "global", on filtre par date
+            const commissions = await CommissionCom.find({
+                dateCreation: {
+                    $gte: dateDebut,
+                    $lte: dateFin
+                }
+            });
+        
+            const totalCommissions = commissions.reduce((acc, commission) => acc + commission.montant, 0);
+        
+            res.status(200).json({
+                periode,
+                totalCommissions,
+                nombreCommissions: commissions.length
+            });
+        
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Erreur serveur' });
+        }
+    };
+    
+    
 

@@ -163,6 +163,7 @@ const GestionCommerciaux = () => {
             <table className="table-striped">
               <thead>
                 <tr>
+<<<<<<< HEAD
                 <th className='bg-success'>Nom</th>
                   <th className='bg-success'>Email</th>
                   <th className='bg-success'>Téléphone</th>
@@ -170,6 +171,14 @@ const GestionCommerciaux = () => {
                   <th className='bg-success'>Type</th>
                   <th className='bg-success'>Date d'Inscription</th>
                   <th className='bg-success'>Ventes Réalisées</th>
+=======
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
+                  <th>Statut</th>
+                  <th>Date d'Inscription</th>
+                  <th>Ventes Réalisées</th>
+>>>>>>> ff67acfb9f5ac714ce39c9e1bfbb6589623fadf1
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +189,6 @@ const GestionCommerciaux = () => {
                       <td>{commercial.email}</td>
                       <td>{commercial.telephone}</td>
                       <td>{commercial.type}</td>
-                      <td>{commercial.statut}</td>
                       <td>{new Date(commercial.dateInscription).toLocaleDateString('fr-FR', {
                         year: 'numeric',
                         month: 'long',
