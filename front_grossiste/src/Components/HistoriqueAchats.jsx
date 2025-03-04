@@ -20,12 +20,20 @@ const HistoriqueAchats = () => {
         fetchAchats();
     }, []);
 
+    // Fonction pour comparer les dates sans tenir compte de l'heure
+    const compareDate = (date1, date2) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        // Comparer uniquement l'année, le mois et le jour
+        return d1.setHours(0, 0, 0, 0) === d2.setHours(0, 0, 0, 0);
+    };
+
     const filteredAchats = achats.filter(achat =>
         (achat.produit?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             achat.fournisseur?.nom?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (searchDate === "" || new Date(achat.dateAchat).toLocaleDateString() === new Date(searchDate).toLocaleDateString()) &&
+        (searchDate === "" || compareDate(achat.dateAchat, searchDate)) &&
         (searchCategory === "" || achat.produit?.categorie === searchCategory) &&
-        (searchEntrepot === "" || achat.entrepot === searchEntrepot)
+        (searchEntrepot === "" || achat.entrepot?._id === searchEntrepot)
     );
 
     const getLargestUnit = (product) => {
@@ -38,7 +46,7 @@ const HistoriqueAchats = () => {
         return largestUnit.nom || "Inconnu";
     };
 
-    // Collect unique categories and entrepots for filtering
+    // Collecte des catégories et entrepôts uniques pour le filtrage
     const categories = [...new Set(achats.map(achat => achat.produit?.categorie))];
     const entrepots = [...new Set(achats.map(achat => achat.entrepot))];
 
@@ -72,17 +80,19 @@ const HistoriqueAchats = () => {
                     ))}
                 </select>
                 <select
-                    className="form-control p-2 mt-3 m-2"
-                    value={searchEntrepot}
-                    onChange={(e) => setSearchEntrepot(e.target.value)}
-                >
-                    <option value="">Sélectionner un entrepôt</option>
-                    {entrepots.map((entrepot, index) => (
-                        <option key={index} value={entrepot._id}>
-                            {entrepot.nom}
-                        </option>
-                    ))}
-                </select>
+    className="form-control p-2 mt-3 m-2"
+    value={searchEntrepot}
+    onChange={(e) => setSearchEntrepot(e.target.value)}
+>
+    <option value="">Sélectionner un entrepôt</option>
+    {[
+        ...new Set(entrepots.map((entrepot) => entrepot.nom)) // Filtrer les doublons par nom d'entrepôt
+    ].map((nomEntrepot, index) => (
+        <option key={index} value={nomEntrepot}>
+            {nomEntrepot}
+        </option>
+    ))}
+</select>
 
             </div>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>

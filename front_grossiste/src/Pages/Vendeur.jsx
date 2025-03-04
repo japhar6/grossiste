@@ -124,7 +124,7 @@ function PriseCommande() {
       // Validation des champs selon le type (client ou commercial)
       if (type === "client") {
         if (!newPerson.nom) {
-          Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le client", "error");
+          Swal.fire("Info", "Tous les champs nécessaires doivent être remplis pour le client", "info");
           return;
         }
 
@@ -163,7 +163,7 @@ function PriseCommande() {
         }
       } else if (type === "commercial") {
         if (!newPerson.nom || !newPerson.telephone || !newPerson.email) {
-          Swal.fire("Erreur", "Tous les champs nécessaires doivent être remplis pour le commercial", "error");
+          Swal.fire("Info", "Tous les champs nécessaires doivent être remplis pour le commercial", "info");
           return;
         }
 
@@ -490,9 +490,9 @@ function PriseCommande() {
 
       if (!selectedPersonId) {
         Swal.fire({
-          title: "Erreur",
+          title: "Info",
           text: "Aucun client ou commercial sélectionné.",
-          icon: "error",
+          icon: "info",
           confirmButtonText: "OK",
         });
         return;
@@ -599,7 +599,12 @@ function PriseCommande() {
       }); setLoadingAction(false);
 
       console.log("Réponse de l'API:", response.data);
-      alert("Demande de remise envoyée !");
+      Swal.fire({
+        title: 'Succès!',
+        text: 'Demande de remise envoyée !',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
     } catch (error) {
       console.error("Erreur lors de l'envoi de la notification", error);
       alert("Une erreur est survenue. Veuillez réessayer.");

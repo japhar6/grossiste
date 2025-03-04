@@ -229,9 +229,9 @@ function AchatProduits() {
                 } else {
                     setProduitsOptions([]);
                     Swal.fire({
-                        title: "Erreur",
+                        title: "Info",
                         text: "Ce fournisseur n'a pas encore de produit.",
-                        icon: "error",
+                        icon: "info",
                         confirmButtonText: "OK",
                     });
                 }
@@ -308,9 +308,9 @@ function AchatProduits() {
                         // Si la réponse est valide mais qu'il n'y a pas de produits
                         setProduitsOptions([]);
                         Swal.fire({
-                            title: "Erreur",
+                            title: "Info",
                             text: "Ce fournisseur n'a pas encore de produit.",
-                            icon: "error",
+                            icon: "info",
                             confirmButtonText: "OK",
                         });
                     }
@@ -318,9 +318,9 @@ function AchatProduits() {
                     // Vérifie si l'erreur provient d'une réponse 404
                     if (error.response && error.response.status === 404) {
                         Swal.fire({
-                            title: "Erreur",
-                            text: "Fournisseur non trouvé ou aucun produit disponible.",
-                            icon: "error",
+                            title: "Info",
+                            text: "Ce fournisseur n'a pas encore de produit.",
+                            icon: "info",
                             confirmButtonText: "OK",
                         });
                     } else {
@@ -357,9 +357,9 @@ function AchatProduits() {
                     setFournisseurs(data);
                 } else {
                     Swal.fire({
-                        title: "Erreur",
-                        text: "Impossible de récupérer les fournisseurs.",
-                        icon: "error",
+                        title: "Info",
+                        text: "Il n'y a pas encore de fournisseurs ! Veuillez en ajouter",
+                        icon: "info",
                         confirmButtonText: "OK",
                     });
                 }

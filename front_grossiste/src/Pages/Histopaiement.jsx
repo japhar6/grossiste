@@ -107,7 +107,8 @@ function HistoC() {
               </div>
 
               {filteredPaiements.length === 0 ? (
-                <p>Aucun paiement trouvé.</p>
+                    <div className="alert alert-warning" role="alert">
+                <p>Aucun paiement trouvé.</p> </div>
               ) : (
                 <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                   <table className="tableZA table-striped">
