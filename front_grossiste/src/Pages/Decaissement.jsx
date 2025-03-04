@@ -13,7 +13,7 @@ const DecaissementPage = () => {
   const [messageType, setMessageType] = useState('');
 
   // Solde actuel de la caisse (valeur statique pour l'instant)
-  const soldeCaisse = 5000;
+  const soldeCaisse = 0;
 
   // Fonction pour simuler un décaissement
   const handleSubmit = (e) => {

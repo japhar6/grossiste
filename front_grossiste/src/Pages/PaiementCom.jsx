@@ -189,7 +189,7 @@ function PaiementCom() {
       Swal.fire("Succès", "Paiement mis à jour avec succès.", "success")
         .then(() => {
         
-          // window.location.reload();
+           window.location.reload();
         });
         return true; 
     } catch (error) {  
@@ -437,8 +437,7 @@ const handleGenerateInvoice = async () => {
               </div>
             )}
             <div className="montant-total">
-              <h6><i className="fa fa-money-bill-wave"></i> Montant Total Vendu</h6>
-              <p>{prixVente * quantiteVendue} Ariary</p>
+             
               <select
                     className="form-control mt-2"
                     value={modePaiement}

@@ -123,7 +123,7 @@ const [triMontant, setTriMontant] = useState("desc"); // État pour trier par mo
   
                   
                   <th>Statut</th>
-                  <th>Fait par :</th>
+                  <th>Fait par le vendeur :</th>
                   <th>Montant Total</th>
                 </tr>
               </thead>
@@ -144,7 +144,8 @@ const [triMontant, setTriMontant] = useState("desc"); // État pour trier par mo
                
                         
                         <th>Statut</th>
-                        <th>Fait par :</th>
+                        <th>Fait par le vendeur:</th>
+                        <th>Mode de livraison</th>
                         <th>Montant Total</th>
                       </tr>
                     </thead>
@@ -174,6 +175,7 @@ const [triMontant, setTriMontant] = useState("desc"); // État pour trier par mo
                                 ? commande.vendeurId.nom
                                 : "Inconnu"}
                             </td>
+                            <td>{commande.modeLivraison ? commande.modeLivraison :"Non Spécifié"} </td>
                             <td>{commande.totalGeneral} ariary</td>
                           </tr>
                         );

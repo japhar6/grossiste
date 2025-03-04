@@ -107,7 +107,7 @@ function HistoV() {
                    <th>Mode de Paiement</th>
                    
                    <th>Statut</th>
-                   <th>Fait par :</th>
+           
                    <th>Montant Total</th>
                  </tr>
                </thead>
