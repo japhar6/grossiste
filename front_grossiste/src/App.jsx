@@ -45,9 +45,11 @@ import HistoAcha from './Pages/HistoAcha.jsx';
 import PayerCredit from './Pages/PayerClientcredi.jsx';
 import FactureRem from './Pages/FactRemise.jsx';
 import Facture from "./Pages/Fact.jsx";
+import FactureAdmin from "./Pages/FactAdmin.jsx";
 import FactureCom  from "./Pages/FactPaiement.jsx";
+import FactureSans  from "./Pages/FactsansPrix.jsx";
 import ChiffreAffaire from './Pages/ChiffreAffaire.jsx';
-
+import FactureRemAd from "./Pages/FactureRemiseAdmin.jsx";
 
 
 function App() {
@@ -82,10 +84,15 @@ function App() {
           <Route path='/creerinventaire' element={<CreerInventaire />} />
           <Route path='/notif' element={<Notification />} />
           <Route path='/HistoAcha' element={<HistoAcha />} />
-
-
+         
+          <Route path="/factureadmin" element={<FactureAdmin />} />
+        
+          <Route path='/factureremisead' element={<FactureRemAd />} />
           <Route path='/ChiffreAffaire' element={<ChiffreAffaire />} />
           
+
+
+
         </Route>
 
         {/* Routes VENDEUR */}
@@ -118,6 +125,7 @@ function App() {
           <Route path='/FactureRemise' element={<FactureRem />} />
           <Route path="/facture" element={<Facture />} />
           <Route path="/facturepaiement" element={<FactureCom />} />
+          <Route path="/facturesansprix" element={<FactureSans />} />
         </Route>
 
       </Routes>

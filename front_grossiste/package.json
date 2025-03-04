@@ -19,6 +19,8 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",
+    "num-words": "^1.2.3",
+    "number-to-words": "^1.2.4",
     "pusher-js": "^8.4.0",
     "react": "^18.3.1",
     "react-apexcharts": "^1.7.0",
@@ -27,7 +29,8 @@
     "react-router-dom": "^7.1.5",
     "react-select": "^5.10.0",
     "react-toastify": "^11.0.3",
-    "sweetalert2": "^11.15.10"
+    "sweetalert2": "^11.15.10",
+    "to-words": "^4.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

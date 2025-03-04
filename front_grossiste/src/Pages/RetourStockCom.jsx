@@ -29,7 +29,7 @@ function RetourStockCom() {
 
   // Récupération des paiements commerciaux depuis l'API
   useEffect(() => {      setLoadingEntrepots(true);
-    axios.get("/api/paiementCom/info")
+    axios.get("/api/paiementCom/infopl")
       .then(response => {
         setPaiements(response.data);
         setLoadingEntrepots(false);
@@ -57,8 +57,15 @@ function RetourStockCom() {
         return response.data;
       })
       .catch(error => {
-        console.error("Erreur lors de la récupération des ventes :", error);
-        setError("Erreur lors de la récupération des ventes.");
+        if (error.response && error.response.status === 404) {
+          // Si l'erreur est un 404, on affiche un message spécifique
+          setError("La facture n'est pas encore payée.");
+          console.log("La facture n'est pas encore payée.");
+        } else {
+          // Autres erreurs, on gère ici normalement
+          console.error("Erreur lors de la récupération des ventes :", error);
+          setError("Erreur lors de la récupération des ventes.");
+        }
         return Promise.reject(error);
       });
   };
@@ -177,8 +184,9 @@ function RetourStockCom() {
                 onChange={(e) => setStatus(e.target.value)} // Mise à jour du statut
               >
                 <option value="">Statut de la commande</option>
-                <option value="partiel">Partiel</option>
-                <option value="complet">Complet</option>
+                <option value="payé partiel">Payé Partiel</option>
+                <option value="payé complet">Payé Complet</option>
+                <option value="Produits retourner">Produits retourner</option>
               </select>
               <input
                 type="date"
@@ -188,7 +196,7 @@ function RetourStockCom() {
               />
             </form>
           </div>  {loadingEntrepots ? (
-              <div className="loading-container">
+              <div className="loading-container" style={{marginTop:'-250px'}}>
                 <div className="spinner-border text-primary " role="status">
                   <span className="visually-hidden">Chargement...</span>
                 </div>

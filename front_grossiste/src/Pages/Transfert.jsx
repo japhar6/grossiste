@@ -22,7 +22,7 @@ const Transfert = () => {
   const userId = localStorage.getItem("userid");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [produit, setProduit] = useState(null);
   useEffect(() => {
     const fetchEntrepots = async () => {
       try {
@@ -115,12 +115,15 @@ const Transfert = () => {
   };
 
   // Ouverture du modal de réception
-  const openReceptionModal = (id, quantiteEnvoyee, entrepotDestination) => {
+  const openReceptionModal = (id, quantiteEnvoyee, entrepotSource, produit) => {
     setTransfertId(id);
     setQuantiteEnvoyee(quantiteEnvoyee); // Sauvegarder la quantité envoyée
     setShowModalReception(true);
+    setEntrepotSource(entrepotSource);  // Sauvegarder l'entrepôt source
+    setProduit(produit);                // Sauvegarder l'objet produit
   };
-
+  
+  
   const filteredTransferts = historiqueTransferts.filter((transfert) =>
     statutFiltre ? transfert.statutAdmin === statutFiltre : true
   );
@@ -181,7 +184,7 @@ const Transfert = () => {
               <option value="approuvé">Validé</option>
               <option value="rejeté">Rejeté</option>
             </select>
-
+            <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
             <table className="table table-bordered table-striped">
               <thead className="thead-dark">
                 <tr>
@@ -209,24 +212,26 @@ const Transfert = () => {
                       {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
                       {handleRecevoirButtonVisibility(transfert) && (
                         <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() =>
-                            openReceptionModal(
-                              transfert._id,
-                              transfert.quantitéEnvoyée,
-                              transfert.entrepotDestination
-                            )
-                          }
-                        >
-                          Recevoir
-                        </button>
+                        className="btn btn-primary btn-sm"
+                        onClick={() =>
+                          openReceptionModal(
+                            transfert._id,
+                            transfert.quantitéEnvoyée,
+                            transfert.entrepotSource,
+                            transfert.produit // Passe ici l'objet produit
+                          )
+                        }
+                      >
+                        Recevoir
+                      </button>
+                      
                       )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </div> </div> 
         </div>
       </section>
 
@@ -238,16 +243,18 @@ const Transfert = () => {
           entrepotSource={entrepot}
         />
       )}
+{showModalReception && (
+  <ReceptionModal
+    show={showModalReception}
+    handleClose={() => setShowModalReception(false)}
+    transfertId={transfertId}
+    quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
+    produit={produit} // Passer l'objet produit à la modal
+    refreshHistorique={fetchHistoriqueTransferts}
+    entrepotSource={entrepotSource}
+  />
+)}
 
-      {showModalReception && (
-        <ReceptionModal
-          show={showModalReception}
-          handleClose={() => setShowModalReception(false)}
-          transfertId={transfertId}
-          quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
-          refreshHistorique={fetchHistoriqueTransferts}
-        />
-      )}
     </main>
   );
 };

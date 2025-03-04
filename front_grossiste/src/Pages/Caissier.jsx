@@ -22,6 +22,7 @@ function Caisse() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [nomEntrepot, setNomentrepot] = useState(null);
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
   };
@@ -37,7 +38,7 @@ function Caisse() {
   useEffect(() => {
     const fetchReferences = async () => {
       try {
-        const response = await axios.get('/api/commandes/suggestions'); // Votre route pour récupérer toutes les références
+        const response = await axios.get('/api/commandes/suggestions');
         setAllReferences(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des références :", error);
@@ -66,15 +67,18 @@ function Caisse() {
     setSuggestions([]); // Réinitialisez les suggestions après la sélection
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async () => {setLoadingAction(true)
     try {
       const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
 
+const nomEntrepot = response.data.entrepotId.nom;
+
+setNomentrepot(nomEntrepot);
       // Vérifiez le statut de la réponse
       if (response.status !== 200) {
         throw new Error("Commande non trouvée");
       }
-
+      setLoadingAction(false)
       const data = response.data;
 
       // Vérifiez le type de client
@@ -93,6 +97,7 @@ function Caisse() {
       setCommande(null);
       setClient(null);
       setCommercial(null);
+      setLoadingAction(false)
       // Optionnel : Vous pouvez également afficher un message d'erreur à l'utilisateur
       Swal.fire({
         icon: 'error',
@@ -202,11 +207,14 @@ function Caisse() {
         html: `
           <div style="text-align: left;">
             <label>
-              <input type="radio" name="typeFacture" value="normal" style="margin-right: 8px;"> 📜 Facture Normale
+              <input type="checkbox" name="typeFacture" value="normal" style="margin-right: 8px;"> 📜 Facture Normale
             </label>
             <br>
             <label>
-              <input type="radio" name="typeFacture" value="remise" style="margin-right: 8px;"> 💰 Facture de Remise
+              <input type="checkbox" name="typeFacture" value="remise" style="margin-right: 8px;"> 📜 Facture de Remise
+            </label>
+               <label>
+              <input type="checkbox" name="typeFacture" value="sans_prix" style="margin-right: 8px;"> 📜 Facture sans prix
             </label>
           </div>
         `,
@@ -216,45 +224,53 @@ function Caisse() {
         confirmButtonColor: "#28a745",
         cancelButtonColor: "#d33",
         preConfirm: () => {
-          const selectedType = document.querySelector('input[name="typeFacture"]:checked');
-          if (!selectedType) {
-            Swal.showValidationMessage("⚠️ Vous devez sélectionner un type de facture !");
+          const selectedTypes = Array.from(document.querySelectorAll('input[name="typeFacture"]:checked')).map(input => input.value);
+          if (selectedTypes.length === 0) {
+            Swal.showValidationMessage("⚠️ Vous devez sélectionner au moins un type de facture !");
             return false;
           }
-          return selectedType.value;
+          return selectedTypes;
         }
       });
     
-      // Si l'utilisateur annule, arrêter ici
       if (isDismissed || !typeFacture) {
         console.log("Annulation de la génération de facture.");
         return;
       }
     
-      // Valider le paiement avant de générer la facture
       const paiementValidationResult = await validerPaiement();
     
       if (paiementValidationResult) {
-        const factureUrl = typeFacture === "normal" ? "/facture" : "/FactureRemise";
         const queryParams = new URLSearchParams();
-    
         if (commande) queryParams.set("commande", JSON.stringify(commande));
         if (modePaiement) queryParams.set("modePaiement", modePaiement);
         if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
         if (dateLimiteCredit) queryParams.set("dateLimiteCredit", dateLimiteCredit);
-    
+        if (nomEntrepot) queryParams.set("nomEntrepot", nomEntrepot);
         if (client) {
           queryParams.set("client", JSON.stringify(client));
         } else if (commercial) {
           queryParams.set("commercial", JSON.stringify(commercial));
         }
     
-        // Ouvrir la page de facture dans un nouvel onglet
-        const factureWindow = window.open(`${factureUrl}?${queryParams.toString()}`, "_blank");
+        // Utiliser des noms uniques pour les fenêtres
+        const openInvoices = () => {
+          if (typeFacture.includes("normal")) {
+            const factureUrlNormal = `/facture?${queryParams.toString()}`;
+            window.open(factureUrlNormal, "factureNormal");
+          }
     
-        if (factureWindow) {
-          factureWindow.focus();
-        }
+          if (typeFacture.includes("remise")) {
+            const factureUrlRemise = `/FactureRemise?${queryParams.toString()}`;
+            window.open(factureUrlRemise, "factureRemise");
+          }
+          if (typeFacture.includes("sans_prix")) {
+            const factureUrlRemise = `/facturesansprix?${queryParams.toString()}`;
+            window.open(factureUrlRemise, "facturesansprix");
+          }
+        };
+    
+        openInvoices();
       } else {
         Swal.fire({
           icon: 'error',
@@ -293,7 +309,7 @@ function Caisse() {
                     onChange={handleInputChange} // Changez ici
                   />
                   {suggestions.length > 0 && (
-                    <ul className="list-group">
+                    <ul className="list-group" style={{ cursor: 'pointer' }}>
                       {suggestions.map((suggestion) => (
                         <li key={suggestion} className="list-group-item" style={{ marginTop: '-13px' }} onClick={() => handleSuggestionClick(suggestion)}>
                           {suggestion}
@@ -344,8 +360,16 @@ function Caisse() {
 
 
 
-<button className="btno btn-success " onClick={handleSearch}> 
-                    Rechercher
+<button className="btno btn-success " disabled={loadingAction}  onClick={handleSearch}> 
+{loadingAction ? (
+                                          <div className="spinner-border style={{ width: '1rem !important', height: '1rem !important' }}" role="status">
+                                              <span className="visually-hidden">Chargement...</span>
+                                          </div>
+                                      ) : (
+                                          <span>
+                                              <i className='fa fa-check-circle'></i> Rechercher
+                                          </span>
+                                      )}
                   </button>
                 </div>
 
@@ -362,6 +386,7 @@ function Caisse() {
 
 
                         <th>Mode de paiement</th>
+                        <th>Nom de l'entrepot</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -371,6 +396,7 @@ function Caisse() {
 
 
                         <td>{modePaiement || "Non spécifié"}</td>
+                        <td>{ nomEntrepot || "Non spécifié" }</td>
 
                       </tr>
                     </tbody>

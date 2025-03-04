@@ -24,8 +24,7 @@ function PaiementCom() {
   const [unitesParProduit, setUnitesParProduit] = useState({});  // On gère un objet pour les unités par produit
     const [modePaiement, setModePaiement] = useState("");
   const [referencePaiement, setReferencePaiement] = useState("");
-
-console.log("prix est",prixVente);
+  
   const playSound = () => {
     const audio = new Audio(Sound);
     audio.play();
@@ -34,7 +33,7 @@ console.log("prix est",prixVente);
   useEffect(() => {
     const fetchReferences = async () => {
       try {
-        const response = await axios.get("/api/commandes/factmo");
+        const response = await axios.get("/api/paiementCom/credit");
         setAllReferences(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des références :", error);
@@ -184,7 +183,7 @@ console.log("prix est",prixVente);
 
     try {
       const response = await axios.put(`/api/paiementCom/mettre-ajour/${referenceFacture}`, {
-        produitsVendus
+        produitsVendus,modePaiement,referencePaiement,
       });
 
       Swal.fire("Succès", "Paiement mis à jour avec succès.", "success")
@@ -334,11 +333,11 @@ const handleGenerateInvoice = async () => {
                     value={referenceFacture}
                     onChange={handleInputChange}
                   />
-                  {suggestions.length > 0 && (
-                    <ul className="suggestions-list">
+                 {suggestions.length > 0 && (
+                    <ul className="list-group" style={{ cursor: 'pointer' }}>
                       {suggestions.map((suggestion) => (
-                        <li key={suggestion} className="list-group-item"  onClick={() => handleSuggestionClick(suggestion)}>
-                          {suggestion} 
+                        <li key={suggestion} className="list-group-item" style={{ marginTop: '-13px' }} onClick={() => handleSuggestionClick(suggestion)}>
+                          {suggestion}
                         </li>
                       ))}
                     </ul>
@@ -409,6 +408,7 @@ const handleGenerateInvoice = async () => {
         </td>
         <td>
   <select
+    className="form-select form-select-sm"
     value={produitMiseAJour.prixVente || ""}
     onChange={(e) => handlePrixVenteChange(e, produit.produit._id)}
   >
@@ -423,7 +423,7 @@ const handleGenerateInvoice = async () => {
       <option disabled>Aucune unité disponible</option>
     )}
   </select>
-  <p>Unité sélectionnée : {produitMiseAJour.uniteVendu || "Aucune"}</p>
+ 
 </td>
 
       </tr>
@@ -447,9 +447,23 @@ const handleGenerateInvoice = async () => {
                     <option value="">Sélectionner le mode de paiement</option>
                     <option value="espèce">Espèce</option>
                     <option value="mobile money">Mobile Money</option>
-                    <option value="a credit">A Crédit</option>
                     <option value="virement bancaire">Virement bancaire</option>
                   </select>
+                  {(modePaiement === "mobile money" || modePaiement === "virement bancaire") && (
+                    <div className="form-group mt-3">
+                      <label htmlFor="referencePaiement">
+                        {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}
+                      </label>
+                      <input
+                        type="text"
+                        id="referencePaiement"
+                        className="form-control"
+                        placeholder="Entrez la référence de la facture"
+                        value={referencePaiement}
+                        onChange={(e) => setReferencePaiement(e.target.value)}
+                      />
+                    </div>
+                  )}
 
             </div>
             <button className="btn btn-info w-50" onClick={handleGenerateInvoice }>

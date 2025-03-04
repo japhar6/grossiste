@@ -17,7 +17,9 @@ function SortieStock() {
   const [searchDate, setSearchDate] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // État pour mobile
   const [sortOrder, setSortOrder] = useState("desc");
-
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   const [entrepots, setEntrepots] = useState([]);
   const [entrepotSelectionne, setEntrepotSelectionne] = useState(null);
@@ -56,9 +58,10 @@ function SortieStock() {
   
 
   useEffect(() => {
-    const fetchCommandes = async () => {
+    const fetchCommandes = async () => {setLoadingEntrepots(true);
       try {
         const response = await axios.get("/api/commandes/TermineeLivree");
+        setLoadingEntrepots(false);
         const sortedCommandes = response.data.sort((a, b) => {
           // Assurez-vous que la date est dans le bon format et qu'elle est valide
           const dateA = new Date(a.dateCommande);
@@ -67,6 +70,7 @@ function SortieStock() {
         });
         setCommandes(sortedCommandes);
       } catch (error) {
+        setLoadingEntrepots(true);
         console.error("Erreur lors de la récupération des commandes", error);
       }
     };
@@ -87,7 +91,7 @@ function SortieStock() {
       });
       return;
     }
-  
+  setLoadingAction(true);
     try {
       const response = await axios.post("/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
@@ -233,6 +237,16 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
     />
   </form>
 </div>
+
+{loadingEntrepots ? (
+              <div className="loading-container" style={{position:'relative' ,top:'-250px'}}>
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : (
+
+
 <div className="table-container" style={{ overflowX: 'hidden',overflowY:'auto' }}>
           <table className="tableMa table-striped mt-3">
             <thead>
@@ -281,8 +295,8 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
                 </tr>
               ))}
             </tbody>
-          </table>
-          </div>
+          </table> 
+          </div> )}
           <div className="modal fade" id="DétailsCommande" tabIndex="-1" aria-labelledby="DétailsCommandeLabel" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered modal-md"> 
 
@@ -325,23 +339,36 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
 </div>
 
 <div className="modal-footer center">
-<label>Choisissez l'entrepôt :</label>
-<select
-  value={entrepotSelectionne}
-  onChange={(e) => setEntrepotSelectionne(e.target.value)}
->
-  <option value="">Sélectionnez un entrepôt</option>
-  {entrepots.map((entrepot) => (
-    <option key={entrepot._id} value={entrepot._id}>
-      {entrepot.nom} - {entrepot.localisation}
-    </option>
-  ))}
-</select>
+{commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && (
+<div className="mb-3">
+  <label htmlFor="entrepotSelectionne" className="form-label">Choisissez l'entrepôt :</label>
+  <select
+    id="entrepotSelectionne"
+    value={entrepotSelectionne}
+    onChange={(e) => setEntrepotSelectionne(e.target.value)}
+    className="form-select" // Classe Bootstrap pour les menus déroulants
+  >
+    <option value="">Sélectionnez un entrepôt</option>
+    {entrepots.map((entrepot) => (
+      <option key={entrepot._id} value={entrepot._id}>
+        {entrepot.nom} - {entrepot.localisation}
+      </option>
+    ))}
+  </select>
+</div>
+  )}
+
 
   <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
   {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && ( // Affiche le bouton seulement si la commande est terminée
-    <button className="btn btn-info" onClick={validerVente}>
-      Valider la vente
+    <button className="btn btn-info" disabled={loadingAction} onClick={validerVente}>
+     {loadingAction ? (
+                <>
+                <span className="spinner-border " style={{ width: '4rem', height: '4rem' }}></span> Chargement...
+                </>
+              ) : (
+              "Valider la sortie"
+              )}
     </button>
   )}
 </div>
