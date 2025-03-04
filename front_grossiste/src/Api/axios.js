@@ -6,7 +6,7 @@ const token = localStorage.getItem('token');
 
 // Crée une instance Axios avec une configuration par défaut
 const instance = axios.create({
-  baseURL: 'https://api.bazariko.com', // URL de base pour toutes les requêtes
+  baseURL: 'http://localhost:5000', // URL de base pour toutes les requêteshttps://api.bazariko.com
   headers: {
      // Ajoute le token d'authentification
      'Content-Type': 'application/json', 

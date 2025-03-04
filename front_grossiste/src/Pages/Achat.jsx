@@ -229,9 +229,9 @@ function AchatProduits() {
                 } else {
                     setProduitsOptions([]);
                     Swal.fire({
-                        title: "Info",
+                        title: "Erreur",
                         text: "Ce fournisseur n'a pas encore de produit.",
-                        icon: "info",
+                        icon: "error",
                         confirmButtonText: "OK",
                     });
                 }
@@ -308,9 +308,9 @@ function AchatProduits() {
                         // Si la réponse est valide mais qu'il n'y a pas de produits
                         setProduitsOptions([]);
                         Swal.fire({
-                            title: "Info",
+                            title: "Erreur",
                             text: "Ce fournisseur n'a pas encore de produit.",
-                            icon: "info",
+                            icon: "error",
                             confirmButtonText: "OK",
                         });
                     }
@@ -318,9 +318,9 @@ function AchatProduits() {
                     // Vérifie si l'erreur provient d'une réponse 404
                     if (error.response && error.response.status === 404) {
                         Swal.fire({
-                            title: "Info",
-                            text: "Ce fournisseur n'a pas encore de produit.",
-                            icon: "info",
+                            title: "Erreur",
+                            text: "Fournisseur non trouvé ou aucun produit disponible.",
+                            icon: "error",
                             confirmButtonText: "OK",
                         });
                     } else {
@@ -355,14 +355,7 @@ function AchatProduits() {
 
                 if (Array.isArray(data) && data.length > 0) {
                     setFournisseurs(data);
-                } else {
-                    Swal.fire({
-                        title: "Info",
-                        text: "Il n'y a pas encore de fournisseurs ! Veuillez en ajouter",
-                        icon: "info",
-                        confirmButtonText: "OK",
-                    });
-                }
+                } 
             } catch (error) {
                 Swal.fire({
                     title: "Erreur",
