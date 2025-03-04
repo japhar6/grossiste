@@ -25,7 +25,7 @@ router.get("/tout/:id", authenticateJWT, userController.getUserById);
 router.get("/seul/:id", authenticateJWT, userController.getUserById);
 
 // Route pour mettre à jour un utilisateur
-router.put("/:id", authenticateJWT, upload.single("photo"), userController.updateUser);
+router.put("/:id", upload.single("photo"), userController.updateUser);
 
 // 📌 Suppression d'un utilisateur - Admin uniquement
 router.delete("/:id", authenticateJWT, authenticateAdmin, userController.deleteUser);

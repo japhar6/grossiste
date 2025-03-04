@@ -159,22 +159,23 @@ const [triMontant, setTriMontant] = useState("desc"); // État pour trier par mo
                             <td>{new Date(commande.createdAt).toLocaleDateString()}</td>
                             <td className="text-noir" style={{ color: "black" }}>
                               <ul className="produit-list">
-                                {commande.produits.map((produit) => (
-                                  <li key={produit._id}>
-                                    {produit.produit.nom} - {produit.quantite} x {produit.prixdevente} ariary
-                                  </li>
-                                ))}
+                              {commande.produits.map((produit) => (
+  <li key={produit._id}>
+    {produit.produit?.nom || "Inconnu"} - {produit.quantite} x {produit.prixdevente} ariary
+  </li>
+))}
+
                               </ul>
                             </td>      
-                            <td>{commande.clientId ? commande.clientId.nom : (commande.commercialId ? commande.commercialId.nom : "Inconnu")}</td>
+                            <td>
+  {commande.clientId?.nom || commande.commercialId?.nom || "Inconnu"}
+</td>
+
 
                 
                             <td>{commande.statut}</td>
-                            <td>
-                              {commande.vendeurId && commande.vendeurId.nom
-                                ? commande.vendeurId.nom
-                                : "Inconnu"}
-                            </td>
+                            <td>{commande.vendeurId?.nom || "Inconnu"}</td>
+
                             <td>{commande.modeLivraison ? commande.modeLivraison :"Non Spécifié"} </td>
                             <td>{commande.totalGeneral} ariary</td>
                           </tr>

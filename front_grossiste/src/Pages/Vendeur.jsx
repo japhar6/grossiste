@@ -27,7 +27,8 @@ function PriseCommande() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-
+  const [nompricipal, setnomprincipal] = useState([]);
+  const [nomcondaire, setnomsecondaire] = useState([]);
   // Définir l'état pour les produits sélectionnés
   const [commande, setCommande] = useState([]);
   const [typeQuantite, setTypeQuantite] = useState("");
@@ -279,160 +280,6 @@ function PriseCommande() {
   };
 
 
-  const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
-    console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
-
-    if (!produit.uniteChoisie) {
-      Swal.fire({
-        title: 'Unité non sélectionnée',
-        text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
-        icon: 'warning',
-        confirmButtonText: 'OK',
-      });
-      return; // Ne rien faire si l'unité n'est pas sélectionnée
-    }
-
-    // Ne rien faire si la quantité demandée est inférieure ou égale à 0
-    if (quantite <= 0) return;
-
-    try {
-      // Trouver l'unité avec la plus grande conversion (la plus petite unité)
-      const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
-        return prev.conversion > current.conversion ? prev : current;
-      });
-
-      console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
-
-      // Comparer l'unité choisie avec l'unité la plus petite
-      let quantiteConvertie = quantite;
-      if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
-        // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
-        quantiteConvertie = quantite * uniteLaPlusPetite.conversion;
-        console.log(`Quantité convertie : ${quantiteConvertie}`);
-      } else {
-        console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
-      }
-
-      // Récupérer la quantité disponible pour le produit dans l'entrepôt principal
-      const response = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
-      const quantiteDisponible = response.data.quantiteDisponible;
-      const uniteDisponible = response.data.unite || 'Unité par défaut';
-      const entrepotIdPrincipal = response.data.entrepotId;
-
-      console.log(`Quantité disponible dans l'entrepôt : ${quantiteDisponible} ${uniteDisponible}`);
-      setEntrepotId(entrepotIdPrincipal);
-
-      // Comparer la quantité convertie avec la quantité disponible
-      if (isChecked) {
-        if (quantiteConvertie > quantiteDisponible) {
-          const result = await Swal.fire({
-            title: 'Quantité Insuffisante',
-            text: `Il n'en reste que (${quantiteDisponible} ${uniteDisponible}) dans l'entrepôt principal. Donc il en manque ${quantiteConvertie - quantiteDisponible}  ${uniteDisponible}.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'OK',
-            cancelButtonText: 'Choisir un autre entrepôt',
-            customClass: {
-              confirmButton: 'btn btn-success',
-              cancelButton: 'btn btn-danger'
-            },
-            buttonsStyling: false,
-          });
-
-          if (result.isConfirmed) {
-            return; // Ne pas ajouter à la commande
-          } else if (result.isDismissed) {
-            // Choisir un autre entrepôt
-            const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
-            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible || 0;
-            const uniteSecondaire = responseSecondaire.data.uniteNom || 'Unité par défaut';
-            const entrepotIdSecondaire = responseSecondaire.data.entrepotId
-            // Afficher les informations de l'autre entrepôt pour débogage
-            console.log(`Quantité disponible dans l'autre entrepôt : ${quantiteDisponibleSecondaire} ${entrepotIdSecondaire}`);
-            console.log(`Unité dans l'autre entrepôt : ${uniteSecondaire}`);
-            setEntrepotId(entrepotIdSecondaire);
-            if (quantiteConvertie > quantiteDisponibleSecondaire) {
-              // Affichage de l'alerte Swal
-              Swal.fire({
-                title: 'Quantité Insuffisante',
-                text: `La quantité maximale disponible est de ${quantiteDisponibleSecondaire} ${uniteSecondaire} dans ${responseSecondaire.data.entrepotNom}.`,
-                icon: 'warning',
-                confirmButtonText: 'OK',
-              });
-
-              // Construction du message de notification
-              const messageNotif = `⚠️ Le produit "${produit.nom}" est insuffisant dans l'entrepôt principal pour une commande. 
-              Il manque ${quantiteConvertie - quantiteDisponible} ${uniteDisponible}. 
-              Un transfert depuis l'entrepôt "${responseSecondaire.data.entrepotNom}" est nécessaire, ou un achat doit être envisagé.`;
-
-              // Préparation des données pour l'API de notification
-              const notificationData = {
-                message: messageNotif
-
-              };
-
-              // Envoi de la notification à l'admin via ton API
-              axios.post('/api/notif/alert-notifications', notificationData)
-                .then(response => {
-                  console.log("Notification envoyée avec succès :", response.data);
-                  toast.warn(`⚠️ Rupture : Besoin de transfert/achat pour ${produit.nom}.`);
-                })
-                .catch(error => {
-                  console.error("Erreur lors de l'envoi de la notification :", error.response?.data || error);
-                  toast.error('Erreur lors de l\'envoi de la notification.');
-                });
-
-              return; // On arrête ici après l'alerte et l'envoi de la notification
-            }
-            else {
-              Swal.fire({
-                title: 'Quantité suffisante',
-                text: `Disponible dans (${responseSecondaire.data.entrepotNom})`,
-                icon: 'info',
-                confirmButtonText: 'OK',
-              });
-              setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-              setCommande((prevCommande) => {
-                const existant = prevCommande.find((item) => item._id === produit._id);
-                const unite = produit.uniteChoisie || (produit.unites && produit.unites.length > 0 ? produit.unites[0].nom : "Unité par défaut");
-                if (existant) {
-                  return prevCommande.map((item) =>
-                    item._id === produit._id
-                      ? { ...item, quantite: item.quantite + quantite, typeQuantite, unite }
-                      : item
-                  );
-                } else {
-                  return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente, unite }];
-                }
-              });
-            }
-          }
-        } else {
-          setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
-          setCommande((prevCommande) => {
-            const existant = prevCommande.find((item) => item._id === produit._id);
-            if (existant) {
-              return prevCommande.map((item) =>
-                item._id === produit._id
-                  ? { ...item, quantite: item.quantite + quantite, typeQuantite }
-                  : item
-              );
-            } else {
-              return [...prevCommande, { ...produit, quantite, typeQuantite, prix: produit.prixdevente }];
-            }
-          });
-        }
-      } else {
-        setCommande((prevCommande) => prevCommande.filter((item) => item._id !== produit._id));
-        setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération de la quantité disponible", error);
-    }
-  };
-
-
-
   const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
 
   const valeurRemise = typeRemise === "remiseGlobale"
@@ -481,13 +328,136 @@ function PriseCommande() {
 
   // Calculer le total final après application de la remise
   const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
+  const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
+    console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
+  
+    // Vérifier si une unité est choisie
+    if (!produit.uniteChoisie) {
+      Swal.fire({
+        title: 'Unité non sélectionnée',
+        text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+      });
+      return; // Ne rien faire si l'unité n'est pas sélectionnée
+    }
+  
+    // Ne rien faire si la quantité demandée est inférieure ou égale à 0
+    if (quantite <= 0) return;
+  
+    try {
+      // Trouver l'unité avec la plus petite conversion (la plus petite unité)
+      const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
+        return prev.conversion > current.conversion ? prev : current;
+      });
+  
+      console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
+  
+      // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
+      let quantiteConvertie = quantite;
+      if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
+        quantiteConvertie = quantite * uniteLaPlusPetite.conversion;
+        console.log(`Quantité convertie : ${quantiteConvertie}`);
+      } else {
+        console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
+      }
+  
+      // Récupérer la quantité disponible dans l'entrepôt principal
+      const responsePrincipal = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
+      const quantiteDisponiblePrincipal = responsePrincipal.data.quantiteDisponible;
+      const entrepotIdPrincipal = responsePrincipal.data.entrepotId;
+      const nomPrincipal = responsePrincipal.data.entrepotNom;  // Récupérer le nom de l'entrepôt principal
+      console.log("nom principal", nomPrincipal);
+      console.log(`Quantité disponible dans l'entrepôt principal : ${quantiteDisponiblePrincipal}`);
+  
+      // Comparer la quantité convertie avec la quantité disponible
+      if (isChecked) {
+        if (quantiteConvertie > quantiteDisponiblePrincipal) {
+          // Si la quantité est insuffisante dans l'entrepôt principal
+          const result = await Swal.fire({
+            title: 'Quantité Insuffisante',
+            text: `Il n'en reste que (${quantiteDisponiblePrincipal}) dans l'entrepôt principal .`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Choisir un autre entrepôt',
+            customClass: {
+              confirmButton: 'btn btn-success',
+              cancelButton: 'btn btn-danger'
+            },
+            buttonsStyling: false,
+          });
+  
+          if (result.isDismissed) {
+            // Si l'utilisateur veut choisir un autre entrepôt, essayer l'entrepôt secondaire
+            const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
+            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
+            const entrepotIdSecondaire = responseSecondaire.data.entrepotId;
+            const nomSecondaire = responseSecondaire.data.entrepotsecondaireNom || " "; 
+            console.log("nom secondaire", nomSecondaire);
+            console.log(`Quantité disponible dans l'entrepôt secondaire : ${quantiteDisponibleSecondaire}`);
+  
+            // Vérifier la quantité dans l'entrepôt secondaire
+            if (quantiteConvertie <= quantiteDisponibleSecondaire) {
+              // Utiliser l'entrepôt secondaire si la quantité est suffisante
+              Swal.fire({
+                title: 'Quantité suffisante',
+                text: `Disponible dans l'entrepôt secondaire ${nomSecondaire}.`,
+                icon: 'info',
+                confirmButtonText: 'OK',
+              });
+  
+              // Ajouter le produit avec l'entrepôt secondaire
+              setCommande((prevCommande) => {
+                return [...prevCommande, {
+                  ...produit,
+                  quantite,
+                  uniteChoisie: produit.uniteChoisie,
+                  entrepotId: entrepotIdSecondaire, // Entrepôt secondaire
+                }];
+              });
+            } else {
+              // Si la quantité est insuffisante dans les deux entrepôts
+              Swal.fire({
+                title: 'Quantité Insuffisante',
+                text: `La quantité est insuffisante dans l'entrepôt secondaire aussi.`,
+                icon: 'warning',
+                confirmButtonText: 'OK',
+              });
+            }
+          }
+        } else {
+          // Si la quantité est suffisante dans l'entrepôt principal
+          Swal.fire({
+            title: 'Quantité suffisante',
+            text: `Disponible dans l'entrepôt principal ${nomPrincipal}.`,
+            icon: 'info',
+            confirmButtonText: 'OK',
+          });
+  
+          // Ajouter le produit avec l'entrepôt principal
+          setCommande((prevCommande) => {
+            return [...prevCommande, {
+              ...produit,
+              quantite,
+              uniteChoisie: produit.uniteChoisie,
+              entrepotId: entrepotIdPrincipal, // Entrepôt principal
+            }];
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la quantité disponible", error);
+    }
+  };
+
 
   const creerCommande = async () => {
     setLoadingAction(true);
     try {
       const vendeurId = localStorage.getItem("userid");
       const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
-
+  
       if (!selectedPersonId) {
         Swal.fire({
           title: "Info",
@@ -497,12 +467,12 @@ function PriseCommande() {
         });
         return;
       }
-
+  
       const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
       const commercialId = type === "commercial" ? selectedPersonId : null;
       const typeClient = type === "client" ? "Client" : "Commercial";
       const statut = "en cours"; // Le statut initial de la commande
-
+  
       if (!vendeurId) {
         Swal.fire({
           title: "Erreur",
@@ -513,29 +483,29 @@ function PriseCommande() {
         setLoadingAction(false); // Mettre ici pour garantir que l'état de chargement s'arrête en cas d'erreur
         return;
       }
-
-      // Crée les produits à partir de l'état de commande
+  
+      // On s'assure que chaque produit a un 'entrepotId' correctement défini.
       const produitsCommande = commande.map((item) => ({
         produit: item._id,
         quantite: item.quantite,
-        uniteChoisie: item.uniteChoisie || "Unité par défaut", // Si une unité est choisie, sinon "Unité par défaut"
+        uniteChoisie: item.uniteChoisie || "Unité par défaut",
+        entrepotId: item.entrepotId || entrepotId, // Vérification de l'entrepotId, sinon utilisation de la variable entrepotId
       }));
-
-      // Préparer les données de la commande
+  
+      console.log("Produits avant envoi :", produitsCommande);
+  
       const commandeData = {
         typeClient,
-        clientId: typeClient === "Client" ? clientId : null, // Dynamique selon le type de client
-        commercialId: typeClient === "Commercial" ? commercialId : null, // Dynamique pour commercial
+        clientId: typeClient === "Client" ? clientId : null,
+        commercialId: typeClient === "Commercial" ? commercialId : null,
         vendeurId,
         produits: produitsCommande,
         statut,
-        entrepotId,
       };
-
-      // Envoie la requête API pour créer la commande
+  
       const response = await axios.post("/api/commandes/ajouter", commandeData);
       console.log("Commande créée avec succès:", response.data);
-
+  
       // Affichage d'une notification de succès
       Swal.fire({
         title: "Commande créée avec succès",
@@ -545,10 +515,10 @@ function PriseCommande() {
       }).then(() => {
         window.location.reload(); // Recharger la page après avoir cliqué sur OK
       });
-
+  
       playSound(); // Assurez-vous que cette fonction est définie et fonctionne comme prévu
       setCommande([]); // Réinitialisation de la commande après la création
-
+  
     } catch (error) {
       console.error("Erreur lors de la création de la commande:", error);
       Swal.fire({
@@ -561,6 +531,7 @@ function PriseCommande() {
       setLoadingAction(false); // Garantie d'arrêter le chargement même en cas d'erreur
     }
   };
+  
 
 
   const getClientNom = (id) => {
@@ -612,7 +583,17 @@ function PriseCommande() {
     }
   };
 
-
+  const supprimerProduit = (produitId, unite) => {
+    setCommande((prevCommande) =>
+      prevCommande.filter((item) => !(item._id === produitId && item.uniteChoisie === unite))
+    );
+  
+    setCheckedProduits((prev) => ({
+      ...prev,
+      [produitId]: false, // Décoche le produit retiré
+    }));
+  };
+  
 
 
 
@@ -902,45 +883,42 @@ function PriseCommande() {
                                 />
                               </td>
                               <td>
-                                <select
-                                  className="form-control"
-                                  onChange={(e) => {
-                                    const selectedUnite = e.target.value;
-                                    const updatedProduit = { ...p }; // Crée une copie de l'objet produit
+                              <select
+  className="form-control"
+  onChange={(e) => {
+    const selectedUnite = e.target.value;
 
-                                    // Met à jour l'unité temporaire dans la copie du produit
-                                    updatedProduit.uniteChoisie = selectedUnite;
+    if (!p.unites || p.unites.length === 0) {
+      console.error(`⚠️ Aucune unité trouvée pour le produit ${p.nom}`);
+      return;
+    }
 
-                                    // Recherche l'unité sélectionnée dans la liste des unités
-                                    const selectedUniteObj = updatedProduit.unites.find((unite) => unite.nom === selectedUnite);
+    const selectedUniteObj = p.unites.find((unite) => unite.nom === selectedUnite);
 
-                                    // Si une unité valide est trouvée, met à jour le prix
-                                    if (selectedUniteObj) {
-                                      updatedProduit.prixdevente = selectedUniteObj.prixdevente; // Mise à jour du prix
-                                    } else {
-                                      console.error(`Unité introuvable pour le produit ${updatedProduit.nom}`);
-                                    }
+    if (!selectedUniteObj) {
+      console.error(`⚠️ Unité introuvable pour le produit ${p.nom}`);
+      return;
+    }
 
-                                    // Met à jour l'état avec la copie modifiée du produit
-                                    setProduits((prevProduits) =>
-                                      prevProduits.map((prod) =>
-                                        prod._id === updatedProduit._id ? updatedProduit : prod
-                                      )
-                                    );
-                                  }}
-                                  value={p.uniteChoisie || ""}
-                                >
-                                  <option value="">Veuillez sélectionner l'unité</option>
-                                  {p.unites && p.unites.length > 0 ? (
-                                    p.unites.map((unite, index) => (
-                                      <option key={index} value={unite.nom}>
-                                        {unite.nom}
-                                      </option>
-                                    ))
-                                  ) : (
-                                    <option value="">Pas d'unité disponible</option>
-                                  )}
-                                </select>
+    const updatedProduit = {
+      ...p,
+      uniteChoisie: selectedUnite,
+      prixdevente: selectedUniteObj.prixdevente,
+    };
+
+    setProduits((prevProduits) =>
+      prevProduits.map((prod) => (prod._id === updatedProduit._id ? updatedProduit : prod))
+    );
+  }}
+  value={p.uniteChoisie || ""}
+>
+  <option value="">Veuillez sélectionner l'unité</option>
+  {p.unites?.map((unite) => (
+    <option key={unite.nom} value={unite.nom}>
+      {unite.nom}
+    </option>
+  ))}
+</select>
 
                               </td>
                               <td>
@@ -1002,6 +980,14 @@ function PriseCommande() {
                         <td>{item.prixdevente} Ariary</td>
                         <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
                         <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+                        <td>
+        <button
+          className="btn btn-danger btn-sm"
+          onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
+        >
+          <i className="fa fa-trash"></i>
+        </button>
+      </td>
                       </tr>
                     ))}
                   </tbody>

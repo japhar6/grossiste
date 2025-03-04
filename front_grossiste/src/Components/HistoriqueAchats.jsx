@@ -33,7 +33,10 @@ const HistoriqueAchats = () => {
             achat.fournisseur?.nom?.toLowerCase().includes(searchTerm.toLowerCase())) &&
         (searchDate === "" || compareDate(achat.dateAchat, searchDate)) &&
         (searchCategory === "" || achat.produit?.categorie === searchCategory) &&
-        (searchEntrepot === "" || achat.entrepot?._id === searchEntrepot)
+        (searchEntrepot === "" || achat.entrepot?.nom === searchEntrepot)
+
+
+
     );
 
     const getLargestUnit = (product) => {
@@ -48,7 +51,11 @@ const HistoriqueAchats = () => {
 
     // Collecte des catégories et entrepôts uniques pour le filtrage
     const categories = [...new Set(achats.map(achat => achat.produit?.categorie))];
-    const entrepots = [...new Set(achats.map(achat => achat.entrepot))];
+    const entrepots = [...new Set(achats
+        .map(achat => achat.entrepot)
+        .filter(entrepot => entrepot) // Filtrer les valeurs nulles
+    )];
+
 
     return (
         <div>
@@ -80,19 +87,24 @@ const HistoriqueAchats = () => {
                     ))}
                 </select>
                 <select
-    className="form-control p-2 mt-3 m-2"
-    value={searchEntrepot}
-    onChange={(e) => setSearchEntrepot(e.target.value)}
->
-    <option value="">Sélectionner un entrepôt</option>
-    {[
-        ...new Set(entrepots.map((entrepot) => entrepot.nom)) // Filtrer les doublons par nom d'entrepôt
-    ].map((nomEntrepot, index) => (
-        <option key={index} value={nomEntrepot}>
-            {nomEntrepot}
-        </option>
-    ))}
-</select>
+                    className="form-control p-2 mt-3 m-2"
+                    value={searchEntrepot}
+                    onChange={(e) => setSearchEntrepot(e.target.value)}
+                >
+                    <option value="">Sélectionner un entrepôt</option>
+                    {[
+                        ...new Set(
+                            entrepots
+                                ?.filter((entrepot) => entrepot && entrepot.nom) // Filtrer `null` et les objets sans `nom`
+                                .map((entrepot) => entrepot.nom)
+                        )
+                    ].map((nomEntrepot, index) => (
+                        <option key={index} value={nomEntrepot}>
+                            {nomEntrepot}
+                        </option>
+                    ))}
+                </select>
+
 
             </div>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
@@ -121,8 +133,9 @@ const HistoriqueAchats = () => {
                                         <td>{achat.fournisseur?.nom || "Non spécifié"}</td>
                                         <td>{achat.quantite} {getLargestUnit(achat.produit)}</td>
                                         <td>{achat.entrepot?.nom || "Non spécifié"}</td>
-                                        <td>{achat.prixAchat.toLocaleString()} Ar</td>
-                                        <td>{achat.total.toLocaleString()} Ar</td>
+                                        <td>{achat.prixAchat ? achat.prixAchat.toLocaleString() : "0"} Ar</td>
+                                        <td>{achat.total ? achat.total.toLocaleString() : "0"} Ar</td>
+
                                         <td>{new Date(achat.dateAchat).toLocaleDateString('fr-FR', {
                                             year: 'numeric',
                                             month: 'long',

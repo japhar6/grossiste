@@ -198,8 +198,15 @@ function Profil() {
                           <p className="alert alert-light">
                             <strong>Embauché le:</strong> {user.createdAt}
                           </p>
-                          <button onClick={() => setIsEditing(true)}>
-                            Modifier
+                          <button onClick={() => setIsEditing(true)} disabled={loadingAction}>
+                          {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+ "Modifier"
+  )}
+                 
                           </button>
                         </div>
                       </>

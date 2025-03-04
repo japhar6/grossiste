@@ -13,10 +13,11 @@ const commandeSchema = new mongoose.Schema({
             prixdevente: { type: Number, required: true },
             total: { type: Number, required: true },
             prixApresRemise: { type: Number, required: true },
-            montantApresRemise: { type: Number }, // Nouveau champ
+            montantApresRemise: { type: Number },
             typeRemise: { type: String },
             valeurRemise: { type: Number },
-            uniteChoisie: { type: String }
+            uniteChoisie: { type: String },
+            entrepotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot' },
         }
     ],
     totalGeneral: { type: Number, required: true },
@@ -29,7 +30,7 @@ const commandeSchema = new mongoose.Schema({
     valeurRemise: { type: Number },
     referenceFacture: { type: String, unique: true },
     dateSortie: { type: Date, default: null },
-    entrepotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot' },
+
     modeLivraison: { 
         type: String, 
         enum: ["magasin", "fournisseur"], 

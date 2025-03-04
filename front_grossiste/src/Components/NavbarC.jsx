@@ -4,6 +4,7 @@ import '../Styles/Navbar.css'
 function Header() {
     const [email, setEmail] = useState("");
     const [currentTime, setCurrentTime] = useState("");
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
    
     useEffect(() => {
@@ -24,28 +25,38 @@ function Header() {
     return () => clearInterval(intervalId);
     }, []);
     
+    const handleLogout = () => {
+      Swal.fire({
+        title: "Êtes-vous sûr ?",
+        text: "Vous allez être déconnecté !",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Oui, déconnecter !",
+        cancelButtonText: "Annuler",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setIsLoggingOut(true); // 🔥 Active le loading
+          setTimeout(() => {
+            localStorage.removeItem("token");
+            window.location.href = "/";
+          }, 2000); // Simule un délai de 2 secondes
+        }
+      });
+    };
     
-  const handleLogout = () => {
-    Swal.fire({
-      title: "Êtes-vous sûr ?",
-      text: "Vous allez être déconnecté !",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Oui, déconnecter !",
-      cancelButtonText: "Annuler",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        localStorage.removeItem("token");  
-        window.location.href = "/";   
-      }
-    });
-  };
 
   return (
     <header>
       <nav className="navbar navbar-expand-lg navbar-light navbar-custom">
+      {isLoggingOut && (
+  <div className="logout-overlay">
+    <div className="loading-spinner"></div>
+    <p>Déconnexion en cours...</p>
+  </div>
+)}
+
         <div className="container-fluid">
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
@@ -61,13 +72,14 @@ function Header() {
                 <a className="nav-link" href="/profilc">{email}</a>
               </li>
        
-              <li
-                className="nav-item"
-                onClick={handleLogout}
-                style={{ cursor: "pointer" }}
-              >
-                <i className="fa-solid fa-right-from-bracket notification-icon mt-2 text-success"></i>
-              </li>
+            <li className="nav-item" onClick={handleLogout} style={{ cursor: "pointer" }}>
+  {isLoggingOut ? (
+    <i className="fa-solid fa-spinner fa-spin mt-2 text-danger"></i> // 🔥 Spinner de chargement
+  ) : (
+    <i className="fa-solid fa-right-from-bracket notification-icon mt-2 text-success"></i>
+  )}
+</li>
+
               <span className="heure">{currentTime}</span>
             </ul>
           </div>

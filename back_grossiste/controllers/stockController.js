@@ -148,13 +148,14 @@ exports.getQuantiteProduitByIde = async (req, res) => {
         }
       });
     }
+    const entrepotSecondaireNom = entrepotMaxQuantite ? entrepotMaxQuantite.nom : " ";
 
     // Ajouter la quantité maximale, le nom de l'entrepôt et l'unité au produit
     const produitAvecQuantite = {
       ...produit.toObject(),
       quantiteDisponible: quantiteMaximale,
-      entrepotNom: entrepotMaxQuantite,
-      entrepotId :entrepotIdMaxQuantite,
+      entrepotsecondaireNom: entrepotMaxQuantite,
+      entrepotId :entrepotSecondaireNom,
       uniteNom: uniteMaxQuantite // Ajouter l'unité à la réponse
     };
 

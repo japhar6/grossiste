@@ -379,14 +379,7 @@ function AchatProduits() {
 
                 if (Array.isArray(data) && data.length > 0) {
                     setEntrepots(data);
-                } else {
-                    Swal.fire({
-                        title: "Erreur",
-                        text: "Impossible de récupérer les entrepôts.",
-                        icon: "error",
-                        confirmButtonText: "OK",
-                    });
-                }
+                } 
             } catch (error) {
                 Swal.fire({
                     title: "Erreur",

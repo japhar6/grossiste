@@ -2,10 +2,11 @@ const Commande = require("../models/Commandes");
 const Produit = require("../models/Produits");
 const Client = require("../models/Client");
 const Commercial = require("../models/Commercial");
+const Entrepot = require("../models/Entrepot");
 
 exports.ajouterCommande = async (req, res) => {
     try {
-        const { typeClient, clientId, commercialId, vendeurId, produits, statut,entrepotId } = req.body;
+        const { typeClient, clientId, commercialId, vendeurId, produits, statut, entrepotId } = req.body;
 
         // Vérification du typeClient
         if (!typeClient || !["Client", "Commercial"].includes(typeClient)) {
@@ -46,45 +47,45 @@ exports.ajouterCommande = async (req, res) => {
             let typeRemise = "aucune";
             let valeurRemise = 0;
             let prixApresRemise = prixdevente;
-            let montantApresRemise = totalProduit;  // Initialisation avec le total produit
+            let montantApresRemise = totalProduit;
         
-            // Vérification des remises sur le client/commercial
             if (typeClient === "Client" && clientOuCommercial.remises) {
                 if (clientOuCommercial.remises.remiseParProduit) {
                     typeRemise = "remiseParProduit";
                     valeurRemise = clientOuCommercial.remises.remiseParProduit;
-                    prixApresRemise = prixdevente * (1 - valeurRemise / 100);  // Remise par produit
+                    prixApresRemise = prixdevente * (1 - valeurRemise / 100);
                 }
-                
-                // Ajouter la logique pour la remise fixe
+        
                 if (clientOuCommercial.remises.remiseFixe) {
                     typeRemise = "remiseFixe";
-                    valeurRemise = clientOuCommercial.remises.remiseFixe;  // Récupérer la remise fixe
-                    montantApresRemise = totalProduit - valeurRemise;  // Appliquer la remise fixe
+                    valeurRemise = clientOuCommercial.remises.remiseFixe;
+                    montantApresRemise = totalProduit - valeurRemise;
                 }
-                // Ajouter la logique pour la remise globale
+        
                 if (clientOuCommercial.remises.remiseGlobale) {
                     typeRemise = "remiseGlobale";
-                    valeurRemise = clientOuCommercial.remises.remiseGlobale;  // Récupérer la remise globale (en %)
-                    montantApresRemise = totalProduit - (totalProduit * valeurRemise / 100);  // Appliquer la remise globale sur le total produit
+                    valeurRemise = clientOuCommercial.remises.remiseGlobale;
+                    montantApresRemise = totalProduit - (totalProduit * valeurRemise / 100);
                 }
             }
         
-            const totalApresRemise = montantApresRemise;  // Total après remise fixe
+            const totalApresRemise = montantApresRemise;
         
+            // Retourner les détails de chaque produit avec le champ entrepotId
             return {
                 produit: produit._id,
                 quantite: produitData.quantite,
                 prixdevente,
                 total: totalProduit,
                 prixApresRemise,
-                montantApresRemise,  // Ajout de montant après remise fixe
+                montantApresRemise,
                 typeRemise,
                 valeurRemise,
-                entrepotId,
+                entrepotId: produitData.entrepotId || entrepotId,  // Assurez-vous de prendre l'entrepotId spécifique pour chaque produit
                 uniteChoisie: uniteChoisie.nom
             };
         }));
+        
         
         // Calcul du total général des produits après la remise par produit et remise fixe
         let totalGeneral = produitsDetails.reduce((acc, produit) => acc + produit.montantApresRemise, 0);
@@ -95,13 +96,16 @@ exports.ajouterCommande = async (req, res) => {
             clientId: typeClient === "Client" ? clientId : null,
             commercialId: typeClient === "Commercial" ? commercialId : null,
             vendeurId,
-            entrepotId,
+          
             produits: produitsDetails,
             totalGeneral,  // Ce total général inclut désormais la remise fixe
             statut
         });
         
         await nouvelleCommande.save();
+
+        console.log("Commande créée avec succès :", nouvelleCommande);
+
 
         // Si la commande est activée, réinitialiser la remise du client à zéro
         if (statut === "en cours" && typeClient === "Client" && clientOuCommercial) {
@@ -115,13 +119,13 @@ exports.ajouterCommande = async (req, res) => {
             message: "Commande créée avec succès.",
             commande: nouvelleCommande
         });        
-        
 
     } catch (error) {
         console.error("Erreur lors de l'ajout de la commande :", error);
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 
