@@ -129,38 +129,39 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
 exports.validerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;
-        const { entrepotId, modePaiement, dateLimiteCredit, referencePaiement } = req.body; // Déstructuration ici
+        const { entrepotId, modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque } = req.body; // Déstructuration ici
 
         console.log("🔍 Validation du panier - ID du panier:", panierId, "Entrepôt:", entrepotId);
 
         // Trouver le panier existant
-        const panier = await Panier.findById(panierId);
+         const panier = await Panier.findById(panierId);
         if (!panier) {
             return res.status(404).json({ message: "Panier non trouvé" });
         }
 
-        // Si un mode de paiement est fourni, mettez-le à jour dans le panier
         if (modePaiement) {
             panier.modePaiement = modePaiement;
         }
 
-        // Si le mode de paiement est "a crédit", ajouter la date limite de crédit
         if (modePaiement === "crédit" && dateLimiteCredit) {
             panier.dateLimiteCredit = dateLimiteCredit;
         }
 
-        // Si le mode de paiement est "virement bancaire" ou "mobile money", ajouter la référence de paiement et changer le statut à "payé"
-        if ((modePaiement === "virement bancaire" || modePaiement === "mobile money") && referencePaiement) {
+        if (["virement bancaire", "mobile money", "versement"].includes(modePaiement) && referencePaiement) {
             panier.referencePaiement = referencePaiement;
-            panier.statut = "payé"; // Changer le statut à "payé" pour ces modes de paiement
+            panier.statut = "payé";
         }
 
-        // Si le mode de paiement est "espèce", changer directement le statut à "payé" sans référence de paiement
         if (modePaiement === "espèce") {
-            panier.statut = "payé"; // Changer le statut à "payé" pour espèce
+            panier.statut = "payé";
         }
 
-        // Sauvegarder les informations mises à jour dans le panier
+        if (modePaiement === "chèque" && referencePaiement && dateEncaissementCheque) {
+            panier.referencePaiement = referencePaiement;
+            panier.dateEncaissementCheque = dateEncaissementCheque;
+            panier.statut = "payé";
+        }
+
         await panier.save();
 
         const achats = await Achat.find({ _id: { $in: panier.achats } }).populate('produit');
@@ -195,6 +196,7 @@ exports.validerPanier = async (req, res) => {
                 modePaiement: panier.modePaiement,
                 dateLimiteCredit: panier.dateLimiteCredit,
                 referencePaiement: panier.referencePaiement,
+                dateEncaissementCheque: panier.dateEncaissementCheque,
                 achats
             }
         });

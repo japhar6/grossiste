@@ -20,12 +20,23 @@ const HistoriqueAchats = () => {
         fetchAchats();
     }, []);
 
+    // Fonction pour comparer les dates sans tenir compte de l'heure
+    const compareDate = (date1, date2) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        // Comparer uniquement l'année, le mois et le jour
+        return d1.setHours(0, 0, 0, 0) === d2.setHours(0, 0, 0, 0);
+    };
+
     const filteredAchats = achats.filter(achat =>
         (achat.produit?.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             achat.fournisseur?.nom?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (searchDate === "" || new Date(achat.dateAchat).toLocaleDateString() === new Date(searchDate).toLocaleDateString()) &&
+        (searchDate === "" || compareDate(achat.dateAchat, searchDate)) &&
         (searchCategory === "" || achat.produit?.categorie === searchCategory) &&
-        (searchEntrepot === "" || achat.entrepot === searchEntrepot)
+        (searchEntrepot === "" || achat.entrepot?.nom === searchEntrepot)
+
+
+
     );
 
     const getLargestUnit = (product) => {
@@ -38,9 +49,13 @@ const HistoriqueAchats = () => {
         return largestUnit.nom || "Inconnu";
     };
 
-    // Collect unique categories and entrepots for filtering
+    // Collecte des catégories et entrepôts uniques pour le filtrage
     const categories = [...new Set(achats.map(achat => achat.produit?.categorie))];
-    const entrepots = [...new Set(achats.map(achat => achat.entrepot))];
+    const entrepots = [...new Set(achats
+        .map(achat => achat.entrepot)
+        .filter(entrepot => entrepot) // Filtrer les valeurs nulles
+    )];
+
 
     return (
         <div>
@@ -77,12 +92,19 @@ const HistoriqueAchats = () => {
                     onChange={(e) => setSearchEntrepot(e.target.value)}
                 >
                     <option value="">Sélectionner un entrepôt</option>
-                    {entrepots.map((entrepot, index) => (
-                        <option key={index} value={entrepot._id}>
-                            {entrepot.nom}
+                    {[
+                        ...new Set(
+                            entrepots
+                                ?.filter((entrepot) => entrepot && entrepot.nom) // Filtrer null et les objets sans nom
+                                .map((entrepot) => entrepot.nom)
+                        )
+                    ].map((nomEntrepot, index) => (
+                        <option key={index} value={nomEntrepot}>
+                            {nomEntrepot}
                         </option>
                     ))}
                 </select>
+
 
             </div>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
@@ -111,8 +133,9 @@ const HistoriqueAchats = () => {
                                         <td>{achat.fournisseur?.nom || "Non spécifié"}</td>
                                         <td>{achat.quantite} {getLargestUnit(achat.produit)}</td>
                                         <td>{achat.entrepot?.nom || "Non spécifié"}</td>
-                                        <td>{achat.prixAchat.toLocaleString()} Ar</td>
-                                        <td>{achat.total.toLocaleString()} Ar</td>
+                                        <td>{achat.prixAchat ? achat.prixAchat.toLocaleString() : "0"} Ar</td>
+                                        <td>{achat.total ? achat.total.toLocaleString() : "0"} Ar</td>
+
                                         <td>{new Date(achat.dateAchat).toLocaleDateString('fr-FR', {
                                             year: 'numeric',
                                             month: 'long',

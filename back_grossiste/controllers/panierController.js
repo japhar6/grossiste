@@ -11,7 +11,7 @@ exports.creerPanier = async (req, res) => {
             totalGeneral: 0,  // Vous pouvez calculer ce total à partir des achats
             modePaiement: modePaiement || "espèce",  // Si pas précisé, valeur par défaut "espèce"
             dateLimiteCredit: modePaiement === "crédit" ? dateLimiteCredit : null, // Ajouter la date limite si crédit
-            referencePaiement: (modePaiement === "virement bancaire" || modePaiement === "mobile money") ? referencePaiement : null, // Ajouter la référence si virement ou mobile money
+            referencePaiement: (modePaiement === "virement bancaire" || modePaiement === "mobile money" || modePaiement === "versement") ? referencePaiement : null, // Ajouter la référence si virement ou mobile money
             statut: "non payé" // Par défaut, le panier est non payé
         });
 

@@ -52,6 +52,7 @@ function AchatProduits() {
     const [modePaiement, setModePaiement] = useState('');
     const [dateLimiteCredit, setDateLimiteCredit] = useState('');
     const [referencePaiement, setReferencePaiement] = useState('');
+    const [dateEncaissementCheque, setDateEncaissementCheque] = useState(''); // Ajout de la date d'encaissement pour le chèque
 
 
     const handleFournisseurChange = (e) => {
@@ -577,11 +578,14 @@ function AchatProduits() {
     };
     const handleModePaiementChange = (e) => {
         setModePaiement(e.target.value);
-        if (e.target.value !== 'a crédit') {
+        if (e.target.value !== 'crédit') {
             setDateLimiteCredit(''); // Réinitialiser la date limite de crédit si le mode de paiement n'est pas à crédit
         }
-        if (e.target.value !== 'virement bancaire' && e.target.value !== 'mobile money') {
-            setReferencePaiement(''); // Réinitialiser la référence de paiement si le mode de paiement n'est pas virement ou mobile money
+        if (e.target.value !== 'virement bancaire' && e.target.value !== 'mobile money' && e.target.value !== 'versement') {
+            setReferencePaiement(''); // Réinitialiser la référence de paiement si le mode de paiement n'est pas virement, mobile money ou versement
+        }
+        if (e.target.value !== 'chèque') {
+            setDateEncaissementCheque(''); // Réinitialiser la date d'encaissement si ce n'est pas un paiement par chèque
         }
     };
 
@@ -592,6 +596,11 @@ function AchatProduits() {
     const handleReferencePaiementChange = (e) => {
         setReferencePaiement(e.target.value);
     };
+
+    const handleDateEncaissementChequeChange = (e) => {
+        setDateEncaissementCheque(e.target.value);
+    };
+
 
 
     const validerPanier = async () => {
@@ -607,7 +616,7 @@ function AchatProduits() {
         }
 
         // Si modePaiement est à crédit, vérifier la date limite
-        if (modePaiement === 'a crédit' && !dateLimiteCredit) {
+        if (modePaiement === 'crédit' && !dateLimiteCredit) {
             Swal.fire({
                 title: "Erreur",
                 text: "La date limite de crédit est obligatoire pour un paiement à crédit.",
@@ -618,10 +627,21 @@ function AchatProduits() {
         }
 
         // Si modePaiement est virement bancaire ou mobile money, vérifier la référence
-        if ((modePaiement === 'virement bancaire' || modePaiement === 'mobile money') && !referencePaiement) {
+        if ((modePaiement === 'virement bancaire' || modePaiement === 'mobile money' || modePaiement === 'versement') && !referencePaiement) {
             Swal.fire({
                 title: "Erreur",
                 text: "La référence du paiement est obligatoire pour ce mode de paiement.",
+                icon: "error",
+                confirmButtonText: "OK",
+            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
+            return;
+        }
+
+        // Si modePaiement est chèque, vérifier la référence et la date d'encaissement
+        if (modePaiement === 'chèque' && (!referencePaiement || !dateEncaissementCheque)) {
+            Swal.fire({
+                title: "Erreur",
+                text: "La référence du paiement et la date d'encaissement du chèque sont obligatoires.",
                 icon: "error",
                 confirmButtonText: "OK",
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
@@ -634,6 +654,7 @@ function AchatProduits() {
                 modePaiement: modePaiement,
                 dateLimiteCredit: dateLimiteCredit,
                 referencePaiement: referencePaiement,
+                dateEncaissementCheque: dateEncaissementCheque, // Envoi de la date d'encaissement pour le paiement par chèque
             });
 
             if (response.status !== 200) {
@@ -659,8 +680,6 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
         }
     };
-
-
 
     const filteredHistorique = historiqueAchats.filter((achat) => {
         const matchesFournisseur = achat.fournisseur.toLowerCase().includes(searchTerm.toLowerCase());
@@ -720,8 +739,8 @@ function AchatProduits() {
                             {!panierCreer && (
                                 <div className="filtrage bg-light p-3 mt-3">
 
-                                    <button   className="btn btn-success panierr"
-                    style={{ width: "auto" }} disabled={loadingAction} onClick={creerNouveauPanier}>
+                                    <button className="btn btn-success panierr"
+                                        style={{ width: "auto" }} disabled={loadingAction} onClick={creerNouveauPanier}>
 
 
                                         {loadingAction ? (
@@ -1027,8 +1046,8 @@ function AchatProduits() {
                                             />
 
 
-                                            <button   className="btn btn-success mt-3"
-                        style={{width:'auto'}}onClick={ajouterAuPanier} disabled={loadingAction}>
+                                            <button className="btn btn-success mt-3"
+                                                style={{ width: 'auto' }} onClick={ajouterAuPanier} disabled={loadingAction}>
 
 
                                                 {loadingAction ? (
@@ -1069,7 +1088,7 @@ function AchatProduits() {
                                         <table id="table-to-export" className="tableSo table-striped">
                                             <thead>
                                                 <tr>
-                                                <th className="bg-success">Total</th>
+                                                    <th className="bg-success">Total</th>
                                                     <th className="bg-success">Quantité Initiale</th>
                                                     {fournisseurInfo?.type === "ristourne" && (
                                                         <>
@@ -1117,8 +1136,6 @@ function AchatProduits() {
                                                     </option>
                                                 ))}
                                             </select>
-
-                                            {/* Sélectionner le mode de paiement */}
                                             <select
                                                 className="form-control custom-select"
                                                 value={modePaiement}
@@ -1129,9 +1146,10 @@ function AchatProduits() {
                                                 <option value="virement bancaire">Virement bancaire</option>
                                                 <option value="mobile money">Mobile Money</option>
                                                 <option value="espèce">Espèce</option>
+                                                <option value="versement">Versement</option> {/* Ajout de l'option Versement */}
+                                                <option value="chèque">Chèque</option> {/* Ajout de l'option Chèque */}
                                             </select>
 
-                                            {/* Date limite de crédit (afficher uniquement si modePaiement est à crédit) */}
                                             {modePaiement === 'crédit' && (
                                                 <input
                                                     type="date"
@@ -1142,14 +1160,23 @@ function AchatProduits() {
                                                 />
                                             )}
 
-                                            {/* Référence de paiement (afficher si modePaiement est virement ou mobile money) */}
-                                            {(modePaiement === 'virement bancaire' || modePaiement === 'mobile money') && (
+                                            {(modePaiement === 'virement bancaire' || modePaiement === 'mobile money' || modePaiement === 'versement' || modePaiement === 'chèque') && (
                                                 <input
                                                     type="text"
                                                     placeholder="Entrer la référence du paiement"
                                                     className="form-control"
                                                     value={referencePaiement}
                                                     onChange={handleReferencePaiementChange}
+                                                />
+                                            )}
+
+                                            {modePaiement === 'chèque' && (
+                                                <input
+                                                    type="date"
+                                                    placeholder="Entrer la date d'encaissement du chèque"
+                                                    className="form-control"
+                                                    value={dateEncaissementCheque}
+                                                    onChange={handleDateEncaissementChequeChange}
                                                 />
                                             )}
                                         </div>

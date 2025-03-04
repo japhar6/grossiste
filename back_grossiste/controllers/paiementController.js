@@ -2,6 +2,7 @@ const Paiement = require("../models/Paiement");
 const Commande = require("../models/Commandes");
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const { sendNotificationToAdmin } = require('../service/payementService');
+const FoncdCaisse = require("../models/FondCaisse");
 
 
 const mongoose = require("mongoose");
@@ -68,6 +69,17 @@ exports.validerpayement = async (req, res) => {
         // Associer le paiement à la commande
         commande.paiement = paiement._id;
         await commande.save();
+
+        // Si le paiement n'est pas à crédit, ajouter une entrée dans FoncdCaisse
+        if (statutPaiement !== "non payé") {
+            const foncdCaisse = new FoncdCaisse({
+                totalPaiement: paiement.totalPaiement,
+                datePaiement: paiement.datePaiement || new Date() // Utilisation de la date actuelle si datePaiement est null
+            });
+
+            // Sauvegarder l'entrée de FoncdCaisse
+            await foncdCaisse.save();
+        }
 
         // Répondre avec les détails du paiement
         return res.status(200).json({

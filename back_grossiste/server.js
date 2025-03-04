@@ -40,6 +40,10 @@ const venteRoutes = require("./routes/venteRoute");
 const personnelRoutes = require("./routes/personnelRoute");
 
 const notifRoutes = require("./routes/notificationRoute");
+const decaissementRoute = require("./routes/decaissementRoute");
+const fondCaisseRoute = require("./routes/fondCaisseRoute");
+
+
 
 // Middleware
 app.use(express.json());
@@ -70,6 +74,8 @@ app.use("/api/comercial", comercialeRoutes);
 app.use("/api/ventes", venteRoutes);
 app.use("/api/personnels", personnelRoutes);
 app.use("/api/notif", notifRoutes);
+app.use("/api/decaissement", decaissementRoute);
+app.use("/api/fondCaisse", fondCaisseRoute);
 
 app.use('/api/commission', commissionRoutes); 
 // Route de test
