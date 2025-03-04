@@ -125,8 +125,7 @@ function Profil() {
                 <div className="user-info">
                   <div className="photos-container">
                     <img
-                      src={`http://localhost:5000${user.photo}`}
-                      alt="Photo de profil"
+                              src={`https://api.bazariko.com${user.photo}`}    alt="Photo de profil"
                       className="user-photo"
                     />
                          <h2 className="gradient-text mt-5">Mon Profil</h2>

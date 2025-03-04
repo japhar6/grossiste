@@ -16,7 +16,7 @@ import ListeProduits from './Pages/Produits.jsx';
 import AchatProduits from './Pages/Achat.jsx';
 import Entrepot from './Pages/Entrepot.jsx';
 import PriseCommande from './Pages/PriseCommande.jsx';
-import Caisse from './Pages/Caisse.jsx';
+
 import SortieCommande from './Pages/SortieCommande.jsx';
 import Stock from './Pages/Stock.jsx';
 import StockMaga from './Pages/Stockmaga.jsx';
@@ -69,7 +69,7 @@ function App() {
           <Route path='/produit' element={<ListeProduits />} />
           <Route path='/fournisseur' element={<Fournisseur />} />
           <Route path='/personnel' element={<Personnel />} />
-          <Route path='/caisse' element={<Caisse />} />
+        
           <Route path='/entrepot' element={<Entrepot />} />
           <Route path='/stock' element={<Stock />} />
           <Route path='/transfertAdmin' element={<TransfertAdmin />} />

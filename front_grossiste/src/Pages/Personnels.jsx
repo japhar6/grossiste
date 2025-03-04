@@ -462,8 +462,10 @@ function Personnels() {
           {selectedUser && (
             <div className="user-card">
               <div className="photo-cont mb-5 center">
-                <img
-                  src={`http://localhost:5000${selectedUser.photo}`}
+                <img          
+                
+                src={`https://api.bazariko.com${selectedUser.photo}`}
+               
                   alt="Photo de profil"
                   className="user-photo"
                 />
@@ -529,7 +531,7 @@ function Personnels() {
             <form onSubmit={handleEditSubmit}>
               <div className="photo-conter text-center">
                 <img
-                  src={`http://localhost:5000${selectedUser.photo}`}
+                 src={`https://api.bazariko.com${selectedUser.photo}`}
                   alt="Photo de profil"
                   className="user-photo"
                 />
