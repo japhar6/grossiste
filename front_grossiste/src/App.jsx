@@ -32,7 +32,7 @@ import PaiementCom from './Pages/PaiementCom.jsx';
 import ForbiddenPage from './Pages/ForbiddenPage.jsx';
 import RetourStockCom from './Pages/RetourStockCom.jsx';
 import FactureNormal from './Components/FactureNormal.jsx';
-
+import Gestion from './Pages/Gestion_Prix.jsx';
 import HistoCA from './Pages/HistoC.jsx';
 import HistoVA from './Pages/HistoV.jsx';
 import HistoSortir from './Pages/HistoMaga.jsx';
@@ -50,6 +50,9 @@ import FactureCom  from "./Pages/FactPaiement.jsx";
 import FactureSans  from "./Pages/FactsansPrix.jsx";
 import ChiffreAffaire from './Pages/ChiffreAffaire.jsx';
 import FactureRemAd from "./Pages/FactureRemiseAdmin.jsx";
+import AchatGest from "./Pages/AchatGest.jsx";
+import Deccaisement from "./Pages/Decaissement.jsx";
+import Histodecaisse from "./Pages/HistoDecaisse.jsx";
 
 
 function App() {
@@ -84,7 +87,8 @@ function App() {
           <Route path='/creerinventaire' element={<CreerInventaire />} />
           <Route path='/notif' element={<Notification />} />
           <Route path='/HistoAcha' element={<HistoAcha />} />
-         
+          <Route path="/histodecaisse" element={<Histodecaisse />} />
+        
           <Route path="/factureadmin" element={<FactureAdmin />} />
         
           <Route path='/factureremisead' element={<FactureRemAd />} />
@@ -95,6 +99,11 @@ function App() {
 
         </Route>
 
+{/* Routes VENDEUR */}
+<Route element={<PrivateRoute allowedRoles={["gestion_prix"]} />}>
+<Route path='/gestionprix' element={<Gestion />} />
+<Route path='/achatgest' element={<AchatGest />} />
+        </Route>
         {/* Routes VENDEUR */}
         <Route element={<PrivateRoute allowedRoles={["vendeur"]} />}>
           <Route path='/vendeur' element={<Vendeur />} />
@@ -119,7 +128,7 @@ function App() {
           <Route path='/profilc' element={<ProfilC />} />
           <Route path='/histoc' element={<HistoC />} />
           <Route path='/payerCredit' element={<PayerCredit />} />
-
+          <Route path='/decaisser' element={<Deccaisement />} />
           <Route path='/PaiementCom' element={<PaiementCom />} />
           <Route path='/FactureNormal' element={<FactureNormal />} />
           <Route path='/FactureRemise' element={<FactureRem />} />

@@ -35,7 +35,7 @@ function Dashboard() {
         console.error('Erreur lors du chargement des données:', error);
         setError('Erreur lors du chargement des statistiques.');
       } finally {
-        setLoading(false);// ✅ Désactive le chargement après la récupération
+        setLoading(false);
       }
     };
 

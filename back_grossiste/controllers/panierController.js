@@ -30,7 +30,31 @@ exports.getAllPaniers = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la récupération des paniers", error });
     }
 };
-
+exports.modifierStatutPanier = async (req, res) => {
+    const panierId = req.params.id; // L'ID du panier dans l'URL
+    const { statut } = req.body; // Le nouveau statut envoyé dans le corps de la requête
+  
+    try {
+      // Vous pouvez ici chercher le panier en fonction de l'ID et mettre à jour son statut
+      const panier = await Panier.findById(panierId); // Remplacez par votre méthode de recherche du panier
+      
+      if (!panier) {
+        return res.status(404).json({ message: "Panier non trouvé" });
+      }
+  
+      // Modifiez le statut du panier
+      panier.statut = statut;
+  panier.modePaiement='espèce';
+      // Sauvegarder les modifications
+      await panier.save();
+  
+      // Retourner la réponse
+      res.status(200).json({ message: "Statut du panier modifié avec succès", panier });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erreur lors de la modification du statut du panier" });
+    }
+  };
 exports.supprimerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;

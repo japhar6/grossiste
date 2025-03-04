@@ -110,7 +110,11 @@ const DonutChart = () => {
       {data.produitsLesPlusVendus.length > 0 ? (
         <Chart options={{...options, labels}} series={series} type="donut" height="400" />
       ) : (
-        <p>Chargement des données...</p>
+        <div className="loading-container" style={{height:'500px'}}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Chargement...</span>
+        </div>
+      </div>
       )}
     </div>
   );

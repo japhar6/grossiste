@@ -59,7 +59,7 @@ const [triMontant, setTriMontant] = useState("desc"); // État pour trier par mo
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
-              <h2 className='alert alert-success'>Historique des Commandes</h2>
+              <h6 className='alert alert-success'>Historique des Commandes</h6>
 
               {/* Filtres */}
               <div className="filters mb-4">

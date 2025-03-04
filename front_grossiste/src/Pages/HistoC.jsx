@@ -5,6 +5,7 @@ import "../Styles/HistoC.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import audio from '../assets/mixkit-software-interface-start-2574.wav';
+import { Link } from "react-router-dom";
 function HistoC() {
   const [paiements, setPaiements] = useState({ clients: [], commerciaux: [] });
   const [filtreNomCaissier, setFiltreNomCaissier] = useState("");
@@ -244,7 +245,11 @@ function HistoC() {
                   </label>
                 </div>
               </div>
-
+<div>
+  <Link to='/histodecaisse' >
+  <button>Voir l'historique de decaissement</button>
+  </Link>
+</div>
               {filteredPaiements.length === 0 ? (
   <table className="tableZA table-striped">
     <thead className="table-light">

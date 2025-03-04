@@ -1,0 +1,107 @@
+
+  
+  /* Titre de la page */
+  .title {
+    font-size: 2.5rem;
+    color: #333;
+    font-family: 'Roboto', sans-serif;
+    margin-bottom: 30px;
+  }
+  
+  /* Box pour afficher le solde */
+  .solde-box {
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .solde-box h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+  
+  .solde-box p {
+    font-size: 1.1rem;
+    color: #d3f9d8;
+  }
+  
+  /* Formulaire de décaissement */
+  .decaissement-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .form-input, .form-select {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    width: 100%;
+    margin-top: 5px;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .form-input:focus, .form-select:focus {
+    border-color: #4CAF50;
+    outline: none;
+  }
+  
+  .form-button {
+    padding: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    margin-top: 20px;
+  }
+  
+  .form-button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Message de résultat */
+  .message-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .message-box.success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .message-box.error {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  @media (max-width: 768px) {
+    .center {
+      flex-direction: column;
+      padding: 15px;
+    }
+  
+    .contenue {
+      margin: 0;
+    }
+  }
+  
