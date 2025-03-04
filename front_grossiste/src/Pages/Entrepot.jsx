@@ -241,7 +241,7 @@ function Entrepot() {
             <button className="btn15 btn1-success" onClick={handleAddOrUpdateEntrepot} disabled={loadingAction}>
               {loadingAction ? (
                 <>
-                  <span className="spinner-border spinner-border-sm"></span> Chargement...
+                <span className="spinner-border " style={{ width: '4rem', height: '4rem' }}></span> Chargement...
                 </>
               ) : (
                 editingEntrepotId ? "Modifier" : "Ajouter"

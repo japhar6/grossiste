@@ -40,7 +40,7 @@ function Login() {
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('userid', data.user._id);
             localStorage.setItem('nom', data.user.nom);
-            setSuccess(true);      setLoading(false);
+            setSuccess(true);      setLoading(true);
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':
@@ -146,7 +146,7 @@ function Login() {
                                     {!success && (
                                       <button type="submit" className='btn1 btn1-success p-3 mt-3 button d-flex align-items-center justify-content-center' disabled={loading}>
                                       {loading ? (
-                                          <div className="spinner-border text-light" role="status">
+                                          <div className="spinner-border style={{ width: '2rem', height: '2rem' }}" role="status">
                                               <span className="visually-hidden">Chargement...</span>
                                           </div>
                                       ) : (

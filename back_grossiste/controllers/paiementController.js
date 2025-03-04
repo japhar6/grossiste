@@ -122,23 +122,34 @@ exports.checkPaymentsDue = async (req, res) => {
 exports.getPaiements = async (req, res) => {
     try {
         // Récupérer les paiements clients
-        const paiementsClients = await Paiement.find().populate({
-            path: 'commandeId',
-            populate: [
-                { path: 'clientId', select: 'nom' },
-                { path: 'commercialId', select: 'nom' }
-            ]
-        }).populate({
-            path: 'idCaissier', select: 'nom'
+        const paiementsClients = await Paiement.find()
+        .populate({
+          path: 'commandeId',
+          populate: [
+            { path: 'clientId', select: 'nom adresse' },
+            { path: 'commercialId', select: 'nom adresse' },
+            {
+                path: 'produits.produit',  // On peuple le champ "produit" dans le tableau "produits"
+                select: 'nom'              // On sélectionne uniquement le champ "nom"
+              },
+          ]
+        })
+        .populate({
+          path: 'idCaissier',
+          select: 'nom'
         });
+      
 
         // Récupérer les paiements commerciaux
         const paiementsCommerciaux = await PaiementCommerciale.find()
             .populate({
                 path: 'commandeId',
                 populate: [
-                    { path: 'clientId', select: 'nom' },
-                    { path: 'commercialId', select: 'nom' }
+                    { path: 'clientId', select: 'nom adresse'  },
+                    { path: 'commercialId', select: 'nom adresse'  },  {
+                        path: 'produits.produit',  // On peuple le champ "produit" dans le tableau "produits"
+                        select: 'nom'              // On sélectionne uniquement le champ "nom"
+                      },
                 ]
             }).populate({
                 path: 'idCaissier', select: 'nom'
@@ -148,7 +159,9 @@ exports.getPaiements = async (req, res) => {
         const paiements = {
             clients: paiementsClients.map(paiement => ({
                 ...paiement.toObject(),
-                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu', // Nom du client
+                clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu', 
+                clientAdresse: paiement.commandeId?.clientId?.adresse || 'Inconnu',
+                ComAdresse: paiement.commandeId?.commercialId?.adresse || 'Inconnu',
                 commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu' // Nom du commercial
             })),
             commerciaux: paiementsCommerciaux.map(paiement => ({

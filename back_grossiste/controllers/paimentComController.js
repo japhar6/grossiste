@@ -4,6 +4,23 @@ const VenteCom = require('../models/VenteComm'); // Assure-toi du bon chemin
 const Produit = require("../models/Produits");
 const mongoose = require('mongoose');
 
+
+
+
+exports.getPaiementsParMode = async (req, res) => {
+    try {
+      // Utilisation de Mongoose pour filtrer les paiements par modePaiement
+      const paiements = await PaiementCommerciale.find({ modePaiement: 'a credit' });
+      // Envoi de la réponse au client avec les paiements récupérés
+      const suggestions = paiements.map(paiement => paiement.referenceFacture);
+      res.status(200).json(suggestions);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des paiements par crédit :", error);
+      res.status(500).json({ message: "Erreur lors de la récupération des paiements." });
+    }
+  };
+  
+
 exports.validerPaiementCommerciale = async (req, res) => {
     try {
         const { id } = req.params;
@@ -94,7 +111,7 @@ const convertirQuantite = async (quantite, uniteVendu, produitId) => {
 exports.mettreAJourPaiementCommerciale = async (req, res) => {
     try {
         const { referenceFacture } = req.params;
-        const { produitsVendus } = req.body;
+        const { produitsVendus ,modePaiement,referencePaiement} = req.body;
 
         console.log(`Début de la mise à jour du paiement pour la facture ${referenceFacture}`);
 
@@ -183,6 +200,9 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         // Mise à jour du paiement
         paiementCommerciale.montantPaye = isNaN(paiementCommerciale.montantPaye + montantTotalVendu) ? 0 : paiementCommerciale.montantPaye + montantTotalVendu;
         paiementCommerciale.montantRestant = paiementCommerciale.totalPaiement - paiementCommerciale.montantPaye;
+paiementCommerciale.modePaiement=modePaiement;
+paiementCommerciale.referencePaiement=referencePaiement;
+paiementCommerciale.dateLimiteCredit=null;
 
         // Vérification du statut du paiement
         if (paiementCommerciale.montantRestant === 0) {
@@ -416,6 +436,38 @@ exports.getPaiementsCommerciales = async (req, res) => {
             .populate("idCaissier", "nom");
 
         const paiementsFormatted = paiements.map(paiement => ({
+            commande: paiement.commandeId?._id || "N/A",
+            referenceFacture: paiement.commandeId?.referenceFacture || "N/A",
+            caissier: paiement.idCaissier ? `${paiement.idCaissier.nom}` : "Inconnu",
+            modePaiement: paiement.commandeId?.modePaiement || "Non défini",
+            commercial: paiement.commandeId?.commercialId?._id || "N/A", // Ajout de l'ID du commercial
+            commercialNom: paiement.commandeId?.commercialId ? `${paiement.commandeId.commercialId.nom} ` : "N/A",
+            statut: paiement.statut,
+            date: paiement.createdAt.toISOString().split('T')[0]
+        }));
+
+        res.status(200).json(paiementsFormatted);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+exports.getPaiementsCommercialespaye = async (req, res) => {
+    try {
+        const paiements = await PaiementCommerciale.find()
+            .populate("commandeId", "referenceFacture modePaiement statut date commercialId")
+            .populate({
+                path: "commandeId",
+                populate: {
+                    path: "commercialId",
+                    select: "_id nom prenom" // Ajout de l'ID du commercial
+                }
+            })
+            .populate("idCaissier", "nom");
+
+        // Filtrer les paiements pour exclure ceux dont le statut est "non payé"
+        const paiementsPayes = paiements.filter(paiement => paiement.statut !== "non payé");
+
+        const paiementsFormatted = paiementsPayes.map(paiement => ({
             commande: paiement.commandeId?._id || "N/A",
             referenceFacture: paiement.commandeId?.referenceFacture || "N/A",
             caissier: paiement.idCaissier ? `${paiement.idCaissier.nom}` : "Inconnu",

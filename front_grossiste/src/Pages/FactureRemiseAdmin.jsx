@@ -3,41 +3,51 @@ import { useLocation } from "react-router-dom";
 import "../Styles/Facture.css";
 import Logo from "../assets/logoo.png";
 
-function FactureRem() {
-  const [commande, setCommande] = useState(null); // Assurez-vous que commande est bien initialisée
+
+function FactureRemAD() {
+  const [paiement, setPaiement] = useState(null);
   const [modePaiement, setModePaiement] = useState(null);
   const [referencePaiement, setReferencePaiement] = useState(null);
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
+  const [nomEntrepot, setNomEntrepot] = useState(null);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-
-   
+  
     try {
-      const commandeData = queryParams.get("commande")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
-        : null;
-      const clientData = queryParams.get("client")
-        ? JSON.parse(decodeURIComponent(queryParams.get("client")))
-        : null;
-      const commercialData = queryParams.get("commercial")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
-        : null;
-
-      setCommande(commandeData);
+      const paiementData = queryParams.get("paiement");
+      const clientData = queryParams.get("client");
+      const commercialData = queryParams.get("commercial");
+  
+      let paiementObjet = null;
+      if (paiementData) {
+        try {
+          paiementObjet = JSON.parse(paiementData);
+        } catch (error) {
+          console.error("❌ Erreur JSON.parse sur paiementData :", error);
+          paiementObjet = null;
+        }
+      }
+  
+      console.log("🔍 Données reçues et traitées :", {
+        paiementObjet,
+        clientData,
+        commercialData,
+      });
+  
+      setPaiement(paiementObjet);
       setModePaiement(queryParams.get("modePaiement"));
       setReferencePaiement(queryParams.get("referencePaiement"));
       setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
       setClient(clientData);
       setCommercial(commercialData);
+  
     } catch (error) {
-      console.error("Erreur lors du traitement des données de l'URL", error);
+      console.error("❌ Erreur lors du traitement des données de l'URL", error);
     }
   }, []);
-  
-
 
   function convertirEnLettres(nombre) {
     const nombresFr = [
@@ -81,22 +91,12 @@ function FactureRem() {
     return result.trim();
 }
 
-   useEffect(() => {
-      if (commande) {
-        setTimeout(() => {
-          window.print(); // Imprime après 2 secondes
-          setTimeout(() => {
-            window.close(); // Ferme l'onglet après l'impression
-          }, 1000); // 1 seconde après impression
-        }, 2000);
-      }
-    }, [commande]);
-  
-    if (!commande) {
-      return <div>Chargement...</div>;
-    }
-  
-    const clientOuCommercial = client || commercial;
+
+  if (!paiement) {
+    return <div>Chargement...</div>;
+  }
+
+  const clientOuCommercial = client || commercial;
 
   return (
     <div className="facture-container">
@@ -112,31 +112,17 @@ function FactureRem() {
       <hr />
       <div className="facture-info p-3">
         <div style={{ float: "left" }}>
-          <p>
-            <strong>Date :</strong> {new Date().toLocaleDateString()}
-          </p>
-          <p>
-          <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
-          </p>
-          <p>
-            <strong>Adresse :</strong>    {clientOuCommercial?.adresse || "..................."}
-          </p>
-          <p>
-            <strong>Mode de paiement :</strong> {modePaiement || "............."}
-          </p>
+          <p><strong>Date :</strong> {new Date().toLocaleDateString()}</p>
+          <p><strong>Client :</strong> {paiement.commercialNom === "Inconnu" && paiement.clientNom !== "Inconnu" 
+            ? paiement.clientNom : paiement.commercialNom || "Non spécifié"}</p>
+          <p><strong>Adresse :</strong> {paiement.clientAdresse || paiement.ComAdresse || "..................."}</p>
+          <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
         </div>
         <div style={{ float: "right" }}>
           <h3>FACTURE DE REMISE</h3>
-          <p>
-            <strong>N° :</strong> {commande.referenceFacture}
-          </p>
-          <p>
-            <strong>Date limite de paiement :</strong>{" "}
-            {dateLimiteCredit || "..........."}
-          </p>
-          <p>
-            <strong>Référence :</strong> {referencePaiement || "..........."}
-          </p>
+          <p><strong>N° :</strong> {paiement.referenceFacture}</p>
+          <p><strong>Date limite de paiement :</strong> {dateLimiteCredit || "..........."}</p>
+          <p><strong>Référence :</strong> {referencePaiement || "..........."}</p>
         </div>
       </div>
       <h1>-------------------------------</h1>
@@ -145,7 +131,7 @@ function FactureRem() {
           <thead>
             <tr>
               <th>Qté</th>
-              <th>Colisage</th>
+              <th>Unite</th>
               <th>Désignation</th>
               <th>Type de remise</th>
               <th>PU</th>
@@ -154,43 +140,40 @@ function FactureRem() {
             </tr>
           </thead>
           <tbody>
-            {commande.produits.map((produit, index) => (
-              <tr key={index}>
-                <td>{produit.quantite}</td>
-                <td>{produit.uniteChoisie}</td>
-                <td>{produit.produit.nom}</td>
-                <td>{`${produit.typeRemise}: ${produit.valeurRemise}`}</td>
-                <td>{produit.prixdevente} Ariary</td>
-                <td>{produit.quantite * produit.prixdevente} Ariary</td>
-                <td>{produit.montantApresRemise} Ariary</td>
-              </tr>
-            ))}
+            {paiement?.commandeId?.produits?.length > 0 ? (
+              paiement.commandeId.produits.map((produit, index) => (
+                <tr key={index}>
+                  <td>{produit.quantite}</td>
+                  <td>{produit.uniteChoisie}</td>
+                  <td>{produit.produit.nom}</td>
+                  <td>{`${produit.typeRemise}: ${produit.valeurRemise}`}</td>
+                  <td>{produit.prixdevente} Ariary</td>
+                  <td>{produit.quantite * produit.prixdevente} Ariary</td>
+                  <td>{produit.montantApresRemise} Ariary</td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan="7">Aucun produit trouvé</td></tr>
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="facture-summary">
-        <p>
-          <strong>Total Ariary :</strong> {commande.totalGeneral} Ariary
-        </p>
-        <p>
-          <strong>Total en FMG :</strong> {commande.totalGeneral * 5} FMG
-        </p>
+        <p><strong>Total Ariary :</strong> {paiement.totalPaiement} Ariary</p>
+        <p><strong>Total en FMG :</strong> {paiement.totalPaiement * 5} FMG</p>
       </div>
 
       <div className="facture-footer">
-        <p>
-          Arrêtée la présente facture à la somme de   {convertirEnLettres(commande.totalGeneral)}  Ariary
-        </p>
+        <p>Arrêtée la présente facture à la somme de {convertirEnLettres(paiement.totalPaiement)} Ariary</p>
         <p>Misaotra Tompoko</p>
         <div className="signature">
           <span>Le Client</span>
           <span>Le Fournisseur</span>
         </div>
       </div>
-   
     </div>
   );
 }
 
-export default FactureRem;
+export default FactureRemAD;

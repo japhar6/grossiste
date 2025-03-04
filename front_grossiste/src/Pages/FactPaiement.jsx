@@ -9,7 +9,7 @@ function Facture() {
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
-
+  const [nomEntrepot, setNomentrepot] = useState(null);
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
 
@@ -23,7 +23,7 @@ function Facture() {
       const commercialData = queryParams.get("commercial")
         ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
         : null;
-
+        setNomentrepot(queryParams.get("nomEntrepot"));
       setCommande(commandeData);
       setModePaiement(queryParams.get("modePaiement"));
       setReferencePaiement(queryParams.get("referencePaiement"));
@@ -35,6 +35,47 @@ function Facture() {
     }
   }, []);
 
+  function convertirEnLettres(nombre) {
+    const nombresFr = [
+        "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", 
+        "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", 
+        "dix-sept", "dix-huit", "dix-neuf", "vingt", "trente", "quarante", 
+        "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"
+    ];
+  
+    const convertHundreds = (n) => {
+        let result = '';
+        if (n >= 100) {
+            result += nombresFr[Math.floor(n / 100)] + ' cent';
+            n %= 100;
+        }
+        if (n >= 20) {
+            result += ' ' + nombresFr[Math.floor(n / 10) + 18];
+            n %= 10;
+        }
+        if (n > 0) {
+            result += (result ? '-' : '') + nombresFr[n];
+        }
+        return result;
+    };
+  
+    if (nombre === 0) return 'zéro';
+    if (nombre < 0) return 'moins ' + convertirEnLettres(-nombre);
+  
+    let result = '';
+    let part = 0;
+    const units = ['',' mille',' million',' milliard'];
+  
+    while (nombre > 0) {
+        const currentPart = nombre % 1000;
+        if (currentPart > 0) {
+            result = convertHundreds(currentPart) + units[part] + (result ? ' ' + result : '');
+        }
+        nombre = Math.floor(nombre / 1000);
+        part++;
+    }
+    return result.trim();
+}
   useEffect(() => {
     if (commande) {
       setTimeout(() => {
@@ -101,7 +142,7 @@ function Facture() {
             <tr>
               <th>Qté</th>
               <th>Unité</th>
-              <th>Désignation</th>
+          
               <th>Dépôt</th>
               <th>PU</th>
               <th>Montant</th>
@@ -113,7 +154,7 @@ function Facture() {
                 <td>{produit.quantite}</td>
                 <td>{produit.uniteChoisie || "PCE"}</td>
                 <td>{produit.produit.nom}</td>
-                <td>{produit.produit.depot || "TSENA"}</td>
+           
                 <td>{produit.prixdevente} Ariary</td>
                 <td>{produit.total} Ariary</td>
               </tr>
@@ -133,7 +174,7 @@ function Facture() {
 
       <div className="facture-footer">
         <p>
-          Arrêtée la présente facture à la somme de {commande.totalGeneral} Ariary
+          Arrêtée la présente facture à la somme de {convertirEnLettres(commande.totalGeneral)} Ariary
         </p>
         <p>Misaotra Tompoko</p>
         <div className="signature">

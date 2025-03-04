@@ -17,6 +17,7 @@ router.get('/performance/commercial/:commercialId/commande/:commandeId', paiemen
 
 router.get("/info", paiementController.getPaiementsCommerciales);
 
+router.get("/infopl", paiementController.getPaiementsCommercialespaye);
 
-
+router.get("/credit", paiementController.getPaiementsParMode);
 module.exports = router;

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 import "../Styles/Facture.css";
 import Logo from "../assets/logoo.png";
 
-function FactureRem() {
-  const [commande, setCommande] = useState(null); // Assurez-vous que commande est bien initialisée
+function FactureSans() {
+  const [commande, setCommande] = useState(null);
   const [modePaiement, setModePaiement] = useState(null);
   const [referencePaiement, setReferencePaiement] = useState(null);
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
@@ -14,7 +13,6 @@ function FactureRem() {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
 
-   
     try {
       const commandeData = queryParams.get("commande")
         ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
@@ -36,67 +34,23 @@ function FactureRem() {
       console.error("Erreur lors du traitement des données de l'URL", error);
     }
   }, []);
-  
 
-
-  function convertirEnLettres(nombre) {
-    const nombresFr = [
-        "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", 
-        "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", 
-        "dix-sept", "dix-huit", "dix-neuf", "vingt", "trente", "quarante", 
-        "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"
-    ];
-  
-    const convertHundreds = (n) => {
-        let result = '';
-        if (n >= 100) {
-            result += nombresFr[Math.floor(n / 100)] + ' cent';
-            n %= 100;
-        }
-        if (n >= 20) {
-            result += ' ' + nombresFr[Math.floor(n / 10) + 18];
-            n %= 10;
-        }
-        if (n > 0) {
-            result += (result ? '-' : '') + nombresFr[n];
-        }
-        return result;
-    };
-  
-    if (nombre === 0) return 'zéro';
-    if (nombre < 0) return 'moins ' + convertirEnLettres(-nombre);
-  
-    let result = '';
-    let part = 0;
-    const units = ['',' mille',' million',' milliard'];
-  
-    while (nombre > 0) {
-        const currentPart = nombre % 1000;
-        if (currentPart > 0) {
-            result = convertHundreds(currentPart) + units[part] + (result ? ' ' + result : '');
-        }
-        nombre = Math.floor(nombre / 1000);
-        part++;
-    }
-    return result.trim();
-}
-
-   useEffect(() => {
-      if (commande) {
+  useEffect(() => {
+    if (commande) {
+      setTimeout(() => {
+        window.print(); // Imprime après 2 secondes
         setTimeout(() => {
-          window.print(); // Imprime après 2 secondes
-          setTimeout(() => {
-            window.close(); // Ferme l'onglet après l'impression
-          }, 1000); // 1 seconde après impression
-        }, 2000);
-      }
-    }, [commande]);
-  
-    if (!commande) {
-      return <div>Chargement...</div>;
+          window.close(); // Ferme l'onglet après l'impression
+        }, 1000); // 1 seconde après impression
+      }, 2000);
     }
-  
-    const clientOuCommercial = client || commercial;
+  }, [commande]);
+
+  if (!commande) {
+    return <div>Chargement...</div>;
+  }
+
+  const clientOuCommercial = client || commercial;
 
   return (
     <div className="facture-container">
@@ -109,24 +63,25 @@ function FactureRem() {
           <p>034 13 881 72</p>
         </div>
       </div>
-      <hr />
+      <h1>-------------------------------</h1>
       <div className="facture-info p-3">
         <div style={{ float: "left" }}>
           <p>
             <strong>Date :</strong> {new Date().toLocaleDateString()}
           </p>
           <p>
-          <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
+            <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
           </p>
           <p>
-            <strong>Adresse :</strong>    {clientOuCommercial?.adresse || "..................."}
+            <strong>Adresse :</strong>{" "}
+            {clientOuCommercial?.adresse || "..................."}
           </p>
           <p>
             <strong>Mode de paiement :</strong> {modePaiement || "............."}
           </p>
         </div>
         <div style={{ float: "right" }}>
-          <h3>FACTURE DE REMISE</h3>
+          <h3>FACTURE</h3>
           <p>
             <strong>N° :</strong> {commande.referenceFacture}
           </p>
@@ -147,50 +102,36 @@ function FactureRem() {
               <th>Qté</th>
               <th>Colisage</th>
               <th>Désignation</th>
-              <th>Type de remise</th>
-              <th>PU</th>
-              <th>Montant Avant Remise</th>
-              <th>Montant Après Remise</th>
+              <th>Entrepot</th>
+            
             </tr>
           </thead>
           <tbody>
             {commande.produits.map((produit, index) => (
               <tr key={index}>
                 <td>{produit.quantite}</td>
-                <td>{produit.uniteChoisie}</td>
+                <td>{produit.uniteChoisie || "unite"}</td>
                 <td>{produit.produit.nom}</td>
-                <td>{`${produit.typeRemise}: ${produit.valeurRemise}`}</td>
-                <td>{produit.prixdevente} Ariary</td>
-                <td>{produit.quantite * produit.prixdevente} Ariary</td>
-                <td>{produit.montantApresRemise} Ariary</td>
+                <td>{nomEntrepot || "Non spécifié"}</td>
+               
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="facture-summary">
-        <p>
-          <strong>Total Ariary :</strong> {commande.totalGeneral} Ariary
-        </p>
-        <p>
-          <strong>Total en FMG :</strong> {commande.totalGeneral * 5} FMG
-        </p>
-      </div>
+    
 
       <div className="facture-footer">
-        <p>
-          Arrêtée la présente facture à la somme de   {convertirEnLettres(commande.totalGeneral)}  Ariary
-        </p>
+        
         <p>Misaotra Tompoko</p>
         <div className="signature">
           <span>Le Client</span>
           <span>Le Fournisseur</span>
         </div>
       </div>
-   
     </div>
   );
 }
 
-export default FactureRem;
+export default FactureSans;
