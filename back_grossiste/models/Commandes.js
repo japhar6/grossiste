@@ -6,7 +6,7 @@ const commandeSchema = new mongoose.Schema({
     commercialId: { type: mongoose.Schema.Types.ObjectId, ref: 'Commercial' },
     vendeurId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     paiement: { type: mongoose.Schema.Types.ObjectId, ref: 'Paiement', default: null },
-        produits: [
+    produits: [
         {
             produit: { type: mongoose.Schema.Types.ObjectId, ref: 'Produit' },
             quantite: { type: Number, required: true },
@@ -19,7 +19,6 @@ const commandeSchema = new mongoose.Schema({
             uniteChoisie: { type: String }
         }
     ],
-    
     totalGeneral: { type: Number, required: true },
     statut: { 
         type: String,  
@@ -29,12 +28,17 @@ const commandeSchema = new mongoose.Schema({
     typeRemise: { type: String },
     valeurRemise: { type: Number },
     referenceFacture: { type: String, unique: true },
-    dateSortie: { type: Date, default: null }  ,
-    entrepotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot' }
+    dateSortie: { type: Date, default: null },
+    entrepotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot' },
+    modeLivraison: { 
+        type: String, 
+        enum: ["magasin", "fournisseur"], 
+        default: null // C'est défini au moment de la vente
+    }
 }, { timestamps: true });
 
- // Hook pour générer la référence de facture
- commandeSchema.pre('save', async function(next) {
+// Hook pour générer la référence de facture
+commandeSchema.pre('save', async function(next) {
     if (!this.referenceFacture) {
         try {
             const prefix = this.typeClient === "Client" ? "FACTCLI" : "FACTCOM";
@@ -56,4 +60,4 @@ const commandeSchema = new mongoose.Schema({
 });
 
 const Commande = mongoose.model("Commande", commandeSchema);
-module.exports = Commande;
+module.exports = Commande;

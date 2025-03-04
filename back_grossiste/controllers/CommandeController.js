@@ -355,3 +355,44 @@ exports.getCommandesByVendeur = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.sortieFournisseur = async (req, res) => {
+    try {
+        const { commandeId } = req.params;  // L'ID de la commande à modifier
+        const { modeLivraison, statut } = req.body;  // Les nouvelles valeurs
+
+        // Vérifier si le modeLivraison et le statut sont valides
+        if (modeLivraison && !["magasin", "fournisseur"].includes(modeLivraison)) {
+            return res.status(400).json({ message: "Le modeLivraison doit être 'magasin' ou 'fournisseur'." });
+        }
+        if (statut && !["en cours", "payé", "payé et livré"].includes(statut)) {
+            return res.status(400).json({ message: "Le statut doit être 'en cours', 'payé' ou 'payé et livré'." });
+        }
+
+        // Trouver la commande par son ID
+        const commande = await Commande.findById(commandeId);
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée." });
+        }
+
+        // Mettre à jour le modeLivraison et statut de la commande
+        if (modeLivraison) {
+            commande.modeLivraison = modeLivraison;
+        }
+        if (statut) {
+            commande.statut = statut;
+        }
+
+        // Sauvegarder les changements dans la base de données
+        await commande.save();
+
+        // Répondre avec la commande mise à jour
+        res.status(200).json({
+            message: "Commande modifiée avec succès.",
+            commande: commande
+        });
+    } catch (error) {
+        console.error("Erreur lors de la modification de la commande :", error);
+        res.status(400).json({ message: error.message });
+    }
+};

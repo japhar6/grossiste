@@ -127,6 +127,7 @@ exports.validerVente = async (req, res) => {
 
         await vente.save();
         commande.statut = 'payé et livré';
+        commande.modeLivraison = 'magasin';
         commande.dateSortie = Date.now(); 
         await commande.save();
 
