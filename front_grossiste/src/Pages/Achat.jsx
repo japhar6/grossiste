@@ -318,9 +318,9 @@ function AchatProduits() {
                     // Vérifie si l'erreur provient d'une réponse 404
                     if (error.response && error.response.status === 404) {
                         Swal.fire({
-                            title: "Erreur",
-                            text: "Fournisseur non trouvé ou aucun produit disponible.",
-                            icon: "error",
+                            title: "Info",
+                            text: "Le Fournisseur n'as pas de produit disponible.",
+                            icon: "info",
                             confirmButtonText: "OK",
                         });
                     } else {
