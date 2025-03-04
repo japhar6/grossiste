@@ -7,5 +7,5 @@ router.get("/afficher", panierController.getAllPaniers);
 router.get("/afficher/:panierId", panierController.getPanierById);
 router.delete("/supprimer/:panierId", panierController.supprimerPanier);
 router.get("/tous/:modePaiement", panierController.historiquePanier);
-
+router.put("/modifier-statut/:id", panierController.modifierStatutPanier);
 module.exports = router;

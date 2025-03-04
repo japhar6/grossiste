@@ -77,9 +77,9 @@ function SidebarVendeur(){
     
     const buttons = [
   
-        { path: "/gestionprix", icon: faCashRegister, text: "Article et produits" },
+        { path: "/gestionprix", icon: faTags, text: "Article et produits" },
        
-    
+        { path: "/achatgest", icon: faCashRegister, text: "Achat des produits" },
       ];
     return(
         <>

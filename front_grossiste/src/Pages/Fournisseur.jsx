@@ -198,7 +198,7 @@ function Fournisseur() {
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
                   >
-                    <option value="">Filtrer par type</option>
+                    <option value="">Filtrer par Mode de benefice</option>
                     <option value="prix_libre">Prix Libre</option>
                     <option value="ristourne">Ristourne</option>
                   </select>
@@ -219,7 +219,7 @@ function Fournisseur() {
                     <tr>
                       <th>Logo</th>
                       <th>Nom</th>
-                      <th>Type</th>
+                      <th>Mode de benefice</th>
                       <th>Téléphone</th>
                       <th>Email</th>
                       <th>Adresse</th>
@@ -309,7 +309,7 @@ function Fournisseur() {
                         setTypeRistourne("");
                       }}
                     >
-                      <option value="">Sélectionner un type</option>
+                      <option value="">Sélectionner mode de benefice</option>
                       <option value="prix_libre">Prix Libre</option>
                       <option value="ristourne">Ristourne</option>
                     </select>

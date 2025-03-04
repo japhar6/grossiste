@@ -183,10 +183,10 @@ function Entrepot() {
                           <td>
                             <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>
 
-                              <i className="fas fa-pencil-alt"></i> Modifier
+                              <i className="fas fa-pencil-alt"></i>
                             </button>
                             <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>
-                              <i className="fas fa-times"></i> Supprimer
+                              <i className="fas fa-times"></i> 
                             </button>
                           </td>
                         </tr>

@@ -81,6 +81,7 @@ function SidebarVendeur(){
         { path: "/histoc", icon: "fa-tags", text: "Historique des paiements" },
         { path: "/PaiementCom", icon: "fa-tags", text: "Paiement commerciaux" },
         { path: "/payerCredit", icon: "fa-cash-register", text: "Payer Les Crédits" },
+        { path: "/decaisser", icon: "fa-cash-register", text: "Décaissement" },
       ];
     return(
         <>
