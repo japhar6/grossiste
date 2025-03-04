@@ -1,10 +1,36 @@
 const Inventaire = require('../models/Inventaire');
 const Stock = require('../models/Stock');
+
 exports.createInventaire = async (req, res) => {
   try {
-      const { entrepot, produit, quantiteInitiale, quantiteFinale, raisonAjustement,personneId } = req.body;
+      const { entrepot, produit, quantiteInitiale, quantiteFinale, raisonAjustement, personneId } = req.body;
 
-      
+      // Récupérer le stock pour le produit sélectionné et peupler les informations du produit
+      const stock = await Stock.findOne({ entrepot, produit }).populate('produit');
+
+      if (!stock) {
+          return res.status(404).json({ success: false, message: 'Produit non trouvé dans le stock' });
+      }
+
+      // Récupérer les informations complètes du produit
+      const produitDetails = stock.produit; // stock contient l'objet produit
+
+      if (!produitDetails) {
+          return res.status(404).json({ success: false, message: 'Détails du produit non trouvés' });
+      }
+
+      // Vérification de l'existence de prixDachat dans le produit
+      const prixDachat = produitDetails.prixDachat;
+      if (prixDachat === undefined || prixDachat === null) {
+          return res.status(400).json({ success: false, message: 'Le prix d\'achat du produit est manquant' });
+      }
+
+      // Calcul du nombre d'inventaire
+      const nombreInventaire = quantiteInitiale - quantiteFinale ;
+
+      // Calcul du prix de l'inventaire (prixDachat * nombreInventaire)
+      const prixInventaire = prixDachat * nombreInventaire;
+
       // Création de l'inventaire
       const inventaire = new Inventaire({
           entrepot,
@@ -12,28 +38,36 @@ exports.createInventaire = async (req, res) => {
           quantitéInitiale: quantiteInitiale,
           quantitéFinale: quantiteFinale,
           raisonAjustement,
-          personneId
+          personneId,
+          nombreInventaire,  
+          prixInventaire     
       });
 
       await inventaire.save();
 
       // Logique d'ajustement du stock
       if (quantiteFinale < quantiteInitiale) {
-          const stock = await Stock.findOne({ entrepot, produit });
-          if (stock) {
-              stock.quantite -= (quantiteInitiale - quantiteFinale);
-              await stock.save();
-          } else {
-             
-          }
+          stock.quantite -= (quantiteInitiale - quantiteFinale);
+          await stock.save();
       }
 
-      res.status(201).json({ success: true, message: 'Inventaire enregistré et stock ajusté', inventaire });
+      res.status(201).json({
+          success: true,
+          message: 'Inventaire enregistré et stock ajusté',
+          inventaire: {
+              ...inventaire.toObject(),
+              nombreInventaire,
+              prixInventaire
+          }
+      });
   } catch (error) {
       console.error('Erreur lors de l\'enregistrement de l\'inventaire:', error);
       res.status(500).json({ success: false, message: 'Erreur lors de l\'enregistrement de l\'inventaire', error });
   }
 };
+
+
+
 
 
 // Récupérer tous les inventaires
@@ -125,3 +159,77 @@ exports.deleteInventaire = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression de l\'inventaire', error });
   }
 };
+
+exports.getTotalInventaireParPeriode = async (req, res) => {
+  try {
+      const { periode } = req.params;
+
+      let dateDebut, dateFin;
+
+      const maintenant = new Date();
+
+      switch (periode) {
+          case 'journalier':
+              dateDebut = new Date(maintenant.setHours(0, 0, 0, 0));
+              dateFin = new Date(maintenant.setHours(23, 59, 59, 999));
+              break;
+
+          case 'hebdomadaire':
+              const premierJourSemaine = maintenant.getDate() - maintenant.getDay();
+              dateDebut = new Date(maintenant.setDate(premierJourSemaine));
+              dateDebut.setHours(0, 0, 0, 0);
+              dateFin = new Date(maintenant.setDate(premierJourSemaine + 6));
+              dateFin.setHours(23, 59, 59, 999);
+              break;
+
+          case 'mensuel':
+              dateDebut = new Date(maintenant.getFullYear(), maintenant.getMonth(), 1);
+              dateFin = new Date(maintenant.getFullYear(), maintenant.getMonth() + 1, 0);
+              dateFin.setHours(23, 59, 59, 999);
+              break;
+
+          case 'annuel':
+              dateDebut = new Date(maintenant.getFullYear(), 0, 1);
+              dateFin = new Date(maintenant.getFullYear(), 11, 31);
+              dateFin.setHours(23, 59, 59, 999);
+              break;
+
+          case 'global':
+              const tousInventaires = await Inventaire.find();
+              const totalGlobalNombre = tousInventaires.reduce((acc, inv) => acc + inv.nombreInventaire, 0);
+              const totalGlobalPrix = tousInventaires.reduce((acc, inv) => acc + inv.prixInventaire, 0);
+
+              return res.status(200).json({
+                  periode: 'global',
+                  totalNombreInventaire: totalGlobalNombre,
+                  totalPrixInventaire: totalGlobalPrix,
+                  nombreOperations: tousInventaires.length
+              });
+
+          default:
+              return res.status(400).json({ message: 'Période non valide' });
+      }
+
+      const inventaires = await Inventaire.find({
+          dateInventaire: {
+              $gte: dateDebut,
+              $lte: dateFin
+          }
+      });
+
+      const totalNombreInventaire = inventaires.reduce((acc, inv) => acc + inv.nombreInventaire, 0);
+      const totalPrixInventaire = inventaires.reduce((acc, inv) => acc + inv.prixInventaire, 0);
+
+      res.status(200).json({
+          periode,
+          totalNombreInventaire,
+          totalPrixInventaire,
+          nombreOperations: inventaires.length
+      });
+
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+

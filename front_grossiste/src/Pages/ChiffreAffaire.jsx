@@ -18,7 +18,9 @@ function ChiffreAffaire() {
         totalCommissions: 0,
         nombreCommissions: 0,
         totalSalaire: 0,
-        nombreSalaire: 0
+        nombreSalaire: 0,
+        totalPrixInventaire: 0,
+        nombreOperations: 0
     });
 
     // État pour la période sélectionnée
@@ -76,6 +78,17 @@ function ChiffreAffaire() {
             })
             .catch(error => {
                 console.error("Erreur lors de la récupération des paiements", error);
+            });
+        axios.get(`/api/inventaire/totals/${periode}`)
+            .then(response => {
+                setChiffreAffaire(prevState => ({
+                    ...prevState,
+                    totalPrixInventaire: response.data.totalPrixInventaire,
+                    nombreOperations: response.data.nombreOperations,
+                }));
+            })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des inventaires", error);
             });
 
     };
@@ -139,7 +152,7 @@ function ChiffreAffaire() {
                                     <h5 className="card-title">📉 Chiffre d'affaire</h5>
                                     <p className="display-6 text-primary fw-bold">
                                         {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
-                                        (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire))} Ariary
+                                            (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire))} Ariary
                                     </p>
                                 </div>
                             </div>
@@ -176,18 +189,18 @@ function ChiffreAffaire() {
                         <div className="col-md-4 mt-3">
                             <div className="card text-center shadow-sm">
                                 <div className="card-body">
-                                    <h5 className="card-title">📦 Nombre d'Achats Effectués</h5>
-                                    <p className="display-6 text-danger fw-bold">{chiffreAffaire.nombreAchats}</p>
+                                    <h5 className="card-title">📦 Bénéfice net</h5>
+                                    <p className="display-6 text-success fw-bold">{formatCurrency((chiffreAffaire.nombrePaiements + chiffreAffaire.nombrePaiementsCommercial) -
+                                        (chiffreAffaire.totalAchats)
+                                    )} Ariary</p>
                                 </div>
                             </div>
                         </div>
                         <div className="col-md-4 mt-3">
                             <div className="card text-center shadow-sm">
                                 <div className="card-body">
-                                    <h5 className="card-title">📦 Bénéfice net</h5>
-                                    <p className="display-6 text-success fw-bold">{formatCurrency((chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire)-
-                                    (chiffreAffaire.totalAchats)
-                                )}</p>
+                                    <h5 className="card-title">📦 Nombre d'Achats Effectués</h5>
+                                    <p className="display-6 text-danger fw-bold">{chiffreAffaire.nombreAchats}</p>
                                 </div>
                             </div>
                         </div>
@@ -228,6 +241,22 @@ function ChiffreAffaire() {
                                 <div className="card-body">
                                     <h5 className="card-title">💵 Total salaire payé</h5>
                                     <p className="display-6 text-secondary fw-bold">{formatCurrency(chiffreAffaire.totalSalaire)} Ariary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-4 mt-3">
+                            <div className="card text-center shadow-sm">
+                                <div className="card-body">
+                                    <h5 className="card-title">🗒️ Nombre inventaire</h5>
+                                    <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.nombreOperations)} Ariary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-4 mt-3">
+                            <div className="card text-center shadow-sm">
+                                <div className="card-body">
+                                    <h5 className="card-title">💵 Total inventaire</h5>
+                                    <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.totalPrixInventaire)} Ariary</p>
                                 </div>
                             </div>
                         </div>

@@ -25,12 +25,19 @@ const inventaireSchema = new mongoose.Schema({
   },
   raisonAjustement: {
     type: String,
-   
     required: true,
   },
-  personneId: { // Ajoutez cet attribut
+  personneId: { // Référence à l'utilisateur
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Assurez-vous de référencer le bon modèle
+    ref: 'User',
+    required: true,
+  },
+  nombreInventaire: {
+    type: Number,
+    required: true,
+  },
+  prixInventaire: {
+    type: Number,
     required: true,
   },
 });

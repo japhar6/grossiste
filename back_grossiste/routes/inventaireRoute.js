@@ -16,5 +16,7 @@ router.put('/inventaire/:id', inventaireController.updateInventaire);  // Ajoute
 
 // Route pour supprimer un inventaire par ID
 router.delete('/inventaire/:id', inventaireController.deleteInventaire);
+router.get('/totals/:periode', inventaireController.getTotalInventaireParPeriode);
+
 
 module.exports = router;

@@ -61,6 +61,25 @@ exports.validerVente = async (req, res) => {
             dateValidationMagasinier: Date.now(),
         });
 
+         // Vérifier si tous les produits sont en stock avant de commencer la réduction de stock
+         let stockInsuffisant = false;
+         for (let item of commande.produits) {
+             let produitId = item.produit._id;
+             let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
+ 
+             if (stocks.length === 0) {
+                 stockInsuffisant = true;
+                 break;
+             }
+         }
+ 
+         // Si un produit est en rupture de stock, retourner l'erreur sans effectuer la réduction de stock
+         if (stockInsuffisant) {
+             return res.status(400).json({
+                 message: `🚨 Un ou plusieurs produits sont en rupture de stock dans l'entrepôt "${entrepot.nom}". Veuillez vérifier et réessayer.`
+             });
+         }
+
         // Réduction du stock
         await Promise.all(commande.produits.map(async (item) => {
             let remainingQuantity = item.quantite;

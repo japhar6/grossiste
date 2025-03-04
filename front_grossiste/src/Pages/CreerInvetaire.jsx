@@ -20,9 +20,9 @@ function CreerInventaire() {
   const [entrepots, setEntrepots] = useState([]);
   const [selectedEntrepot, setSelectedEntrepot] = useState('');
   const [entrepot, setEntrepot] = useState(null);
- const [loadingEntrepots, setLoadingEntrepots] = useState(false);
-    const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
-    const [loadingAction, setLoadingAction] = useState(false);
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userid");
@@ -32,7 +32,7 @@ function CreerInventaire() {
       try {
         const response = await axios.get("/api/entrepot");
         const data = response.data;
-  
+
         if (Array.isArray(data) && data.length > 0) {
           setEntrepots(data);
         } else {
@@ -42,7 +42,7 @@ function CreerInventaire() {
         toast.error("Erreur lors de la récupération des entrepôts.");
       }
     };
-  
+
     fetchEntrepots();
   }, []);
 
@@ -51,7 +51,8 @@ function CreerInventaire() {
 
     const fetchEntrepotAndStocks = async () => {
       setLoading(true);
-      try { setLoadingEntrepots(true);
+      try {
+        setLoadingEntrepots(true);
         const entrepotResponse = await axios.get(`/api/entrepot/${selectedEntrepot}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -91,7 +92,7 @@ function CreerInventaire() {
       });
       return;
     }
-
+  
     if (!quantiteFinale || isNaN(quantiteFinale)) {
       Swal.fire({
         icon: 'error',
@@ -100,10 +101,10 @@ function CreerInventaire() {
       });
       return;
     }
-
+  
     const quantiteFinaleNum = parseInt(quantiteFinale, 10);
     const quantitePerdue = quantiteInitiale - quantiteFinaleNum;
-
+  
     const inventaireData = {
       entrepot: entrepot._id,
       produit: selectedProduct.produit._id,
@@ -114,30 +115,34 @@ function CreerInventaire() {
       personneId: userId,
       date: new Date(),
     };
-
+  
     try {
       const response = await axios.post('/api/inventaire/ajouter', inventaireData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       if (response.data.success) {
+        const { inventaire } = response.data;
+        // Afficher nombreInventaire et prixInventaire dans un toast ou une autre section
         Swal.fire({
           icon: 'success',
           title: 'Succès',
-          text: 'Inventaire enregistré avec succès !',
+          text: `Inventaire enregistré avec succès ! Nombre d'inventaire: ${inventaire.nombreInventaire}, Prix de l'inventaire: ${inventaire.prixInventaire}`,
         }).then(() => {
           navigate('/inventaire');
           window.location.reload();
         });
         setLoadingAction(false);
       } else {
-        toast.error('Erreur lors de l\'enregistrement de l\'inventaire.'); setLoadingAction(false);
+        toast.error('Erreur lors de l\'enregistrement de l\'inventaire.');
+        setLoadingAction(false);
       }
     } catch (error) {
       console.error('Erreur:', error.response ? error.response.data : error.message);
       toast.error('Erreur lors de la communication avec le serveur.');
     }
   };
+  
 
   return (
     <>
@@ -164,12 +169,12 @@ function CreerInventaire() {
               </div>
 
               {loadingEntrepots ? (
-              <div className="loading-container">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Chargement...</span>
+                <div className="loading-container">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Chargement...</span>
+                  </div>
                 </div>
-              </div>
-            ) : (
+              ) : (
                 <table className="table table-striped table-bordered mt-3">
                   <thead>
                     <tr>
@@ -188,7 +193,7 @@ function CreerInventaire() {
                         <td>{stock.quantite}</td>
                         <td>{stock.unite}</td>
                         <td>
-                          <button 
+                          <button
                             className="btn btn-primary btn-sm"
                             onClick={() => {
                               setQuantiteInitiale(stock.quantite);
@@ -206,62 +211,60 @@ function CreerInventaire() {
             </div>
 
             <div className="ajoutPersonnel ">
-        <form onSubmit={handleSubmit} className="mt-4">
-<div className="d-flex mb-4">
-  <div className="flex-fill me-2">
-    <label className="form-label">Quantité Initiale</label>
-    <input
-      type="number"
-      className="form-control"
-      value={quantiteInitiale}
-      readOnly
-    />
-  </div>
-  <div className="flex-fill me-2">
-    <label className="form-label">Quantité Finale</label>
-    <input
-      type="number"
-      className="form-control"
-      value={quantiteFinale}
-      onChange={(e) => setQuantiteFinale(e.target.value)}
-    />
-  </div>
-  <div className="flex-fill">
-    <label className="form-label">Raison d'Ajustement</label>
-    <textarea
-      className="form-control"
-      value={raisonAjustement}
-      onChange={(e) => setRaisonAjustement(e.target.value)}
-    />
-  </div>
-</div>
+              <form onSubmit={handleSubmit} className="mt-4">
+                <div className="d-flex mb-4">
+                  <div className="flex-fill me-2">
+                    <label className="form-label">Quantité Initiale</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={quantiteInitiale}
+                      readOnly
+                    />
+                  </div>
+                  <div className="flex-fill me-2">
+                    <label className="form-label">Quantité Finale</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={quantiteFinale}
+                      onChange={(e) => setQuantiteFinale(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="flex-fill">
+                  <label className="form-label">Raison d'Ajustement</label>
+                  <textarea
+                    className="form-control"
+                    style={{height:"15vh"}}
+                    value={raisonAjustement}
+                    onChange={(e) => setRaisonAjustement(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="btn15 btn-success" disabled={loadingAction}>
+                  {loadingAction ? (
+                    <div className="spinner-border text-light" role="status">
+                      <span className="visually-hidden">Chargement...</span>
+                    </div>
+                  ) : (
+                    <span>
+                      <i className='fa fa-check-circle'></i> Enregistrer l'Inventaire
+                    </span>
+                  )}
 
- 
 
-          <button type="submit" className="btn15 btn-success"disabled={loadingAction}>
-          {loadingAction ? (
-                                          <div className="spinner-border text-light" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>
-                                              <i className='fa fa-check-circle'></i> Enregistrer l'Inventaire
-                                          </span>
-                                      )}
-            
-            
-            
-            </button>
-          <button 
-  type="button" 
-  className="btn15 btn-warning" 
-  onClick={() => navigate('/inventaire')}
->
-  Annuler
-</button>
 
-        </form>  
-          </div>    </div>
+                </button>
+                <button
+                  type="button"
+                  className="btn15 btn-warning"
+                  onClick={() => navigate('/inventaire')}
+                >
+                  Annuler
+                </button>
+
+              </form>
+            </div>    </div>
         </section>
       </main>
     </>

@@ -21,13 +21,11 @@ function VisualiserInventaires() {
   const userId = localStorage.getItem("userid");
   const nom = localStorage.getItem("nom");
 
-  // Récupération des entrepôts
   useEffect(() => {
     const fetchEntrepots = async () => {
       try {
         const response = await axios.get("/api/entrepot");
         const data = response.data;
-
         if (Array.isArray(data) && data.length > 0) {
           setEntrepots(data);
         } else {
@@ -51,18 +49,15 @@ function VisualiserInventaires() {
     fetchEntrepots();
   }, []);
 
-  // Récupération des inventaires
   useEffect(() => {
     const fetchInventaires = async () => {
       try {
         const response = await axios.get(`/api/inventaire/inventaires`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response.data); 
         setInventaires(response.data);
       } catch (error) {
         toast.error('Erreur lors du chargement des inventaires.');
-        console.error(error);
         setError('Erreur lors du chargement des inventaires.');
       } finally {
         setLoading(false);
@@ -77,10 +72,47 @@ function VisualiserInventaires() {
     const entrepotMatch = filtreEntrepot ? inventaire.entrepot.nom === filtreEntrepot : true;
     const raisonMatch = filtreRaison ? inventaire.raisonAjustement.toLowerCase().includes(filtreRaison.toLowerCase()) : true;
     const dateMatch = filtreDate ? new Date(inventaire.dateInventaire).toLocaleDateString() === new Date(filtreDate).toLocaleDateString() : true;
-  
+
     return produitMatch && entrepotMatch && raisonMatch && dateMatch;
   });
-  
+
+  const handlePrint = () => {
+    const printContent = document.getElementById("table-to-print").outerHTML;
+    const printWindow = window.open('', '', 'height=500,width=800');
+    printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+    printWindow.document.write(`
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          padding: 0;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+        th, td {
+          padding: 8px;
+          text-align: left;
+          border: 1px solid #ddd;
+        }
+        th {
+          background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+      </style>
+    `);
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>Inventaires filtrés</h1>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <>
       <ToastContainer />
@@ -90,72 +122,76 @@ function VisualiserInventaires() {
           <Header />
           <div className="mini-stat p-3 content">
             <h5 className='alert alert-success'>
-              <i className='fa fa-list'></i> Visualiser les Inventaires effectuer par {nom}
+              <i className='fa fa-list'></i> Visualiser les Inventaires effectué par {nom}
             </h5>
             <Link to="/creerinventaire" className="btn btn-primary">
               Effectuer un inventaire
             </Link>
             <div className="filters mb-4 d-flex justify-content-between align-items-center">
-  <select className="form-select me-2" value={filtreEntrepot} onChange={e => setFiltreEntrepot(e.target.value)}>
-    <option value="">Filtrer par entrepôt</option>
-    {entrepots.map(entrepot => (
-      <option key={entrepot._id} value={entrepot.nom}>{entrepot.nom}</option>
-    ))}
-  </select>
-  <input
-    type="text"
-    className="form-control me-2"
-    value={filtreProduit}
-    onChange={e => setFiltreProduit(e.target.value)}
-    placeholder="Filtrer par nom de produit"
-  />
-  <input
-    type="text"
-    className="form-control me-2"
-    value={filtreRaison}
-    onChange={e => setFiltreRaison(e.target.value)}
-    placeholder="Filtrer par raison d'ajustement"
-  />
-  <input
-    type="date"
-    className="form-control me-2"
-    value={filtreDate}
-    onChange={e => setFiltreDate(e.target.value)}
-  />
-</div>
+              <select className="form-select me-2" value={filtreEntrepot} onChange={e => setFiltreEntrepot(e.target.value)}>
+                <option value="">Filtrer par entrepôt</option>
+                {entrepots.map(entrepot => (
+                  <option key={entrepot._id} value={entrepot.nom}>{entrepot.nom}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                className="form-control me-2"
+                value={filtreProduit}
+                onChange={e => setFiltreProduit(e.target.value)}
+                placeholder="Filtrer par nom de produit"
+              />
+              <input
+                type="text"
+                className="form-control me-2"
+                value={filtreRaison}
+                onChange={e => setFiltreRaison(e.target.value)}
+                placeholder="Filtrer par raison d'ajustement"
+              />
+              <input
+                type="date"
+                className="form-control me-2"
+                value={filtreDate}
+                onChange={e => setFiltreDate(e.target.value)}
+              />
+              <button className="btn btn-primary" onClick={handlePrint}>Imprimer</button>
+            </div>
 
             {loading ? (
               <p>Chargement des inventaires...</p>
             ) : error ? (
               <p className="text-danger">{error}</p>
             ) : (
-              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                <table className="table table-striped table-bordered">
-                  <thead>
-                    <tr>
-                    <th className="bg-success">Entrepot</th>
-                      <th>Produit</th>
-                      <th className="bg-success"> Quantité Initiale</th>
-                      <th>Quantité Finale</th>
-                      <th className="bg-success">Raison d'Ajustement</th>
-                      <th>Date de Création</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredInventaires.map(inventaire => (
-                      <tr key={inventaire._id}>
-                        <td>{inventaire.entrepot.nom}</td> 
-                        <td>{inventaire.produit ? inventaire.produit.nom : 'Produit non disponible'}</td>
-
-                        <td>{inventaire.quantitéInitiale}</td>
-                        <td>{inventaire.quantitéFinale}</td>
-                        <td>{inventaire.raisonAjustement}</td>
-                        <td>{new Date(inventaire.dateInventaire).toLocaleDateString()}</td>
+              <>
+                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                  <table id="table-to-print" className="table table-striped table-bordered">
+                    <thead>
+                      <tr>
+                        <th className="bg-success">Entrepot</th>
+                        <th>Produit</th>
+                        <th className="bg-success">Quantité Initiale</th>
+                        <th>Quantité Finale</th>
+                        <th className="bg-success">Quantité perdu</th>
+                        <th>Raison d'Ajustement</th>
+                        <th className="bg-success">Date de Création</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {filteredInventaires.map(inventaire => (
+                        <tr key={inventaire._id}>
+                          <td>{inventaire.entrepot.nom}</td>
+                          <td>{inventaire.produit ? inventaire.produit.nom : 'Produit non disponible'}</td>
+                          <td>{inventaire.quantitéInitiale}</td>
+                          <td>{inventaire.quantitéFinale}</td>
+                          <td>{inventaire.quantitéInitiale - inventaire.quantitéFinale}</td>
+                          <td>{inventaire.raisonAjustement}</td>
+                          <td>{new Date(inventaire.dateInventaire).toLocaleDateString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </section>
