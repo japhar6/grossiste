@@ -278,9 +278,20 @@ function PriseCommande() {
 
     return nouvelleQuantite;
   };
+  console.log("Commande actuelle :", commande);
 
+const totalCommande = commande.reduce((total, item) => {
+    const quantite = Number(item.quantite) || 0;
+    const prix = Number(item.prixdevente) || 0; // Vérifie bien `prixdevente`
+    
+    console.log(`Produit: ${item.nom}, Quantité: ${quantite}, Prix: ${prix}`);
+    
+    return total + quantite * prix;
+}, 0);
 
-  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
+console.log("Total Commande Calculé:", totalCommande);
+
+ 
 
   const valeurRemise = typeRemise === "remiseGlobale"
     ? remisesClient?.remiseGlobale
@@ -289,25 +300,30 @@ function PriseCommande() {
       : typeRemise === "remiseParProduit"
         ? remisesClient?.remiseParProduit
         : 0;
-
-  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-
-
-    // Remise par produit
-    if (typeRemise === 'remiseParProduit') {
-      const prixFinal = item.prix - (item.prix * (valeurRemise / 100));
-
-      return prixFinal;
-    }
-
-    // Remise globale
-    if (typeRemise === 'remiseGlobale') {
-      return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
-    }
-
-    // Remise fixe (appliquée après)
-    return item.prix;
-  };
+      
+        const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
+          console.log("Calcul remise pour :", item);
+          console.log("Type de remise :", typeRemise);
+          console.log("Valeur de la remise :", valeurRemise);
+      
+          if (!item || !item.prixdevente) {
+              console.warn("⚠️ Problème : `item` ou `item.prixdevente` est invalide !");
+              return 0;
+          }
+      
+          if (typeRemise === 'remiseParProduit') {
+              const prixFinal = item.prixdevente - (item.prixdevente * (valeurRemise / 100));
+              console.log("Prix final après remise :", prixFinal);
+              return prixFinal;
+          }
+      
+          if (typeRemise === 'remiseGlobale') {
+              return item.prixdevente; // Pas de changement ici, la remise s'applique sur le total
+          }
+      
+          return item.prixdevente;
+      };
+      
 
   const calculerTotalApresRemise = (commande, typeRemise, valeurRemise, totalCommande) => {
     if (typeRemise === 'remiseFixe') {
@@ -330,7 +346,7 @@ function PriseCommande() {
   const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande);
   const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
     console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
-  
+
     // Vérifier si une unité est choisie
     if (!produit.uniteChoisie) {
       Swal.fire({
@@ -341,18 +357,18 @@ function PriseCommande() {
       });
       return; // Ne rien faire si l'unité n'est pas sélectionnée
     }
-  
+
     // Ne rien faire si la quantité demandée est inférieure ou égale à 0
     if (quantite <= 0) return;
-  
+
     try {
       // Trouver l'unité avec la plus petite conversion (la plus petite unité)
       const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
         return prev.conversion > current.conversion ? prev : current;
       });
-  
+
       console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
-  
+
       // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
       let quantiteConvertie = quantite;
       if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
@@ -361,7 +377,7 @@ function PriseCommande() {
       } else {
         console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
       }
-  
+
       // Récupérer la quantité disponible dans l'entrepôt principal
       const responsePrincipal = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
       const quantiteDisponiblePrincipal = responsePrincipal.data.quantiteDisponible;
@@ -369,7 +385,7 @@ function PriseCommande() {
       const nomPrincipal = responsePrincipal.data.entrepotNom;  // Récupérer le nom de l'entrepôt principal
       console.log("nom principal", nomPrincipal);
       console.log(`Quantité disponible dans l'entrepôt principal : ${quantiteDisponiblePrincipal}`);
-  
+
       // Comparer la quantité convertie avec la quantité disponible
       if (isChecked) {
         if (quantiteConvertie > quantiteDisponiblePrincipal) {
@@ -387,16 +403,16 @@ function PriseCommande() {
             },
             buttonsStyling: false,
           });
-  
+
           if (result.isDismissed) {
             // Si l'utilisateur veut choisir un autre entrepôt, essayer l'entrepôt secondaire
             const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
             const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
             const entrepotIdSecondaire = responseSecondaire.data.entrepotId;
-            const nomSecondaire = responseSecondaire.data.entrepotsecondaireNom || " "; 
+            const nomSecondaire = responseSecondaire.data.entrepotsecondaireNom || " ";
             console.log("nom secondaire", nomSecondaire);
             console.log(`Quantité disponible dans l'entrepôt secondaire : ${quantiteDisponibleSecondaire}`);
-  
+
             // Vérifier la quantité dans l'entrepôt secondaire
             if (quantiteConvertie <= quantiteDisponibleSecondaire) {
               // Utiliser l'entrepôt secondaire si la quantité est suffisante
@@ -406,7 +422,7 @@ function PriseCommande() {
                 icon: 'info',
                 confirmButtonText: 'OK',
               });
-  
+
               // Ajouter le produit avec l'entrepôt secondaire
               setCommande((prevCommande) => {
                 return [...prevCommande, {
@@ -434,7 +450,7 @@ function PriseCommande() {
             icon: 'info',
             confirmButtonText: 'OK',
           });
-  
+
           // Ajouter le produit avec l'entrepôt principal
           setCommande((prevCommande) => {
             return [...prevCommande, {
@@ -457,7 +473,7 @@ function PriseCommande() {
     try {
       const vendeurId = localStorage.getItem("userid");
       const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
-  
+
       if (!selectedPersonId) {
         Swal.fire({
           title: "Info",
@@ -467,12 +483,12 @@ function PriseCommande() {
         });
         return;
       }
-  
+
       const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
       const commercialId = type === "commercial" ? selectedPersonId : null;
       const typeClient = type === "client" ? "Client" : "Commercial";
       const statut = "en cours"; // Le statut initial de la commande
-  
+
       if (!vendeurId) {
         Swal.fire({
           title: "Erreur",
@@ -483,7 +499,7 @@ function PriseCommande() {
         setLoadingAction(false); // Mettre ici pour garantir que l'état de chargement s'arrête en cas d'erreur
         return;
       }
-  
+
       // On s'assure que chaque produit a un 'entrepotId' correctement défini.
       const produitsCommande = commande.map((item) => ({
         produit: item._id,
@@ -491,9 +507,9 @@ function PriseCommande() {
         uniteChoisie: item.uniteChoisie || "Unité par défaut",
         entrepotId: item.entrepotId || entrepotId, // Vérification de l'entrepotId, sinon utilisation de la variable entrepotId
       }));
-  
+
       console.log("Produits avant envoi :", produitsCommande);
-  
+
       const commandeData = {
         typeClient,
         clientId: typeClient === "Client" ? clientId : null,
@@ -502,10 +518,10 @@ function PriseCommande() {
         produits: produitsCommande,
         statut,
       };
-  
+
       const response = await axios.post("/api/commandes/ajouter", commandeData);
       console.log("Commande créée avec succès:", response.data);
-  
+
       // Affichage d'une notification de succès
       Swal.fire({
         title: "Commande créée avec succès",
@@ -515,10 +531,10 @@ function PriseCommande() {
       }).then(() => {
         window.location.reload(); // Recharger la page après avoir cliqué sur OK
       });
-  
+
       playSound(); // Assurez-vous que cette fonction est définie et fonctionne comme prévu
       setCommande([]); // Réinitialisation de la commande après la création
-  
+
     } catch (error) {
       console.error("Erreur lors de la création de la commande:", error);
       Swal.fire({
@@ -531,7 +547,7 @@ function PriseCommande() {
       setLoadingAction(false); // Garantie d'arrêter le chargement même en cas d'erreur
     }
   };
-  
+
 
 
   const getClientNom = (id) => {
@@ -587,13 +603,13 @@ function PriseCommande() {
     setCommande((prevCommande) =>
       prevCommande.filter((item) => !(item._id === produitId && item.uniteChoisie === unite))
     );
-  
+
     setCheckedProduits((prev) => ({
       ...prev,
       [produitId]: false, // Décoche le produit retiré
     }));
   };
-  
+
 
 
 
@@ -843,7 +859,7 @@ function PriseCommande() {
                   <table className="tablepro mt-2">
                     <thead>
                       <tr>
-                      <th className="bg-success text-light p-3">Nom</th>
+                        <th className="bg-success text-light p-3">Nom</th>
                         <th className="bg-success text-light p-3">Type</th>
                         <th className="bg-success text-light p-3">Prix</th>
                         <th className="bg-success text-light p-3">Quantité</th>
@@ -857,7 +873,7 @@ function PriseCommande() {
 
                         produitsFiltres.length === 0 ? (
                           <tr>
-                            <td colSpan="6" className="text-center" style={{marginTop:'10px !important'}}>Aucun produit trouvé</td>
+                            <td colSpan="6" className="text-center" style={{ marginTop: '10px !important' }}>Aucun produit trouvé</td>
                           </tr>
                         ) : (
                           produitsFiltres.map((p) => (
@@ -883,42 +899,42 @@ function PriseCommande() {
                                 />
                               </td>
                               <td>
-                              <select
-  className="form-control"
-  onChange={(e) => {
-    const selectedUnite = e.target.value;
+                                <select
+                                  className="form-control"
+                                  onChange={(e) => {
+                                    const selectedUnite = e.target.value;
 
-    if (!p.unites || p.unites.length === 0) {
-      console.error(`⚠️ Aucune unité trouvée pour le produit ${p.nom}`);
-      return;
-    }
+                                    if (!p.unites || p.unites.length === 0) {
+                                      console.error(`⚠️ Aucune unité trouvée pour le produit ${p.nom}`);
+                                      return;
+                                    }
 
-    const selectedUniteObj = p.unites.find((unite) => unite.nom === selectedUnite);
+                                    const selectedUniteObj = p.unites.find((unite) => unite.nom === selectedUnite);
 
-    if (!selectedUniteObj) {
-      console.error(`⚠️ Unité introuvable pour le produit ${p.nom}`);
-      return;
-    }
+                                    if (!selectedUniteObj) {
+                                      console.error(`⚠️ Unité introuvable pour le produit ${p.nom}`);
+                                      return;
+                                    }
 
-    const updatedProduit = {
-      ...p,
-      uniteChoisie: selectedUnite,
-      prixdevente: selectedUniteObj.prixdevente,
-    };
+                                    const updatedProduit = {
+                                      ...p,
+                                      uniteChoisie: selectedUnite,
+                                      prixdevente: selectedUniteObj.prixdevente,
+                                    };
 
-    setProduits((prevProduits) =>
-      prevProduits.map((prod) => (prod._id === updatedProduit._id ? updatedProduit : prod))
-    );
-  }}
-  value={p.uniteChoisie || ""}
->
-  <option value="">Veuillez sélectionner l'unité</option>
-  {p.unites?.map((unite) => (
-    <option key={unite.nom} value={unite.nom}>
-      {unite.nom}
-    </option>
-  ))}
-</select>
+                                    setProduits((prevProduits) =>
+                                      prevProduits.map((prod) => (prod._id === updatedProduit._id ? updatedProduit : prod))
+                                    );
+                                  }}
+                                  value={p.uniteChoisie || ""}
+                                >
+                                  <option value="">Veuillez sélectionner l'unité</option>
+                                  {p.unites?.map((unite) => (
+                                    <option key={unite.nom} value={unite.nom}>
+                                      {unite.nom}
+                                    </option>
+                                  ))}
+                                </select>
 
                               </td>
                               <td>
@@ -946,7 +962,7 @@ function PriseCommande() {
                       ) : (
                         // Si searchTerm est vide, ne rien afficher
                         <tr>
-                          <td colSpan="6" className="text-center" style={{marginTop:'10px !important'}}>Veuillez entrer un terme de recherche</td>
+                          <td colSpan="6" className="text-center" style={{ marginTop: '10px !important' }}>Veuillez entrer un terme de recherche</td>
                         </tr>
                       )}
                     </tbody>
@@ -957,13 +973,13 @@ function PriseCommande() {
 
             {/* Récapitulatif de la Commande */}
             <div className="commande mt-4">
-            <h6 className="alert alert-info"><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+              <h6 className="alert alert-info"><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
 
               <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                 <table className="table table-bordered mt-2">
                   <thead>
                     <tr>
-                    <th className="bg-success text-light">Nom</th>
+                      <th className="bg-success text-light">Nom</th>
                       <th className="bg-success text-light">Quantité</th>
                       <th className="bg-success text-light">Unité</th>
                       <th className="bg-success text-light">Prix Unitaire</th>
@@ -981,26 +997,26 @@ function PriseCommande() {
                         <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
                         <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
                         <td>
-        <button
-          className="btn btn-danger btn-sm"
-          onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
-        >
-          <i className="fa fa-trash"></i>
-        </button>
-      </td>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
+                          >
+                            <i className="fa fa-trash"></i>
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-            
+
               <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
               <h5 className="total" style={{ width: 'auto' }}>
-             
+
                 Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
               </h5>
-              <button className="btn btn-success mt-3"  style={{ width: 'auto', float: 'right' }} onClick={creerCommande} disabled={loadingAction}>
+              <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }} onClick={creerCommande} disabled={loadingAction}>
 
                 {loadingAction ? (
                   <>

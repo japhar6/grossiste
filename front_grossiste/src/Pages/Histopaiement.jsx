@@ -23,7 +23,7 @@ function HistoC() {
         setPaiements(response.data);
       } catch (error) {
         console.error("Erreur lors de la récupération des paiements:", error);
-        Swal.fire("Erreur", "Impossible de récupérer les paiements.", "error");
+        Swal.fire("Info", "Aucun paiement pour l'instant.", "info");
       }
     };
 

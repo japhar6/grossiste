@@ -53,7 +53,7 @@ import FactureRemAd from "./Pages/FactureRemiseAdmin.jsx";
 import AchatGest from "./Pages/AchatGest.jsx";
 import Deccaisement from "./Pages/Decaissement.jsx";
 import Histodecaisse from "./Pages/HistoDecaisse.jsx";
-
+import Annuler from "./Pages/AnnulerFacture.jsx";
 
 function App() {
   return (
@@ -90,7 +90,7 @@ function App() {
           <Route path="/histodecaisse" element={<Histodecaisse />} />
         
           <Route path="/factureadmin" element={<FactureAdmin />} />
-        
+          <Route path="/annulerFact" element={<Annuler />} />
           <Route path='/factureremisead' element={<FactureRemAd />} />
           <Route path='/ChiffreAffaire' element={<ChiffreAffaire />} />
           

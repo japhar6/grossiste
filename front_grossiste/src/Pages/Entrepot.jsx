@@ -186,7 +186,7 @@ function Entrepot() {
                               <i className="fas fa-pencil-alt"></i>
                             </button>
                             <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>
-                              <i className="fas fa-times"></i> 
+                              <i className="fas fa-times"></i>
                             </button>
                           </td>
                         </tr>
@@ -241,7 +241,7 @@ function Entrepot() {
             <button className="btn15 btn1-success" onClick={handleAddOrUpdateEntrepot} disabled={loadingAction}>
               {loadingAction ? (
                 <>
-                <span className="spinner-border " style={{ width: '4rem', height: '4rem' }}></span> Chargement...
+                  <span className="spinner-border " style={{ width: '4rem', height: '4rem' }}></span> Chargement...
                 </>
               ) : (
                 editingEntrepotId ? "Modifier" : "Ajouter"

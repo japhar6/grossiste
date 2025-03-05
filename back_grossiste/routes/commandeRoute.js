@@ -10,7 +10,7 @@ router.get('/', commandeController.getCommandes);
 
 // Route pour récupérer une commande par son ID
 router.get('/recuperer/:id', commandeController.getCommandeById);
-
+router.post("/annuler-commande/:referenceFacture", commandeController.annulerVenteParReference);
 // Route pour mettre à jour une commande
 router.put('/:id', commandeController.updateCommande);
 
@@ -31,5 +31,6 @@ router.get('/suggestions', commandeController.getSuggestions);
 router.get('/factmo', commandeController.getSuggestionscom);
 router.get('/factmocli', commandeController.getSuggestionscomcre);
 router.put('/sortieFournisseur/:commandeId', commandeController.sortieFournisseur);
+router.get('/toutfact', commandeController.getSuggestionstous);
 
 module.exports = router;

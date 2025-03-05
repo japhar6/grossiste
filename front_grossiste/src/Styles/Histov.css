@@ -37,3 +37,33 @@
   display: flex;
   flex-direction: column;
 }
+.custom-checkbox {
+  width: 20px; /* Taille de la case à cocher */
+  height: 20px; /* Taille de la case à cocher */
+  border-radius: 0; /* Supprime les coins arrondis pour rendre la case carrée */
+  border: 2px solid #000; /* Bordure noire pour la case */
+}
+
+/* Lorsque la case est cochée */
+.custom-checkbox:checked {
+  background-color: #007bff; /* Couleur de fond lorsque la case est cochée */
+  border-color: #007bff; /* Bordure de la case cochée */
+}
+
+/* Media query pour grands écrans : garde la taille de la case inchangée */
+@media (min-width: 768px) {
+  .custom-checkbox {
+    width: 20px ; /* Taille fixe pour les grands écrans */
+    height: 20px;
+ /* Taille fixe pour les grands écrans */
+  }
+}
+
+/* Media query pour petits écrans : aucune modification de taille */
+@media (max-width: 768px) {
+  .custom-checkbox {
+    width: 20px !important; /* Taille fixe pour les petits écrans aussi */
+    height: 20px;
+     /* Taille fixe pour les petits écrans aussi */
+  }
+}

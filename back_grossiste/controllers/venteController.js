@@ -29,17 +29,7 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
 }
 exports.validerVente = async (req, res) => {
     try {
-        let { commandeId, magasinierId, entrepotId } = req.body;
-
-        if (!entrepotId) {
-            return res.status(400).json({ message: "Veuillez sélectionner un entrepôt." });
-        }
-
-        // Vérifier si l'entrepôt existe bien et appartient au magasinier
-        let entrepot = await Entrepot.findOne({ _id: entrepotId, magasinier: magasinierId });
-        if (!entrepot) {
-            return res.status(403).json({ message: "Cet entrepôt ne vous appartient pas ou n'existe pas." });
-        }
+        let { commandeId, magasinierId } = req.body;
 
         // Récupérer la commande
         let commande = await Commande.findById(commandeId).populate('produits.produit');
@@ -47,8 +37,11 @@ exports.validerVente = async (req, res) => {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        if (commande.statut !== 'payé') {
-            return res.status(400).json({ message: "La commande doit être validée par le caissier avant." });
+        // Vérifier si tous les produits ont un entrepotId défini
+        for (let item of commande.produits) {
+            if (!item.entrepotId) {
+                return res.status(400).json({ message: `Entrepôt non défini pour le produit "${item.produit.nom}"` });
+            }
         }
 
         // Créer une vente
@@ -56,79 +49,82 @@ exports.validerVente = async (req, res) => {
             commandeId,
             produits: [],
             magasinierId,
-            entrepotId,  // Sauvegarder l'entrepôt utilisé
             statut: 'validée',
             dateValidationMagasinier: Date.now(),
         });
 
-         // Vérifier si tous les produits sont en stock avant de commencer la réduction de stock
-         let stockInsuffisant = false;
-         for (let item of commande.produits) {
-             let produitId = item.produit._id;
-             let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
- 
-             if (stocks.length === 0) {
-                 stockInsuffisant = true;
-                 break;
-             }
-         }
- 
-         // Si un produit est en rupture de stock, retourner l'erreur sans effectuer la réduction de stock
-         if (stockInsuffisant) {
-             return res.status(400).json({
-                 message: `🚨 Un ou plusieurs produits sont en rupture de stock dans l'entrepôt "${entrepot.nom}". Veuillez vérifier et réessayer.`
-             });
-         }
-
-        // Réduction du stock
+        // Réduction du stock et gestion de l'état des produits
         await Promise.all(commande.produits.map(async (item) => {
-            let remainingQuantity = item.quantite;
+            let remainingQuantity = item.quantite;  // Quantité à traiter
             let produitId = item.produit._id;
             let produit = await Produit.findById(produitId);
+            let entrepotId = item.entrepotId._id;  // L'entrepôt spécifique à chaque produit
+
+            console.log(`Produit: ${item.produit.nom}, Quantité demandée: ${remainingQuantity}, Entrepôt: ${item.entrepotId.nom}`);
 
             let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
 
             if (stocks.length === 0) {
-                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock dans l'entrepôt "${entrepot.nom}". Veuillez effectuer un transfert depuis un autre entrepôt ou effectuer un achat.`);
+                console.log(`🚨 Le produit "${item.produit.nom}" est en rupture de stock dans l'entrepôt "${item.entrepotId.nom}".`);
+                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock dans l'entrepôt "${item.entrepotId.nom}".`);
             }
 
-            let { quantite: quantityInMinUnit, unite } = convertirUnite(remainingQuantity, item.uniteChoisie, produit.unites);
+         // Conversion de l'unité si nécessaire
+let { quantite: quantityInMinUnit, unite } = convertirUnite(remainingQuantity, item.uniteChoisie, produit.unites);
+
+// Affichage détaillé de la conversion
+console.log(`Conversion de la quantité:`);
+console.log(`${remainingQuantity} ${item.uniteChoisie} = ${quantityInMinUnit} ${unite}`);
+
 
             for (let i = 0; i < stocks.length; i++) {
                 let stock = stocks[i];
+                console.log(`Stock disponible: ${stock.quantite} (prix unitaire: ${stock.prixUnitaire})`);
+
                 if (quantityInMinUnit <= 0) break;
 
                 let availableQuantity = stock.quantite;
 
+                // Soustraction de la quantité du stock
                 if (availableQuantity >= quantityInMinUnit) {
                     stock.quantite -= quantityInMinUnit;
                     stock.valeurTotale = stock.quantite * stock.prixUnitaire;
                     await stock.save();
-                    quantityInMinUnit = 0;
+                    console.log(`Réduction du stock: Nouveau stock pour "${item.produit.nom}" est ${stock.quantite}`);
+                    quantityInMinUnit = 0;  // Tout a été soustrait
                 } else {
                     quantityInMinUnit -= availableQuantity;
                     stock.quantite = 0;
                     stock.valeurTotale = 0;
                     await stock.save();
+                    console.log(`Réduction partielle du stock. Stock restant pour "${item.produit.nom}": ${stock.quantite}`);
                 }
             }
 
+            // Si après toute la soustraction il reste une quantité non soustraite
             if (quantityInMinUnit > 0) {
-                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt "${entrepot.nom}".`);
+                console.log(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt "${item.entrepotId.nom}".`);
+                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt "${item.entrepotId.nom}".`);
             }
 
+            // Ajoute les informations de produit à la vente
             vente.produits.push({
                 produit: item.produit._id,
                 quantite: item.quantite,
-                quantiteConvertie: quantityInMinUnit,
-                unite: unite
+                quantiteConvertie: quantityInMinUnit,  // Cette valeur doit maintenant être correcte
+                unite: unite,
+                entrepotId: item.entrepotId._id
             });
+
+            console.log(`Produit "${item.produit.nom}" ajouté à la vente avec ${item.quantite} unité(s) de type "${unite}"`);
         }));
 
         await vente.save();
+        console.log(`Vente validée avec succès. Vente ID: ${vente._id}`);
+
         commande.statut = 'payé et livré';
         commande.modeLivraison = 'magasin';
-        commande.dateSortie = Date.now(); 
+        commande.dateSortie = Date.now();
         await commande.save();
 
         res.status(200).json({
@@ -145,6 +141,8 @@ exports.validerVente = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 
 
@@ -171,6 +169,13 @@ exports.validerRetourProduits = async (req, res) => {
             if (!stock) {
                 throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom}`);
             }
+            // Vérifie si l'entrepôt est défini pour chaque produit
+            if (!item.entrepotId) {
+                throw new Error(`Entrepôt non défini pour le produit ${item.produit.nom}`);
+            }
+
+            let entrepotId = item.entrepotId._id; // Accède à l'ID de l'entrepôt uniquement s'il est défini
+            console.log(`Produit: ${item.produit.nom}, Quantité demandée: ${remainingQuantity}, Entrepôt: ${item.entrepotId.nom}`);
 
             // Affichage des détails de l'unité de retour et de l'unité du stock
             console.log(`Produit retourné : ${item.produitId.nom}`);
@@ -232,7 +237,7 @@ exports.getAllVentes = async (req, res) => {
     try {
         // Récupérer toutes les ventes, incluant les produits et le magasinier
         const ventes = await Vente.find()
-            .populate("magasinierId", "nom")  
+            .populate("magasinierId", "nom")
             .populate("entrepotId", "nom")// Limiter à la propriété 'nom' du magasinier
             .populate({
                 path: "commandeId",              // Peupler la référence 'commandeId'
@@ -244,7 +249,7 @@ exports.getAllVentes = async (req, res) => {
                     { path: "produits.produit", select: "nom prix" } // Peupler 'produit' dans 'produits' avec nom et prix
                 ]
             });
-        
+
         if (ventes.length === 0) {
             return res.status(404).json({ message: 'Aucune vente trouvée' });
         }

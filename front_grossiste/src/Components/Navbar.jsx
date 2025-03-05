@@ -11,7 +11,7 @@ function Header() {
   const [currentTime, setCurrentTime] = useState("");
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate(); // Hook pour naviguer
-
+ const [isLoggingOut, setIsLoggingOut] = useState(false);
   // Préparer l'audio pour la notification
   const notificationSound = new Audio(audio);
 
@@ -90,7 +90,12 @@ function Header() {
     }).then((result) => {
       if (result.isConfirmed) {
         localStorage.removeItem("token");
+        setIsLoggingOut(true);
         window.location.href = "/";
+        setTimeout(() => {
+          localStorage.removeItem("token");
+          window.location.href = "/";
+        }, 2000); // Simule un délai de 2 secondes
       }
     });
   };
@@ -140,6 +145,12 @@ function Header() {
           </div>
         </div>
       </nav>
+      {isLoggingOut && (
+  <div className="logout-overlay">
+    <div className="loading-spinner"></div>
+    <p>Déconnexion en cours...</p>
+  </div>
+)}
     </header>
   );
 }

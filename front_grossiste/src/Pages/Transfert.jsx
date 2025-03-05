@@ -122,8 +122,8 @@ const Transfert = () => {
     setEntrepotSource(entrepotSource);  // Sauvegarder l'entrepôt source
     setProduit(produit);                // Sauvegarder l'objet produit
   };
-  
-  
+
+
   const filteredTransferts = historiqueTransferts.filter((transfert) =>
     statutFiltre ? transfert.statutAdmin === statutFiltre : true
   );
@@ -148,7 +148,7 @@ const Transfert = () => {
             <button
               className="btn btn-success mb-3 new"
               onClick={() => setShowModal(true)}
-              style={{width:'auto'}}
+              style={{ width: 'auto' }}
             >
               Nouveau Transfert
             </button>
@@ -185,53 +185,53 @@ const Transfert = () => {
               <option value="rejeté">Rejeté</option>
             </select>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-            <table className="table table-bordered table-striped">
-              <thead className="thead-dark">
-                <tr>
-                  <th className="bg-success">Source</th>
-                  <th>Destination</th>
-                  <th className="bg-success">Produit</th>
-                  <th>Quantité</th>
-                  <th className="bg-success">Date</th>
-                  <th>Statut</th>
-                  <th className="bg-success">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTransferts.map((transfert) => (
-                  <tr key={transfert._id}>
-                    <td>{transfert.entrepotSource?.nom || "N/A"}</td>
-                    <td>{transfert.entrepotDestination?.nom || "N/A"}</td>
-                    <td>{transfert.produit?.nom || "N/A"}</td>
-                    <td>{transfert.quantitéEnvoyée}</td>
-                    <td>
-                      {new Date(transfert.dateTransfert).toLocaleDateString()}
-                    </td>
-                    <td>{transfert.statutAdmin}</td>
-                    <td>
-                      {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
-                      {handleRecevoirButtonVisibility(transfert) && (
-                        <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() =>
-                          openReceptionModal(
-                            transfert._id,
-                            transfert.quantitéEnvoyée,
-                            transfert.entrepotSource,
-                            transfert.produit // Passe ici l'objet produit
-                          )
-                        }
-                      >
-                        Recevoir
-                      </button>
-                      
-                      )}
-                    </td>
+              <table className="table table-bordered table-striped">
+                <thead className="thead-dark">
+                  <tr>
+                    <th className="bg-success">Source</th>
+                    <th>Destination</th>
+                    <th className="bg-success">Produit</th>
+                    <th>Quantité</th>
+                    <th className="bg-success">Date</th>
+                    <th>Statut</th>
+                    <th className="bg-success">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div> </div> 
+                </thead>
+                <tbody>
+                  {filteredTransferts.map((transfert) => (
+                    <tr key={transfert._id}>
+                      <td>{transfert.entrepotSource?.nom || "N/A"}</td>
+                      <td>{transfert.entrepotDestination?.nom || "N/A"}</td>
+                      <td>{transfert.produit?.nom || "N/A"}</td>
+                      <td>{transfert.quantitéEnvoyée}</td>
+                      <td>
+                        {new Date(transfert.dateTransfert).toLocaleDateString()}
+                      </td>
+                      <td>{transfert.statutAdmin}</td>
+                      <td>
+                        {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
+                        {handleRecevoirButtonVisibility(transfert) && (
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() =>
+                              openReceptionModal(
+                                transfert._id,
+                                transfert.quantitéEnvoyée,
+                                transfert.entrepotSource,
+                                transfert.produit // Passe ici l'objet produit
+                              )
+                            }
+                          >
+                            Recevoir
+                          </button>
+
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div> </div>
         </div>
       </section>
 
@@ -243,17 +243,17 @@ const Transfert = () => {
           entrepotSource={entrepot}
         />
       )}
-{showModalReception && (
-  <ReceptionModal
-    show={showModalReception}
-    handleClose={() => setShowModalReception(false)}
-    transfertId={transfertId}
-    quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
-    produit={produit} // Passer l'objet produit à la modal
-    refreshHistorique={fetchHistoriqueTransferts}
-    entrepotSource={entrepotSource}
-  />
-)}
+      {showModalReception && (
+        <ReceptionModal
+          show={showModalReception}
+          handleClose={() => setShowModalReception(false)}
+          transfertId={transfertId}
+          quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
+          produit={produit} // Passer l'objet produit à la modal
+          refreshHistorique={fetchHistoriqueTransferts}
+          entrepotSource={entrepotSource}
+        />
+      )}
 
     </main>
   );

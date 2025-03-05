@@ -31,16 +31,16 @@ function Login() {
                 email,
                 password
             });
-    
+
             const data = response.data; // Récupère directement les données
-    
+
             // Stocke les informations dans le localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('email', data.user.email);
             localStorage.setItem('role', data.user.role);
             localStorage.setItem('userid', data.user._id);
             localStorage.setItem('nom', data.user.nom);
-            setSuccess(true);      setLoading(true);
+            setSuccess(true); setLoading(true);
             setTimeout(() => {
                 switch (data.user.role) {
                     case 'admin':
@@ -82,7 +82,7 @@ function Login() {
                 <div className="container-fluid center cont">
                     <div className='description p-5 text-center'>
                         <div className="center">
-                            <img src={Logo} alt="" width={250} className='img-fluid'/>
+                            <img src={Logo} alt="" width={250} className='img-fluid' />
                         </div>
                         <h1 className='mb-4 mt-5'>
                             <b className='gradient-text'>MAGASIN BAZARIKO</b><br />
@@ -97,12 +97,12 @@ function Login() {
                             <div className="hr"></div>
 
                             {/* Message d'erreur */}
-                            {error &&  <div className="text-center">
-                                    <div className="spinner-border text-success mb-2" role="status">
-                                        <span className="visually-hidden">Chargement...</span>
-                                    </div>
-                                    <p className='text-alert fw-bold'> {error}</p>
-                                </div>}
+                            {error && <div className="text-center">
+                                <div className="spinner-border text-success mb-2" role="status">
+                                    <span className="visually-hidden">Chargement...</span>
+                                </div>
+                                <p className='text-alert fw-bold'> {error}</p>
+                            </div>}
 
                             {/* Animation de chargement + Message de succès */}
                             {success && (
@@ -133,9 +133,9 @@ function Login() {
                                             style={{ paddingRight: '2.5rem' }}
                                         />
                                         <label>Mot de passe</label>
-                                        <span 
-                                            className="input-icon" 
-                                            onClick={togglePasswordVisibility} 
+                                        <span
+                                            className="input-icon"
+                                            onClick={togglePasswordVisibility}
                                             style={{ cursor: 'pointer', position: 'absolute', right: '20px', top: '20px' }}
                                         >
                                             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
@@ -144,18 +144,18 @@ function Login() {
                                 </div>
                                 <div className='text-center'>
                                     {!success && (
-                                      <button type="submit" className='btn1 btn1-success p-3 mt-3 button d-flex align-items-center justify-content-center' disabled={loading}>
-                                      {loading ? (
-                                          <div className="spinner-border style={{ width: '2rem', height: '2rem' }}" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>
-                                              <i className='fa fa-check-circle'></i> Se connecter
-                                          </span>
-                                      )}
-                                  </button>
-                                  
+                                        <button type="submit" className='btn1 btn1-success p-3 mt-3 button d-flex align-items-center justify-content-center' disabled={loading}>
+                                            {loading ? (
+                                                <div className="spinner-border style={{ width: '2rem', height: '2rem' }}" role="status">
+                                                    <span className="visually-hidden">Chargement...</span>
+                                                </div>
+                                            ) : (
+                                                <span>
+                                                    <i className='fa fa-check-circle'></i> Se connecter
+                                                </span>
+                                            )}
+                                        </button>
+
                                     )}
                                 </div>
                             </form>

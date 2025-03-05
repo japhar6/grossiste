@@ -23,7 +23,7 @@ const commandeSchema = new mongoose.Schema({
     totalGeneral: { type: Number, required: true },
     statut: { 
         type: String,  
-        enum: ["en cours", "payé", "payé et livré"], 
+        enum: ["en cours", "payé", "payé et livré","annulée"], 
         default: "en cours" 
     },
     typeRemise: { type: String },

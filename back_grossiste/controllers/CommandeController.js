@@ -3,6 +3,10 @@ const Produit = require("../models/Produits");
 const Client = require("../models/Client");
 const Commercial = require("../models/Commercial");
 const Entrepot = require("../models/Entrepot");
+const Stock = require('../models/Stock');
+const Vente = require('../models/Ventes');
+const PaiementCommerciale = require("../models/PaimentCommerciale");
+const Paiement = require("../models/Paiement");
 
 exports.ajouterCommande = async (req, res) => {
     try {
@@ -185,6 +189,24 @@ exports.getSuggestions = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la récupération des suggestions." });
     }
 };
+exports.getSuggestionstous = async (req, res) => {
+    try {
+        // Rechercher toutes les commandes sans filtre de statut
+        const commandes = await Commande.find().sort({ createdAt: -1 }); // Tri par date décroissante
+
+        // Vérifie si des commandes sont trouvées
+        if (commandes.length === 0) {
+            return res.status(404).json({ message: "Aucune commande trouvée." });
+        }
+
+        // Renvoie les références des commandes
+        const suggestions = commandes.map(commande => commande.referenceFacture);
+        res.status(200).json(suggestions);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des suggestions :", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des suggestions." });
+    }
+};
 
 exports.getSuggestionscom = async (req, res) => {
     try {
@@ -234,8 +256,9 @@ exports.getCommandeByref = async (req, res) => {
                 .populate("clientId", "nom telephone")
                 .populate("commercialId", "nom telephone")
                 .populate("produits.produit", "nom")
+                .populate("produits.entrepotId", "nom")
                 .populate("paiement", "modePaiement") // Ajout de modePaiement
-                .populate("entrepotId", "nom")
+              
                 ;
         } else {
             commande = await Commande.findById(req.params.id)
@@ -397,6 +420,211 @@ exports.sortieFournisseur = async (req, res) => {
         });
     } catch (error) {
         console.error("Erreur lors de la modification de la commande :", error);
+        res.status(400).json({ message: error.message });
+    }
+};
+
+
+
+function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
+    // Trouver l'unité de départ
+    let uniteSource = unitesDisponibles.find(u => u.nom === uniteAchat);
+
+    if (!uniteSource) {
+        console.error("❌ Erreur: Unité source introuvable !");
+        return { quantite, unite: uniteAchat }; // Retourner la quantité d'origine si l'unité source n'est pas trouvée
+    }
+
+    // Trier les unités par ordre croissant de conversion (plus petite unité a une conversion plus grande)
+    let unitesTriees = [...unitesDisponibles].sort((a, b) => b.conversion - a.conversion);
+
+    // Trouver la plus petite unité
+    let uniteCible = unitesTriees[0]; // La première unité dans la liste triée est la plus petite
+
+    // Conversion
+    let nouvelleQuantite = quantite * (uniteCible.conversion / uniteSource.conversion);
+    return { quantite: nouvelleQuantite, unite: uniteCible.nom };
+}
+
+exports.annulerVenteParReference = async (req, res) => {
+    try {
+        let { referenceFacture } = req.params;
+
+        // Récupérer la commande à partir de la référence de facture
+        let commande = await Commande.findOne({ referenceFacture }).populate('produits.produit');
+        if (!commande) {
+            return res.status(404).json({ message: "Commande non trouvée" });
+        }
+
+        // Vérifier si la commande est annulée
+        if (commande.statut === 'annulée') {
+            return res.status(400).json({ message: "Cette commande a déjà été annulée" });
+        }
+
+        // Vérifier si la commande est annulée
+        if (commande.statut === 'en cours') {
+            return res.status(400).json({ message: "Cette commande n'a pas encore été payée" });
+        }
+
+       // Trouver la vente associée à cette commande
+       let vente = await Vente.findOne({ commandeId: commande._id }).populate('produits.produit');
+
+       // Si la vente n'existe pas (elle a peut-être été supprimée après l'annulation)
+       if (!vente) {
+             // Vérifier si la commande est annulée
+        if (commande.statut === 'annulée') {
+            return res.status(400).json({ message: "Cette commande a déjà été annulée" });
+        }
+
+        // Vérifier si la commande est annulée
+        if (commande.statut === 'en cours') {
+            return res.status(400).json({ message: "Cette commande n'a pas encore été payée" });
+        }
+
+
+
+           // Sinon, indiquer qu'il n'y a pas de vente à annuler
+           return res.status(404).json({ message: "Aucune vente associée à cette commande" });
+       }
+
+        // Vérifier le statut de la commande
+        if (commande.statut === 'payé' ) {
+            // Annuler la vente
+            if (commande.typeClient=== 'Client') {
+                // Supprimer dans la table Paiement
+                let paiement = await Paiement.findOne({ referenceFacture:referenceFacture  });
+                if (paiement) {
+                    await Paiement.findByIdAndDelete(paiement._id);
+                    console.log("Paiement supprimé pour ajuster le chiffre d'affaires.");
+                }
+            } else if (commande.typeClient === 'Commercial') {
+                // Supprimer dans la table Commerciale
+                let commerciale = await PaiementCommerciale.findOne({ referenceFacture: referenceFacture });
+                if (commerciale) {
+                    await PaiementCommerciale.findByIdAndDelete(commerciale._id);
+                    console.log("Commerciale supprimé pour ajuster le chiffre d'affaires.");
+                }
+            }
+            await Vente.findByIdAndDelete(vente._id);
+
+            // Marquer la commande comme annulée
+            commande.statut = 'annulée';
+            await commande.save();
+
+            return res.status(200).json({
+                message: "✅ Vente annulée avec succès (chiffre d'affaires ajusté), mais aucun produit n'a été retourné au stock",
+                referenceFacture,
+            });
+        }
+
+        // Si la commande est payée et livrée, on retourne les produits dans le stock
+        if (commande.statut === 'payé et livré' ) {
+            console.log('Commande payée et livrée, début de la restitution des produits...');
+
+            // Restaurer le stock pour chaque produit de la vente
+            await Promise.all(commande.produits.map(async (item) => {
+                let produitId = item.produit._id;
+                let entrepotId = item.entrepotId._id;
+                let produit = await Produit.findById(produitId);
+            
+                // Vérifiez que l'unité choisie est bien définie
+                let uniteChoisie = item.uniteChoisie;
+                if (!uniteChoisie) {
+                    console.log(`Unité choisie non définie pour le produit ${item.produit.nom}`);
+                    throw new Error(`L'unité choisie pour le produit ${item.produit.nom} est introuvable.`);
+                }
+            
+                console.log(`Traitement du produit ${item.produit.nom} avec l'unité choisie : ${uniteChoisie}`);
+            
+                // Vérification de l'unité choisie dans le produit
+                let uniteProduit = produit.unites.find(unite => unite.nom === uniteChoisie);
+                if (!uniteProduit) {
+                    console.log(`L'unité choisie ${uniteChoisie} pour le produit ${item.produit.nom} est introuvable.`);
+                    throw new Error(`L'unité choisie ${uniteChoisie} pour le produit ${item.produit.nom} est introuvable.`);
+                }
+            
+                // Conversion de la quantité selon l'unité choisie
+                let { quantite: quantiteRestituee, unite } = convertirUnite(item.quantite, uniteChoisie, produit.unites);
+            
+                console.log(`Quantité convertie : ${quantiteRestituee} ${unite}`);
+            
+                // Trouver ou créer un stock pour ce produit et cet entrepôt
+                let stock = await Stock.findOne({ produit: produitId, entrepot: entrepotId });
+                if (!stock) {
+                    stock = new Stock({
+                        produit: produitId,
+                        entrepot: entrepotId,
+                        quantite: 0,
+                        valeurTotale: 0,
+                        prixUnitaire: item.prixdevente,
+                    });
+                    console.log(`Création d'un nouveau stock pour ${item.produit.nom} dans l'entrepôt ${entrepotId}`);
+                }
+            
+                // Ajouter la quantité restituée au stock
+                stock.quantite += quantiteRestituee;
+                stock.valeurTotale = stock.quantite * stock.prixUnitaire;
+            
+                console.log(`Stock mis à jour : ${stock.quantite} unités disponibles pour ${item.produit.nom} dans l'entrepôt ${entrepotId}`);
+            
+                await stock.save();
+            }));
+            
+
+            // Annuler la vente
+            await Vente.findByIdAndDelete(vente._id);
+            if (commande.typeClient=== 'Client') {
+                // Supprimer dans la table Paiement
+                let paiement = await Paiement.findOne({ referenceFacture:referenceFacture  });
+                if (paiement) {
+                    await Paiement.findByIdAndDelete(paiement._id);
+                    console.log("Paiement supprimé pour ajuster le chiffre d'affaires.");
+                }
+            } 
+            else if (commande.typeClient === 'Commercial') {
+                // Chercher dans la collection PaiementCommerciale, pas Paiement
+                let commerciale = await PaiementCommerciale.findOne({ referenceFacture: referenceFacture });
+                
+                if (commerciale) {
+                    await PaiementCommerciale.findByIdAndDelete(commerciale._id);
+                    console.log("Paiement Commercial supprimé pour ajuster le chiffre d'affaires.");
+                } else {
+                    console.log("Aucun paiement Commercial trouvé pour cette facture.");
+                }
+            }
+            
+            // Marquer la commande comme annulée
+            commande.statut = 'annulée';
+            await commande.save();
+
+            return res.status(200).json({
+                message: "✅ Vente annulée avec succès, produits retournés au stock et chiffre d'affaires ajusté",
+                referenceFacture,
+                produitsRestitues: vente.produits.map(item => {
+                    // Assurez-vous de récupérer l'unité choisie du produit dans la commande
+                    let uniteChoisie = item.uniteChoisie;
+            
+                    // Vérification que l'unité choisie existe pour chaque produit
+                    if (!uniteChoisie) {
+                        console.log(`Unité choisie pour le produit ${item.produit.nom} est introuvable.`);
+                        uniteChoisie = 'Unité non définie'; // Si aucune unité choisie, définir comme "non définie"
+                    }
+            
+                    console.log(`Produit: ${item.produit.nom}, Quantité: ${item.quantite}, Unité: ${uniteChoisie}`); // Optionnel, pour le débogage
+            
+                    return {
+                        produit: item.produit.nom,
+                        quantite: item.quantite,
+                        unite: uniteChoisie  // Assurez-vous que l'unité choisie est passée ici
+                    };
+                }),
+            });
+            
+        }
+
+        res.status(400).json({ message: "Statut de commande invalide pour annulation" });
+
+    } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };

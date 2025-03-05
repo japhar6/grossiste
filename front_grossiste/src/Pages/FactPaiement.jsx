@@ -23,7 +23,7 @@ function Facture() {
       const commercialData = queryParams.get("commercial")
         ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
         : null;
-        setNomentrepot(queryParams.get("nomEntrepot"));
+      setNomentrepot(queryParams.get("nomEntrepot"));
       setCommande(commandeData);
       setModePaiement(queryParams.get("modePaiement"));
       setReferencePaiement(queryParams.get("referencePaiement"));
@@ -69,7 +69,13 @@ function Facture() {
     while (nombre > 0) {
         const currentPart = nombre % 1000;
         if (currentPart > 0) {
-            result = convertHundreds(currentPart) + units[part] + (result ? ' ' + result : '');
+            let partResult = convertHundreds(currentPart);
+            if (part === 1 && currentPart === 1) {
+                partResult = 'mille';  // Si c'est exactement 1000, on ne met pas "un"
+            } else {
+                partResult += units[part];
+            }
+            result = partResult + (result ? ' ' + result : '');
         }
         nombre = Math.floor(nombre / 1000);
         part++;
@@ -142,7 +148,7 @@ function Facture() {
             <tr>
               <th>Qté</th>
               <th>Unité</th>
-          
+
               <th>Dépôt</th>
               <th>PU</th>
               <th>Montant</th>
@@ -154,7 +160,7 @@ function Facture() {
                 <td>{produit.quantite}</td>
                 <td>{produit.uniteChoisie || "PCE"}</td>
                 <td>{produit.produit.nom}</td>
-           
+
                 <td>{produit.prixdevente} Ariary</td>
                 <td>{produit.total} Ariary</td>
               </tr>

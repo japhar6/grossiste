@@ -24,6 +24,11 @@ const venteSchema = new mongoose.Schema({
             unite: {
                 type: String, // Stocker l'unité convertie
                 required: true,
+            },
+            entrepotId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Entrepot', // Assurez-vous que l'entité 'Entrepot' existe
+                required: true
             }
         }
     ],
@@ -36,11 +41,7 @@ const venteSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
-    entrepotId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Entrepot', // Assurez-vous que l'entité 'Entrepot' existe
-        required: true
-    },
+
     statut: {
         type: String,
         enum: ['en attente', 'validée'],

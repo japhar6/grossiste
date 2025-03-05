@@ -3,7 +3,7 @@ import "../Styles/Produit.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import axios from '../api/axios';
-import { Modal, Button, Form ,Spinner} from "react-bootstrap";
+import { Modal, Button, Form, Spinner } from "react-bootstrap";
 
 function ListeProduits() {
   const [produits, setProduits] = useState([]);
@@ -25,13 +25,13 @@ function ListeProduits() {
   const filtrerProduits = () => {
     return produits.filter((produit) => {
       const correspondanceRecherche =
-        produit.nom.toLowerCase().includes(recherche.toLowerCase()) || 
+        produit.nom.toLowerCase().includes(recherche.toLowerCase()) ||
         produit.codeProduit.toLowerCase().includes(recherche.toLowerCase());
 
       const correspondanceCategorie =
         categorie === "" || produit.categorie === categorie;
 
-      const correspondanceDate = 
+      const correspondanceDate =
         dateAjout === "" || new Date(produit.dateAjout).toISOString().split('T')[0] === dateAjout;
 
       return correspondanceRecherche && correspondanceCategorie && correspondanceDate;
@@ -55,13 +55,14 @@ function ListeProduits() {
       setLoadingEntrepots(false);
       const categoriesUniq = [...new Set(response.data.map((produit) => produit.categorie))];
       setCategories(categoriesUniq);
-      
+
       const initialUnites = {};
       response.data.forEach(produit => {
         initialUnites[produit._id] = produit.unites[0]?.nom;
       });
       setUniteSelectionnee(initialUnites);
-    } catch (error) { setLoadingEntrepots(false);
+    } catch (error) {
+      setLoadingEntrepots(false);
       console.error("Erreur lors de la récupération des produits", error);
     }
   };
@@ -74,10 +75,10 @@ function ListeProduits() {
   };
 
   const handleModifierPrix = async (produitId) => {
-    const prixDachat = prixAchatModifier[produitId]; 
-    const prixdevente = prixVenteModifier[produitId]; 
-    const uniteNomDachat = uniteSelectionnee[produitId]; 
-    const uniteNomVente = uniteSelectionnee[produitId]; 
+    const prixDachat = prixAchatModifier[produitId];
+    const prixdevente = prixVenteModifier[produitId];
+    const uniteNomDachat = uniteSelectionnee[produitId];
+    const uniteNomVente = uniteSelectionnee[produitId];
     const quantiteMinimum = quantiteMinimumModifier[produitId];
     setLoadingAction(true);
     const updates = {};
@@ -104,28 +105,28 @@ function ListeProduits() {
           uniteNom: updates.uniteNomDachat,
         });
       }
-  
+
       if (updates.prixdevente) {
         await axios.put(`/api/produits/produits/modifier-prix-vente/${produitId}`, {
           prixdevente: updates.prixdevente,
           uniteNom: updates.uniteNomVente,
         });
       }
-  
+
       if (updates.quantiteMinimum) {
         await axios.put(`/api/produits/produits/modifier-quantite-minimum/${produitId}`, {
           quantiteMinimum: updates.quantiteMinimum,
         });
       }
-  
+
       // Réinitialiser les prix modifiés après la mise à jour
       setPrixAchatModifier((prev) => ({ ...prev, [produitId]: undefined }));
       setPrixVenteModifier((prev) => ({ ...prev, [produitId]: undefined }));
       setProduitAModifier(null);
-  
+
       // Rafraîchir les produits
       fetchProduits();
-      
+
     } catch (error) {
       console.error("Erreur lors de la mise à jour des prix et de la quantité minimum:", error);
     } finally {
@@ -178,154 +179,154 @@ function ListeProduits() {
                 </form>
               </div>
               {loadingEntrepots ? (
-              <div className="loading-container">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Chargement...</span>
+                <div className="loading-container">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Chargement...</span>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="consultatiof">
-                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                  <table className="tableSt mt-3">
-                    <thead>
-                      <tr>
-                        <th>Code Produit</th>
-                        <th>
-                          <span
-                            style={{ cursor: "pointer", color: 'white' }}
-                            onClick={() => {
-                              setOrderBy("nom");
-                              setOrder(order === "asc" ? "desc" : "asc");
-                            }}
-                          >
-                            Nom{" "}
-                            {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
-                          </span>
-                        </th>
-                        <th>Prix d'Achat</th>
-                        <th>Prix de Vente</th>
-                        <th>Unité</th>
-                        <th>Catégorie</th>
-                        <th>Quantité Minimum</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    {filtrerProduits().length === 0 ? (
-                      <tr>
-                        <td colSpan="8" className="text-center">
-                          <strong>Aucun produit trouvé.</strong>
-                        </td>
-                      </tr>
-                    ) : (
-                      <tbody>
-                        {filtrerProduits().map((produit) => {
-                          const uniteActuelle = produit.unites.find((u) =>
-                            u.nom === (uniteSelectionnee[produit._id] || produit.unites[0]?.nom)
-                          );
+              ) : (
+                <div className="consultatiof">
+                  <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                    <table className="tableSt mt-3">
+                      <thead>
+                        <tr>
+                          <th>Code Produit</th>
+                          <th>
+                            <span
+                              style={{ cursor: "pointer", color: 'white' }}
+                              onClick={() => {
+                                setOrderBy("nom");
+                                setOrder(order === "asc" ? "desc" : "asc");
+                              }}
+                            >
+                              Nom{" "}
+                              {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
+                            </span>
+                          </th>
+                          <th>Prix d'Achat</th>
+                          <th>Prix de Vente</th>
+                          <th>Unité</th>
+                          <th>Catégorie</th>
+                          <th>Quantité Minimum</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      {filtrerProduits().length === 0 ? (
+                        <tr>
+                          <td colSpan="8" className="text-center">
+                            <strong>Aucun produit trouvé.</strong>
+                          </td>
+                        </tr>
+                      ) : (
+                        <tbody>
+                          {filtrerProduits().map((produit) => {
+                            const uniteActuelle = produit.unites.find((u) =>
+                              u.nom === (uniteSelectionnee[produit._id] || produit.unites[0]?.nom)
+                            );
 
-                          const prixAchat = uniteActuelle
-                            ? Math.round(produit.prixDachat / uniteActuelle.conversion)
-                            : "N/A";
-                          const prixVente = uniteActuelle && uniteActuelle.prixdevente !== undefined
-                            ? Math.round(uniteActuelle.prixdevente)
-                            : "N/A";
+                            const prixAchat = uniteActuelle
+                              ? Math.round(produit.prixDachat / uniteActuelle.conversion)
+                              : "N/A";
+                            const prixVente = uniteActuelle && uniteActuelle.prixdevente !== undefined
+                              ? Math.round(uniteActuelle.prixdevente)
+                              : "N/A";
 
-                          return (
-                            <tr key={produit._id}>
-                              <td>{produit.codeProduit}</td>
-                              <td>{produit.nom}</td>
-                              <td>
-                                {produitAModifier === produit._id ? (
-                                  <input
-                                    type="number"
+                            return (
+                              <tr key={produit._id}>
+                                <td>{produit.codeProduit}</td>
+                                <td>{produit.nom}</td>
+                                <td>
+                                  {produitAModifier === produit._id ? (
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={prixAchatModifier[produit._id] || prixAchat}
+                                      onChange={(e) => setPrixAchatModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
+                                      placeholder={produit.prixDachat}
+                                    />
+                                  ) : (
+                                    <span style={{ color: 'black' }}>{prixAchat} Ariary</span>
+                                  )}
+                                </td>
+                                <td>
+                                  {produitAModifier === produit._id ? (
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={prixVenteModifier[produit._id] || prixVente}
+                                      onChange={(e) => setPrixVenteModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
+                                      placeholder={uniteActuelle?.prixdevente || 0}
+                                    />
+                                  ) : (
+                                    <span style={{ color: 'black' }}>{prixVente} Ariary</span>
+                                  )}
+                                </td>
+                                <td>
+                                  <select
                                     className="form-control"
-                                    value={prixAchatModifier[produit._id] || prixAchat}
-                                    onChange={(e) => setPrixAchatModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
-                                    placeholder={produit.prixDachat}
-                                  />
-                                ) : (
-                                  <span style={{ color: 'black' }}>{prixAchat} Ariary</span>
-                                )}
-                              </td>
-                              <td>
-                                {produitAModifier === produit._id ? (
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    value={prixVenteModifier[produit._id] || prixVente}
-                                    onChange={(e) => setPrixVenteModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
-                                    placeholder={uniteActuelle?.prixdevente || 0}
-                                  />
-                                ) : (
-                                  <span style={{ color: 'black' }}>{prixVente} Ariary</span>
-                                )}
-                              </td>
-                              <td>
-                                <select
-                                  className="form-control"
-                                  value={uniteSelectionnee[produit._id] || produit.unites[0]?.nom}
-                                  onChange={(e) => handleChangeUnite(produit, e.target.value)}
-                                >
-                                  <option value="">Sélectionner unité</option>
-                                  {produit.unites.map((unite) => (
-                                    <option key={unite.nom} value={unite.nom}>
-                                      {unite.nom}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td>{produit.categorie}</td>
-                              <td>
-                                {produitAModifier === produit._id ? (
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    value={quantiteMinimumModifier[produit._id] || produit.quantiteMinimum}
-                                    onChange={(e) => setQuantiteMinimumModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
-                                    placeholder={produit.quantiteMinimum}
-                                  />
-                                ) : (
-                                  <span style={{ color: 'black' }}>
-                                  {produit.quantiteMinimum ?? 0} {produit.unites.reduce((min, unite) => 
-                                    unite.conversion > min.conversion ? unite : min, produit.unites[0]).nom}
-                                </span>
-                                )}
-                              </td>
-                              <td>
-  {produitAModifier === produit._id ? (
-    <>
-      {loadingAction ? (
-        <button className="btnpro btn-success" disabled>
-          <Spinner animation="border" size="sm" /> Enregistrement...
-        </button>
-      ) : (
-        <button
-          className="btnpro btn-success"
-          onClick={() => handleModifierPrix(produit._id)}
-        >
-          Enregistrer
-        </button>
-      )}
-    </>
-  ) : (
-    <button
-      className="btnpro btn-danger"
-      onClick={() => setProduitAModifier(produit._id)}
-    >
-      Modifier
-    </button>
-  )}
-</td>
+                                    value={uniteSelectionnee[produit._id] || produit.unites[0]?.nom}
+                                    onChange={(e) => handleChangeUnite(produit, e.target.value)}
+                                  >
+                                    <option value="">Sélectionner unité</option>
+                                    {produit.unites.map((unite) => (
+                                      <option key={unite.nom} value={unite.nom}>
+                                        {unite.nom}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </td>
+                                <td>{produit.categorie}</td>
+                                <td>
+                                  {produitAModifier === produit._id ? (
+                                    <input
+                                      type="number"
+                                      className="form-control"
+                                      value={quantiteMinimumModifier[produit._id] || produit.quantiteMinimum}
+                                      onChange={(e) => setQuantiteMinimumModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
+                                      placeholder={produit.quantiteMinimum}
+                                    />
+                                  ) : (
+                                    <span style={{ color: 'black' }}>
+                                      {produit.quantiteMinimum ?? 0} {produit.unites.reduce((min, unite) =>
+                                        unite.conversion > min.conversion ? unite : min, produit.unites[0]).nom}
+                                    </span>
+                                  )}
+                                </td>
+                                <td>
+                                  {produitAModifier === produit._id ? (
+                                    <>
+                                      {loadingAction ? (
+                                        <button className="btnpro btn-success" disabled>
+                                          <Spinner animation="border" size="sm" /> Enregistrement...
+                                        </button>
+                                      ) : (
+                                        <button
+                                          className="btnpro btn-success"
+                                          onClick={() => handleModifierPrix(produit._id)}
+                                        >
+                                          Enregistrer
+                                        </button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <button
+                                      className="btnpro btn-danger"
+                                      onClick={() => setProduitAModifier(produit._id)}
+                                    >
+                                      Modifier
+                                    </button>
+                                  )}
+                                </td>
 
 
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    )}
-                  </table>
-                </div>
-              </div> )}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      )}
+                    </table>
+                  </div>
+                </div>)}
             </div>
           </div>
         </section>

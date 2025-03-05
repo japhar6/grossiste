@@ -39,68 +39,68 @@ function PersonnelList() {
     };
     const handleVoirHistorique = async (personnelId) => {
         try {
-          console.log(`📡 Envoi de la requête pour l'historique du personnel avec ID: ${personnelId}`);
-          
-          setSelectedPersonnelId(personnelId); // Sauvegarde l'ID du personnel sélectionné
-      
-          // Effectuer la requête pour récupérer l'historique des paiements
-          const response = await axios.get(`/api/personnels/recuppay/${personnelId}`);
-          
-          console.log("📥 Réponse reçue de l'API:", response.data);
-      
-          // Si la réponse est un tableau, on met directement à jour l'état historiquePaiements
-          if (Array.isArray(response.data) && response.data.length > 0) {
-            setHistoriquePaiements(response.data); // Met à jour l'état avec les paiements récupérés
-          } else {
-            setHistoriquePaiements([]); // Si aucune donnée n'est reçue, initialiser avec un tableau vide
-          }
-      
-          setShowHistoriqueModal(true); // Ouvre le modal pour afficher l'historique
+            console.log(`📡 Envoi de la requête pour l'historique du personnel avec ID: ${personnelId}`);
+
+            setSelectedPersonnelId(personnelId); // Sauvegarde l'ID du personnel sélectionné
+
+            // Effectuer la requête pour récupérer l'historique des paiements
+            const response = await axios.get(`/api/personnels/recuppay/${personnelId}`);
+
+            console.log("📥 Réponse reçue de l'API:", response.data);
+
+            // Si la réponse est un tableau, on met directement à jour l'état historiquePaiements
+            if (Array.isArray(response.data) && response.data.length > 0) {
+                setHistoriquePaiements(response.data); // Met à jour l'état avec les paiements récupérés
+            } else {
+                setHistoriquePaiements([]); // Si aucune donnée n'est reçue, initialiser avec un tableau vide
+            }
+
+            setShowHistoriqueModal(true); // Ouvre le modal pour afficher l'historique
         } catch (error) {
-          console.error("🚨 Erreur lors de la récupération de l'historique des paiements", error);
+            console.error("🚨 Erreur lors de la récupération de l'historique des paiements", error);
         }
-      };
-      
-    
+    };
+
+
     // Fonction pour fermer le modal
-const handleCloseModal = () => {
-    setShowHistoriqueModal(false);
-};
+    const handleCloseModal = () => {
+        setShowHistoriqueModal(false);
+    };
     useEffect(() => {
         if (personnelSelectionne) {
-            setMontantPaiement(personnelSelectionne.salaireBrut || ""); 
+            setMontantPaiement(personnelSelectionne.salaireBrut || "");
         }
     }, [personnelSelectionne]);
-    
+
     const handleEnregistrerPaiement = async () => {
-       
+
         try {
             console.log("Données envoyées au backend :", {
                 periode: periodePaiement,
                 montant: montantPaiement
             });
-    
+
             const response = await axios.post(
                 `/api/personnels/faire/${personnelSelectionne._id}/paiements`,
-                {  montant: montantPaiement }
+                { montant: montantPaiement }
             );
-    
+
             console.log("Réponse du backend :", response.data);
-    
+
             setPersonnels(personnels.map(p =>
                 p._id === personnelSelectionne._id ? response.data : p
             ));
-    
+
             setShowPaiementModal(false);
-      
-    
+
+
             setMoisPaiement("");
             setMontantPaiement("");
             Swal.fire('Paiement effectué', 'Le paiement a été enregistré avec succès', 'success')
-            .then(() => {
-              window.location.reload(); // Recharge la page après la fermeture de l'alerte
-            });
-          
+                .then(() => {
+                    window.location.reload(); // Recharge la page après la fermeture de l'alerte
+                });
+
         } catch (error) {
             console.error("Erreur lors de l'enregistrement du paiement :", error);
             if (error.response) {
@@ -109,7 +109,7 @@ const handleCloseModal = () => {
             Swal.fire('Erreur', 'Impossible d\'enregistrer le paiement', 'error');
         }
     };
-    
+
 
     // Pour le modal de modification
     const [showEditModal, setShowEditModal] = useState(false);
@@ -158,7 +158,7 @@ const handleCloseModal = () => {
             });
             return; // Empêche l'envoi de la requête si les champs ne sont pas valides
         }
-    
+
         if (isNaN(newPersonnel.salaireBrut) || newPersonnel.salaireBrut <= 0) {
             Swal.fire({
                 icon: 'error',
@@ -167,19 +167,19 @@ const handleCloseModal = () => {
             });
             return; // Empêche l'envoi de la requête si le salaire n'est pas valide
         }
-    
+
         console.log("Données envoyées au backend :", newPersonnel); // Log des données avant l'envoi
-    
+
         setLoadingAction(true);
-    
+
         try {
             const response = await axios.post("/api/personnels/ajouter", newPersonnel);
-    
+
             // Mise à jour de la liste des personnels
             setPersonnels(prevPersonnels => [...prevPersonnels, response.data]);
             setNewPersonnel({ nom: "", poste: "", telephone: "", adresse: "", salaireBrut: "", modePaiement: "" });
             handleClose();
-            
+
             // SweetAlert pour l'ajout
             Swal.fire({
                 icon: 'success',
@@ -201,7 +201,7 @@ const handleCloseModal = () => {
             setLoadingAction(false);
         }
     };
-    
+
     // Ouvrir le modal de modification
     const handleShowEdit = (personnel) => {
         setEditPersonnel(personnel);
@@ -350,25 +350,25 @@ const handleCloseModal = () => {
                                                     <td>{personnel.adresse}</td>
                                                     <td>{personnel.salaireBrut}</td>
                                                     <td>{personnel.modePaiement}</td>
-                                                    
+
                                                     <td>{personnel.dateEmbauche}</td>
                                                     <td>
-                                                        <button className="btn btn-warning m-1" onClick={(e) =>{  e.stopPropagation(); handleShowEdit(personnel)}}>
+                                                        <button className="btn btn-warning m-1" onClick={(e) => { e.stopPropagation(); handleShowEdit(personnel) }}>
                                                             <i className="fas fa-edit"></i>
                                                         </button>
-                                                        <button className="btn btn-danger m-1" onClick={(e) =>{  e.stopPropagation();handleDelete(personnel._id)}}>
+                                                        <button className="btn btn-danger m-1" onClick={(e) => { e.stopPropagation(); handleDelete(personnel._id) }}>
                                                             <i className="fas fa-trash"></i>
                                                         </button>
                                                         <button
-  onClick={(e) => {
-    e.stopPropagation(); // Empêche le déclenchement du clic sur la ligne
-    handleVoirHistorique(personnel._id);
-  }}
->
-  Voir l'historique
-</button>
+                                                            onClick={(e) => {
+                                                                e.stopPropagation(); // Empêche le déclenchement du clic sur la ligne
+                                                                handleVoirHistorique(personnel._id);
+                                                            }}
+                                                        >
+                                                            Voir l'historique
+                                                        </button>
 
-                                                                                                </td>
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -506,7 +506,7 @@ const handleCloseModal = () => {
                     <Button
                         variant="primary"
                         onClick={handleEditPersonnel}
-                        disabled={loadingAction} 
+                        disabled={loadingAction}
                     >
                         {loadingAction ? (
                             // Afficher un spinner si l'action est en cours
@@ -521,86 +521,86 @@ const handleCloseModal = () => {
             </Modal>
             {/* Modal de paiement */}
             <Modal show={showPaiementModal} onHide={() => setShowPaiementModal(false)}>
-    <Modal.Header closeButton>
-        <Modal.Title>Enregistrer le paiement de salaire</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-        <Form>
-            <Form.Group>
-                <Form.Label>Nom du Personnel</Form.Label>
-                <Form.Control type="text" value={personnelSelectionne?.nom || ""} disabled />
-            </Form.Group>
-            <Form.Group>
-                <Form.Label>Poste du Personnel</Form.Label>
-                <Form.Control type="text" value={personnelSelectionne?.poste || ""} disabled />
-            </Form.Group>
-            <Form.Group>
-                <Form.Label>Montant</Form.Label>
-                <Form.Control
-                    type="number"
-                    name="montant"
-                    value={montantPaiement || personnelSelectionne?.salaireBrut || ""} // Pré-remplissage du salaire
-                  
-                    placeholder="Montant à payer"
-                    readOnly
-                />
-            </Form.Group>
-        </Form>
-    </Modal.Body>
-    <Modal.Footer>
-        <Button variant="secondary" onClick={() => setShowPaiementModal(false)}>
-            Annuler
-        </Button>
-        <Button
-            variant="primary"
-            onClick={handleEnregistrerPaiement}
-            disabled={loadingAction} 
-        >
-        {loadingAction ? (
+                <Modal.Header closeButton>
+                    <Modal.Title>Enregistrer le paiement de salaire</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label>Nom du Personnel</Form.Label>
+                            <Form.Control type="text" value={personnelSelectionne?.nom || ""} disabled />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Poste du Personnel</Form.Label>
+                            <Form.Control type="text" value={personnelSelectionne?.poste || ""} disabled />
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Montant</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="montant"
+                                value={montantPaiement || personnelSelectionne?.salaireBrut || ""} // Pré-remplissage du salaire
+
+                                placeholder="Montant à payer"
+                                readOnly
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowPaiementModal(false)}>
+                        Annuler
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={handleEnregistrerPaiement}
+                        disabled={loadingAction}
+                    >
+                        {loadingAction ? (
                             // Afficher un spinner si l'action est en cours
                             <Spinner animation="border" size="sm" />
                         ) : (
-                            "  Payer" 
+                            "  Payer"
                         )}
-        </Button>
-    </Modal.Footer>
-</Modal>
-<Modal show={showHistoriqueModal} onHide={handleCloseModal} size="lg">
-  <Modal.Header closeButton>
-    <Modal.Title>Historique des paiements </Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    {historiquePaiements && historiquePaiements.length === 0 ? (
-      <p>Aucun paiement enregistré pour ce personnel.</p>
-    ) : (
-      <div className="table-responsive">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Période</th>
-              <th>Montant</th>
-              <th>Date du paiement</th>
-            </tr>
-          </thead>
-          <tbody>
-          
-            {historiquePaiements.map((paiement, index) => (
-              <tr key={paiement._id || index}> {/* Utiliser _id pour la clé */}
-                <td>{paiement.periode}</td>
-                <td>{paiement.montant} Ariary</td>
-                <td>{new Date(paiement.datePaiement).toLocaleDateString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </Modal.Body>
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            <Modal show={showHistoriqueModal} onHide={handleCloseModal} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Historique des paiements </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {historiquePaiements && historiquePaiements.length === 0 ? (
+                        <p>Aucun paiement enregistré pour ce personnel.</p>
+                    ) : (
+                        <div className="table-responsive">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Période</th>
+                                        <th>Montant</th>
+                                        <th>Date du paiement</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
 
-  <Modal.Footer>
-    <Button variant="secondary" onClick={handleCloseModal}>Fermer</Button>
-  </Modal.Footer>
-</Modal>
+                                    {historiquePaiements.map((paiement, index) => (
+                                        <tr key={paiement._id || index}> {/* Utiliser _id pour la clé */}
+                                            <td>{paiement.periode}</td>
+                                            <td>{paiement.montant} Ariary</td>
+                                            <td>{new Date(paiement.datePaiement).toLocaleDateString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>Fermer</Button>
+                </Modal.Footer>
+            </Modal>
 
 
         </>

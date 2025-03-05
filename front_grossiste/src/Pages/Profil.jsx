@@ -1,8 +1,8 @@
 // eslint-disable-next-line no-unused-vars
-import  React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from '../api/axios';
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 import "../Styles/Profile.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
@@ -12,11 +12,11 @@ function Profil() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
-  const [selectedFile, setSelectedFile] = useState(null); 
+  const [selectedFile, setSelectedFile] = useState(null);
   const navigate = useNavigate();
   const usId = localStorage.getItem("userid");
 
-    const [loadingAction, setLoadingAction] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(false);
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -59,7 +59,7 @@ function Profil() {
 
   const handleSave = async () => {
     setLoadingAction(true);
-    try { 
+    try {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("Token non trouvé!");
@@ -106,11 +106,11 @@ function Profil() {
   };
 
   if (loading) {
-    return   <div className="loading-container">
-    <div className="spinner-border text-primary" role="status">
-      <span className="visually-hidden">Chargement...</span>
-    </div>
-  </div>;
+    return <div className="loading-container">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Chargement...</span>
+      </div>
+    </div>;
   }
 
   return (
@@ -123,7 +123,7 @@ function Profil() {
           <div className="profil-container p-4">
             {user ? (
               <div className="user-profile">
-        
+
                 <div className="user-info">
                   <div className="photos-container">
                     <img
@@ -131,12 +131,12 @@ function Profil() {
                       alt="Photo de profil"
                       className="user-photo"
                     />
-                         <h2 className="gradient-text mt-5">Mon Profil</h2>
+                    <h2 className="gradient-text mt-5">Mon Profil</h2>
                   </div>
                   <div className="info-details">
                     {isEditing ? (
                       <>
-                      <div className="form-group">
+                        <div className="form-group">
                           <label>Nom</label>
                           <input
                             type="text"
@@ -171,21 +171,21 @@ function Profil() {
                             onChange={handleFileChange}
                           />
                         </div>
-                        
+
                         <button onClick={handleSave} disabled={loadingAction}>
-                        {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
- "Enregistrer"
-  )}
+                          {loadingAction ? (
+                            <>
+                              <span className="spinner-border spinner-border-sm"></span> Chargement...
+                            </>
+                          ) : (
+                            "Enregistrer"
+                          )}
                         </button>
                         <button onClick={() => setIsEditing(false)}>Annuler</button>
                       </>
                     ) : (
                       <>
-                           <div className="profilee">
+                        <div className="profilee">
                           <p className="alert alert-light">
                             <strong>Nom:</strong> {user.nom}
                           </p>
@@ -199,14 +199,14 @@ function Profil() {
                             <strong>Embauché le:</strong> {user.createdAt}
                           </p>
                           <button onClick={() => setIsEditing(true)} disabled={loadingAction}>
-                          {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
- "Modifier"
-  )}
-                 
+                            {loadingAction ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm"></span> Chargement...
+                              </>
+                            ) : (
+                              "Modifier"
+                            )}
+
                           </button>
                         </div>
                       </>
