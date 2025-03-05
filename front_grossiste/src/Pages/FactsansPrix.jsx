@@ -100,10 +100,10 @@ function FactureSans() {
           <thead>
             <tr>
               <th>Qté</th>
-              <th>Colisage</th>
+              <th>Unité</th>
               <th>Désignation</th>
               <th>Entrepot</th>
-            
+
             </tr>
           </thead>
           <tbody>
@@ -112,18 +112,18 @@ function FactureSans() {
                 <td>{produit.quantite}</td>
                 <td>{produit.uniteChoisie || "unite"}</td>
                 <td>{produit.produit.nom}</td>
-                <td>{nomEntrepot || "Non spécifié"}</td>
-               
+                <td>{produit.entrepotId.nom}</td>
+
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-    
+
 
       <div className="facture-footer">
-        
+
         <p>Misaotra Tompoko</p>
         <div className="signature">
           <span>Le Client</span>

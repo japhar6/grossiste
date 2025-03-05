@@ -22,7 +22,7 @@ function Caisse() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-  const [nomEntrepot, setNomentrepot] = useState(null);
+
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
   };
@@ -71,9 +71,7 @@ function Caisse() {
     try {
       const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
 
-const nomEntrepot = response.data.entrepotId.nom;
 
-setNomentrepot(nomEntrepot);
       // Vérifiez le statut de la réponse
       if (response.status !== 200) {
         throw new Error("Commande non trouvée");
@@ -213,7 +211,7 @@ setNomentrepot(nomEntrepot);
             <label>
               <input type="checkbox" name="typeFacture" value="remise" style="margin-right: 8px;"> 📜 Facture de Remise
             </label>
-               <label>
+            <label>
               <input type="checkbox" name="typeFacture" value="sans_prix" style="margin-right: 8px;"> 📜 Facture sans prix
             </label>
           </div>
@@ -246,14 +244,14 @@ setNomentrepot(nomEntrepot);
         if (modePaiement) queryParams.set("modePaiement", modePaiement);
         if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
         if (dateLimiteCredit) queryParams.set("dateLimiteCredit", dateLimiteCredit);
-        if (nomEntrepot) queryParams.set("nomEntrepot", nomEntrepot);
+    
         if (client) {
           queryParams.set("client", JSON.stringify(client));
         } else if (commercial) {
           queryParams.set("commercial", JSON.stringify(commercial));
         }
     
-        // Utiliser des noms uniques pour les fenêtres
+        // Fonction pour ouvrir les factures selon les types sélectionnés
         const openInvoices = () => {
           if (typeFacture.includes("normal")) {
             const factureUrlNormal = `/facture?${queryParams.toString()}`;
@@ -264,13 +262,20 @@ setNomentrepot(nomEntrepot);
             const factureUrlRemise = `/FactureRemise?${queryParams.toString()}`;
             window.open(factureUrlRemise, "factureRemise");
           }
+    
           if (typeFacture.includes("sans_prix")) {
-            const factureUrlRemise = `/facturesansprix?${queryParams.toString()}`;
-            window.open(factureUrlRemise, "facturesansprix");
+            const factureUrlSansPrix = `/facturesansprix?${queryParams.toString()}`;
+            window.open(factureUrlSansPrix, "facturesansprix");
           }
         };
     
-        openInvoices();
+        // Si tous les types sont sélectionnés (3 types), ouvrir toutes les pages
+        if (typeFacture.length === 3) {
+          openInvoices();  // Ouvre toutes les pages
+        } else {
+          // Sinon, ouvrir uniquement les pages correspondantes aux types sélectionnés
+          openInvoices();
+        }
       } else {
         Swal.fire({
           icon: 'error',
@@ -280,7 +285,6 @@ setNomentrepot(nomEntrepot);
       }
     };
     
-  
 
   
 
@@ -386,7 +390,7 @@ setNomentrepot(nomEntrepot);
 
 
                         <th>Mode de paiement</th>
-                        <th>Nom de l'entrepot</th>
+                    
                       </tr>
                     </thead>
                     <tbody>
@@ -396,7 +400,7 @@ setNomentrepot(nomEntrepot);
 
 
                         <td>{modePaiement || "Non spécifié"}</td>
-                        <td>{ nomEntrepot || "Non spécifié" }</td>
+                        
 
                       </tr>
                     </tbody>

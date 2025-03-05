@@ -15,7 +15,7 @@ const TransfertAdmin = () => {
   const [dateFiltre, setDateFiltre] = useState('');
   const [loadingAction, setLoadingAction] = useState(false);
   const [loadingActionS, setLoadingActionS] = useState(false);
-    const [loadingEntrepots, setLoadingEntrepots] = useState(false);
+  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem("token");
     setLoadingEntrepots(true);
@@ -24,8 +24,8 @@ const TransfertAdmin = () => {
     })
       .then(response => setEntrepots(response.data))
       .catch(() => toast.error("Erreur lors du chargement de l'entrepôt."));
-      setLoadingEntrepots(false);
-  }, []); 
+    setLoadingEntrepots(false);
+  }, []);
 
   useEffect(() => {
     fetchHistoriqueTransferts();
@@ -62,18 +62,18 @@ const TransfertAdmin = () => {
             setLoadingAction(false);
           })
           .catch(() => toast.error('Erreur de validation.'));
-          setLoadingAction(false);
+        setLoadingAction(false);
       }
     });
   };
 
   const filteredTransferts = historiqueTransferts.filter(transfert => {
     const matchesStatut = statutFiltre ? transfert.statutAdmin === statutFiltre : true;
-    const matchesSourceEntrepot = entrepotSourceFiltre ? 
+    const matchesSourceEntrepot = entrepotSourceFiltre ?
       transfert.entrepotSource?._id === entrepotSourceFiltre : true;
-    const matchesDestinationEntrepot = entrepotDestinationFiltre ? 
+    const matchesDestinationEntrepot = entrepotDestinationFiltre ?
       transfert.entrepotDestination?._id === entrepotDestinationFiltre : true;
-    const matchesDate = dateFiltre ? 
+    const matchesDate = dateFiltre ?
       new Date(transfert.dateTransfert).toLocaleDateString() === new Date(dateFiltre).toLocaleDateString() : true;
 
     return matchesStatut && matchesSourceEntrepot && matchesDestinationEntrepot && matchesDate;
@@ -89,106 +89,106 @@ const TransfertAdmin = () => {
             <h2 className='alert alert-success text-center'>Transfert Inter-Entrepôts</h2>
             <h3>Historique des Transferts</h3>
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
-  <div className="form-group col-12 col-md-3 mb-3">
-    <label>Filtrer par Statut:</label>
-    <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
-      <option value="">Tous</option>
-      <option value="en attente">En attente</option>
-      <option value="approuvé">Validé</option>
-      <option value="rejeté">Rejeté</option>
-    </select>
-  </div>
-
-  <div className="form-group col-12 col-md-3 mb-3">
-    <label>Filtrer par Entrepôt Source:</label>
-    <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
-      <option value="">Tous</option>
-      {entrepots.map(entrepot => (
-        <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
-      ))}
-    </select>
-  </div>
-
-  <div className="form-group col-12 col-md-3 mb-3">
-    <label>Filtrer par Entrepôt Destination:</label>
-    <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
-      <option value="">Tous</option>
-      {entrepots.map(entrepot => (
-        <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
-      ))}
-    </select>
-  </div>
-
-  <div className="form-group col-12 col-md-3 mb-3">
-    <label>Filtrer par Date:</label>
-    <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
-  </div>
-</div>
-
-<div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-{loadingEntrepots ? (
-              <div className="loading-container">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Chargement...</span>
-                </div>
+              <div className="form-group col-12 col-md-3 mb-3">
+                <label>Filtrer par Statut:</label>
+                <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
+                  <option value="">Tous</option>
+                  <option value="en attente">En attente</option>
+                  <option value="approuvé">Validé</option>
+                  <option value="rejeté">Rejeté</option>
+                </select>
               </div>
-            ) : (
-            <table className="table table-bordered table-striped">
-              <thead className="thead-dark">
-                <tr>
-                  <th>Source</th>
-                  <th>Destination</th>
-                  <th>Produit</th>
-                  <th>Quantité</th>
-                  <th>Date</th>
-                  <th>Statut Admin</th>
-                  <th>Statut Magasinier Destination</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-  {filteredTransferts.map((transfert) => (
-    <tr key={transfert._id}>
-      <td>{transfert.entrepotSource?.nom || 'N/A'}</td>
-      <td>{transfert.entrepotDestination?.nom || 'N/A'}</td>
-      <td>{transfert.produit?.nom || 'N/A'}</td>
-      <td>{transfert.quantitéEnvoyée}</td>
-      <td>{new Date(transfert.dateTransfert).toLocaleDateString()}</td>
-      <td>{transfert.statutAdmin}</td>
-      <td>{transfert.statutEntrepotDestination}</td>
-      <td>
-  {transfert.statutAdmin === 'en attente' && (
-    <div className="d-flex justify-content-around">
-      <button className="btn btn-success custom-button" disabled={loadingAction} style={{ marginRight: '10px' }} onClick={() => handleValidation(transfert, 'Validé')}>
-      {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
-   "Valider"
-  )}
-      </button>
-      <button className="btn btn-danger custom-button" disabled={loadingAction} onClick={() => handleValidation(transfert, 'Rejeté')}>
-      {loadingAction ? (
-    <>
-      <span className="spinner-border spinner-border-sm"></span> Chargement...
-    </>
-  ) : (
-   "Refuser"
-  )}
-      </button>
-    </div>
-  )} 
-</td>
+
+              <div className="form-group col-12 col-md-3 mb-3">
+                <label>Filtrer par Entrepôt Source:</label>
+                <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
+                  <option value="">Tous</option>
+                  {entrepots.map(entrepot => (
+                    <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group col-12 col-md-3 mb-3">
+                <label>Filtrer par Entrepôt Destination:</label>
+                <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
+                  <option value="">Tous</option>
+                  {entrepots.map(entrepot => (
+                    <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group col-12 col-md-3 mb-3">
+                <label>Filtrer par Date:</label>
+                <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
+              </div>
+            </div>
+
+            <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+              {loadingEntrepots ? (
+                <div className="loading-container">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Chargement...</span>
+                  </div>
+                </div>
+              ) : (
+                <table className="table table-bordered table-striped">
+                  <thead className="thead-dark">
+                    <tr>
+                      <th>Source</th>
+                      <th>Destination</th>
+                      <th>Produit</th>
+                      <th>Quantité</th>
+                      <th>Date</th>
+                      <th>Statut Admin</th>
+                      <th>Statut Magasinier Destination</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredTransferts.map((transfert) => (
+                      <tr key={transfert._id}>
+                        <td>{transfert.entrepotSource?.nom || 'N/A'}</td>
+                        <td>{transfert.entrepotDestination?.nom || 'N/A'}</td>
+                        <td>{transfert.produit?.nom || 'N/A'}</td>
+                        <td>{transfert.quantitéEnvoyée}</td>
+                        <td>{new Date(transfert.dateTransfert).toLocaleDateString()}</td>
+                        <td>{transfert.statutAdmin}</td>
+                        <td>{transfert.statutEntrepotDestination}</td>
+                        <td>
+                          {transfert.statutAdmin === 'en attente' && (
+                            <div className="d-flex justify-content-around">
+                              <button className="btn btn-success custom-button" disabled={loadingAction} style={{ marginRight: '10px' }} onClick={() => handleValidation(transfert, 'Validé')}>
+                                {loadingAction ? (
+                                  <>
+                                    <span className="spinner-border spinner-border-sm"></span> Chargement...
+                                  </>
+                                ) : (
+                                  "Valider"
+                                )}
+                              </button>
+                              <button className="btn btn-danger custom-button" disabled={loadingAction} onClick={() => handleValidation(transfert, 'Rejeté')}>
+                                {loadingAction ? (
+                                  <>
+                                    <span className="spinner-border spinner-border-sm"></span> Chargement...
+                                  </>
+                                ) : (
+                                  "Refuser"
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </td>
 
 
-    </tr>
-  ))}
-</tbody>
+                      </tr>
+                    ))}
+                  </tbody>
 
-            </table>
+                </table>
 
-)}
+              )}
             </div> </div>
         </div>
       </section>

@@ -5,6 +5,7 @@ function Header() {
     const [email, setEmail] = useState("");
     const [currentTime, setCurrentTime] = useState("");
 
+       const [isLoggingOut, setIsLoggingOut] = useState(false);
    
     useEffect(() => {
       const storedEmail = localStorage.getItem("email");
@@ -24,24 +25,26 @@ function Header() {
     return () => clearInterval(intervalId);
     }, []);
     
-    
-  const handleLogout = () => {
-    Swal.fire({
-      title: "Êtes-vous sûr ?",
-      text: "Vous allez être déconnecté !",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Oui, déconnecter !",
-      cancelButtonText: "Annuler",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        localStorage.removeItem("token");  
-        window.location.href = "/";   
-      }
-    });
-  };
+     const handleLogout = () => {
+          Swal.fire({
+            title: "Êtes-vous sûr ?",
+            text: "Vous allez être déconnecté !",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Oui, déconnecter !",
+            cancelButtonText: "Annuler",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              setIsLoggingOut(true); // 🔥 Active le loading
+              setTimeout(() => {
+                localStorage.removeItem("token");
+                window.location.href = "/";
+              }, 2000); // Simule un délai de 2 secondes
+            }
+          });
+        };
 
   return (
     <header>
@@ -73,6 +76,12 @@ function Header() {
           </div>
         </div>
       </nav>
+      {isLoggingOut && (
+  <div className="logout-overlay">
+    <div className="loading-spinner"></div>
+    <p>Déconnexion en cours...</p>
+  </div>
+)}
     </header>
   );
 }

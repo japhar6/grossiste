@@ -24,7 +24,8 @@ function HistoC() {
   const [statutfilter, setstatufilter] = useState("all");
 
   useEffect(() => {
-    const fetchPaiements = async () => {setLoadingEntrepots(true);
+    const fetchPaiements = async () => {
+      setLoadingEntrepots(true);
       try {
         const response = await axios.get(`/api/paiement`);
         setLoadingEntrepots(false);
@@ -114,18 +115,18 @@ function HistoC() {
         return selectedTypes;
       }
     });
-  
+
     if (isDismissed || !typeFacture) {
       console.log("Annulation de la génération de facture.");
       return;
     }
-  
+
     const queryParams = new URLSearchParams();
     if (paiement) queryParams.set("paiement", JSON.stringify(paiement));
     if (paiement.modePaiement) queryParams.set("modePaiement", paiement.modePaiement);
     if (paiement.referencePaiement) queryParams.set("referencePaiement", paiement.referencePaiement);
     if (paiement.dateLimiteCredit) queryParams.set("dateLimiteCredit", paiement.dateLimiteCredit);
-  
+
     // Utilisation des valeurs paiement.clientNom et paiement.commercialNom
     if (paiement.clientNom) {
       queryParams.set("client", paiement.clientNom);
@@ -140,28 +141,28 @@ function HistoC() {
       client: paiement.clientNom,
       commercial: paiement.commercialNom,
     });
-    
-  
+
+
     const openInvoices = () => {
       if (Array.isArray(typeFacture)) {
         if (typeFacture.includes("normal")) {
           const factureUrlNormal = `/factureadmin?${queryParams.toString()}`;
           window.open(factureUrlNormal, "factureNormal");
         }
-  
+
         if (typeFacture.includes("remise")) {
           const factureUrlRemise = `/factureremisead?${queryParams.toString()}`;
           window.open(factureUrlRemise, "factureRemise");
         }
-  
-       
+
+
       }
     };
-  
+
     openInvoices();
   };
-  
-  
+
+
 
   return (
     <>
@@ -245,80 +246,83 @@ function HistoC() {
                   </label>
                 </div>
               </div>
-<div>
-  <Link to='/histodecaisse' >
-  <button>Voir l'historique de decaissement</button>
-  </Link>
-</div>
+              <div>
+                <Link to='/histodecaisse' >
+                  <button>Voir l'historique de decaissement</button>
+                </Link>
+                <Link to='/annulerFact' >
+                  <button>Annuler une Commande</button>
+                </Link>
+              </div>
               {filteredPaiements.length === 0 ? (
-  <table className="tableZA table-striped">
-    <thead className="table-light">
-      <tr>
-        <th>Reference Facture</th>
-        <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
-        <th>Montant Payé</th>
-        <th>Mode de payement</th>
-        <th>Statut</th>
-        <th>Date de paiement</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td colSpan={6} style={{ textAlign: 'center' }}>Aucun paiement trouvé.</td>
-      </tr>
-    </tbody>
-  </table>
-) : loadingEntrepots ? (
-  <div
-    className="spinner-border text-primary"
-    role="status"
-    style={{ marginTop: '150px', marginLeft: '30%' }}
-  >
-    <span className="visually-hidden">Chargement...</span>
-  </div>
-) : (
-  <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-    <table className="tableZA table-striped">
-      <thead className="table-light">
-        <tr>
-          <th>Reference Facture</th>
-          <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
-          <th>Montant Payé</th>
-          <th>Mode de payement</th>
-          <th>Statut</th>
-          <th>Fait par :</th>
-          <th>Date de paiement</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filteredPaiements.map((paiement) => (
-         <tr key={paiement._id} onClick={() => handleRowClick(paiement)}>
-         <td>{paiement.commandeId?.referenceFacture}</td>
-         <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
-         <td>{paiement.montantPaye} ariary</td>
-         <td>
-           {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
-           {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
-             <span style={{ color: "red", fontWeight: "bold" }}>
-               📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
-             </span>
-           )}
-           {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
-             <span style={{ color: "blue", fontWeight: "bold" }}>
-               🔢 Réf : {paiement.referencePaiement}
-             </span>
-           )}
-         </td>
-         <td>{paiement.statut}</td>
-         <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
-         <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
-       </tr>
-       
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+                <table className="tableZA table-striped">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Reference Facture</th>
+                      <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
+                      <th>Montant Payé</th>
+                      <th>Mode de payement</th>
+                      <th>Statut</th>
+                      <th>Date de paiement</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center' }}>Aucun paiement trouvé.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              ) : loadingEntrepots ? (
+                <div
+                  className="spinner-border text-primary"
+                  role="status"
+                  style={{ marginTop: '150px', marginLeft: '30%' }}
+                >
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              ) : (
+                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                  <table className="tableZA table-striped">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Reference Facture</th>
+                        <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
+                        <th>Montant Payé</th>
+                        <th>Mode de payement</th>
+                        <th>Statut</th>
+                        <th>Fait par :</th>
+                        <th>Date de paiement</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPaiements.map((paiement) => (
+                        <tr key={paiement._id} onClick={() => handleRowClick(paiement)}>
+                          <td>{paiement.commandeId?.referenceFacture}</td>
+                          <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
+                          <td>{paiement.montantPaye} ariary</td>
+                          <td>
+                            {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
+                            {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
+                              <span style={{ color: "red", fontWeight: "bold" }}>
+                                📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
+                              </span>
+                            )}
+                            {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+                              <span style={{ color: "blue", fontWeight: "bold" }}>
+                                🔢 Réf : {paiement.referencePaiement}
+                              </span>
+                            )}
+                          </td>
+                          <td>{paiement.statut}</td>
+                          <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
+                          <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
+                        </tr>
+
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
             </div>
           </div>

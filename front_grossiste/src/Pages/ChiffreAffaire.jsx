@@ -22,12 +22,13 @@ function ChiffreAffaire() {
         totalPrixInventaire: 0,
         nombreOperations: 0
     });
-
+    const [loading, setLoading] = useState(true);
     // État pour la période sélectionnée
     const [periode, setPeriode] = useState("global");
 
     // Fonction pour récupérer les données en fonction de la période
     const fetchChiffreAffaire = () => {
+        setLoading(true); 
         axios.get(`/api/paiement/totals/${periode}`)
             .then(response => {
                 setChiffreAffaire(prevState => ({
@@ -89,6 +90,8 @@ function ChiffreAffaire() {
             })
             .catch(error => {
                 console.error("Erreur lors de la récupération des inventaires", error);
+            })  .finally(() => {
+                setLoading(false); // On arrête le chargement une fois que toutes les données ont été récupérées
             });
 
     };
@@ -126,7 +129,14 @@ function ChiffreAffaire() {
                             </select>
                         </div>
                     </div>
-
+   {loading ? (
+                        <div className="text-center">
+                            <div className="spinner-border" role="status">
+                                <span className="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div >
                     <div className="row">
                         <div className="col-md-4">
                             <div className="card text-center shadow-sm">
@@ -190,7 +200,7 @@ function ChiffreAffaire() {
                             <div className="card text-center shadow-sm">
                                 <div className="card-body">
                                     <h5 className="card-title">📦 Bénéfice net</h5>
-                                    <p className="display-6 text-success fw-bold">{formatCurrency((chiffreAffaire.nombrePaiements + chiffreAffaire.nombrePaiementsCommercial) -
+                                    <p className="display-6 text-success fw-bold">{formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
                                         (chiffreAffaire.totalAchats)
                                     )} Ariary</p>
                                 </div>
@@ -259,8 +269,8 @@ function ChiffreAffaire() {
                                     <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.totalPrixInventaire)} Ariary</p>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </div> </div>
+                    </div>)}
                 </div>
             </section>
         </main>

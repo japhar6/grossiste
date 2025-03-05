@@ -21,13 +21,13 @@ function ListeProduits() {
   const filtrerProduits = () => {
     return produits.filter((produit) => {
       const correspondanceRecherche =
-        produit.nom.toLowerCase().includes(recherche.toLowerCase()) || 
+        produit.nom.toLowerCase().includes(recherche.toLowerCase()) ||
         produit.codeProduit.toLowerCase().includes(recherche.toLowerCase());
 
       const correspondanceCategorie =
         categorie === "" || produit.categorie === categorie;
 
-      const correspondanceDate = 
+      const correspondanceDate =
         dateAjout === "" || new Date(produit.dateAjout).toISOString().split('T')[0] === dateAjout;
 
       return correspondanceRecherche && correspondanceCategorie && correspondanceDate;
@@ -47,10 +47,10 @@ function ListeProduits() {
     try {
       const response = await axios.get("/api/produits/afficher");
       setProduits(response.data);
-      
+
       const categoriesUniq = [...new Set(response.data.map((produit) => produit.categorie))];
       setCategories(categoriesUniq);
-      
+
       const initialUnites = {};
       response.data.forEach(produit => {
         initialUnites[produit._id] = produit.unites[0]?.nom;
@@ -69,10 +69,10 @@ function ListeProduits() {
   };
 
   const handleModifierPrix = async (produitId) => {
-    const prixDachat = prixAchatModifier[produitId]; 
-    const prixdevente = prixVenteModifier[produitId]; 
-    const uniteNomDachat = uniteSelectionnee[produitId]; 
-    const uniteNomVente = uniteSelectionnee[produitId]; 
+    const prixDachat = prixAchatModifier[produitId];
+    const prixdevente = prixVenteModifier[produitId];
+    const uniteNomDachat = uniteSelectionnee[produitId];
+    const uniteNomVente = uniteSelectionnee[produitId];
     const quantiteMinimum = quantiteMinimumModifier[produitId];
 
     const updates = {};

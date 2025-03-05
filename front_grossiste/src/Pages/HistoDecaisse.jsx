@@ -51,79 +51,47 @@ const HistoriqueDecaissementPage = () => {
         <Header />
         <div className="p-3 content center">
           <div className="mini-stat p-3">
-            <h1 className="mb-4">Historique des Décaissements</h1>
+            <div className="">
+              <h1 className="mb-4">Historique des Décaissements</h1>
 
-            {/* Formulaire de filtrage */}
-            <div className="filter-form mb-3 center">
-              <select
-                id="periode"
-                className="form-control"
-                value={filter.periode}
-                onChange={(e) => setFilter({ ...filter, periode: e.target.value })}
-              >
-                <option value="">Filtrage par période</option>
-                <option value="journalier">Jour</option>
-                <option value="hebdomadaire">Semaine</option>
-                <option value="mensuel">Mois</option>
-                <option value="annuel">Année</option>
-              </select>
+              {/* Tableau affichant l'historique des décaissements */}
+              <div className="table-responsive">
+                <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+                  <table className="table table-striped table-bordered">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Montant</th>
+                        <th>Période</th>
+                        <th>Mode</th>
 
-              <select
-                id="mode"
-                className="form-control"
-                value={filter.mode}
-                onChange={(e) => setFilter({ ...filter, mode: e.target.value })}
-              >
-                <option value="">Filtrage par mode de paiement</option>
-                <option value="virement bancaire">Virement bancaire</option>
-                <option value="espèce">Espèce</option>
-                <option value="mobile money">Mobile Money</option>
-              </select>
-
-              {/* Champ de recherche par date */}
-              <input
-                type="date"
-                id="date"
-                className="form-control"
-                value={filter.date}
-                onChange={(e) => setFilter({ ...filter, date: e.target.value })}
-              />
-            </div>
-
-            {/* Tableau affichant l'historique des décaissements */}
-            <div className="table-responsive">
-              <table className="table table-striped table-bordered">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Montant</th>
-                    <th>Période</th>
-                    <th>Mode</th>
-                    <th>Référence</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredHistorique.length > 0 ? (
-                    filteredHistorique.map((decaissement) => (
-                      <tr key={decaissement._id}>
-                        {/* Affichage de la date sous un format lisible */}
-                        <td>{new Date(decaissement.dateDecaissement).toLocaleDateString()}</td>
-                        <td>{decaissement.montant} Ariary</td>
-                        <td>{decaissement.periode}</td>
-                        <td>{decaissement.mode}</td>
-                        <td>{decaissement.referencePaiement || '-'}</td>
+                        <th>Référence</th>
+                        <th>Fait par</th>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center">Aucun décaissement effectué.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {historique.length > 0 ? (
+                        historique.map((decaissement) => (
+                          <tr key={decaissement.id}>
+                            <td>{new Date(decaissement.date).toLocaleDateString()}</td>
+                            <td>{decaissement.montant}€</td>
+                            <td>{decaissement.periode}</td>
+                            <td>{decaissement.mode}</td>
+                            <td>{decaissement.reference || '-'}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="text-center">Aucun décaissement effectué.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+
+          </div></div>
       </section>
     </main>
   );

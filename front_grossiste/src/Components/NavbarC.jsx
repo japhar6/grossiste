@@ -50,12 +50,7 @@ function Header() {
   return (
     <header>
       <nav className="navbar navbar-expand-lg navbar-light navbar-custom">
-      {isLoggingOut && (
-  <div className="logout-overlay">
-    <div className="loading-spinner"></div>
-    <p>Déconnexion en cours...</p>
-  </div>
-)}
+  
 
         <div className="container-fluid">
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,6 +80,12 @@ function Header() {
           </div>
         </div>
       </nav>
+      {isLoggingOut && (
+  <div className="logout-overlay">
+    <div className="loading-spinner"></div>
+    <p>Déconnexion en cours...</p>
+  </div>
+)}
     </header>
   );
 }

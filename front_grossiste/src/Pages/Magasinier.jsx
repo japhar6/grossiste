@@ -84,20 +84,13 @@ function SortieStock() {
     setCommandeSelectionnee(commande);
   };
   const validerVente = async () => {
-    if (!entrepotSelectionne) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Erreur',
-        text: "Veuillez sélectionner un entrepôt avant de valider la vente.",
-      });
-      return;
-    }
+ 
     setLoadingAction(true);
     try {
       const response = await axios.post("/api/ventes/valider", {
         commandeId: commandeSelectionnee._id,
-        magasinierId,
-        entrepotId: entrepotSelectionne,
+        magasinierId
+    
       });
 
       Swal.fire({
@@ -133,7 +126,6 @@ function SortieStock() {
           "quantiteRestante": "0"
         };
 
-        console.log("Envoi de la notification:", data);
 
         axios.post('/api/notif/rupture-stock', data)
           .then(response => {
@@ -202,31 +194,31 @@ function SortieStock() {
       });
       return;
     }
-  
+
     setLoadingAction(true);
     try {
       const response = await axios.put(`/api/commandes/sortieFournisseur/${commande._id}`, {
         modeLivraison: 'fournisseur',
         statut: 'payé et livré',
       });
-  
+
       // Vérifiez la réponse du backend
       console.log("Réponse backend:", response.data);
-  
+
       Swal.fire({
         icon: 'success',
         title: 'Succès',
         text: response.data.message,
       });
-  
+
       // Rafraîchir les données ou mettre à jour l'état local
       // Par exemple, vous pouvez appeler une fonction pour récupérer de nouveau la commande mise à jour :
       setCommandes(prevCommandes => {
-        return prevCommandes.map(c => 
+        return prevCommandes.map(c =>
           c._id === commande._id ? { ...c, statut: 'payé et livré', modeLivraison: 'fournisseur' } : c
         );
       });
-  
+
     } catch (error) {
       console.error("Erreur:", error);
       Swal.fire({
@@ -238,7 +230,7 @@ function SortieStock() {
       setLoadingAction(false);
     }
   };
-    
+
 
 
 
@@ -345,14 +337,14 @@ function SortieStock() {
                         )}
                         {/* Bouton pour sortie fournisseur */}
                         {commande.statut === 'payé' && (
-  <button
-    className="btn btn-danger ms-2"
-    onClick={() => handleSortieFournisseur(commande)}
-    disabled={commande.statut !== 'payé'} // Désactive le bouton si la commande n'est pas livrée
-  >
-    Sortie Fournisseur
-  </button>
-)}
+                          <button
+                            className="btn btn-danger ms-2"
+                            onClick={() => handleSortieFournisseur(commande)}
+                            disabled={commande.statut !== 'payé'} // Désactive le bouton si la commande n'est pas livrée
+                          >
+                            Sortie Fournisseur
+                          </button>
+                        )}
 
                       </td>
                     </tr>
@@ -402,24 +394,7 @@ function SortieStock() {
                 </div>
 
                 <div className="modal-footer center">
-                  {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && (
-                    <div className="mb-3">
-                      <label htmlFor="entrepotSelectionne" className="form-label">Choisissez l'entrepôt :</label>
-                      <select
-                        id="entrepotSelectionne"
-                        value={entrepotSelectionne}
-                        onChange={(e) => setEntrepotSelectionne(e.target.value)}
-                        className="form-control" // Classe Bootstrap pour les menus déroulants
-                      >
-                        <option value="">Sélectionnez un entrepôt</option>
-                        {entrepots.map((entrepot) => (
-                          <option key={entrepot._id} value={entrepot._id}>
-                            {entrepot.nom} - {entrepot.localisation}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                 
                   {commandeSelectionnee && commandeSelectionnee.statut.toLowerCase() === "payé" && (
                     <button className="btn btn-info" disabled={loadingAction} onClick={validerVente}>
                       {loadingAction ? (

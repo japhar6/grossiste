@@ -278,9 +278,20 @@ function PriseCommande() {
 
     return nouvelleQuantite;
   };
+  console.log("Commande actuelle :", commande);
+
+  const totalCommande = commande.reduce((total, item) => {
+    const quantite = Number(item.quantite) || 0;
+    const prix = Number(item.prixdevente) || 0; // Vérifie bien `prixdevente`
+
+    console.log(`Produit: ${item.nom}, Quantité: ${quantite}, Prix: ${prix}`);
+
+    return total + quantite * prix;
+  }, 0);
+
+  console.log("Total Commande Calculé:", totalCommande);
 
 
-  const totalCommande = commande.reduce((total, item) => total + item.quantite * item.prix, 0);
 
   const valeurRemise = typeRemise === "remiseGlobale"
     ? remisesClient?.remiseGlobale
@@ -979,21 +990,22 @@ function PriseCommande() {
                         <td>{item.uniteChoisie}</td>
                         <td>{item.prixdevente} Ariary</td>
                         <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
-                        <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise) * item.quantite} Ariary</td>
-                        <td className="center">
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
-                          >
-                            <i className="fa fa-trash"></i>
-                          </button>
-                          <input type="checkbox" className="checkbox-large mt-6" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
+      <td>
+        <button
+          className="btn btn-danger btn-sm"
+          onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
+        >
+          <i className="fa fa-trash"></i>
+        </button>
+  <input type="checkbox" className="checkbox-large mt-6" />
+                        </td >
+                      </tr >
+                    ))
+}
+                  </tbody >
+                </table >
+              </div >
 
 
               <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
@@ -1011,12 +1023,12 @@ function PriseCommande() {
                   "  Enregistrer la Commande"
                 )}
               </button>
-            </div>
+            </div >
 
-          </div>
-        </div>
-      </section>
-    </main>
+          </div >
+        </div >
+      </section >
+    </main >
   );
 }
 

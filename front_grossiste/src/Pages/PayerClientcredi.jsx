@@ -76,11 +76,11 @@ function Caisse() {
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Caisse
             </h6>
-            
+
             {/* Saisie de la référence de commande */}
             <div className="commande-container">
-              <div className="refcli bg-light" style={{boxShadow:'0 0 3px gray',borderRadius:'7px'}}>
-                <h6 className="alert alert-success" style={{width1:'100%',textAlign:'left'}}><i className="fa fa-user"></i> Référence de la commande</h6>
+              <div className="refcli bg-light" style={{ boxShadow: '0 0 3px gray', borderRadius: '7px' }}>
+                <h6 className="alert alert-success" style={{ width1: '100%', textAlign: 'left' }}><i className="fa fa-user"></i> Référence de la commande</h6>
                 <div className="form-group">
                   <input
                     type="text"
@@ -89,7 +89,7 @@ function Caisse() {
                     value={referenceFacture}
                     onChange={(e) => setReferenceFacture(e.target.value)}
                   />
-                  
+
                   {/* Affichage des suggestions */}
                   {filteredPaiements.length > 0 && (
                     <ul className="list-group">
@@ -106,18 +106,18 @@ function Caisse() {
 
             {/* Affichage des détails de la commande */}
             {paiement && commande && (
-              <div className="details mt-4 bg-light p-3" style={{textAlign:'left',boxShadow:'0 0 3px gray',borderRadius:'5px'}}>
+              <div className="details mt-4 bg-light p-3" style={{ textAlign: 'left', boxShadow: '0 0 3px gray', borderRadius: '5px' }}>
                 <h6><i className="fa fa-box"></i> Détails du paiement </h6>
                 <p className="alert alert-light">Mode de paiement : {paiement.modePaiement}</p>
                 <p className="alert alert-light">Total à payer  : {paiement.totalPaiement} Ariary</p>
                 <p className="alert alert-light">Statut : {paiement.statut}</p>
                 {paiement?.dateLimiteCredit ? (
-  <p className="alert alert-light">
-    Date d'échéance de paiement : {paiement.dateLimiteCredit}
-  </p>
-) : (
-  <p className="alert alert-warning">Aucune date d'échéance définie</p>
-)}
+                  <p className="alert alert-light">
+                    Date d'échéance de paiement : {paiement.dateLimiteCredit}
+                  </p>
+                ) : (
+                  <p className="alert alert-warning">Aucune date d'échéance définie</p>
+                )}
 
 
                 {/* Affichage du nom du client ou du commercial */}
@@ -126,28 +126,28 @@ function Caisse() {
 
                 {/* Détails des produits */}
                 <h6 className="alert alert-info"><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
-                
-                <div style={{overflowX:'scroll'}}>
-                    <table className="tableCS table-bordered mt-2 text-center table">
+
+                <div style={{ overflowX: 'scroll' }}>
+                  <table className="tableCS table-bordered mt-2 text-center table">
                     <thead>
-                        <tr>
+                      <tr>
                         <th className="bg-success text-light">Nom du produit</th>
                         <th className="bg-success text-light">Quantité</th>
                         <th className="bg-success text-light">Prix Unitaire</th>
                         <th className="bg-success text-light">Total</th>
-                        </tr>
+                      </tr>
                     </thead>
                     <tbody>
-                        {commande.produits.map((item, index) => (
+                      {commande.produits.map((item, index) => (
                         <tr key={index}>
-                            <td>{item.produit?.nom}</td>
-                            <td>{item.quantite}</td>
-                            <td>{item.prixdevente}</td>
-                            <td>{item.total}</td>
+                          <td>{item.produit?.nom}</td>
+                          <td>{item.quantite}</td>
+                          <td>{item.prixdevente}</td>
+                          <td>{item.total}</td>
                         </tr>
-                        ))}
+                      ))}
                     </tbody>
-                    </table>
+                  </table>
 
                 </div>
 

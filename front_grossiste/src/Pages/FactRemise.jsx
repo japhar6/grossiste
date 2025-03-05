@@ -37,8 +37,6 @@ function FactureRem() {
     }
   }, []);
   
-
-
   function convertirEnLettres(nombre) {
     const nombresFr = [
         "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", 
@@ -73,14 +71,19 @@ function FactureRem() {
     while (nombre > 0) {
         const currentPart = nombre % 1000;
         if (currentPart > 0) {
-            result = convertHundreds(currentPart) + units[part] + (result ? ' ' + result : '');
+            let partResult = convertHundreds(currentPart);
+            if (part === 1 && currentPart === 1) {
+                partResult = 'mille';  // Si c'est exactement 1000, on ne met pas "un"
+            } else {
+                partResult += units[part];
+            }
+            result = partResult + (result ? ' ' + result : '');
         }
         nombre = Math.floor(nombre / 1000);
         part++;
     }
     return result.trim();
 }
-
    useEffect(() => {
       if (commande) {
         setTimeout(() => {
@@ -145,8 +148,9 @@ function FactureRem() {
           <thead>
             <tr>
               <th>Qté</th>
-              <th>Colisage</th>
+              <th>Unité</th>
               <th>Désignation</th>
+              <th>Entrepot</th>
               <th>Type de remise</th>
               <th>PU</th>
               <th>Montant Avant Remise</th>
@@ -159,6 +163,7 @@ function FactureRem() {
                 <td>{produit.quantite}</td>
                 <td>{produit.uniteChoisie}</td>
                 <td>{produit.produit.nom}</td>
+                <td>{produit.entrepotId.nom}</td>
                 <td>{`${produit.typeRemise}: ${produit.valeurRemise}`}</td>
                 <td>{produit.prixdevente} Ariary</td>
                 <td>{produit.quantite * produit.prixdevente} Ariary</td>

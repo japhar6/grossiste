@@ -9,7 +9,6 @@ function Facture() {
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
-  const [nomEntrepot, setNomentrepot] = useState(null);
 
   function convertirEnLettres(nombre) {
     const nombresFr = [
@@ -45,13 +44,20 @@ function Facture() {
     while (nombre > 0) {
         const currentPart = nombre % 1000;
         if (currentPart > 0) {
-            result = convertHundreds(currentPart) + units[part] + (result ? ' ' + result : '');
+            let partResult = convertHundreds(currentPart);
+            if (part === 1 && currentPart === 1) {
+                partResult = 'mille';  // Si c'est exactement 1000, on ne met pas "un"
+            } else {
+                partResult += units[part];
+            }
+            result = partResult + (result ? ' ' + result : '');
         }
         nombre = Math.floor(nombre / 1000);
         part++;
     }
     return result.trim();
 }
+
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
 
@@ -65,7 +71,7 @@ function Facture() {
       const commercialData = queryParams.get("commercial")
         ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
         : null;
-setNomentrepot(queryParams.get("nomEntrepot"));
+
       setCommande(commandeData);
       setModePaiement(queryParams.get("modePaiement"));
       setReferencePaiement(queryParams.get("referencePaiement"));
@@ -80,7 +86,7 @@ setNomentrepot(queryParams.get("nomEntrepot"));
   useEffect(() => {
     if (commande) {
       setTimeout(() => {
-        window.print(); // Imprime après 2 secondes
+        window.print(); 
         setTimeout(() => {
           window.close(); // Ferme l'onglet après l'impression
         }, 1000); // 1 seconde après impression
@@ -142,7 +148,7 @@ setNomentrepot(queryParams.get("nomEntrepot"));
           <thead>
             <tr>
               <th>Qté</th>
-              <th>Colisage</th>
+              <th>Unité</th>
               <th>Désignation</th>
               <th>Entrepot</th>
               <th>PU</th>
@@ -150,16 +156,17 @@ setNomentrepot(queryParams.get("nomEntrepot"));
             </tr>
           </thead>
           <tbody>
-            {commande.produits.map((produit, index) => (
-              <tr key={index}>
-                <td>{produit.quantite}</td>
-                <td>{produit.uniteChoisie || "PCE"}</td>
-                <td>{produit.produit.nom}</td>
-                <td>{ nomEntrepot || "Non spécifié"}</td>
-                <td>{produit.prixdevente} Ariary</td>
-                <td>{produit.total} Ariary</td>
-              </tr>
-            ))}
+          {commande.produits.map((produit, index) => (
+  <tr key={index}>
+    <td>{produit.quantite}</td>
+    <td>{produit.uniteChoisie || "PCE"}</td>
+    <td>{produit.produit ? produit.produit.nom : 'Nom inconnu'}</td> {/* Protection ici */}
+    <td>{produit.entrepotId ? produit.entrepotId.nom : 'Entrepôt inconnu'}</td> {/* Protection ici */}
+    <td>{produit.prixdevente} Ariary</td>
+    <td>{produit.total} Ariary</td>
+  </tr>
+))}
+
           </tbody>
         </table>
       </div>

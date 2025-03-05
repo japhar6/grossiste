@@ -81,7 +81,7 @@ function HistoAcha() {
             } catch (error) {
                 console.error("Erreur lors de la récupération des paniers:", error);
                 setLoadingEntrepots(false);
-               
+
             }
         };
 
@@ -133,7 +133,7 @@ function HistoAcha() {
                                 </div>
                             ) : (
                                 <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                                    
+
                                     <table className="tableZA table-striped">
                                         <thead className="table-light">
                                             <tr>
@@ -144,7 +144,7 @@ function HistoAcha() {
                                                 <th>Montant Total Général</th>
                                                 <th>Date Limite Crédit</th>
                                                 <th>Mode de Paiement</th>
-                                               
+
                                                 <th>Montant Payé</th>
                                                 <th>Actions</th> {/* Nouvelle colonne pour l'action "Payer" */}
                                             </tr>
@@ -152,35 +152,35 @@ function HistoAcha() {
                                         <tbody>
                                             {filteredPaniers.map((panier) => (
                                                 <tr key={panier._id}>
-                                                    <td>{new Date(panier.dateAchat).toLocaleDateString()   }</td>
+                                                    <td>{new Date(panier.dateAchat).toLocaleDateString()}</td>
                                                     <td>
-              {panier.achats.map((achat, index) => (
-                <div key={index}>
-                  <strong>{achat.produit.nom}</strong> x {achat.quantite} {achat.unite}
-                </div>
-              ))}
-            </td>
+                                                        {panier.achats.map((achat, index) => (
+                                                            <div key={index}>
+                                                                <strong>{achat.produit.nom}</strong> x {achat.quantite} {achat.unite}
+                                                            </div>
+                                                        ))}
+                                                    </td>
                                                     <td>{panier.statut}</td>
                                                     <td>{panier.totalGeneral} ariary</td>
                                                     <td>
-                {panier.dateLimiteCredit && (
-                  <span className="date-limite" style={{color:'black'}}>
-                    📅 Échéance: {new Date(panier.dateLimiteCredit).toLocaleDateString()}
-                  </span>
-                )}
-              </td>
+                                                        {panier.dateLimiteCredit && (
+                                                            <span className="date-limite" style={{ color: 'black' }}>
+                                                                📅 Échéance: {new Date(panier.dateLimiteCredit).toLocaleDateString()}
+                                                            </span>
+                                                        )}
+                                                    </td>
                                                     <td>{panier.modePaiement || "Non renseigné"}</td>
-                          
+
                                                     <td>{panier.totalGeneral || "Non renseigné"}</td>
                                                     <td>
                                                         {panier.statut === 'non payé' && (
                                                             <button
-                                                            className="btn btn-success btn-sm w-auto p-2"  // Réduit la taille avec btn-sm, et ajuste la largeur avec w-auto
-    
+                                                                className="btn btn-success btn-sm w-auto p-2"  // Réduit la taille avec btn-sm, et ajuste la largeur avec w-auto
+
                                                                 onClick={() => handlePaiement(panier._id)}  // Appel à la fonction pour marquer comme payé
                                                                 disabled={loadingAction} // Désactive le bouton pendant le traitement
                                                             >
-                                                               Payer
+                                                                Payer
                                                             </button>
                                                         )}
                                                     </td>

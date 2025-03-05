@@ -28,14 +28,16 @@ function RetourStockCom() {
   }, []);
 
   // Récupération des paiements commerciaux depuis l'API
-  useEffect(() => {      setLoadingEntrepots(true);
+  useEffect(() => {
+    setLoadingEntrepots(true);
     axios.get("/api/paiementCom/infopl")
       .then(response => {
         setPaiements(response.data);
         setLoadingEntrepots(false);
       })
-      
-      .catch(error => {      setLoadingEntrepots(false);
+
+      .catch(error => {
+        setLoadingEntrepots(false);
         console.error("Erreur lors de la récupération des paiements :", error);
         setError("Erreur lors de la récupération des paiements.");
       });
@@ -114,36 +116,36 @@ function RetourStockCom() {
       magasinierId: magasinierId,
       venteComId: venteComId,
     };
-  
+
     axios.post("/api/ventes/retour", returnData)
       .then(response => {
         console.log("Retour validé avec succès", response.data);
         setLoadingAction(false);
-        setError(""); 
-         // Afficher un message de succès avec SweetAlert
-      Swal.fire({
-        icon: 'success',
-        title: 'Retour validé',
-        text: 'Le retour a été validé avec succès.',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#28a745',
-      }).then(() => {
-        // Recharger la page après un délai de 2 secondes
-        window.location.reload();
-      });
+        setError("");
+        // Afficher un message de succès avec SweetAlert
+        Swal.fire({
+          icon: 'success',
+          title: 'Retour validé',
+          text: 'Le retour a été validé avec succès.',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#28a745',
+        }).then(() => {
+          // Recharger la page après un délai de 2 secondes
+          window.location.reload();
+        });
       })
       .catch(error => {
         setLoadingAction(true);
         console.error("Erreur lors de la validation du retour:", error);
         setError("Erreur lors de la validation du retour.");
-           // Afficher un message d'erreur avec SweetAlert
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: 'Une erreur est survenue lors de la validation du retour.',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#d33',
-      });
+        // Afficher un message d'erreur avec SweetAlert
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: 'Une erreur est survenue lors de la validation du retour.',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#d33',
+        });
       });
   };
 
@@ -196,55 +198,55 @@ function RetourStockCom() {
               />
             </form>
           </div>  {loadingEntrepots ? (
-              <div className="loading-container" style={{marginTop:'-250px'}}>
-                <div className="spinner-border text-primary " role="status">
-                  <span className="visually-hidden">Chargement...</span>
-                </div>
+            <div className="loading-container" style={{ marginTop: '-250px' }}>
+              <div className="spinner-border text-primary " role="status">
+                <span className="visually-hidden">Chargement...</span>
               </div>
-            ) : (
+            </div>
+          ) : (
 
-          <table className="tableMa table-striped mt-3">
-            <thead>
-              <tr>
-                <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>
-                <th>Caissier</th>
-                <th>Commercial</th>
-
-                <th>Statut</th>
-                <th>Date</th>
-                <th>Détails</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPaiements.length > 0 ? (
-                filteredPaiements.map((paiement, index) => (
-                  <tr key={index}>
-                    <td>{paiement.referenceFacture}</td>
-                    <td>{paiement.caissier}</td>
-                    <td>{paiement.commercialNom}</td>
-
-                    <td>{paiement.statut}</td>
-                    <td>{paiement.date}</td>
-                    <td>
-                      {isMobile ? (
-                        <button className="btn btn-info" type="button" data-bs-toggle="modal" data-bs-target="#ProduitRetour" onClick={() => openModal(paiement)}>
-                          <FontAwesomeIcon icon={faEye} />
-                        </button>
-                      ) : (
-                        <button className="btn btn-info" type="button" data-bs-toggle="modal" data-bs-target="#ProduitRetour" onClick={() => openModal(paiement)}>
-                          Voir Détails
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
+            <table className="tableMa table-striped mt-3">
+              <thead>
                 <tr>
-                  <td colSpan="7" className="text-center">Aucune donnée disponible</td>
+                  <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>
+                  <th>Caissier</th>
+                  <th>Commercial</th>
+
+                  <th>Statut</th>
+                  <th>Date</th>
+                  <th>Détails</th>
                 </tr>
-              )}
-            </tbody>
-          </table>)}
+              </thead>
+              <tbody>
+                {filteredPaiements.length > 0 ? (
+                  filteredPaiements.map((paiement, index) => (
+                    <tr key={index}>
+                      <td>{paiement.referenceFacture}</td>
+                      <td>{paiement.caissier}</td>
+                      <td>{paiement.commercialNom}</td>
+
+                      <td>{paiement.statut}</td>
+                      <td>{paiement.date}</td>
+                      <td>
+                        {isMobile ? (
+                          <button className="btn btn-info" type="button" data-bs-toggle="modal" data-bs-target="#ProduitRetour" onClick={() => openModal(paiement)}>
+                            <FontAwesomeIcon icon={faEye} />
+                          </button>
+                        ) : (
+                          <button className="btn btn-info" type="button" data-bs-toggle="modal" data-bs-target="#ProduitRetour" onClick={() => openModal(paiement)}>
+                            Voir Détails
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center">Aucune donnée disponible</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>)}
 
           {/* Modal pour afficher les détails */}
           <div className="modal fade" id="ProduitRetour" tabIndex="-1" aria-labelledby="ProduitRetourLabel" aria-hidden="true">
@@ -290,15 +292,15 @@ function RetourStockCom() {
                 <div className="modal-footer center">
                   <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" >Fermer</button>
                   {modalData && modalData.paiement.statut !== "Produits retourner" && ( // Condition pour afficher le bouton
-                    <button className="btn btn-info" onClick={handleReturnValidation}disabled={loadingAction}>
-                         {loadingAction ? (
-                <>
-                  <span className="spinner-border spinner-border-sm"></span> Chargement...
-                </>
-              ) : (
-" Valider le retour"
-              )}
-                     </button>
+                    <button className="btn btn-info" onClick={handleReturnValidation} disabled={loadingAction}>
+                      {loadingAction ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm"></span> Chargement...
+                        </>
+                      ) : (
+                        " Valider le retour"
+                      )}
+                    </button>
                   )}
                 </div>
 

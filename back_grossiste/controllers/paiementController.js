@@ -285,8 +285,8 @@ exports.getPaiementsParCaissier = async (req, res) => {
                 ...paiement.toObject(),
                 clientNom: paiement.commandeId?.clientId?.nom || 'Inconnu',
                 produits: paiement.commandeId?.produits?.map(produit => ({
-                    nom: produit.produit.nom,
-                    prixUnitaire: produit.produit.prixUnitaire
+                    nom: produit.produit?.nom || 'Produit inconnu',
+                    prixUnitaire: produit.produit?.prixUnitaire || 0
                 })) || [],
                 modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
@@ -294,12 +294,13 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     ? paiement.referencePaiement
                     : null
             })),
+        
             commerciaux: paiementsCommerciaux.map(paiement => ({
                 ...paiement.toObject(),
                 commercialNom: paiement.commandeId?.commercialId?.nom || 'Inconnu',
                 produits: paiement.commandeId?.produits?.map(produit => ({
-                    nom: produit.produit.nom,
-                    prixUnitaire: produit.produit.prixUnitaire
+                    nom: produit.produit?.nom || 'Produit inconnu',
+                    prixUnitaire: produit.produit?.prixUnitaire || 0
                 })) || [],
                 modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
@@ -308,7 +309,7 @@ exports.getPaiementsParCaissier = async (req, res) => {
                     : null
             }))
         };
-
+        
         res.status(200).json(paiements);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -633,17 +634,22 @@ exports.getProduitsLesPlusVendus = async (req, res) => {
 
         // Regrouper par produit et compter les quantités vendues
         const produitsVendus = produitsVendusCommerciaux.reduce((acc, produit) => {
-            const { produit: produitInfo, quantite } = produit;
+            const produitInfo = produit.produit; // Récupération du produit
+        
+            if (!produitInfo || !produitInfo._id) { // Vérifier que le produit existe
+                return acc; // Ignorer si produitInfo est null ou s'il manque un _id
+            }
+        
             if (!acc[produitInfo._id]) {
                 acc[produitInfo._id] = {
                     nom: produitInfo.nom,
                     totalVendu: 0
                 };
             }
-            acc[produitInfo._id].totalVendu += quantite;
+            acc[produitInfo._id].totalVendu += produit.quantite;
             return acc;
         }, {});
-
+        
         // Transformer en tableau et trier par nombre de ventes
         const produitsTries = Object.values(produitsVendus).sort((a, b) => b.totalVendu - a.totalVendu);
 
