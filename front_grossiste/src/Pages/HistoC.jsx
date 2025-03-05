@@ -273,9 +273,7 @@ function HistoC() {
                 <Link to='/histodecaisse' >
                   <button>Voir l'historique de decaissement</button>
                 </Link>
-                <Link to='/annulerFact' >
-                  <button>Annuler une Commande</button>
-                </Link>
+               
               </div>
               {filteredPaiements.length === 0 ? (
                 <table className="tableZA table-striped">

@@ -12,10 +12,7 @@ const commandeSchema = new mongoose.Schema({
             quantite: { type: Number, required: true },
             prixdevente: { type: Number, required: true },
             total: { type: Number, required: true },
-            prixApresRemise: { type: Number, required: true },
-            montantApresRemise: { type: Number },
-            typeRemise: { type: String },
-            valeurRemise: { type: Number },
+         
             uniteChoisie: { type: String },
             entrepotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot' },
         }
@@ -23,11 +20,11 @@ const commandeSchema = new mongoose.Schema({
     totalGeneral: { type: Number, required: true },
     statut: { 
         type: String,  
-        enum: ["en cours", "payé", "payé et livré","annulée"], 
+        enum: ["en cours", "payé", "payé et livré","annulée","en attente"], 
         default: "en cours" 
     },
-    typeRemise: { type: String },
-    valeurRemise: { type: Number },
+    typeRemise: { type: String, default: null },
+    valeurRemise: { type: Number, default: null },
     referenceFacture: { type: String, unique: true },
     dateSortie: { type: Date, default: null },
 

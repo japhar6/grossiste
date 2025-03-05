@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import "../Styles/Histov.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
+import EditCommandeModal from '../Components/EditCommande'; 
 
 function HistoV() {
   const [commandes, setCommandes] = useState([]); const [dateStart, setDateStart] = useState("");  // Date de début
@@ -21,11 +22,24 @@ function HistoV() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [filtreTypeClient, setfiltreTypeClient] = useState("");
   const [filtreNomProduit, setFiltreNomProduit] = useState(""); // État pour le nom du produit
-
+ 
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedCommande, setSelectedCommande] = useState(null);
   const [orderBy, setOrderBy] = useState("nom");
   const [order, setOrder] = useState("asc");
 
 
+
+
+
+
+
+
+
+
+
+
+  
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
@@ -131,17 +145,17 @@ function HistoV() {
                 <div className="row">
                   {/* Filtre intervalle de dates */}
                   <div className="d-flex align-items-center">
-    <input
-      type="checkbox"
-      className="form-check-input me-2 custom-checkbox"
-      id="dateRangeFilter"
-      checked={isDateRange}
-      onChange={(e) => setIsDateRange(e.target.checked)}
-    />
-    <label className="form-check-label" htmlFor="dateRangeFilter">
-      Filtrer par intervalle de dates
-    </label>
-  </div>
+                    <input
+                      type="checkbox"
+                      className="form-check-input me-2 custom-checkbox"
+                      id="dateRangeFilter"
+                      checked={isDateRange}
+                      onChange={(e) => setIsDateRange(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="dateRangeFilter">
+                      Filtrer par intervalle de dates
+                    </label>
+                  </div>
 
 
                   {/* Champ de date spécifique */}
@@ -371,6 +385,10 @@ function HistoV() {
               )}
             </div>
           </div>
+          <div>
+     
+         
+    </div>
         </section>
       </main>
     </>

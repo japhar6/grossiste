@@ -88,9 +88,11 @@ const TransfertAdmin = () => {
           <div className="mini-stat p-3 bg-light shadow rounded">
             <h2 className='alert alert-success text-center'>Transfert Inter-Entrepôts</h2>
             <h3>Historique des Transferts</h3>
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
-              <div className="form-group col-12 col-md-3 mb-3">
-                <label>Filtrer par Statut:</label>
+            <div className="filters mb-4">
+           
+            <div className="d-flex align-items-center">
+            <div className="row">
+                 <label>Filtrer par Statut:</label>
                 <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
                   <option value="">Tous</option>
                   <option value="en attente">En attente</option>
@@ -99,7 +101,7 @@ const TransfertAdmin = () => {
                 </select>
               </div>
 
-              <div className="form-group col-12 col-md-3 mb-3">
+              <div className="col-md-4 mb-3">
                 <label>Filtrer par Entrepôt Source:</label>
                 <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
                   <option value="">Tous</option>
@@ -109,8 +111,7 @@ const TransfertAdmin = () => {
                 </select>
               </div>
 
-              <div className="form-group col-12 col-md-3 mb-3">
-                <label>Filtrer par Entrepôt Destination:</label>
+              <div className="col-md-4 mb-3">      <label>Filtrer par Entrepôt Destination:</label>
                 <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
                   <option value="">Tous</option>
                   {entrepots.map(entrepot => (
@@ -119,10 +120,10 @@ const TransfertAdmin = () => {
                 </select>
               </div>
 
-              <div className="form-group col-12 col-md-3 mb-3">
-                <label>Filtrer par Date:</label>
+              <div className="col-md-4 mb-3">     <label>Filtrer par Date:</label>
                 <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
               </div>
+            </div>
             </div>
 
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>

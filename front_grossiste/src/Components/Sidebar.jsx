@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link,useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import '../Styles/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -23,55 +23,12 @@ function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const [hidden, setHidden] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const location = useLocation(); 
+    const location = useLocation(); // Obtient la localisation actuelle
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    // Variables pour gérer le swipe
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    useEffect(() => {
-        const handleTouchStart = (e) => {
-            touchStartX = e.touches[0].clientX;
-            console.log("Touch Start:", touchStartX);
-        };
-
-        const handleTouchMove = (e) => {
-            touchEndX = e.touches[0].clientX;
-        };
-
-        const handleTouchEnd = () => {
-            const swipeDistance = touchEndX - touchStartX;
-            console.log("Swipe Distance:", swipeDistance);
-
-            // On vérifie que le swipe commence bien à gauche (moins de 30px)
-            if (touchStartX > 40) {
-                console.log("Swipe ignoré (pas assez à gauche)");
-                return;
-            }
-
-            if (swipeDistance > 50) {
-                console.log("Ouvrir sidebar");
-                setHidden(false);
-            } else if (swipeDistance < -50) {
-                console.log("Fermer sidebar");
-                setHidden(true);
-            }
-        };
-
-        document.addEventListener("touchstart", handleTouchStart);
-        document.addEventListener("touchmove", handleTouchMove);
-        document.addEventListener("touchend", handleTouchEnd);
-
-        return () => {
-            document.removeEventListener("touchstart", handleTouchStart);
-            document.removeEventListener("touchmove", handleTouchMove);
-            document.removeEventListener("touchend", handleTouchEnd);
-        };
     }, []);
 
     const toggleSidebar = () => {
@@ -94,50 +51,45 @@ function Sidebar() {
         { path: "/entrepot", icon: faHome, text: "Gestion des entrepôts" },
         { path: "/commerciale", icon: faBriefcase, text: "Gestion des commerciaux" },
         { path: "/Client", icon: faUserFriends, text: "Gestion des Clients" },
-         
         { path: "/transfertAdmin", icon: faTruckLoading, text: "Gestion des Transferts" },
-                { path: "/histovad", icon: faTags, text: "Historique des commandes" },
-                { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
-                { path: "/HistoAcha", icon: "fa-tags", text: "Historique des achats" },
-                { path: "/histomad", icon: "fa-tags", text: "Historique des Sorties des Produits" },
-                        { path: "/inventaire", icon: faBox , text: "Inventaire" },
-            
+        { path: "/histovad", icon: faTags, text: "Historique des commandes" },
+        { path: "/histocad", icon: "fa-tags", text: "Historique des paiements" },
+        { path: "/HistoAcha", icon: "fa-tags", text: "Historique des achats" },
+        { path: "/histomad", icon: "fa-tags", text: "Historique des Sorties des Produits" },
+        { path: "/inventaire", icon: faBox , text: "Inventaire" },
     ];
 
     return (
-      <>
-          <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`} >
-              <button 
-                  className="btn btn-light collapse-btn" 
-                  onClick={toggleSidebar}
-              >
-                  <FontAwesomeIcon icon={collapsed ? faChevronRight : faChevronLeft} />
-              </button>
+        <aside className={`aside p-4 ${collapsed ? 'collapsed' : ''} ${hidden ? 'hidden' : ''}`}>
+            <button 
+                className="btn btn-light collapse-btn" 
+                onClick={toggleSidebar}
+            >
+                <FontAwesomeIcon icon={collapsed ? faChevronRight : faChevronLeft} />
+            </button>
 
-              {!hidden && (
-                  <>
-                      <h1 className='gradient text-center'>
-                          {collapsed ? "" : "GROSSISTE"}
-                      </h1>
+            {!hidden && (
+                <>
+                    <h1 className='gradient text-center'>
+                        {collapsed ? "" : "GROSSISTE"}
+                    </h1>
 
-                      <div className="menu ">
-                          {buttons.map((button, index) => (
-                              <Link 
-                                  to={button.path} 
-                                  key={index} 
-                                  className="btn btn-light p-3 d-flex align-items-center mb-2 sidebar-item"
-                                  
-                              >
-                                  <FontAwesomeIcon icon={button.icon} className="text-success fw-bold" />
-                                  {!collapsed && <span className="ms-2">{button.text}</span>}
-                              </Link>
-                          ))}
-                      </div>
-                  </>
-              )}
-          </aside>
-      </>
-  );
+                    <div className="menu">
+                        {buttons.map((button, index) => (
+                            <Link 
+                                to={button.path} 
+                                key={index} 
+                                className={`btn btn-light p-3 d-flex align-items-center mb-2 sidebar-item ${location.pathname === button.path ? 'active' : ''}`} 
+                            >
+                                <FontAwesomeIcon icon={button.icon} className="text-success fw-bold" />
+                                {!collapsed && <span className="ms-2">{button.text}</span>}
+                            </Link>
+                        ))}
+                    </div>
+                </>
+            )}
+        </aside>
+    );
 }
 
 export default Sidebar;

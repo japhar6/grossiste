@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "../Components/Sidebar";
-import Header from "../Components/Navbar";
+import Sidebar from "../Components/SidebarCaisse";
+import Header from "../Components/NavbarC";
 import "../Styles/Caisse.css";
 import Swal from "sweetalert2";
 import axios from "../api/axios";
