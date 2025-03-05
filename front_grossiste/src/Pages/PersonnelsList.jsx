@@ -133,7 +133,8 @@ const handleCloseModal = () => {
         return personnels.filter(personnel =>
             (!filtreNom || personnel.nom.toLowerCase().includes(filtreNom.toLowerCase())) &&
             (!filtrePoste || personnel.poste.toLowerCase().includes(filtrePoste.toLowerCase())) &&
-            (!dateEmbauche || personnel.dateEmbauche === dateEmbauche)
+            (!dateEmbauche || personnel.dateEmbauche.substring(0, 10) === dateEmbauche)
+
         );
     };
 

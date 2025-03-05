@@ -107,7 +107,7 @@ function HistoV() {
                    <th>Mode de Paiement</th>
                    
                    <th>Statut</th>
-                   <th>Fait par :</th>
+           
                    <th>Montant Total</th>
                  </tr>
                </thead>
@@ -133,7 +133,7 @@ function HistoV() {
                     </thead>
                     <tbody>
                       {filteredCommandes.map((commande) => {
-                        console.log("Commande analysée :", commande); // Debug
+                        
 
                         return (
                           <tr key={commande._id}>
@@ -141,11 +141,12 @@ function HistoV() {
                             <td>{new Date(commande.createdAt).toLocaleDateString()}</td>
                             <td>
                               <ul className="produit-list">
-                                {commande.produits.map((produit) => (
-                                  <li key={produit._id}>
-                                    {produit.produit.nom} - {produit.quantite} x {produit.prixdevente} ariary
-                                  </li>
-                                ))}
+                              {commande.produits.map((produit) => (
+  <li key={produit._id}>
+    {produit.produit?.nom || "Inconnu"} - {produit.prixdevente} ariary x  {produit.quantite}  {produit.uniteChoisie}
+  </li>
+))}
+
                               </ul>
                             </td>      
                             <td>{commande.clientId ? commande.clientId.nom : (commande.commercialId ? commande.commercialId.nom : "Inconnu")}</td>

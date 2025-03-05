@@ -307,6 +307,7 @@ function SortieStock() {
                     <th>Mode de paiement</th>
                     <th>Statut</th>
                     <th>Date</th>
+                    <th>Mode de livraison</th>
                     <th>Détails</th>
                   </tr>
                 </thead>
@@ -319,6 +320,7 @@ function SortieStock() {
                       <td>{commande.paiement ? commande.paiement.modePaiement : "à crédit"}</td>
                       <td>{commande.statut}</td>
                       <td>{commande.updatedAt ? new Date(commande.updatedAt).toLocaleDateString() : "N/A"}</td>
+                      <td>{commande.modeLivraison ? (commande.modeLivraison) : "Inconnu"}</td>
                       <td>
                         {isMobile ? (
                           <button
@@ -342,13 +344,16 @@ function SortieStock() {
                           </button>
                         )}
                         {/* Bouton pour sortie fournisseur */}
-                        <button
-                          className="btn btn-danger ms-2"
-                          onClick={() => handleSortieFournisseur(commande)}
-                          disabled={commande.statut !== 'payé'} // Désactive le bouton si la commande n'est pas livrée
-                        >
-                          Sortie Fournisseur
-                        </button>
+                        {commande.statut === 'payé' && (
+  <button
+    className="btn btn-danger ms-2"
+    onClick={() => handleSortieFournisseur(commande)}
+    disabled={commande.statut !== 'payé'} // Désactive le bouton si la commande n'est pas livrée
+  >
+    Sortie Fournisseur
+  </button>
+)}
+
                       </td>
                     </tr>
                   ))}

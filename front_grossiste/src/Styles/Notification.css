@@ -2,7 +2,7 @@
   width: 100%;
   margin: 30px auto;
   padding: 20px;
-  background: linear-gradient(135deg, #89c2ba, #78ac94); /* Dégradé bleu-violacé doux */
+  background: linear-gradient(135deg, #dadfde, #78ac94); /* Dégradé bleu-violacé doux */
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet moderne */
 }
@@ -35,17 +35,12 @@
 
 .badge {
   padding: 4px 10px; /* Réduire la taille du badge */
-  font-size: 11px; /* Réduire la taille du texte du badge */
-  position: absolute;
-  margin-left: 50%;
-  margin-top: 3vh;
-  margin-left: 68%;
 }
 .delete-button{
-  position: absolute;
-  padding: 5px;
-  margin-left: 71%;
-  margin-top: -5vh;
+  /* position: absolute; */
+  margin-top: -0.2vh;
+  
+  
 }
 
 .notification-item {
@@ -118,18 +113,8 @@
     font-size: 13px; /* Ajustement de la taille du texte des notifications */
   }
 
-  .badge {
-    padding: 4px 10px; /* Réduire la taille du badge */
-    font-size: 11px; /* Réduire la taille du texte du badge */
-    position: absolute;
-    margin-top: 7vh;
-    margin-left: 65%;
-  }
-  .delete-button{
-    position: absolute;
-    margin-left: 50%;
-    margin-top: -5vh;
-  }
+  
+  
 }
 
 @media (max-width: 480px) {

@@ -2,33 +2,33 @@ import React, { useEffect, useState } from 'react';
 import axios from '../api/axios';
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import "../Styles/Notification.css"; // N'oublie pas d'ajouter les nouveaux styles ici
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadNotifications = async () => {
       try {
-        const response = await axios.get('/api/notif/notifications'); 
-        
+        const response = await axios.get('/api/notif/notifications');
+
         // Trier les notifications par date de création (du plus récent au plus ancien)
-        const sortedNotifications = response.data.sort((a, b) => 
+        const sortedNotifications = response.data.sort((a, b) =>
           new Date(b.createdAt) - new Date(a.createdAt)
         );
-  
+
         setNotifications(sortedNotifications);
         console.log("Notifications triées :", sortedNotifications);
       } catch (error) {
         console.error('Erreur lors du chargement des notifications', error);
       }
     };
-  
+
     loadNotifications();
   }, []);
-  
+
 
   const markAsRead = async (notificationId) => {
     try {
@@ -61,22 +61,22 @@ const NotificationsPage = () => {
     } else if (notification.type === 'remise') {
       // Stocker l'`idClient` dans le localStorage
       localStorage.setItem('idClient', notification.idClient);
-  
+
       // Rediriger vers la page Client
       navigate(`/Client`);
-    } 
-    
+    }
+
     else if (notification.type === 'rupture_stock') {
-    
+
       // Rediriger vers la page Client
       navigate(`/achat`);
     }
     else if (notification.type === 'besoin-transfert') {
-    
+
       // Rediriger vers la page Client
       navigate(`/transfertAdmin`);
     }
-    
+
     else {
       navigate(`/default-page`); // Une page par défaut au cas où
     }
@@ -96,17 +96,18 @@ const NotificationsPage = () => {
             ) : (
               <ul>
                 {notifications.map((notification) => (
-                  <li
-                    key={notification._id}
-                    className={`notification-item ${notification.lue ? "lue" : "non-lue"}`}
-                    onClick={() => {
-                      markAsRead(notification._id);
-                      handleNotificationClick(notification);
-                    }}
-                    style={{ cursor: 'pointer' }}
-                  >
+                <li
+                key={notification._id}
+                className={`notification-item mt-3 ${notification.lue ? "lue" : "non-lue"
+                  }`}
+                onClick={() => {
+                  markAsRead(notification._id);
+                  handleNotificationClick(notification);
+                }}
+                style={{ cursor: "pointer" }}
+              >
                     <div className="notification-content">
-                      <div className="notification-message">
+                    <div className="notification-message p-3">
                         {/* Diviser le message et styliser le nom du client */}
                         {notification.message.split("client").map((part, index) => (
                           <React.Fragment key={index}>
@@ -124,9 +125,10 @@ const NotificationsPage = () => {
                           deleteNotification(notification._id);
                         }}
                       >
-                        &#10005; 
+                        &#10005;
                       </button>
                     </div>
+            
                   </li>
                 ))}
               </ul>

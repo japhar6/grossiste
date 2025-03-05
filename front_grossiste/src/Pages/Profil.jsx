@@ -127,7 +127,7 @@ function Profil() {
                 <div className="user-info">
                   <div className="photos-container">
                     <img
-                      src={`http://localhost:5000${user.photo}`}
+                      src={`https://api.bazariko.com${user.photo}`}
                       alt="Photo de profil"
                       className="user-photo"
                     />
@@ -198,8 +198,15 @@ function Profil() {
                           <p className="alert alert-light">
                             <strong>Embauché le:</strong> {user.createdAt}
                           </p>
-                          <button onClick={() => setIsEditing(true)}>
-                            Modifier
+                          <button onClick={() => setIsEditing(true)} disabled={loadingAction}>
+                          {loadingAction ? (
+    <>
+      <span className="spinner-border spinner-border-sm"></span> Chargement...
+    </>
+  ) : (
+ "Modifier"
+  )}
+                 
                           </button>
                         </div>
                       </>

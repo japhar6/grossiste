@@ -7,24 +7,27 @@ const DonutChart = () => {
     produitsLesPlusVendus: [],
     autresProduits: []
   });
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Effectuer la requête pour obtenir les produits les plus vendus et les autres
     axios.get('/api/paiement/prod')
       .then(response => {
         const { produitsLesPlusVendus, autresProduits } = response.data;
 
-        // Mettre à jour l'état avec les données reçues
         setData({
           produitsLesPlusVendus,
           autresProduits
         });
+
+        setLoading(false);
       })
       .catch(error => {
         console.error("Erreur lors de la récupération des produits les plus vendus:", error);
+        setErrorMessage("Impossible de charger les données.");
+        setLoading(false);
       });
   }, []);
-
   // Préparer les données pour le graphique
   const options = {
     chart: {
@@ -107,16 +110,24 @@ const DonutChart = () => {
 
   return (
     <div>
-      {data.produitsLesPlusVendus.length > 0 ? (
-        <Chart options={{...options, labels}} series={series} type="donut" height="400" />
-      ) : (
-        <div className="loading-container" style={{height:'500px'}}>
+    {loading ? (
+      <div className="loading-container" style={{ height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Chargement...</span>
         </div>
       </div>
-      )}
-    </div>
+    ) : errorMessage ? (
+      <div style={{ height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'red' }}>
+        <p>{errorMessage}</p>
+      </div>
+    ) : data.produitsLesPlusVendus.length > 0 || data.autresProduits.length > 0 ? (
+      <Chart options={{ ...options, labels }} series={series} type="donut" height="400" />
+    ) : (
+      <div style={{ height: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p>Aucune donnée disponible</p>
+      </div>
+    )}
+  </div>
   );
 };
 

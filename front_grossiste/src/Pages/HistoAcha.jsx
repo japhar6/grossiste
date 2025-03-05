@@ -81,7 +81,7 @@ function HistoAcha() {
             } catch (error) {
                 console.error("Erreur lors de la récupération des paniers:", error);
                 setLoadingEntrepots(false);
-                Swal.fire("Erreur", "Impossible de récupérer les paniers.", "error");
+               
             }
         };
 

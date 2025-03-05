@@ -29,12 +29,12 @@ function VisualiserInventaires() {
         if (Array.isArray(data) && data.length > 0) {
           setEntrepots(data);
         } else {
-          Swal.fire({
-            title: "Erreur",
-            text: "Impossible de récupérer les entrepôts.",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
+        Swal.fire({
+    title: "Info",
+                                text: "Il n'y a pas encore de fournisseurs ! Veuillez en ajouter",
+                                icon: "info",
+                                confirmButtonText: "OK",
+                            });
         }
       } catch (error) {
         Swal.fire({

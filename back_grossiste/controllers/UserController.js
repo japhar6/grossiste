@@ -143,40 +143,49 @@ exports.getUserById = async (req, res) => {
 };
 
 
+
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { nom, email, photo, password,numero_cin} = req.body;  
+    const { nom, email, photo, password, numero_cin } = req.body;
 
- 
+    // Trouver l'utilisateur existant
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "❌ Utilisateur introuvable." });
     }
 
- 
-
-    // Création d'un objet avec les données à mettre à jour
+    // Création de l'objet de mise à jour
     const updatedData = {
-      nom: nom || currentUser.nom, 
-      numero_cin: numero_cin || currentUser.numero_cin,  
-      email: email || currentUser.email,  // Met à jour l'email uniquement si fourni
-      photo: req.file ? `/uploads/users/${req.file.filename}` : currentUser.photo,  // Mise à jour de la photo si une nouvelle est envoyée
+      nom: nom || currentUser.nom,
+      numero_cin: numero_cin || currentUser.numero_cin,
+      email: email || currentUser.email,
+      photo: req.file ? `/uploads/users/${req.file.filename}` : currentUser.photo,
     };
 
-    // Si un mot de passe est fourni, on le hache et on l'ajoute aux données à mettre à jour
+    // Vérifier si un nouveau mot de passe est fourni
     if (password) {
-      const salt = await bcrypt.genSalt(10);  // Création du sel
-      updatedData.password = await bcrypt.hash(password, salt);  // Hachage du mot de passe
+      // Vérifier si le mot de passe envoyé est le même que celui en base (donc déjà haché)
+      const isSamePassword = await bcrypt.compare(password, currentUser.password);
+
+      if (!isSamePassword) {
+        const salt = await bcrypt.genSalt(10);
+        updatedData.password = await bcrypt.hash(password, salt);
+      } else {
+        updatedData.password = currentUser.password; // Ne pas re-hacher si c'est le même
+      }
+    } else {
+      updatedData.password = currentUser.password; // Garder l'ancien mot de passe si aucun n'est envoyé
     }
 
-    // Mise à jour de l'utilisateur
+    // Mettre à jour l'utilisateur
     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, { new: true });
 
     res.status(200).json({
       message: "✅ Profil mis à jour avec succès.",
       user: updatedUser
     });
+
   } catch (error) {
     res.status(500).json({ message: "❌ Erreur lors de la mise à jour du profil.", error });
   }

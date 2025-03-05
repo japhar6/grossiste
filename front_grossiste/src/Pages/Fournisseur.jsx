@@ -233,7 +233,8 @@ function Fournisseur() {
                         <td>
                           {f.logo ? (
                             <img
-                              src={`http://localhost:5000${f.logo}`}
+                            src={`https://api.bazariko.com${f.logo}`}
+                             
                               alt="Logo fournisseur"
                               width="50"
                               height="50"
