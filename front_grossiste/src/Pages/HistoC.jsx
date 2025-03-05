@@ -12,11 +12,12 @@ function HistoC() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-
+  const [filtreNomClientCommercial, setFiltreNomClientCommercial] = useState("");
   const notificationSound = new Audio(audio);
   const [filtreType, setFiltreType] = useState("both");
   const [date, setDate] = useState("");
   const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
+ const [filtreNomProduit, setFiltreNomProduit] = useState(""); // État pour le nom du produit
 
   const caissierId = localStorage.getItem("userid");
   const nom = localStorage.getItem('nom');
@@ -59,8 +60,13 @@ function HistoC() {
       const matchesModePaiement = filtreModePaiement === "all" || (paiement.modePaiement == filtreModePaiement);
       const matchStatut = statutfilter === "all" || (paiement.statut === statutfilter);
       const matchesNomCaissier = !filtreNomCaissier || (paiement.idCaissier && paiement.idCaissier.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
-
-      return matchesType && matchesDate && matchesModePaiement && matchStatut && matchesNomCaissier;
+      const matchesClientOrCommercial = !filtreNomClientCommercial ||
+      (paiement.clientNom && paiement.clientNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase())) ||
+      (paiement.commercialNom && paiement.commercialNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase()));
+      const matchesNomProduit = !filtreNomProduit || paiement.commandeId.produits.some(produit =>
+        produit.produit.nom.toLowerCase().includes(filtreNomProduit.toLowerCase())
+      );
+      return matchesType && matchesNomProduit && matchesClientOrCommercial&& matchesDate && matchesModePaiement && matchStatut && matchesNomCaissier;
     })
       .sort((a, b) =>
         triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
@@ -220,7 +226,15 @@ function HistoC() {
                       <option value="a credit">À Crédit</option>
                     </select>
                   </label>
-                </div>
+                </div> <div className="col-md-4 mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Filtrer par produit"
+                      value={filtreNomProduit}
+                      onChange={e => setFiltreNomProduit(e.target.value)}
+                    />
+                  </div>
 
                 <div className="flex-fill">
                   <label className="form-label w-100">
@@ -233,6 +247,15 @@ function HistoC() {
                     </select>
                   </label>
                 </div>
+                <div className="col-md-4 mb-3">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Filtrer par nom du client"
+                      value={filtreNomClientCommercial}
+                      onChange={e => setFiltreNomClientCommercial(e.target.value)}
+                    />
+                  </div>
 
                 <div className="flex-fill">
                   <label className="form-label w-100">
@@ -287,9 +310,13 @@ function HistoC() {
                       <tr>
                         <th>Reference Facture</th>
                         <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
+                       
+                 
+                     
+                        <th>Produits</th>
                         <th>Montant Payé</th>
-                        <th>Mode de payement</th>
                         <th>Statut</th>
+                        <th>Mode de payement</th>
                         <th>Fait par :</th>
                         <th>Date de paiement</th>
                       </tr>
@@ -299,6 +326,17 @@ function HistoC() {
                         <tr key={paiement._id} onClick={() => handleRowClick(paiement)}>
                           <td>{paiement.commandeId?.referenceFacture}</td>
                           <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
+                          
+                          <td className="text-noir" style={{ color: "black" }}>
+                              <ul className="produit-list">
+                                {paiement.commandeId.produits.map((produit) => (
+                                  <li key={produit._id}>
+                                    {produit.produit?.nom || "Inconnu"} - {produit.quantite} x {produit.prixdevente} ariary
+                                  </li>
+                                ))}
+
+                              </ul>
+                            </td>
                           <td>{paiement.montantPaye} ariary</td>
                           <td>
                             {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
