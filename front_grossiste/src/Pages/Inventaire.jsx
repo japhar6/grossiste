@@ -185,7 +185,11 @@ function VisualiserInventaires() {
                           <td>{inventaire.quantitéFinale}</td>
                           <td>{inventaire.quantitéInitiale - inventaire.quantitéFinale}</td>
                           <td>{inventaire.raisonAjustement}</td>
-                          <td>{new Date(inventaire.dateInventaire).toLocaleDateString()}</td>
+                          <td>{new Date(inventaire.dateInventaire).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}</td>
                         </tr>
                       ))}
                     </tbody>

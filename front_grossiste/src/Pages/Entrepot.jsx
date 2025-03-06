@@ -179,7 +179,11 @@ function Entrepot() {
                           <td>{entrepot.localisation}</td>
                           <td>{entrepot.type}</td>
                           <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
-                          <td>{entrepot.dateCreation}</td>
+                          <td>{new Date(entrepot.dateCreation).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}</td>
                           <td>
                             <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>
 

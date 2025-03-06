@@ -17,12 +17,17 @@ function HistoC() {
   const [filtreType, setFiltreType] = useState("both");
   const [date, setDate] = useState("");
   const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
- const [filtreNomProduit, setFiltreNomProduit] = useState(""); // État pour le nom du produit
+  const [filtreNomProduit, setFiltreNomProduit] = useState(""); // État pour le nom du produit
 
   const caissierId = localStorage.getItem("userid");
   const nom = localStorage.getItem('nom');
   const [filtreModePaiement, setFiltreModePaiement] = useState("all");
   const [statutfilter, setstatufilter] = useState("all");
+  const [dateDebut, setDateDebut] = useState("");
+  const [dateFin, setDateFin] = useState("");
+  const [filtrerParDate, setFiltrerParDate] = useState(false);
+
+
 
   useEffect(() => {
     const fetchPaiements = async () => {
@@ -56,21 +61,22 @@ function HistoC() {
 
     return allPaiements.filter(paiement => {
       const matchesType = filtreType === "both" || paiement.type === filtreType;
-      const matchesDate = !date || new Date(paiement.createdAt).toLocaleDateString() === new Date(date).toLocaleDateString();
+      const matchesNomProduit = !filtreNomProduit || paiement.commandeId.produits.some(produit =>
+        produit.produit.nom.toLowerCase().includes(filtreNomProduit.toLowerCase())
+      );
+      const matchesDate = (!dateDebut || new Date(paiement.createdAt) >= new Date(dateDebut)) &&
+        (!dateFin || new Date(paiement.createdAt) <= new Date(dateFin));
       const matchesModePaiement = filtreModePaiement === "all" || (paiement.modePaiement == filtreModePaiement);
       const matchStatut = statutfilter === "all" || (paiement.statut === statutfilter);
       const matchesNomCaissier = !filtreNomCaissier || (paiement.idCaissier && paiement.idCaissier.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
       const matchesClientOrCommercial = !filtreNomClientCommercial ||
-      (paiement.clientNom && paiement.clientNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase())) ||
-      (paiement.commercialNom && paiement.commercialNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase()));
-      const matchesNomProduit = !filtreNomProduit || paiement.commandeId.produits.some(produit =>
-        produit.produit.nom.toLowerCase().includes(filtreNomProduit.toLowerCase())
-      );
-      return matchesType && matchesNomProduit && matchesClientOrCommercial&& matchesDate && matchesModePaiement && matchStatut && matchesNomCaissier;
-    })
-      .sort((a, b) =>
-        triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
-      );
+        (paiement.clientNom && paiement.clientNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase())) ||
+        (paiement.commercialNom && paiement.commercialNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase()));
+
+      return matchesType && matchesNomProduit && matchesClientOrCommercial && matchesDate && matchesModePaiement && matchStatut && matchesNomCaissier;
+    }).sort((a, b) =>
+      triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
+    );
   };
 
 
@@ -87,7 +93,7 @@ function HistoC() {
         title: "⚠️ Paiements en retard !",
         text: `Il y a ${paiementsEnRetard.length} paiement(s) à crédit arrivés à échéance.`,
         icon: "warning",
-        confirmButtonText: "Voir la liste",
+        confirmButtonText: "Ok",
       }); notificationSound.play();
     }
   }, [filteredPaiements]);
@@ -167,8 +173,42 @@ function HistoC() {
 
     openInvoices();
   };
-
-
+  const handlePrint = () => {
+    const printContent = document.getElementById("table-to-print").outerHTML;
+    const printWindow = window.open('', '', 'height=500,width=800');
+    printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+    printWindow.document.write(`
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          padding: 0;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+        th, td {
+          padding: 8px;
+          text-align: left;
+          border: 1px solid #ddd;
+        }
+        th {
+          background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+      </style>
+    `);
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>Inventaires filtrés</h1>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   return (
     <>
@@ -180,19 +220,19 @@ function HistoC() {
           <div className="p-3 content center">
             <div className="mini-stat p-3">
               <h6 className="alert alert-info text-start">Historique des Paiements </h6>
-
               <div className="filter-container mb-3 d-flex flex-wrap justify-content-between gap-2">
-                <div className="flex-fill">
-                  <label className="form-label w-100">
-                    <select className="form-select uniform-size" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
-                      <option value="">Filtrer par type:</option>
-                      <option value="both">Les deux</option>
-                      <option value="client">Paiements Clients</option>
-                      <option value="commercial">Paiements Commerciaux</option>
-                    </select>
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    id="filtrerParDate"
+                    checked={filtrerParDate}
+                    onChange={e => setFiltrerParDate(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="filtrerParDate">
+                    Filtrer par date
                   </label>
                 </div>
-
                 <div className="flex-fill">
                   <label className="form-label w-100">
                     <input
@@ -204,10 +244,18 @@ function HistoC() {
                     />
                   </label>
                 </div>
-
                 <div className="flex-fill">
                   <label className="form-label w-100">
-                    <select className="form-select uniform-size" value={triMontant} onChange={e => setTriMontant(e.target.value)}>
+                    <select className="form-control uniform-size" value={filtreType} onChange={e => setFiltreType(e.target.value)}>
+                      <option value="both">Filtrer par type:</option>
+                      <option value="client">Paiements Clients</option>
+                      <option value="commercial">Paiements Commerciaux</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="flex-fill">
+                  <label className="form-label w-100">
+                    <select className="form-control uniform-size" value={triMontant} onChange={e => setTriMontant(e.target.value)}>
                       <option value="">Trier par montant:</option>
                       <option value="desc">Montant décroissant</option>
                       <option value="asc">Montant croissant</option>
@@ -217,7 +265,7 @@ function HistoC() {
 
                 <div className="flex-fill">
                   <label className="form-label w-100">
-                    <select className="form-select uniform-size" value={filtreModePaiement} onChange={e => setFiltreModePaiement(e.target.value)}>
+                    <select className="form-control uniform-size" value={filtreModePaiement} onChange={e => setFiltreModePaiement(e.target.value)}>
 
                       <option value="all">Tous</option>
                       <option value="espèce">Espèce</option>
@@ -226,21 +274,21 @@ function HistoC() {
                       <option value="a credit">À Crédit</option>
                     </select>
                   </label>
-                </div> <div className="col-md-4 mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Filtrer par produit"
-                      value={filtreNomProduit}
-                      onChange={e => setFiltreNomProduit(e.target.value)}
-                    />
-                  </div>
+                </div>
+                <div className="col-md-4 mb-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Filtrer par produit"
+                    value={filtreNomProduit}
+                    onChange={e => setFiltreNomProduit(e.target.value)}
+                  />
+                </div>
 
                 <div className="flex-fill">
                   <label className="form-label w-100">
-                    <select className="form-select uniform-size" value={statutfilter} onChange={e => setstatufilter(e.target.value)}>
-                      <option value="">Filtrer par statut:</option>
-                      <option value="all">Tous</option>
+                    <select className="form-control uniform-size" value={statutfilter} onChange={e => setstatufilter(e.target.value)}>
+                      <option value="all">Filtrer par statut:</option>
                       <option value="payé complet">Payé Complet</option>
                       <option value="payé partielle">Paiement Partielle</option>
                       <option value="Produits retourner">Produits retourner</option>
@@ -248,14 +296,14 @@ function HistoC() {
                   </label>
                 </div>
                 <div className="col-md-4 mb-3">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Filtrer par nom du client"
-                      value={filtreNomClientCommercial}
-                      onChange={e => setFiltreNomClientCommercial(e.target.value)}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Filtrer par nom du client"
+                    value={filtreNomClientCommercial}
+                    onChange={e => setFiltreNomClientCommercial(e.target.value)}
+                  />
+                </div>
 
                 <div className="flex-fill">
                   <label className="form-label w-100">
@@ -268,17 +316,45 @@ function HistoC() {
                     />
                   </label>
                 </div>
+                {filtrerParDate && (
+                  <>
+                    <div className="flex-fill">
+                      <label className="form-label w-100">
+                        <input
+                          type="date"
+                          className="form-control uniform-size"
+                          value={dateDebut}
+                          onChange={e => setDateDebut(e.target.value)}
+                          placeholder="Filtrer par date début"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex-fill">
+                      <label className="form-label w-100">
+                        <input
+                          type="date"
+                          className="form-control uniform-size"
+                          value={dateFin}
+                          onChange={e => setDateFin(e.target.value)}
+                          placeholder="Filtrer par date fin"
+                        />
+                      </label>
+                    </div>
+                  </>
+                )}
               </div>
               <div>
                 <Link to='/histodecaisse' >
-                  <button>Voir l'historique de decaissement</button>
+                  <button className=" m-2">Historique de decaissement</button>
                 </Link>
                 <Link to='/annulerFact' >
-                  <button>Annuler une Commande</button>
+                  <button className=" m-2">Annuler une Commande</button>
                 </Link>
+                <button className="btn btn-primary m-2 w-25" onClick={handlePrint}>Imprimer</button>
               </div>
               {filteredPaiements.length === 0 ? (
-                <table className="tableZA table-striped">
+                <table className="tableZA table-striped" id="table-to-print">
                   <thead className="table-light">
                     <tr>
                       <th>Reference Facture</th>
@@ -310,9 +386,9 @@ function HistoC() {
                       <tr>
                         <th>Reference Facture</th>
                         <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
-                       
-                 
-                     
+
+
+
                         <th>Produits</th>
                         <th>Montant Payé</th>
                         <th>Statut</th>
@@ -322,42 +398,56 @@ function HistoC() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPaiements.map((paiement) => (
-                        <tr key={paiement._id} onClick={() => handleRowClick(paiement)}>
-                          <td>{paiement.commandeId?.referenceFacture}</td>
-                          <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
-                          
-                          <td className="text-noir" style={{ color: "black" }}>
-                              <ul className="produit-list">
-                                {paiement.commandeId.produits.map((produit) => (
-                                  <li key={produit._id}>
-                                    {produit.produit?.nom || "Inconnu"} - {produit.quantite} x {produit.prixdevente} ariary
-                                  </li>
-                                ))}
+                      {filteredPaiements.map((paiement) => {
+                        const estEnRetard = paiement.modePaiement === "a credit" &&
+                          paiement.dateLimiteCredit &&
+                          new Date(paiement.dateLimiteCredit) <= new Date();
 
+                        return (
+                          <tr key={paiement._id} className={estEnRetard ? "clignotant" : ""} onClick={() => handleRowClick(paiement)}>
+                            <td>{paiement.commandeId?.referenceFacture}</td>
+                            <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
+
+                            <td className="text-noir" style={{ color: "black" }}>
+                              <ul className="produit-list">
+                                {paiement.commandeId?.produits?.length > 0 ? (
+                                  paiement.commandeId.produits.map((produit) => (
+                                    <li key={produit._id}>
+                                      {produit.produit?.nom || "Inconnu"} - {produit.quantite} x {produit.prixdevente} ariary
+                                    </li>
+                                  ))
+                                ) : (
+                                  <li>Aucun produit</li>
+                                )}
                               </ul>
                             </td>
-                          <td>{paiement.montantPaye} ariary</td>
-                          <td>
-                            {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
-                            {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
-                              <span style={{ color: "red", fontWeight: "bold" }}>
-                                📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
-                              </span>
-                            )}
-                            {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
-                              <span style={{ color: "blue", fontWeight: "bold" }}>
-                                🔢 Réf : {paiement.referencePaiement}
-                              </span>
-                            )}
-                          </td>
-                          <td>{paiement.statut}</td>
-                          <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
-                          <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
-                        </tr>
 
-                      ))}
+                            <td>{paiement.montantPaye} ariary</td>
+                            <td>
+                              {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
+                              {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
+                                <span style={{ color: "red", fontWeight: "bold" }}>
+                                  📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
+                                </span>
+                              )}
+                              {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+                                <span style={{ color: "blue", fontWeight: "bold" }}>
+                                  🔢 Réf : {paiement.referencePaiement}
+                                </span>
+                              )}
+                            </td>
+                            <td>{paiement.statut}</td>
+                            <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
+                            <td>{new Date(paiement.createdAt).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
+
                   </table>
                 </div>
               )}

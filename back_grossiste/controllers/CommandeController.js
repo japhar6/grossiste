@@ -131,15 +131,6 @@ exports.ajouterCommande = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
-
-
 // Récupérer toutes les commandes
 exports.getCommandes = async (req, res) => {
     try {

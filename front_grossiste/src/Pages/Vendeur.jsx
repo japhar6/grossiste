@@ -54,7 +54,6 @@ function PriseCommande() {
       if (selectedPerson) {
         try {
           const response = await axios.get(`/api/client/recuperer/${selectedPerson}`);
-          setRemisesClient(response.data.remises);  // Récupère les remises du client
 
           // Vérifie quel type de remise existe et met à jour le typeRemise
           if (response.data.remises.remiseGlobale > 0) {
@@ -291,52 +290,6 @@ function PriseCommande() {
 
   console.log("Total Commande Calculé:", totalCommande);
 
-
-
-  const valeurRemise = typeRemise === "remiseGlobale"
-    ? remisesClient?.remiseGlobale
-    : typeRemise === "remiseFixe"
-      ? remisesClient?.remiseFixe
-      : typeRemise === "remiseParProduit"
-        ? remisesClient?.remiseParProduit
-        : 0;
-
-  const calculerPrixApresRemise = (item, typeRemise, valeurRemise) => {
-
-
-    // Remise par produit
-    if (typeRemise === 'remiseParProduit') {
-      return item.prix - valeurRemise; // Appliquer la remise par produit
-
-    }
-
-    // Remise globale
-    if (typeRemise === 'remiseGlobale') {
-      return item.prix; // Pas besoin de changement ici, la remise sera appliquée sur le total
-    }
-
-    // Remise fixe (appliquée après)
-    return item.prix;
-  };
-
-  const calculerTotalApresRemise = (commande, typeRemise, valeurRemise) => {
-    if (typeRemise === 'remiseFixe') {
-      // Appliquer la remise fixe sur le total de la commande
-      return commande.reduce((total, item) => total + (item.prixdevente * item.quantite), 0) - valeurRemise;
-    } else if (typeRemise === 'remiseParProduit') {
-      // Appliquer la remise par produit
-      return commande.reduce((total, item) => {
-        const prixApresRemise = calculerPrixApresRemise(item, typeRemise, valeurRemise);
-        return total + (prixApresRemise * item.quantite); // Appliquer la remise par produit sur la quantité
-      }, 0);
-    } else if (typeRemise === 'remiseGlobale') {
-      // Appliquer la remise globale sur le total de la commande
-      return commande.reduce((total, item) => total + (item.prixdevente * item.quantite), 0) - (commande.reduce((total, item) => total + (item.prixdevente * item.quantite), 0) * (valeurRemise / 100));
-    }
-    return commande.reduce((total, item) => total + (item.prixdevente * item.quantite), 0); // Aucun changement si pas de remise
-  };
-
-  const totalFinal = calculerTotalApresRemise(commande, typeRemise, valeurRemise);
 
   const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
     console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
@@ -805,21 +758,6 @@ function PriseCommande() {
                       </div>
                     </div>
                   </div>
-
-
-                )}
-
-
-
-
-
-                {type === "client" && remisesClient && typeRemise && (
-                  <div className="remises-info mt-3 m-2">
-                    <h6>Type de remise du client :</h6>
-                    {typeRemise === "remiseGlobale" && <label>Remise Globale : {remisesClient.remiseGlobale}%</label>}
-                    {typeRemise === "remiseFixe" && <label>Remise Fixe : {remisesClient.remiseFixe} Ariary</label>}
-                    {typeRemise === "remiseParProduit" && <label>Remise par Produit : {remisesClient.remiseParProduit}Ariary</label>}
-                  </div>
                 )}
               </div>
 
@@ -946,8 +884,6 @@ function PriseCommande() {
                                       )
                                     }
                                   />
-
-
                                 </div>
                               </td>
                             </tr>
@@ -977,7 +913,6 @@ function PriseCommande() {
                       <th className="bg-success text-light">Quantité</th>
                       <th className="bg-success text-light">Unité</th>
                       <th className="bg-success text-light">Prix Unitaire</th>
-                      <th className="bg-success text-light">Prix Unitaire après remise</th>
                       <th className="bg-success text-light">Total</th>
                       <th className="bg-success text-light">Action</th>
                     </tr>
@@ -989,30 +924,24 @@ function PriseCommande() {
                         <td>{item.quantite}</td>
                         <td>{item.uniteChoisie}</td>
                         <td>{item.prixdevente} Ariary</td>
-                        <td>{calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
-                        <td>{item.quantite * calculerPrixApresRemise(item, typeRemise, valeurRemise)} Ariary</td>
-      <td>
-        <button
-          className="btn btn-danger btn-sm"
-          onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
-        >
-          <i className="fa fa-trash"></i>
-        </button>
-  <input type="checkbox" className="checkbox-large mt-6" />
+                        <td>{(item.quantite) * (item.prixdevente)} Ariary</td>
+                        <td>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
+                          >
+                            <i className="fa fa-trash"></i>
+                          </button>
                         </td >
                       </tr >
                     ))
-}
+                    }
                   </tbody >
                 </table >
               </div >
 
 
               <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
-              <h5 className="total" style={{ width: 'auto' }}>
-
-                Total après remise: {calculerTotalApresRemise(commande, typeRemise, valeurRemise, totalCommande)} Ariary
-              </h5>
               <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }} onClick={creerCommande} disabled={loadingAction}>
 
                 {loadingAction ? (

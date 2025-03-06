@@ -114,6 +114,42 @@ function HistoV() {
           : valueB.toString().localeCompare(valueA.toString());
       }
     });
+    const handlePrint = () => {
+      const printContent = document.getElementById("table-to-print").outerHTML;
+      const printWindow = window.open('', '', 'height=500,width=800');
+      printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+      printWindow.document.write(`
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+          }
+          th {
+            background-color: #f4f4f4;
+          }
+          tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+        </style>
+      `);
+      printWindow.document.write('</head><body>');
+      printWindow.document.write('<h1>Inventaires filtrés</h1>');
+      printWindow.document.write(printContent);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.print();
+    };
 
 
   return (
@@ -131,17 +167,17 @@ function HistoV() {
                 <div className="row">
                   {/* Filtre intervalle de dates */}
                   <div className="d-flex align-items-center">
-    <input
-      type="checkbox"
-      className="form-check-input me-2 custom-checkbox"
-      id="dateRangeFilter"
-      checked={isDateRange}
-      onChange={(e) => setIsDateRange(e.target.checked)}
-    />
-    <label className="form-check-label" htmlFor="dateRangeFilter">
-      Filtrer par intervalle de dates
-    </label>
-  </div>
+                    <input
+                      type="checkbox"
+                      className="form-check-input me-2 custom-checkbox"
+                      id="dateRangeFilter"
+                      checked={isDateRange}
+                      onChange={(e) => setIsDateRange(e.target.checked)}
+                    />
+                    <label className="form-check-label" htmlFor="dateRangeFilter">
+                      Filtrer par intervalle de dates
+                    </label>
+                  </div>
 
 
                   {/* Champ de date spécifique */}
@@ -247,7 +283,7 @@ function HistoV() {
                     </label>
                   </div>
                   {/* Filtrer par nom du client ou commercial */}
-                  <div className="col-md-4 mb-3">
+                  <div className="col-md-4 mb-3 center">
                     <input
                       type="text"
                       className="form-control"
@@ -256,22 +292,21 @@ function HistoV() {
                       onChange={e => setFiltreNomClientCommercial(e.target.value)}
                     />
                   </div>
+                  <button className="btn btn-primary w-25 m-2" onClick={handlePrint}>Imprimer</button>
                 </div>
               </div>
 
 
               {filteredCommandes.length === 0 ? (
-                <table className="table-striped">
+                <table className="table-striped" id="table-to-print">
                   <thead>
                     <tr>
                       <th>Reference du Commande</th>
                       <th>Date de Commande</th>
                       <th>Produits</th>
-                      <th>Nom du client/commerciale</th>
-
-
+                      <th>Client & Commerciale</th>
                       <th>Statut</th>
-                      <th>Fait par le vendeur :</th>
+                      <th>Vendeur</th>
                       <th>Montant Total</th>
                     </tr>
                   </thead>
@@ -285,11 +320,7 @@ function HistoV() {
                   <table className="table-striped">
                     <thead>
                       <tr>
-                        <th>
-
-                          Référence de Commande
-
-                        </th>
+                        <th>Référence de Commande</th>
                         <th>
                           <span
                             style={{ cursor: "pointer", color: 'white' }}
@@ -311,12 +342,12 @@ function HistoV() {
                               setOrder(order === "asc" ? "desc" : "asc");
                             }}
                           >
-                            Nom du Client/Commercial{" "}
+                            Client/Commercial{" "}
                             {orderBy === "nom" && (order === "asc" ? "↑" : "↓")}
                           </span>
                         </th>
                         <th>Statut</th>
-                        <th>Fait par le Vendeur</th>
+                        <th>Vendeur</th>
                         <th>Mode de Livraison</th>
                         <th>
                           <span
@@ -354,12 +385,8 @@ function HistoV() {
                             <td>
                               {commande.clientId?.nom || commande.commercialId?.nom || "Inconnu"}
                             </td>
-
-
-
                             <td>{commande.statut}</td>
                             <td>{commande.vendeurId?.nom || "Inconnu"}</td>
-
                             <td>{commande.modeLivraison ? commande.modeLivraison : "Non Spécifié"} </td>
                             <td>{commande.totalGeneral} ariary</td>
                           </tr>

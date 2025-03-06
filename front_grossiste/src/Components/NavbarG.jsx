@@ -61,7 +61,7 @@ function Header() {
                
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="/profilg">{email}</a>
+                <a className="nav-link" href="/ProfilG">{email}</a>
               </li>
        
               <li

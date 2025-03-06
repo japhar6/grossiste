@@ -64,9 +64,7 @@ const HistoriqueDecaissementPage = () => {
                         <th>Montant</th>
                         <th>Période</th>
                         <th>Mode</th>
-
                         <th>Référence</th>
-                        <th>Fait par</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -74,7 +72,7 @@ const HistoriqueDecaissementPage = () => {
                         historique.map((decaissement) => (
                           <tr key={decaissement.id}>
                             <td>{new Date(decaissement.date).toLocaleDateString()}</td>
-                            <td>{decaissement.montant}€</td>
+                            <td>{decaissement.montant}Ariary</td>
                             <td>{decaissement.periode}</td>
                             <td>{decaissement.mode}</td>
                             <td>{decaissement.reference || '-'}</td>

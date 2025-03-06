@@ -92,6 +92,42 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
     return dateB - dateA; // Tri décroissant
   }
 });
+const handlePrint = () => {
+  const printContent = document.getElementById("table-to-print").outerHTML;
+  const printWindow = window.open('', '', 'height=500,width=800');
+  printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+  printWindow.document.write(`
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th, td {
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #ddd;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    </style>
+  `);
+  printWindow.document.write('</head><body>');
+  printWindow.document.write('<h1>Inventaires filtrés</h1>');
+  printWindow.document.write(printContent);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+};
 
   return (
     <main className="center">
@@ -107,13 +143,13 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
   <form className="center">
     <input 
       type="text" 
-      className="form-control p-1 mt-2 m-1"  // Réduire le padding et la marge
+      className="form-control m-2"  // Réduire le padding et la marge
       placeholder="Recherche de commande" 
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
     />
     <select 
-      className="form-control mt-2 m-1 p-1"  // Réduire le padding et la marge
+      className="form-control m-2"  // Réduire le padding et la marge
       value={clientType} 
       onChange={(e) => setClientType(e.target.value)}
     >
@@ -124,14 +160,15 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
     
     <input 
       type="date" 
-      className="form-control mt-2 m-1 p-1" // Réduire le padding et la marge
+      className="form-control m-2" // Réduire le padding et la marge
       value={searchDate} 
       onChange={(e) => setSearchDate(e.target.value)}
     />
+    <button className="btn btn-primary m-2" onClick={handlePrint}>Imprimer</button>
   </form>
 </div>
 <div className="table-container" style={{ overflowX: 'hidden',overflowY:'auto' }}>
-          <table className="tableMa table-striped mt-3">
+          <table className="tableMa table-striped mt-3" id="table-to-print">
             <thead>
               <tr>
               <th>{isMobile ? "Réf Fact" : "Référence facture"}</th>

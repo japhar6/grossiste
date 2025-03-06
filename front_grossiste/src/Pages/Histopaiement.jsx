@@ -124,38 +124,51 @@ function HistoC() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredPaiements.map((paiement) => (
-                        <tr key={paiement._id}>
-                          <td>{paiement.commandeId?.referenceFacture}</td>
-                          <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
-                          <td>{paiement.montantPaye} ariary</td>
-                    
-                          <td>{paiement.statut}</td>
-                          <td>
-  {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"} 
-  {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
-    <span style={{ color: "red", fontWeight: "bold" }}>
-      {" "} 📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
-    </span>
-  )}
-  {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
-    <span style={{ color: "blue", fontWeight: "bold" }}>
-      {" "} 🔢 Réf : {paiement.referencePaiement}
-    </span>
-  )}
-</td>
-  <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
-                          <td>
-                            <select className="form-control" onChange={(e) => handleFactureChange(e, paiement._id)}>
-                              <option>Selectionner la facture</option>
-                              <option value="factureNormal">Facture normale</option>
-                              <option value="Remise">Avec Remise</option>
-                              <option value="">Sans prix</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+  {filteredPaiements.map((paiement) => {
+    const estEnRetard = paiement.modePaiement === "a credit" &&
+      paiement.dateLimiteCredit &&
+      new Date(paiement.dateLimiteCredit) <= new Date();
+
+    return (
+      <tr key={paiement._id} className={estEnRetard ? "clignotant" : ""} onClick={() => handleRowClick(paiement)}>
+        <td>{paiement.commandeId?.referenceFacture}</td>
+        <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
+
+        <td className="text-noir" style={{ color: "black" }}>
+          <ul className="produit-list">
+            {paiement.commandeId?.produits?.length > 0 ? (
+              paiement.commandeId.produits.map((produit) => (
+                <li key={produit._id}>
+                  {produit.produit?.nom || "Inconnu"} - {produit.quantite} x {produit.prixdevente} ariary
+                </li>
+              ))
+            ) : (
+              <li>Aucun produit</li>
+            )}
+          </ul>
+        </td>
+
+        <td>{paiement.montantPaye} ariary</td>
+        <td>
+          {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
+          {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
+            <span style={{ color: "red", fontWeight: "bold" }}>
+              📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
+            </span>
+          )}
+          {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+            <span style={{ color: "blue", fontWeight: "bold" }}>
+              🔢 Réf : {paiement.referencePaiement}
+            </span>
+          )}
+        </td>
+        <td>{paiement.statut}</td>
+        <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
+        <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
+      </tr>
+    );
+  })}
+</tbody>
                   </table>
                 </div>
               )}
