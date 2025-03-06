@@ -6,7 +6,7 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import { Modal, Button } from "react-bootstrap";
 import { Link } from 'react-router-dom';
-
+import pardefaut from "../assets/imageprofil.jpg";
 
 function Personnels() {
   const [users, setUsers] = useState([]);
@@ -465,7 +465,7 @@ function Personnels() {
               <div className="photo-cont mb-5 center">
                 <img          
                 
-                src={`https://api.bazariko.com${selectedUser.photo}`}
+                src={selectedUser.photo ?`https://api.bazariko.com${selectedUser.photo}`:pardefaut}
                
                   alt="Photo de profil"
                   className="user-photo"
@@ -531,8 +531,10 @@ function Personnels() {
           {selectedUser && (
             <form onSubmit={handleEditSubmit}>
               <div className="photo-conter text-center">
-                <img
-                 src={`https://api.bazariko.com${selectedUser.photo}`}
+              <img          
+                
+                src={selectedUser.photo ?`https://api.bazariko.com${selectedUser.photo}`:pardefaut}
+               
                   alt="Photo de profil"
                   className="user-photo"
                 />

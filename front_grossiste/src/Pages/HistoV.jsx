@@ -385,7 +385,7 @@ function HistoV() {
                         return (
                           <tr key={commande._id}>
                             <td>{commande.referenceFacture}</td>
-                            <td>{new Date(commande.createdAt).toLocaleDateString()}</td>
+                            <td>{new Date(commande.createdAt).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</td>
                             <td className="text-noir" style={{ color: "black" }}>
                               <ul className="produit-list">
                                 {commande.produits.map((produit) => (

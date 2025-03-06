@@ -4,11 +4,12 @@ const path = require('path');
 // Définition du stockage des fichiers
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/nifstat'); // Dossier où seront stockées les images
+    cb(null, 'uploads/nifstat/'); // Dossier où seront stockées les images
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Nom unique du fichier
-  }
+  filename: function (req, file, cb) {
+     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+     cb(null, uniqueSuffix + path.extname(file.originalname)); // Nom unique pour éviter les conflits
+   }
 });
 
 // Filtrer les fichiers pour accepter seulement les images

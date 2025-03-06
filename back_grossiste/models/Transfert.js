@@ -34,12 +34,12 @@ const transfertSchema = new mongoose.Schema({
   },
   statutAdmin: {
     type: String,
-    enum: ['en attente', 'approuvé', 'rejeté'],
+    enum: ['en attente', 'approuvé', 'refusé'],
     default: 'en attente',
   },
   statutEntrepotDestination: {
     type: String,
-    enum: ['en attente', 'reçu', 'refusé'],
+    enum: ['en attente', 'reçu', 'refusé par admin'],
     default: 'en attente',
   },
 });

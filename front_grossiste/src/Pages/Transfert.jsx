@@ -193,9 +193,10 @@ const Transfert = () => {
                   <th>Destination</th>
                   <th className="bg-success">Produit</th>
                   <th>Quantité</th>
-                  <th className="bg-success">Date</th>
-                  <th>Statut</th>
-                  <th className="bg-success">Action</th>
+                  <th className="bg-success">Unité</th>
+                  <th >Date</th>
+                  <th className="bg-success"> Statut</th>
+                  <th >Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,6 +206,13 @@ const Transfert = () => {
                     <td>{transfert.entrepotDestination?.nom || "N/A"}</td>
                     <td>{transfert.produit?.nom || "N/A"}</td>
                     <td>{transfert.quantitéEnvoyée}</td>
+                    <td>
+        {
+            transfert.produit?.unites?.length 
+            ? transfert.produit.unites.reduce((max, unite) => unite.conversion > max.conversion ? unite : max, transfert.produit.unites[0]).nom
+            : 'N/A'
+        }
+    </td>
                     <td>
                       {new Date(transfert.dateTransfert).toLocaleDateString()}
                     </td>

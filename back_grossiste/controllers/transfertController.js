@@ -84,16 +84,27 @@ exports.validerParAdmin = async (req, res) => {
       return res.status(400).json({ message: 'Le transfert a déjà été traité.' });
     }
 
-    transfert.statutAdmin = 'approuvé';
-    
+    const { statut } = req.body;
+
+    if (statut !== 'approuvé' && statut !== 'refusé') {
+      return res.status(400).json({ message: "Statut invalide. Seuls 'approuvé' ou 'refusé' sont acceptés." });
+    }
+
+    transfert.statutAdmin = statut;
+
+    if (statut === 'refusé') {
+      transfert.statutEntrepotDestination = 'refusé par admin';
+    }
+
     await transfert.save();
 
-    res.status(200).json({ message: 'Transfert approuvé par l’admin.', transfert });
+    res.status(200).json({ message: `Transfert ${statut} par l’admin.`, transfert });
   } catch (error) {
     console.error("Erreur lors de la validation par l'admin:", error);
     res.status(500).json({ message: "Erreur lors de la validation par l'admin", error: error.message });
   }
 };
+
 
 // Route pour recevoir et terminer un transfert
 exports.receptionnerEtTerminerTransfert = async (req, res) => {

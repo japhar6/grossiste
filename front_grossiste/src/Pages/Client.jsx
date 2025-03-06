@@ -8,6 +8,7 @@ import Swal from "sweetalert2"; // Importation de SweetAlert
 function ClientsList() {
     const [clients, setClients] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [showModalila, setShowModalila] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [newClient, setNewClient] = useState({
@@ -24,6 +25,7 @@ function ClientsList() {
     const [currentClient, setCurrentClient] = useState({});
     const [filteredClients, setFilteredClients] = useState([]);
     const [filters, setFilters] = useState({ name: '', type: '', date: '' });
+    const [selectedClient, setSelectedClient] = useState(null);
   const [loadingList, setLoadingList] = useState(false);
      const [loadingAction, setLoadingAction] = useState(false);
     const handleFilterChange = (e) => {
@@ -51,7 +53,15 @@ function ClientsList() {
                 setLoadingList(false); // <-- Ici aussi en cas d'erreur
             });
     }, []);
+    const handleRowClick = (client) => {
+        setSelectedClient(client);
+        setShowModalila(true);
+    };
     
+    const handleCloseModalila = () => {
+        setShowModalila(false);
+        setSelectedClient(null);
+    };
 
     useEffect(() => {
         const idClient = localStorage.getItem('idClient');
@@ -288,11 +298,12 @@ function ClientsList() {
                                     </thead>
                                     <tbody>
                                         {filteredClients.map(client => (
-                                            <tr key={client._id}>
+                                          <tr key={client._id} onClick={() => handleRowClick(client)} style={{ cursor: "pointer" }}>
+               
                                                 <td>{client.nom}</td>
                                                 <td>{client.telephone}</td>
                                                 <td>{client.adresse}</td>
-                                                <td>{new Date(client.dateInscription).toLocaleDateString()}</td>
+                                                <td>{new Date(client.dateInscription).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</td>
                                                 <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}</td>
                                                 <td>{client.remises ? client.remises.remiseParProduit : 'Pas de remise'}%</td>
                                                 <td>{client.remises ? client.remises.remiseGlobale : 'Pas de remise'}Ariary</td>
@@ -433,6 +444,41 @@ function ClientsList() {
         </Form>
     </Modal.Body>
 </Modal>
+<Modal 
+    show={showModalila} 
+    onHide={handleCloseModalila} 
+    centered 
+    size="lg" 
+    // Ajuste la taille (tu peux mettre "xl" si besoin)
+>
+    <Modal.Header closeButton>
+        <Modal.Title>Image du NIF/STAT</Modal.Title>
+    </Modal.Header>
+    <Modal.Body 
+        className="d-flex justify-content-center align-items-center" 
+        style={{ height: "70vh" }} // Ajuste la hauteur de la modale
+    >
+        {selectedClient && (
+            <img
+                src={`https://api.bazariko.com${selectedClient.nifStatImage}`}
+                alt="Possede pas de nif/stat"
+                style={{
+                    maxWidth: "100%", // L'image prend toute la largeur possible
+                    maxHeight: "75vh", // Empêche l'image de dépasser l'écran
+                    objectFit: "contain" // Ajuste l'image sans la déformer
+                }}
+            />
+        )}
+    </Modal.Body>
+    <Modal.Footer className="d-flex justify-content-center">
+        <Button variant="secondary" onClick={handleCloseModalila}>
+            Fermer
+        </Button>
+    </Modal.Footer>
+</Modal>
+
+
+
 
         </>
     );

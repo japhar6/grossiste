@@ -23,6 +23,9 @@ function Caisse() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [argentRendu, setArgentRendu] = useState(0);
+  const [argentDonne, setArgentDonne] = useState(0);
+
   SetdatePositionnementCheque
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
@@ -120,7 +123,7 @@ function Caisse() {
     }
 
     // Vérifier que la référence de paiement est remplie si nécessaire
-    if ((modePaiement === "mobile money" || modePaiement === "virement bancaire"|| modePaiement === "cheque") && !referencePaiement) {
+    if ((modePaiement === "mobile money" || modePaiement === "virement bancaire" || modePaiement === "cheque") && !referencePaiement) {
       Swal.fire({
         icon: 'warning',
         title: 'Alerte',
@@ -161,7 +164,7 @@ function Caisse() {
       modePaiement,
       totalPaye: commande.totalGeneral,
       referencePaiement,
-      datePositionnementCheque:modePaiement === "cheque" ? datePositionnementCheque : null,
+      datePositionnementCheque: modePaiement === "cheque" ? datePositionnementCheque : null,
       dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null,
       idCaissier,
     };
@@ -304,11 +307,17 @@ function Caisse() {
       });
     }
   };
+  const handleArgentDonneChange = (event) => {
+    const value = parseFloat(event.target.value);
+    setArgentDonne(value);
 
-
-
-
-
+    // Calcul de l'argent rendu
+    if (value >= commande.totalGeneral) {
+      setArgentRendu(value - commande.totalGeneral);
+    } else {
+      setArgentRendu(0); // Si l'argent donné est inférieur au total, pas de rendu
+    }
+  };  
 
   return (
     <main className="center">
@@ -355,7 +364,7 @@ function Caisse() {
                     <option value="versement">Versement</option>
                   </select>
 
-                  {(modePaiement === "mobile money" || modePaiement === "virement bancaire"|| modePaiement === "cheque") && (
+                  {(modePaiement === "mobile money" || modePaiement === "virement bancaire" || modePaiement === "cheque") && (
                     <div className="form-group mt-3">
                       <label htmlFor="referencePaiement">
                         {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}
@@ -372,7 +381,7 @@ function Caisse() {
                   )}
 
 
-{modePaiement === "cheque" && (
+                  {modePaiement === "cheque" && (
                     <div className="form-group">
                       <label htmlFor="datePositionnementCheque">Date de positionement du cheque</label>
                       <input
@@ -474,8 +483,19 @@ function Caisse() {
                     ))}
                   </tbody>
                 </table>
-                <h6 className="total">Total : {commande.totalGeneral} Ariary</h6>
-
+                <h6 className="total mt-5 mb-4">Total du commande : {commande.totalGeneral} Ariary</h6>
+                <div className="payment-container">
+        <input
+          type="number"
+          className="form-control p-3"
+          placeholder="Argent donné"
+          value={argentDonne}
+          onChange={handleArgentDonneChange}
+        />
+        <h5 className={`total-rendered mt-5 ${argentRendu > 0 ? "positive" : "negative"} `}>
+          {argentRendu > 0 ? `Total rendu: ${argentRendu} Ariary` : "Pas assez d'argent"}
+        </h5>
+</div>
 
                 <button
                   className="btnVA btn-success mt-3"

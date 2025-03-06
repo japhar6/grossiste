@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import "../Styles/Profile.css";
 import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
-
+import pardefaut from "../assets/imageprofil.jpg";
 function Profil() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -125,11 +125,11 @@ function Profil() {
 
                 <div className="user-info">
                   <div className="photos-container">
-                    <img
-                      src={`https://api.bazariko.com${user.photo}`}
-                      alt="Photo de profil"
-                      className="user-photo"
-                    />
+                         <img
+                src={user.photo ? `https://api.bazariko.com${user.photo}` :pardefaut}
+                alt="Photo de profil"
+                className="user-photo"
+              />
                     <h2 className="gradient-text mt-5">Mon Profil</h2>
                   </div>
                   <div className="info-details">

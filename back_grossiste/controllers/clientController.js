@@ -10,8 +10,8 @@ exports.createClient = async (req, res) => {
     }
 
     // Récupération du chemin de l'image téléchargée
-    const imagePath = req.file ? req.file.path : null;
-
+    const nifStatImage = req.file ? `/uploads/nifstat/${req.file.filename}` : null;
+    
     // Initialisation des remises
     const clientRemises = remises || {
       remiseGlobale: 0,
@@ -26,7 +26,8 @@ exports.createClient = async (req, res) => {
       adresse,
       nif,
       stat,
-      nifStatImage: imagePath, // Stocke le chemin du fichier
+ 
+      nifStatImage, // Stocke le chemin du fichier
       remises: clientRemises
     });
 
