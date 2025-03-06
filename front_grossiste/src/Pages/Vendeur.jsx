@@ -4,8 +4,6 @@ import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 import axios from '../api/axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
@@ -54,7 +52,6 @@ function PriseCommande() {
       if (selectedPerson) {
         try {
           const response = await axios.get(`/api/client/recuperer/${selectedPerson}`);
-          setRemisesClient(response.data.remises);  // Récupère les remises du client
 
           // Vérifie quel type de remise existe et met à jour le typeRemise
           if (response.data.remises.remiseGlobale > 0) {
@@ -280,16 +277,16 @@ function PriseCommande() {
   };
   console.log("Commande actuelle :", commande);
 
-const totalCommande = commande.reduce((total, item) => {
+  const totalCommande = commande.reduce((total, item) => {
     const quantite = Number(item.quantite) || 0;
     const prix = Number(item.prixdevente) || 0; // Vérifie bien `prixdevente`
-    
-    console.log(`Produit: ${item.nom}, Quantité: ${quantite}, Prix: ${prix}`);
-    
-    return total + quantite * prix;
-}, 0);
 
-console.log("Total Commande Calculé:", totalCommande);
+    console.log(`Produit: ${item.nom}, Quantité: ${quantite}, Prix: ${prix}`);
+
+    return total + quantite * prix;
+  }, 0);
+
+  console.log("Total Commande Calculé:", totalCommande);
 
 
   const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
@@ -370,14 +367,14 @@ console.log("Total Commande Calculé:", totalCommande);
                 icon: 'info',
                 confirmButtonText: 'OK',
               });
-
+console.log("entrepot",responseSecondaire.data.entrepotId);
               // Ajouter le produit avec l'entrepôt secondaire
               setCommande((prevCommande) => {
                 return [...prevCommande, {
                   ...produit,
                   quantite,
                   uniteChoisie: produit.uniteChoisie,
-                  entrepotId: entrepotIdSecondaire, // Entrepôt secondaire
+                  entrepotId: responseSecondaire.data.entrepotId, // Entrepôt secondaire
                 }];
               });
             } else {
@@ -398,7 +395,7 @@ console.log("Total Commande Calculé:", totalCommande);
             icon: 'info',
             confirmButtonText: 'OK',
           });
-
+          console.log("entrepot 1",entrepotIdPrincipal);
           // Ajouter le produit avec l'entrepôt principal
           setCommande((prevCommande) => {
             return [...prevCommande, {
@@ -891,8 +888,6 @@ console.log("Total Commande Calculé:", totalCommande);
                                       )
                                     }
                                   />
-
-
                                 </div>
                               </td>
                             </tr>
@@ -941,12 +936,13 @@ console.log("Total Commande Calculé:", totalCommande);
                           >
                             <i className="fa fa-trash"></i>
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </td >
+                      </tr >
+                    ))
+                    }
+                  </tbody >
+                </table >
+              </div >
 
 
               <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
@@ -961,12 +957,12 @@ console.log("Total Commande Calculé:", totalCommande);
                   "  Enregistrer la Commande"
                 )}
               </button>
-            </div>
+            </div >
 
-          </div>
-        </div>
-      </section>
-    </main>
+          </div >
+        </div >
+      </section >
+    </main >
   );
 }
 

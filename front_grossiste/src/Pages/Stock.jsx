@@ -189,6 +189,42 @@ function Stock() {
       }
       return 0;
     });
+    const handlePrint = () => {
+      const printContent = document.getElementById("table-to-print").outerHTML;
+      const printWindow = window.open('', '', 'height=500,width=800');
+      printWindow.document.write('<html><head><title>Impression des stocks</title>');
+      printWindow.document.write(`
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+          }
+          th {
+            background-color: #f4f4f4;
+          }
+          tr:nth-child(even) {
+            background-color: #f9f9f9;
+          }
+        </style>
+      `);
+      printWindow.document.write('</head><body>');
+      printWindow.document.write('<h1>Historiques des stocks filtrés</h1>');
+      printWindow.document.write(printContent);
+      printWindow.document.write('</body></html>');
+      printWindow.document.close();
+      printWindow.print();
+    };
 
   return (
     <>
@@ -202,9 +238,9 @@ function Stock() {
               <i className='fa fa-line-chart'></i> Stock
             </h6>
 
-            <div className="form-group">
+            <div className="form-group center">
               <label htmlFor="entrepotSelect">Sélectionner un entrepôt :</label>
-              <select id="entrepotSelect" className="form-control" onChange={handleEntrepotChange}>
+              <select id="entrepotSelect" className="form-control w-75" onChange={handleEntrepotChange}>
                 <option value="">-- Choisir un entrepôt --</option>
                 {entrepots.map(entrepot => (
                   <option key={entrepot._id} value={entrepot._id}>
@@ -212,6 +248,7 @@ function Stock() {
                   </option>
                 ))}
               </select>
+              <button className='btn btn-primary w-25 m-2' onClick={handlePrint}>Imprimer</button>
             </div>
 
             {selectedEntrepot && (
@@ -265,7 +302,7 @@ function Stock() {
             ) : (
               <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
 
-                <table className="tableSt table-bordered mt-3">
+                <table className="tableSt table-bordered mt-3" id="table-to-print">
                   <thead>
                     <tr>
                     <th className="bg-success">Nom du produit</th>
@@ -301,7 +338,11 @@ function Stock() {
                         </td>
                         <td>{stock.produit.categorie}</td>
                         <td>{stock.produit.quantiteMinimum}</td>
-                        <td>{new Date(stock.dateEntree).toLocaleDateString()}</td>
+                        <td>{new Date(stock.dateEntree).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}</td>
                       </tr>
                     ))}
                   </tbody>

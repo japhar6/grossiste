@@ -95,7 +95,7 @@ const HistoriqueAchats = () => {
                     {[
                         ...new Set(
                             entrepots
-                                ?.filter((entrepot) => entrepot && entrepot.nom) // Filtrer `null` et les objets sans `nom`
+                                ?.filter((entrepot) => entrepot && entrepot.nom) // Filtrer null et les objets sans nom
                                 .map((entrepot) => entrepot.nom)
                         )
                     ].map((nomEntrepot, index) => (

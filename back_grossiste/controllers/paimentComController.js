@@ -3,8 +3,7 @@ const Commande = require("../models/Commandes");
 const VenteCom = require('../models/VenteComm'); // Assure-toi du bon chemin
 const Produit = require("../models/Produits");
 const mongoose = require('mongoose');
-
-
+const FoncdCaisse = require('../models/FondCaisse');
 
 
 exports.getPaiementsParMode = async (req, res) => {
@@ -216,6 +215,16 @@ paiementCommerciale.dateLimiteCredit=null;
         // Sauvegarder le paiement mis à jour
         await paiementCommerciale.save();
         console.log(`Paiement mis à jour avec succès.`);
+
+        // Création de l'enregistrement dans fondCaisse
+        const fondCaisse = new FoncdCaisse({
+            totalPaiement: paiementCommerciale.montantPaye,
+            datePaiement: new Date()
+        });
+
+        // Sauvegarder le fondCaisse
+        await fondCaisse.save();
+        console.log(`Enregistrement dans le fond de caisse créé avec succès.`);
 
         const convertirQuantite = async (quantite, uniteVendu, produitId, uniteReference) => {
             try {

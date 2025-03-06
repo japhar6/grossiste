@@ -6,6 +6,7 @@ import "../Styles/HistoC.css";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import { Link } from "react-router-dom";
+
 function HistoC() {
   const [paiements, setPaiements] = useState({ clients: [], commerciaux: [] });
   const [filtreType, setFiltreType] = useState("both");

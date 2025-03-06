@@ -75,7 +75,7 @@ const NotificationsPage = () => {
 console.log("Référence Facture stockée dans localStorage : ", localStorage.getItem('referenceFacture'));
 
       // Rediriger vers la page Client
-      navigate(`/histovad`);}
+      navigate(`/modifcmd`);}
     }
 
     else if (notification.type === 'rupture_stock') {

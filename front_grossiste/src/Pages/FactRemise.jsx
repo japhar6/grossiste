@@ -10,6 +10,7 @@ function FactureRem() {
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
+ const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -32,6 +33,8 @@ function FactureRem() {
       setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
       setClient(clientData);
       setCommercial(commercialData);
+      setdatePositionnementCheque(queryParams.get("datePositionnementCheque"));
+
     } catch (error) {
       console.error("Erreur lors du traitement des données de l'URL", error);
     }
@@ -106,11 +109,11 @@ function FactureRem() {
       <div className="facture-header">
         <img src={Logo} alt="Logo" width={150} />
         <div className="infoCompany">
-          <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
-          <p>Vente de Marchandises</p>
-          <p>Tnambao II, TAMATAVE</p>
-          <p>034 13 881 72</p>
-        </div>
+                    <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
+                    <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
+                    <h5 className="fw-bold">Tanambao II, TOAMASINA</h5>
+                    <h5 className="fw-bold">+ 261 34 13 881 72</h5>
+                </div>
       </div>
       <hr />
       <div className="facture-info p-3">
@@ -133,10 +136,19 @@ function FactureRem() {
           <p>
             <strong>N° :</strong> {commande.referenceFacture}
           </p>
-          <p>
-            <strong>Date limite de paiement :</strong>{" "}
-            {dateLimiteCredit || "..........."}
-          </p>
+          {modePaiement === "a credit" && (
+    <p>
+        <strong>Date limite de paiement :</strong>{" "}
+        {dateLimiteCredit || "..........."}
+    </p>
+)}
+
+{modePaiement === "cheque" && (
+    <p>
+        <strong>Date de positionnement :</strong>{" "}
+        {datePositionnementCheque || "..........."}
+    </p>
+)}
           <p>
             <strong>Référence :</strong> {referencePaiement || "..........."}
           </p>

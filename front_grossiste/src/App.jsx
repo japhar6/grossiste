@@ -55,6 +55,7 @@ import AchatGest from "./Pages/AchatGest.jsx";
 import Deccaisement from "./Pages/Decaissement.jsx";
 import Histodecaisse from "./Pages/HistoDecaisse.jsx";
 import Annuler from "./Pages/AnnulerFacture.jsx";
+import Facture8 from './Pages/Fact.8.jsx';
 
 function App() {
   return (
@@ -100,10 +101,11 @@ function App() {
 
         </Route>
 
-{/* Routes VENDEUR */}
+{/* Routes Gestion prix */}
 <Route element={<PrivateRoute allowedRoles={["gestion_prix"]} />}>
 <Route path='/gestionprix' element={<Gestion />} />
 <Route path='/achatgest' element={<AchatGest />} />
+<Route path='/ProfilG' element={<ProfilG />} />
         </Route>
         {/* Routes VENDEUR */}
         <Route element={<PrivateRoute allowedRoles={["vendeur"]} />}>
@@ -136,6 +138,7 @@ function App() {
           <Route path="/facture" element={<Facture />} />
           <Route path="/facturepaiement" element={<FactureCom />} />
           <Route path="/facturesansprix" element={<FactureSans />} />
+          <Route path="/8mm" element={<Facture8 />} />
           <Route path="/annulerFact" element={<Annuler />} />
         </Route>
 

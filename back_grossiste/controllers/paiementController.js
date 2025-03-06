@@ -2,13 +2,14 @@ const Paiement = require("../models/Paiement");
 const Commande = require("../models/Commandes");
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const { sendNotificationToAdmin } = require('../service/payementService');
+const FoncdCaisse = require("../models/FondCaisse");
 
 
 const mongoose = require("mongoose");
 exports.validerpayement = async (req, res) => {
     try {
         const { id } = req.params; // ID de la commande (ou référence)
-        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit } = req.body;
+        const { idCaissier, referencePaiement, modePaiement, dateLimiteCredit,datePositionnementCheque } = req.body;
 
         // Vérifier si l'ID est valide
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -28,7 +29,7 @@ exports.validerpayement = async (req, res) => {
         }
 
         // Vérifier si la référence de paiement est requise et fournie
-        if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
+        if ((modePaiement === "mobile money" || modePaiement === "virement bancaire" || modePaiement === "cheque"  || modePaiement === "versement") && !referencePaiement) {
             return res.status(400).json({ message: "La référence de paiement est requise pour ce mode de paiement." });
         }
 
@@ -57,6 +58,7 @@ exports.validerpayement = async (req, res) => {
             referenceFacture: commande.referenceFacture,
             referencePaiement: referencePaiement || null,
             idCaissier: idCaissier,
+            datePositionnementCheque: datePositionnementCheque,
             modePaiement: modePaiement,
             dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null,
             datePaiement: modePaiement === "a credit" ? null : new Date()
@@ -69,6 +71,17 @@ exports.validerpayement = async (req, res) => {
         commande.paiement = paiement._id;
         await commande.save();
 
+        // Si le paiement n'est pas à crédit, ajouter une entrée dans FoncdCaisse
+        if (statutPaiement !== "non payé") {
+            const foncdCaisse = new FoncdCaisse({
+                totalPaiement: paiement.totalPaiement,
+                datePaiement: paiement.datePaiement || new Date() // Utilisation de la date actuelle si datePaiement est null
+            });
+
+            // Sauvegarder l'entrée de FoncdCaisse
+            await foncdCaisse.save();
+        }
+
         // Répondre avec les détails du paiement
         return res.status(200).json({
             message: "Paiement enregistré avec succès",
@@ -79,7 +92,8 @@ exports.validerpayement = async (req, res) => {
                 totalPaiement: paiement.totalPaiement,
                 referencePaiement: paiement.referencePaiement,
                 modePaiement: paiement.modePaiement,
-                dateLimiteCredit: paiement.dateLimiteCredit
+                dateLimiteCredit: paiement.dateLimiteCredit,
+                referencePaiement:paiement.referencePaiement
             }
         });
 
@@ -94,7 +108,7 @@ exports.validerpayement = async (req, res) => {
 exports.checkPaymentsDue = async (req, res) => {
     try {
         // Récupérer tous les paiements à crédit
-        const payments = await Payment.find({ modePaiement: 'à crédit' });
+        const payments = await Paiement.find({ modePaiement: 'à crédit' });
         const today = moment(); // Date actuelle
 
         // Parcours des paiements à crédit
@@ -278,7 +292,8 @@ exports.getPaiementsParCaissier = async (req, res) => {
                 })) || [],
                 modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
-                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire')
+                datePositionnementCheque: paiement.modePaiement === 'cheque' ? paiement.datePositionnementCheque : null,
+                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire'|| paiement.modePaiement === 'cheque')
                     ? paiement.referencePaiement
                     : null
             })),
@@ -292,7 +307,8 @@ exports.getPaiementsParCaissier = async (req, res) => {
                 })) || [],
                 modePaiement: paiement.modePaiement || 'Inconnu',
                 dateLimiteCredit: paiement.modePaiement === 'a credit' ? paiement.dateLimiteCredit : null,
-                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire')
+                datePositionnementCheque: paiement.modePaiement === 'cheque' ? paiement.datePositionnementCheque : null,
+                referencePaiement: (paiement.modePaiement === 'mobile money' || paiement.modePaiement === 'virement bancaire'|| paiement.modePaiement === 'cheque')
                     ? paiement.referencePaiement
                     : null
             }))

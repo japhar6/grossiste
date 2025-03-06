@@ -1,0 +1,93 @@
+/* Facture.css */
+.facture-containe {
+    width: 80mm; /* Largeur d'un ticket de caisse standard */
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    font-size: 10px; /* Réduire la taille de la police */
+}
+
+.facture-heade {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    padding: 5px 0;
+}
+
+/* .facture-header img {
+    width: 50px; 
+} */
+
+.infoCompany {
+    text-align: right;
+}
+
+.facture-infos {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    padding: 5px 0;
+}
+.facture-containe h5{
+    font-size: 1.5em !important;
+}
+.facture-detail table {
+    width: 100% !important;
+    font-size: 1.4em;
+    border-collapse: collapse;
+}
+
+.facture-detail table th,
+.facture-detail table td {
+    padding: 2px;
+    text-align: left;
+    border: 1px solid #000;
+}
+
+.facture-summaryy {
+    font-size: 8px;
+    padding: 5px 0;
+}
+
+.facture-footerr {
+    font-size: 8px;
+    text-align: center;
+    padding: 5px 0;
+}
+
+.signaturee {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    margin-top: 10px;
+}
+
+/* Reduire la taille pour les écrans de petite taille */
+@media print {
+    .facture-containe {
+        width: 80mm; /* Format ticket */
+        font-size: 8px; /* Réduire encore la taille de la police pour l'impression */
+    }
+
+    .facture-heade,
+    .facture-infos,
+    .facture-detail,
+    .facture-summaryy,
+    .facture-footerr {
+        font-size: 8px; /* Ajuster la taille pour tout le contenu */
+    }
+}
+
+@media screen and (max-width: 320px) {
+    .facture-containe {
+        width: 80mm;
+        font-size: 8px; /* Petite taille sur petits écrans */
+    }
+    .facture-heade,
+    .facture-infos,
+    .facture-detail,
+    .facture-summaryy,
+    .facture-footerr {
+        font-size: 7px; /* Réduire encore plus sur les petits écrans */
+    }
+}

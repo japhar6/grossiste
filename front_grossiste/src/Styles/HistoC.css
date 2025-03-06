@@ -4,6 +4,11 @@
   flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
 }
 
+
+.clignotant {
+  animation: clignoter 1s infinite;
+}
+
 .filter-container label {
   display: flex;
   flex-direction: column; /* Aligne le texte et le select/input en colonne */
@@ -38,9 +43,9 @@
   background-color: #e2e6ea; /* Couleur de fond au survol */
 }
 @keyframes clignoter {
-  0% { background-color: red; color: white; }
-  50% { background-color: transparent; color: red; }
-  100% { background-color: red; color: white; }
+  0% { background-color: rgb(202, 151, 151); color: white; }
+  50% { background-color: transparent; color: rgb(152, 77, 77); }
+  100% { background-color: rgb(197, 139, 139); color: white; }
 }
 
 .clignotant {

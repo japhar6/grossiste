@@ -122,7 +122,7 @@ const TransfertModal = ({ show, handleClose, refreshHistorique, entrepotSource }
         text: 'Transfert effectué avec succès !',
         icon: 'success',
         confirmButtonText: 'OK'
-      });
+      }); window.location.reload();
   
       refreshHistorique();
       handleClose();

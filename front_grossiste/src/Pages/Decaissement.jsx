@@ -1,39 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
+import axios from '../api/axios';
+import Swal from 'sweetalert2';
 
 const DecaissementPage = () => {
-  const [montantDecaissement, setMontantDecaissement] = useState('');
-  const [periode, setPeriode] = useState('jour');
-  const [modeDecaissement, setModeDecaissement] = useState('retrait');
-  const [reference, setReference] = useState('');
-  const [dateDebut, setDateDebut] = useState('');
-  const [dateFin, setDateFin] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [periode, setPeriode] = useState('Total');
+  const [soldeCaisse, setSoldeCaisse] = useState(0);
+  const [nombrePaiements, setNombrePaiements] = useState(0);
+  const [montant, setMontant] = useState('');
+  const [modePaiement, setModePaiement] = useState('espèce');
+  const [referencePaiement, setReferencePaiement] = useState('');
+  const [error, setError] = useState(null);
 
-  // Solde actuel de la caisse (valeur statique pour l'instant)
-  const soldeCaisse = 0;
+  const fetchTotalPaiements = async (periode) => {
+    setError(null);
+    try {
+      const response = await axios.get(`/api/fondcaisse/totals/${periode}`);
+      const { totalFondCaisse, nombrePaiementsFondCaisse } = response.data;
+      setSoldeCaisse(totalFondCaisse);
+      setNombrePaiements(nombrePaiementsFondCaisse);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des paiements:', error);
+      setError('Erreur lors de la récupération des données. Veuillez réessayer plus tard.');
+    }
+  };
 
-  // Fonction pour simuler un décaissement
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchTotalPaiements(periode);
+  }, [periode]);
 
-    if (parseFloat(montantDecaissement) > soldeCaisse) {
-      setMessage('Le montant de décaissement dépasse le solde disponible.');
-      setMessageType('error');
+  const handleDecaissement = async () => {
+    setError(null);
+    if (!montant || montant <= 0) {
+      setError('Le montant doit être supérieur à 0.');
       return;
     }
 
-    if (modeDecaissement === 'virement' && !reference) {
-      setMessage('Veuillez fournir une référence pour le virement bancaire.');
-      setMessageType('error');
+    if (modePaiement !== 'espèce' && !referencePaiement) {
+      setError('La référence de paiement est obligatoire pour ce mode de paiement.');
       return;
     }
 
-    const nouveauSolde = soldeCaisse - parseFloat(montantDecaissement);
-    setMessage(`Décaissement effectué avec succès ! Nouveau solde : ${nouveauSolde}€`);
-    setMessageType('success');
+    try {
+      const response = await axios.post('/api/decaissement/ajouter', {
+        periode,
+        montantDecaisse: Number(montant),
+        modePaiement,
+        referencePaiement: modePaiement !== 'espèce' ? referencePaiement : undefined
+      });
+
+      // Utilisation de SweetAlert pour afficher le message
+      Swal.fire({
+        title: 'Succès',
+        text: response.data.message,
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
+      fetchTotalPaiements(periode);
+      setMontant('');
+      setModePaiement('espèce');
+      setReferencePaiement('');
+    } catch (error) {
+      console.error('Erreur lors du décaissement:', error);
+      Swal.fire({
+        title: 'Erreur',
+        text: error.response?.data?.message || 'Erreur lors du décaissement.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      setError(error.response?.data?.message || 'Erreur lors du décaissement.');
+    }
   };
 
   return (
@@ -42,28 +80,16 @@ const DecaissementPage = () => {
       <section className="contenue">
         <Header />
         <div className="mini-stat p-4">
-          <h1 className="title">Décaissement Caisse</h1>
+          <h1 className="text-center mb-4">Décaissement Caisse</h1>
 
-          {/* Affichage du solde de la caisse */}
-          <div className="solde-box">
-            <h2>Solde actuel : {soldeCaisse}€</h2>
-            <p>Vous pouvez effectuer un décaissement selon vos besoins.</p>
-          </div>
-
-          {/* Formulaire de décaissement */}
-          <form onSubmit={handleSubmit} className="decaissement-form">
-            <div className="form-group">
-              <label htmlFor="montant">Montant à décaisser :</label>
-              <input
-                id="montant"
-                type="number"
-                value={montantDecaissement}
-                onChange={(e) => setMontantDecaissement(e.target.value)}
-                required
-                className="form-input"
-                placeholder="Entrez le montant"
-              />
+          <div className="card-body">
+            <div className="mb-3">
+              <h4>Solde actuel : {`${soldeCaisse} Ariary`}</h4>
+              <p>Nombre de paiements effectués : {nombrePaiements}</p>
+              <p>Vous pouvez voir le solde de la caisse en fonction de la période sélectionnée.</p>
             </div>
+
+            {error && <div className="alert alert-danger">{error}</div>}
 
             <div className="form-group">
               <label htmlFor="periode">Période :</label>
@@ -73,75 +99,56 @@ const DecaissementPage = () => {
                 onChange={(e) => setPeriode(e.target.value)}
                 className="form-select"
               >
-                <option value="jour">Jour</option>
-                <option value="semaine">Semaine</option>
-                <option value="personnalise">Personnalisé</option>
+                <option value="Total">Total fond de caisse</option>
+                <option value="journalier">Jour</option>
+                <option value="hebdomadaire">Semaine</option>
+                <option value="mensuel">Mensuel</option>
+                <option value="annuel">Annuel</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label htmlFor="mode">Mode de décaissement :</label>
+              <label htmlFor="montant">Montant :</label>
+              <input
+                type="number"
+                id="montant"
+                value={montant}
+                onChange={(e) => setMontant(e.target.value)}
+                className="form-control"
+                placeholder="Montant du décaissement"
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="modePaiement">Mode de paiement :</label>
               <select
-                id="mode"
-                value={modeDecaissement}
-                onChange={(e) => setModeDecaissement(e.target.value)}
+                id="modePaiement"
+                value={modePaiement}
+                onChange={(e) => setModePaiement(e.target.value)}
                 className="form-select"
               >
-                <option value="retrait">Retrait en espèces</option>
-                <option value="virement">Virement bancaire</option>
+                <option value="espèce">Espèce</option>
+                <option value="virement bancaire">Virement bancaire</option>
+                <option value="mobile money">Mobile Money</option>
               </select>
             </div>
 
-            {/* Référence de virement */}
-            {modeDecaissement === 'virement' && (
+            {modePaiement !== 'espèce' && (
               <div className="form-group">
-                <label htmlFor="reference">Référence du virement :</label>
+                <label htmlFor="referencePaiement">Référence de paiement :</label>
                 <input
-                  id="reference"
                   type="text"
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  className="form-input"
-                  placeholder="Référence du virement"
+                  id="referencePaiement"
+                  value={referencePaiement}
+                  onChange={(e) => setReferencePaiement(e.target.value)}
+                  className="form-control"
+                  placeholder="Référence du paiement"
                 />
               </div>
             )}
 
-            {/* Date personnalisée si sélectionnée */}
-            {periode === 'personnalise' && (
-              <>
-                <div className="form-group">
-                  <label htmlFor="dateDebut">Date de début :</label>
-                  <input
-                    id="dateDebut"
-                    type="date"
-                    value={dateDebut}
-                    onChange={(e) => setDateDebut(e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="dateFin">Date de fin :</label>
-                  <input
-                    id="dateFin"
-                    type="date"
-                    value={dateFin}
-                    onChange={(e) => setDateFin(e.target.value)}
-                    className="form-input"
-                  />
-                </div>
-              </>
-            )}
-
-            <button type="submit" className="form-button">Effectuer le décaissement</button>
-          </form>
-
-          {/* Message de résultat */}
-          {message && (
-            <div className={`message-box ${messageType}`}>
-              <p>{message}</p>
-            </div>
-          )}
+            <button onClick={handleDecaissement} className="btn btn-primary w-100">Effectuer le décaissement</button>
+          </div>
         </div>
       </section>
     </main>

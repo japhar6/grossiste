@@ -1,4 +1,5 @@
 const Entrepot = require("../models/Entrepot");
+const Stock = require("../models/Stock");
 
 // 🔹 Ajouter un nouvel entrepôt
 exports.createEntrepot = async (req, res) => {
@@ -90,18 +91,30 @@ exports.updateEntrepot = async (req, res) => {
   }
 };
 
-// 🔹 Supprimer un entrepôt
 exports.deleteEntrepot = async (req, res) => {
   try {
-    const deletedEntrepot = await Entrepot.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
 
-    if (!deletedEntrepot) {
+    // Vérifie si l'ID est valide
+    if (!id) {
+      return res.status(400).json({ message: "❌ ID d'entrepôt invalide." });
+    }
+
+    // Vérifie si l'entrepôt existe
+    const entrepot = await Entrepot.findById(id);
+    if (!entrepot) {
       return res.status(404).json({ message: "❌ Entrepôt non trouvé." });
     }
 
-    res.status(200).json({ message: "✅ Entrepôt supprimé avec succès." });
+    // Supprimer les stocks liés à cet entrepôt
+    await Stock.deleteMany({ entrepot: id });
 
+    // Supprimer l'entrepôt
+    await Entrepot.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "✅ Entrepôt et stocks supprimés avec succès." });
   } catch (error) {
+    console.error("Erreur lors de la suppression :", error);
     res.status(500).json({ message: "❌ Erreur lors de la suppression de l'entrepôt.", error });
   }
 };

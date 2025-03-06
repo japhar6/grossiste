@@ -1,41 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
+import axios from '../api/axios'; // Import de l'instance axios configurée
 
 const HistoriqueDecaissementPage = () => {
-  // Données fictives pour l'exemple
-  const historique = [
-    {
-      id: 1,
-      date: '2025-03-01',
-      montant: 500,
-      periode: 'Jour',
-      mode: 'Retrait en espèces',
-      reference: '-',
-    },
-    {
-      id: 2,
-      date: '2025-02-20',
-      montant: 1000,
-      periode: 'Semaine',
-      mode: 'Virement bancaire',
-      reference: 'REF123456',
-    },
-    {
-      id: 3,
-      date: '2025-01-15',
-      montant: 250,
-      periode: 'Jour',
-      mode: 'Retrait en espèces',
-      reference: '-',
-      nom: '-',
-    },
-  ];
+  // État pour stocker les décaissements et les filtres
+  const [historique, setHistorique] = useState([]);
+  const [filter, setFilter] = useState({
+    periode: '',
+    mode: '',
+    date: '', // Ajout de l'état pour la date de filtre
+  });
+
+  // Récupérer les décaissements depuis l'API
+  const fetchDecaissements = async () => {
+    try {
+      const response = await axios.get('/api/decaissement/afficher'); // Utilisation de l'URL relative
+      setHistorique(response.data.decaissements); // Assurez-vous que la réponse contient un tableau de décaissements
+    } catch (error) {
+      console.error("Erreur lors de la récupération des décaissements", error);
+    }
+  };
+
+  // Filtrer les décaissements selon les critères
+  const filteredHistorique = historique.filter((decaissement) => {
+    const { periode, mode, date } = filter;
+
+    if (periode && decaissement.periode !== periode) {
+      return false;
+    }
+    if (mode && decaissement.mode !== mode) {
+      return false;
+    }
+    if (date && new Date(decaissement.dateDecaissement).toLocaleDateString() !== new Date(date).toLocaleDateString()) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // Utiliser useEffect pour charger les données au démarrage du composant
+  useEffect(() => {
+    fetchDecaissements();
+  }, []);
 
   return (
     <main className="center">
       <Sidebar />
-      <section className="contenue ">
+      <section className="contenue">
         <Header />
         <div className="p-3 content center">
           <div className="mini-stat p-3">
@@ -52,17 +64,19 @@ const HistoriqueDecaissementPage = () => {
                         <th>Montant</th>
                         <th>Période</th>
                         <th>Mode</th>
-
                         <th>Référence</th>
-                        <th>Fait par</th>
                       </tr>
                     </thead>
                     <tbody>
                       {historique.length > 0 ? (
                         historique.map((decaissement) => (
                           <tr key={decaissement.id}>
-                            <td>{new Date(decaissement.date).toLocaleDateString()}</td>
-                            <td>{decaissement.montant}€</td>
+                            <td>{new Date(decaissement.dateDecaissement).toLocaleDateString('fr-FR', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}</td>
+                            <td>{decaissement.montant}Ariary</td>
                             <td>{decaissement.periode}</td>
                             <td>{decaissement.mode}</td>
                             <td>{decaissement.reference || '-'}</td>

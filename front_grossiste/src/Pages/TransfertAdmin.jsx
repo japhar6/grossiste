@@ -79,6 +79,43 @@ const TransfertAdmin = () => {
     return matchesStatut && matchesSourceEntrepot && matchesDestinationEntrepot && matchesDate;
   });
 
+  const handlePrint = () => {
+    const printContent = document.getElementById("table-to-print").outerHTML;
+    const printWindow = window.open('', '', 'height=500,width=800');
+    printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+    printWindow.document.write(`
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          padding: 0;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+        th, td {
+          padding: 8px;
+          text-align: left;
+          border: 1px solid #ddd;
+        }
+        th {
+          background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+      </style>
+    `);
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>Inventaires filtrés</h1>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <main className="center">
       <Sidebar />
@@ -88,47 +125,42 @@ const TransfertAdmin = () => {
           <div className="mini-stat p-3 bg-light shadow rounded">
             <h2 className='alert alert-success text-center'>Transfert Inter-Entrepôts</h2>
             <h3>Historique des Transferts</h3>
-            <div className="container-fluid">
-              <div className="row">
-                {/* Filtrer par Statut */}
-                <div className="col-md-3 col-sm-6 mb-3">
-                  <label>Filtrer par Statut:</label>
-                  <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
-                    <option value="">Tous</option>
-                    <option value="en attente">En attente</option>
-                    <option value="approuvé">Validé</option>
-                    <option value="rejeté">Rejeté</option>
-                  </select>
-                </div>
-
-                {/* Filtrer par Entrepôt Source */}
-                <div className="col-md-3 col-sm-6 mb-3">
-                  <label>Filtrer par Entrepôt Source:</label>
-                  <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
-                    <option value="">Tous</option>
-                    {entrepots.map(entrepot => (
-                      <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Filtrer par Entrepôt Destination */}
-                <div className="col-md-3 col-sm-6 mb-3">
-                  <label>Filtrer par Entrepôt Destination:</label>
-                  <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
-                    <option value="">Tous</option>
-                    {entrepots.map(entrepot => (
-                      <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Filtrer par Date */}
-                <div className="col-md-3 col-sm-6 mb-3">
-                  <label>Filtrer par Date:</label>
-                  <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
-                </div>
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+              <div className="form-group">
+                <label>Filtrer par Statut:</label>
+                <select className="form-control" value={statutFiltre} onChange={(e) => setStatutFiltre(e.target.value)}>
+                  <option value="">Tous</option>
+                  <option value="en attente">En attente</option>
+                  <option value="approuvé">Validé</option>
+                  <option value="rejeté">Rejeté</option>
+                </select>
               </div>
+
+              <div className="form-group">
+                <label>Filtrer par Entrepôt Source:</label>
+                <select className="form-control" value={entrepotSourceFiltre} onChange={(e) => setEntrepotSourceFiltre(e.target.value)}>
+                  <option value="">Tous</option>
+                  {entrepots.map(entrepot => (
+                    <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Filtrer par Entrepôt Destination:</label>
+                <select className="form-control" value={entrepotDestinationFiltre} onChange={(e) => setEntrepotDestinationFiltre(e.target.value)}>
+                  <option value="">Tous</option>
+                  {entrepots.map(entrepot => (
+                    <option key={entrepot._id} value={entrepot._id}>{entrepot.nom}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Filtrer par Date:</label>
+                <input type="date" className="form-control" value={dateFiltre} onChange={(e) => setDateFiltre(e.target.value)} />
+              </div>
+              <button className='btn btn-primary w-25 m-2' onClick={handlePrint}>Imprimer</button>
             </div>
 
 
@@ -140,7 +172,7 @@ const TransfertAdmin = () => {
                   </div>
                 </div>
               ) : (
-                <table className="table table-bordered table-striped">
+                <table className="table table-bordered table-striped"  id="table-to-print">
                   <thead className="thead-dark">
                     <tr>
                       <th>Source</th>
@@ -196,8 +228,8 @@ const TransfertAdmin = () => {
                 </table>
 
               )}
-            </div> </div>
-        </div>
+            </div>
+        </div> </div>
       </section>
     </main>
   );

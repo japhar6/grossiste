@@ -114,7 +114,8 @@ function Entrepot() {
   const handleSupprimer = async (id) => {
     const result = await Swal.fire({
       title: 'Êtes-vous sûr?',
-      text: "Vous allez Supprimer cet entrepôt. Cette action est irréversible!",
+      text:   "⚠️ Avant de supprimer cet entrepôt, effectuez d'abord un transfert de tous vos stocks dans cet entrepôt. Sinon, tous les stocks associés seront perdus définitivement !"
+,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Oui, Supprimer!',
@@ -132,6 +133,8 @@ function Entrepot() {
         setLoadingAction(false);
         Swal.fire('Supprimé!', 'L\'entrepôt a été supprimé.', 'success').then(() => {
           setEntrepots((prev) => prev.filter((entrepot) => entrepot._id !== id));
+        }).then(() => {
+          window.location.reload();
         });
 
       } catch (error) {
@@ -179,7 +182,11 @@ function Entrepot() {
                           <td>{entrepot.localisation}</td>
                           <td>{entrepot.type}</td>
                           <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
-                          <td>{entrepot.dateCreation}</td>
+                          <td>{new Date(entrepot.dateCreation).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}</td>
                           <td>
                             <button className="btn1 btn-warning" onClick={() => handleEdit(entrepot)}>
 
