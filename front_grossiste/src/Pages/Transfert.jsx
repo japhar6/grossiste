@@ -154,7 +154,8 @@ const Transfert = () => {
             </button>
 
             <h3 className="alert alert-success">Historique des Transferts</h3>
-            <div className="mt-3">
+            <div className="filters mb-4">
+            <div className="d-flex align-items-center">
               <select
                 className="form-control"
                 onChange={(e) =>
@@ -173,6 +174,7 @@ const Transfert = () => {
                 ))}
               </select>
             </div>
+           
             <label className="mt-5 fw-bold">Filtrer par Statut:</label>
             <select
               className="form-control"
@@ -184,6 +186,10 @@ const Transfert = () => {
               <option value="approuvé">Validé</option>
               <option value="rejeté">Rejeté</option>
             </select>
+
+            </div>
+
+            
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
               <table className="table table-bordered table-striped">
                 <thead className="thead-dark">

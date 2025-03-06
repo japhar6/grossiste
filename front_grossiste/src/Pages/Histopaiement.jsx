@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import "../Styles/HistoC.css";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
-
+import { Link } from "react-router-dom";
 function HistoC() {
   const [paiements, setPaiements] = useState({ clients: [], commerciaux: [] });
   const [filtreType, setFiltreType] = useState("both");
@@ -78,6 +78,9 @@ function HistoC() {
             <div className="mini-stat p-3">
               <h6 className="alert alert-info text-start">Historique des Paiements fait par {nom}</h6>
 
+              <Link to='/annulerFact' >
+                  <button>Annuler une Commande</button>
+                </Link>
               <div className="filter-container mb-3">
                 <label>
                   Filtrer par type:

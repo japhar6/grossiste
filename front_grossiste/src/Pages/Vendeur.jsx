@@ -4,8 +4,6 @@ import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
 import axios from '../api/axios';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
 
 function PriseCommande() {
@@ -369,14 +367,14 @@ function PriseCommande() {
                 icon: 'info',
                 confirmButtonText: 'OK',
               });
-
+console.log("entrepot",responseSecondaire.data.entrepotId);
               // Ajouter le produit avec l'entrepôt secondaire
               setCommande((prevCommande) => {
                 return [...prevCommande, {
                   ...produit,
                   quantite,
                   uniteChoisie: produit.uniteChoisie,
-                  entrepotId: entrepotIdSecondaire, // Entrepôt secondaire
+                  entrepotId: responseSecondaire.data.entrepotId, // Entrepôt secondaire
                 }];
               });
             } else {
@@ -397,7 +395,7 @@ function PriseCommande() {
             icon: 'info',
             confirmButtonText: 'OK',
           });
-
+          console.log("entrepot 1",entrepotIdPrincipal);
           // Ajouter le produit avec l'entrepôt principal
           setCommande((prevCommande) => {
             return [...prevCommande, {
@@ -415,137 +413,6 @@ function PriseCommande() {
   };
 
 
-  const creerCommande = async () => {
-    setLoadingAction(true);
-    try {
-      const vendeurId = localStorage.getItem("userid");
-      const selectedPersonId = selectedPerson; // Cela récupère l'ID de la personne sélectionnée (client ou commercial)
-
-      if (!selectedPersonId) {
-        Swal.fire({
-          title: "Info",
-          text: "Aucun client ou commercial sélectionné.",
-          icon: "info",
-          confirmButtonText: "OK",
-        });
-        return;
-      }
-
-      const clientId = selectedPersonId; // Tu peux décider ici si tu veux que ce soit client ou commercial
-      const commercialId = type === "commercial" ? selectedPersonId : null;
-      const typeClient = type === "client" ? "Client" : "Commercial";
-      const statut = "en cours"; // Le statut initial de la commande
-
-      if (!vendeurId) {
-        Swal.fire({
-          title: "Erreur",
-          text: "ID du vendeur non trouvé.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-        setLoadingAction(false); // Mettre ici pour garantir que l'état de chargement s'arrête en cas d'erreur
-        return;
-      }
-
-      // On s'assure que chaque produit a un 'entrepotId' correctement défini.
-      const produitsCommande = commande.map((item) => ({
-        produit: item._id,
-        quantite: item.quantite,
-        uniteChoisie: item.uniteChoisie || "Unité par défaut",
-        entrepotId: item.entrepotId || entrepotId, // Vérification de l'entrepotId, sinon utilisation de la variable entrepotId
-      }));
-
-      console.log("Produits avant envoi :", produitsCommande);
-
-      const commandeData = {
-        typeClient,
-        clientId: typeClient === "Client" ? clientId : null,
-        commercialId: typeClient === "Commercial" ? commercialId : null,
-        vendeurId,
-        produits: produitsCommande,
-        statut,
-      };
-
-      const response = await axios.post("/api/commandes/ajouter", commandeData);
-      console.log("Commande créée avec succès:", response.data);
-
-      // Affichage d'une notification de succès
-      Swal.fire({
-        title: "Commande créée avec succès",
-        text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then(() => {
-        window.location.reload(); // Recharger la page après avoir cliqué sur OK
-      });
-
-      playSound(); // Assurez-vous que cette fonction est définie et fonctionne comme prévu
-      setCommande([]); // Réinitialisation de la commande après la création
-
-    } catch (error) {
-      console.error("Erreur lors de la création de la commande:", error);
-      Swal.fire({
-        title: "Erreur",
-        text: "Une erreur s'est produite lors de la création de la commande.",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    } finally {
-      setLoadingAction(false); // Garantie d'arrêter le chargement même en cas d'erreur
-    }
-  };
-
-
-
-  const getClientNom = (id) => {
-    const client = clients.find(client => client._id === id);
-    return client ? client.nom : '';
-  };
-
-  const vendeurNom = localStorage.getItem("nom");
-  const vendeurId = localStorage.getItem("userid");
-  const handleDemandeRemise = async () => {
-    if (!selectedPerson) {
-      alert("Veuillez sélectionner un client !");
-      return;
-    }
-    setLoadingAction(true);
-
-    const clientNom = getClientNom(selectedPerson);
-    console.log("Nom du client:", clientNom);
-    console.log("Id:", selectedId);
-    if (!vendeurNom) {
-      alert("Nom du vendeur non trouvé dans localStorage.");
-      return;
-    }
-
-    // Message incluant le nom du client
-    const message = `Le vendeur ${vendeurNom} demande une remise pour le client ${clientNom}.`;
-
-    try {
-      const response = await axios.post("/api/notif/envoie-notifications", {
-        message: message, // Envoie le message complet
-        idClient: selectedId
-      }, {
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }); setLoadingAction(false);
-
-      console.log("Réponse de l'API:", response.data);
-      Swal.fire({
-        title: 'Succès!',
-        text: 'Demande de remise envoyée !',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'envoi de la notification", error);
-      alert("Une erreur est survenue. Veuillez réessayer.");
-      setLoadingAction(false);
-    }
-  };
-
   const supprimerProduit = (produitId, unite) => {
     setCommande((prevCommande) =>
       prevCommande.filter((item) => !(item._id === produitId && item.uniteChoisie === unite))
@@ -557,8 +424,158 @@ function PriseCommande() {
     }));
   };
 
+  const getClientNom = (id) => {
+    const client = clients.find(client => client._id === id);
+    return client ? client.nom : '';
+    };
+    const creerCommande = async (statut) => {
+      setLoadingAction(true);
+      try {
+        const vendeurId = localStorage.getItem("userid");
+        const selectedPersonId = selectedPerson;
+    
+        if (!selectedPersonId) {
+          Swal.fire({
+            title: "Info",
+            text: "Aucun client ou commercial sélectionné.",
+            icon: "info",
+            confirmButtonText: "OK",
+          });
+          return;
+        }
+    
+        if (!vendeurId) {
+          Swal.fire({
+            title: "Erreur",
+            text: "ID du vendeur non trouvé.",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+          setLoadingAction(false);
+          return;
+        }
+    
+        const typeClient = type === "client" ? "Client" : "Commercial";
+        const clientId = typeClient === "Client" ? selectedPersonId : null;
+        const commercialId = typeClient === "Commercial" ? selectedPersonId : null;
+    
+        const produitsCommande = commande.map((item) => ({
+          produit: item._id,
+          quantite: item.quantite,
+          uniteChoisie: item.uniteChoisie || "Unité par défaut",
+          entrepotId: item.entrepotId || entrepotId,
+        }));
+    
+        const commandeData = {
+          typeClient,
+          clientId,
+          commercialId,
+          vendeurId,
+          produits: produitsCommande,
+          statut, // Utilisation du statut passé en paramètre
+        };
+    
+        const response = await axios.post("/api/commandes/ajouter", commandeData);
+        console.log("Commande créée avec succès:", response.data); 
+          const { _id, referenceFacture } = response.data.commande;
+    
+        Swal.fire({
+          title: "Commande créée avec succès",
+          text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+    
 
+        setCommande([]);
+    
+        return { commandeId: _id, referenceFacture }; // Retourne l'ID de la commande créée
+    
+      } catch (error) {
+        console.error("Erreur lors de la création de la commande:", error);
+        Swal.fire({
+          title: "Erreur",
+          text: "Une erreur s'est produite lors de la création de la commande.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+        return null;
+      } finally {
+        setLoadingAction(false);
+      }
+    };
+    
+    
+    const vendeurNom = localStorage.getItem("nom");
+    
+    const handleDemandeRemise = async (commandeId, referenceFacture) => {
+      setLoadingAction(true);
+    
+      if (!vendeurNom) {
+        alert("Nom du vendeur non trouvé dans localStorage.");
+        return;
+      }
+    
+      const message = `Le vendeur ${vendeurNom} demande une remise pour la commande  (Facture: ${referenceFacture}) .`;
+    
+      try {
+        const response = await axios.post("/api/notif/envoie-notifications", {
+          message: message,
+          idClient: selectedId,
+        }, {
+          headers: { "Content-Type": "application/json" },
+        });
+    
+        console.log("Réponse de l'API:", response.data);
+        Swal.fire({
+          title: 'Succès!',
+          text: 'Demande de remise envoyée !',
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
+    
+      } catch (error) {
+        console.error("Erreur lors de l'envoi de la notification", error);
+        alert("Une erreur est survenue. Veuillez réessayer.");
+      } finally {
+        setLoadingAction(false);
+      }
+    };
 
+    const handleClick = async () => {
+      Swal.fire({
+        title: "Que souhaitez-vous faire ?",
+        text: "Vous pouvez enregistrer la commande seule ou notifier l'admin pour une remise.",
+        icon: "question",
+        showCancelButton: true,
+        showDenyButton: true, // Ajoute un deuxième bouton
+        confirmButtonText: "✅ Enregistrer",
+        denyButtonText: "📢 Enregistrer et Demande remise",
+        cancelButtonText: "❌ Annuler",
+        confirmButtonColor: "#28a745",
+        denyButtonColor: "#007bff",
+        cancelButtonColor: "#d33",
+      }).then(async (result) => { // Marquer cette fonction comme 'async'
+        if (result.isConfirmed) {
+          // Cas : Enregistrer la commande seule
+          const commande = await creerCommande("en cours"); // Attendre la création de la commande
+          if (commande) {
+            Swal.fire("✅ Commande enregistrée !", "", "success");playSound();
+          }
+        } else if (result.isDenied) {
+          // Cas : Enregistrer + Notifier admin
+          const commande = await creerCommande("en attente"); // Le statut devient "en attente"
+          if (commande) {
+            await handleDemandeRemise(commande.commandeId, commande.referenceFacture); // Attendre la demande de remise
+            Swal.fire("📢 Commande enregistrée et demande de remise envoyée !", "", "success");playSound();
+          }
+        }
+      });
+    };
+    
+    
+    
+  
 
   return (
     <main className="center">
@@ -611,19 +628,6 @@ function PriseCommande() {
                     </div>
                   )}
                 </div>
-                {type === "client" && selectedPerson && selectedPerson !== "new" && (
-                  <button className="btn btn-success" onClick={handleDemandeRemise} disabled={loadingAction}>
-                    {loadingAction ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm"></span> Chargement...
-                      </>
-                    ) : (
-                      "Envoyer demande"
-                    )}
-                  </button>
-                )}
-
-
                 {/* Affichage du formulaire si "Nouveau client" est sélectionné */}
                 {isNew && (
                   <div className="container mt-3" style={{ marginLeft: '-25px', padding: '20px', overflow: 'hidden' }}>
@@ -924,7 +928,7 @@ function PriseCommande() {
                         <td>{item.quantite}</td>
                         <td>{item.uniteChoisie}</td>
                         <td>{item.prixdevente} Ariary</td>
-                        <td>{(item.quantite) * (item.prixdevente)} Ariary</td>
+                        <td>{item.quantite * item.prixdevente} Ariary</td>
                         <td>
                           <button
                             className="btn btn-danger btn-sm"
@@ -942,7 +946,8 @@ function PriseCommande() {
 
 
               <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
-              <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }} onClick={creerCommande} disabled={loadingAction}>
+
+              <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }}   onClick={handleClick} disabled={loadingAction}>
 
                 {loadingAction ? (
                   <>

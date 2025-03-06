@@ -28,6 +28,13 @@ const NotificationsPage = () => {
 
     loadNotifications();
   }, []);
+  const extractReferenceFacture = (message) => {
+    // Utilisation d'une expression régulière pour extraire la référence de facture
+    const regex = /Facture:\s*([A-Za-z0-9\-]+)/;
+    const match = message.match(regex);
+    return match ? match[1] : null;  // Retourne la référence de facture ou null si non trouvée
+  };
+  
 
 
   const markAsRead = async (notificationId) => {
@@ -55,15 +62,20 @@ const NotificationsPage = () => {
   };
 
   const handleNotificationClick = (notification) => {
-    // Vérifier le type de la notification pour la redirection
+    const referenceFacture = extractReferenceFacture(notification.message);
+
     if (notification.type === 'transfert-en-attente') {
       navigate(`/transfertAdmin`); // Rediriger vers la page de transfert admin
     } else if (notification.type === 'remise') {
       // Stocker l'`idClient` dans le localStorage
-      localStorage.setItem('idClient', notification.idClient);
+      if (referenceFacture) {
+    // Stocker la référence dans le localStorage
+    localStorage.setItem('referenceFacture', referenceFacture);
+// Vérifier que la référence est bien stockée dans localStorage
+console.log("Référence Facture stockée dans localStorage : ", localStorage.getItem('referenceFacture'));
 
       // Rediriger vers la page Client
-      navigate(`/Client`);
+      navigate(`/modifcmd`);}
     }
 
     else if (notification.type === 'rupture_stock') {
@@ -109,7 +121,7 @@ const NotificationsPage = () => {
                     <div className="notification-content">
                     <div className="notification-message p-3">
                         {/* Diviser le message et styliser le nom du client */}
-                        {notification.message.split("client").map((part, index) => (
+                        {notification.message.split("reference").map((part, index) => (
                           <React.Fragment key={index}>
                             {index > 0 && <span className="client-name">{notification.clientNom}</span>}
                             {part}

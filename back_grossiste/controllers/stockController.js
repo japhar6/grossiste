@@ -155,7 +155,7 @@ exports.getQuantiteProduitByIde = async (req, res) => {
       ...produit.toObject(),
       quantiteDisponible: quantiteMaximale,
       entrepotsecondaireNom: entrepotMaxQuantite,
-      entrepotId :entrepotSecondaireNom,
+      entrepotId :entrepotIdMaxQuantite,
       uniteNom: uniteMaxQuantite // Ajouter l'unité à la réponse
     };
 

@@ -162,6 +162,7 @@ const TransfertAdmin = () => {
               </div>
               <button className='btn btn-primary w-25 m-2' onClick={handlePrint}>Imprimer</button>
             </div>
+            </div>
 
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
               {loadingEntrepots ? (
@@ -227,7 +228,7 @@ const TransfertAdmin = () => {
                 </table>
 
               )}
-            </div> </div>
+            </div>
         </div>
       </section>
     </main>

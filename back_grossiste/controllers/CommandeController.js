@@ -48,33 +48,6 @@ exports.ajouterCommande = async (req, res) => {
             const prixdevente = uniteChoisie.prixdevente;
             const totalProduit = prixdevente * produitData.quantite;
         
-            let typeRemise = "aucune";
-            let valeurRemise = 0;
-            let prixApresRemise = prixdevente;
-            let montantApresRemise = totalProduit;
-        
-            if (typeClient === "Client" && clientOuCommercial.remises) {
-                if (clientOuCommercial.remises.remiseParProduit) {
-                    typeRemise = "remiseParProduit";
-                    valeurRemise = clientOuCommercial.remises.remiseParProduit;
-                    prixApresRemise = prixdevente - valeurRemise;
-                    montantApresRemise = prixApresRemise * produitData.quantite;;
-                }
-        
-                if (clientOuCommercial.remises.remiseFixe) {
-                    typeRemise = "remiseFixe";
-                    valeurRemise = clientOuCommercial.remises.remiseFixe;
-                    montantApresRemise = totalProduit - valeurRemise;
-                }
-        
-                if (clientOuCommercial.remises.remiseGlobale) {
-                    typeRemise = "remiseGlobale";
-                    valeurRemise = clientOuCommercial.remises.remiseGlobale;
-                    montantApresRemise = totalProduit - (totalProduit * valeurRemise / 100);
-                }
-            }
-        
-            const totalApresRemise = montantApresRemise;
         
             // Retourner les détails de chaque produit avec le champ entrepotId
             return {
@@ -82,10 +55,7 @@ exports.ajouterCommande = async (req, res) => {
                 quantite: produitData.quantite,
                 prixdevente,
                 total: totalProduit,
-                prixApresRemise,
-                montantApresRemise,
-                typeRemise,
-                valeurRemise,
+               
                 entrepotId: produitData.entrepotId || entrepotId,  // Assurez-vous de prendre l'entrepotId spécifique pour chaque produit
                 uniteChoisie: uniteChoisie.nom
             };
@@ -93,7 +63,7 @@ exports.ajouterCommande = async (req, res) => {
         
         
         // Calcul du total général des produits après la remise par produit et remise fixe
-        let totalGeneral = produitsDetails.reduce((acc, produit) => acc + produit.montantApresRemise, 0);
+        let totalGeneral = produitsDetails.reduce((acc, produit) => acc + produit.total, 0);
         
         // Création de la commande avec le montant après remise appliqué
         const nouvelleCommande = new Commande({
@@ -112,13 +82,7 @@ exports.ajouterCommande = async (req, res) => {
         console.log("Commande créée avec succès :", nouvelleCommande);
 
 
-        // Si la commande est activée, réinitialiser la remise du client à zéro
-        if (statut === "en cours" && typeClient === "Client" && clientOuCommercial) {
-            clientOuCommercial.remises.remiseGlobale = 0;
-            clientOuCommercial.remises.remiseFixe = 0;
-            clientOuCommercial.remises.remiseParProduit = 0;
-            await clientOuCommercial.save();
-        }
+     
         
         res.status(201).json({
             message: "Commande créée avec succès.",
