@@ -109,8 +109,8 @@ function SidebarVendeur(){
                                              {buttons.map((button, index) => (
                                                  <Link 
                                                      to={button.path} 
-                                                     key={index} 
-                                                     className="btn btn-light p-3 d-flex align-items-center mb-2 sidebar-item"
+                                                     key={index}      
+                                   className={`btn btn-light p-3 d-flex align-items-center mb-2 sidebar-item ${location.pathname === button.path ? 'active' : ''}`} 
                                                  >
                                                      <FontAwesomeIcon icon={button.icon} className="text-success fw-bold" />
                                                      {!collapsed && <span className="ms-2">{button.text}</span>}
