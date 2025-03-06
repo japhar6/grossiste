@@ -163,6 +163,7 @@ function Personnels() {
 
         Swal.fire('Licencié!', 'L\'utilisateur a été mis dehors.', 'success');
         setShowModal(false);
+        window.location.reload();
       } catch (error) {
         setLoadingAction(false);
         console.error("Erreur de licenciement", error);

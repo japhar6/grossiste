@@ -17,19 +17,19 @@
   
   @keyframes blink-animation {
     50% {
-      background-color: #f8d7da;
+      background-color: #e26b6b;
     }
   }
-  
+
   @keyframes clignoter {
     0% {
-      background-color: #f8d7da; /* Couleur pour rupture de stock (rouge clair) */
+      background-color: #ff4d4d; /* Couleur pour rupture de stock (rouge clair) */
     }
     50% {
       background-color: #ffffff; /* Couleur neutre (blanc) */
     }
     100% {
-      background-color: #f8d7da; /* Retour à la couleur de rupture de stock */
+      background-color: #db7b7b; /* Retour à la couleur de rupture de stock */
     }
   }
   

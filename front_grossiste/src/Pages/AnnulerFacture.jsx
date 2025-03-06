@@ -67,7 +67,8 @@ function Caisse() {
     setSuggestions([]); // Réinitialisez les suggestions après la sélection
   };
 
-  const handleSearch = async () => {setLoadingAction(true)
+  const handleSearch = async () => {
+    setLoadingAction(true)
     try {
       const response = await axios.get(`/api/commandes/reference/${referenceFacture}`);
 
@@ -104,34 +105,34 @@ function Caisse() {
       });
     }
   };
-  
-  
-  
+
+
+
   const annulerCommande = async () => {
     if (commande) {
       try {
         setLoadingAction(true);
         const response = await axios.post(`/api/commandes/annuler-commande/${referenceFacture}`);
-  
+
         if (response.status === 200) {
           Swal.fire({
             icon: 'success',
             title: 'Commande annulée',
             text: `La commande ${referenceFacture} a été annulée avec succès.`,
           });
-  
+
           setCommande(null); // Réinitialiser la commande après l'annulation
         }
       } catch (error) {
         console.error("Erreur lors de l'annulation de la commande :", error);
-  
+
         // Vérification si l'erreur provient de la réponse du back-end (status code 400 ou 404 par exemple)
         let errorMessage = "Une erreur est survenue lors de l'annulation de la commande.";
-  
+
         if (error.response) {
           // Si l'erreur provient d'une réponse du serveur
           const { status, data } = error.response;
-          
+
           if (status === 400) {
             // Afficher un message spécifique pour le code 400
             errorMessage = data.message || "Mauvaise requête. Vérifiez les données envoyées.";
@@ -141,7 +142,7 @@ function Caisse() {
           }
           // Vous pouvez ajouter plus de conditions pour d'autres statuts d'erreur, comme 500, etc.
         }
-  
+
         // Afficher l'erreur
         Swal.fire({
           icon: 'info',
@@ -153,11 +154,11 @@ function Caisse() {
       }
     }
   };
-  
-    
-  
 
-  
+
+
+
+
 
 
 
@@ -168,13 +169,13 @@ function Caisse() {
         <Header />
         <div className="p-3 content center">
           <div className="mini-stat p-3">
-          <h1 className="alert alert-success text-start" style={{ width: '100%' }}>
+            <h1 className="alert alert-success text-start" style={{ width: '100%' }}>
               <i className="fa fa-shopping-cart"></i> Annuler une commande
             </h1>
 
             <div className="commande-container d-flex justify-content-between">
               <div className="refcli ">
-              <h6 className="gradient-text mb-3"><i className="fa fa-user"></i> Référence de la commande</h6>
+                <h6 className="gradient-text mb-3"><i className="fa fa-user"></i> Référence de la commande</h6>
                 <div className="form-group ">
                   <input
                     type="text"
@@ -192,29 +193,29 @@ function Caisse() {
                       ))}
                     </ul>
                   )}
-                 
-
-                 
 
 
 
-<button className="btno btn-success " disabled={loadingAction}  onClick={handleSearch}> 
-{loadingAction ? (
-                                          <div className="spinner-border style={{ width: '1rem !important', height: '1rem !important' }}" role="status">
-                                              <span className="visually-hidden">Chargement...</span>
-                                          </div>
-                                      ) : (
-                                          <span>
-                                              <i className='fa fa-check-circle'></i> Rechercher
-                                          </span>
-                                      )}
+
+
+
+                  <button className="btno btn-success " disabled={loadingAction} onClick={handleSearch}>
+                    {loadingAction ? (
+                      <div className="spinner-border style={{ width: '1rem !important', height: '1rem !important' }}" role="status">
+                        <span className="visually-hidden">Chargement...</span>
+                      </div>
+                    ) : (
+                      <span>
+                        <i className='fa fa-check-circle'></i> Rechercher
+                      </span>
+                    )}
                   </button>
                 </div>
 
               </div>
 
               <div className="produits p-3">
-              <h6 className="alert alert-info" style={{ width: '100%' }}><i className="fa fa-box"></i> Détails du paiement </h6>
+                <h6 className="alert alert-info" style={{ width: '100%' }}><i className="fa fa-box"></i> Détails du paiement </h6>
                 <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                   <table className="tableCS mt-2">
                     <thead>
@@ -224,7 +225,7 @@ function Caisse() {
 
 
                         <th>Mode de paiement</th>
-                    
+
                       </tr>
                     </thead>
                     <tbody>
@@ -234,7 +235,7 @@ function Caisse() {
 
 
                         <td>{modePaiement || "Non spécifié"}</td>
-                        
+
 
                       </tr>
                     </tbody>
@@ -244,8 +245,10 @@ function Caisse() {
               </div>
             </div>
             <div>
-           </div>
+            </div>
             {commande && (
+                  <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+        
               <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
                 <table className="tableCS table-bordered mt-2 text-center">
@@ -268,17 +271,18 @@ function Caisse() {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 <h6 className="total">Total : {commande.totalGeneral} Ariary</h6>
 
 
                 <button
-  className="btnVA btn-success mt-3"
-  onClick={() => {
+                  className="btnVA btn-success mt-3"
+                  onClick={() => {
 
- 
-    annulerCommande(); 
-  }}
->
+
+                    annulerCommande();
+                  }}
+                >
                   <i className="fa fa-check-circle"></i> Valider le paiement
                 </button>
               </div>
