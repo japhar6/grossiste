@@ -8,6 +8,8 @@
     flex-wrap: wrap;
   }
 
+  
+
   .list-group-item:hover {
     background-color: #f0f0f0; /* Changer la couleur de fond au survol */
     cursor: pointer; /* Optionnel, si vous voulez montrer un curseur de type "pointer" */
