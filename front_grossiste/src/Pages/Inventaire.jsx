@@ -179,7 +179,7 @@ function VisualiserInventaires() {
                     <tbody>
                       {filteredInventaires.map(inventaire => (
                         <tr key={inventaire._id}>
-                          <td>{inventaire.entrepot.nom}</td>
+                          <td>{inventaire.entrepot ? inventaire.entrepot.nom : 'Produit non disponible'}</td>
                           <td>{inventaire.produit ? inventaire.produit.nom : 'Produit non disponible'}</td>
                           <td>{inventaire.quantitéInitiale}</td>
                           <td>{inventaire.quantitéFinale}</td>

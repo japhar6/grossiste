@@ -331,7 +331,7 @@ function HistoV() {
                 </table>
               ) : (
                 <div className="scrollable-container">
-                  <table className="table-striped">
+                  <table className="table-striped" id="table-to-print" >
                     <thead>
                       <tr>
                         <th>Référence de Commande</th>

@@ -381,7 +381,7 @@ function HistoC() {
                 </div>
               ) : (
                 <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                  <table className="tableZA table-striped">
+                  <table className="tableZA table-striped" id="table-to-print">
                     <thead className="table-light">
                       <tr>
                         <th>Reference Facture</th>
