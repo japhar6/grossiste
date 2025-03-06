@@ -11,7 +11,6 @@ const paiementSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function(value) {
-                // Si le mode de paiement est "a credit", montantPaye doit être 0
                 if (this.modePaiement === "a credit") {
                     return value === 0;
                 }
@@ -23,12 +22,16 @@ const paiementSchema = new mongoose.Schema({
     referencePaiement: {
         type: String,
         required: function() { 
-            return this.modePaiement === "mobile money" || this.modePaiement === "virement bancaire";
+            return ["mobile money", "virement bancaire", "cheque"].includes(this.modePaiement);
         }
+    },
+    datePositionnementCheque: { 
+        type: Date, 
+        required: function() { return this.modePaiement === "cheque"; } 
     },
     statut: { 
         type: String, 
-        enum: ["payé complet", "payé partielle", "annulé","non payé"], 
+        enum: ["payé complet", "payé partielle", "annulé", "non payé"], 
         default: "non payé"
     },
     totalPaiement: {
@@ -42,7 +45,7 @@ const paiementSchema = new mongoose.Schema({
     },
     modePaiement: { 
         type: String, 
-        enum: ["espèce", "mobile money", "virement bancaire", "a credit"], 
+        enum: ["espèce", "mobile money", "virement bancaire", "cheque", "a credit","versement"], 
         required: true 
     },
     referenceFacture: { 

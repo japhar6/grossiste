@@ -9,7 +9,8 @@ function Facture8() {
     const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
     const [client, setClient] = useState(null);
     const [commercial, setCommercial] = useState(null);
-
+ const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
+ 
     function convertirEnLettres(nombre) {
         const nombresFr = [
             "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf",
@@ -78,6 +79,8 @@ function Facture8() {
             setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
             setClient(clientData);
             setCommercial(commercialData);
+            setdatePositionnementCheque(queryParams.get("datePositionnementCheque"));
+
         } catch (error) {
             console.error("Erreur lors du traitement des données de l'URL", error);
         }
@@ -108,16 +111,16 @@ function Facture8() {
                 </div>
                 <div className="infoCompany">
                     <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
-                    <h5 className="fw-bold">Vente de Marchandises</h5>
-                    <h5 className="fw-bold">Tnambao II, TAMATAVE</h5>
-                    <h5 className="fw-bold">034 13 881 72</h5>
+                    <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
+                    <h5 className="fw-bold">Tanambao II, TOAMASINA</h5>
+                    <h5 className="fw-bold">+ 261 34 13 881 72</h5>
                 </div>
             </div>
             <h1>-------------------------------</h1>
             <div className="facture-infos">
                 <div style={{ float: "left" }}>
                     <h5>
-                        <strong>Date :</strong> {new Date().toLocaleDateString()}
+                        <strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}
                     </h5>
                     <h5>
                         <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
@@ -136,8 +139,19 @@ function Facture8() {
                         <strong>N° :</strong> {commande.referenceFacture}
                     </h5>
                     <h5>
-                        <strong>Date limite de paiement :</strong>{" "}
-                        {dateLimiteCredit || "..........."}
+                    {modePaiement === "a credit" && (
+    <p>
+        <strong>Date limite de paiement :</strong>{" "}
+        {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
+    </p>
+)}
+
+{modePaiement === "cheque" && (
+    <p>
+        <strong>Date de positionnement :</strong>{" "}
+        {new Date(datePositionnementCheque).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
+    </p>
+)}
                     </h5>
                     <h5>
                         <strong>Référence :</strong> {referencePaiement || "..........."}
@@ -150,18 +164,20 @@ function Facture8() {
                     <thead>
                         <tr>
                             <th>Qté</th>
-                            <th>Unité</th>
+                       
                             <th>Désignation</th>
                             <th>PU</th>
+                            <th>Sous-Total</th>
                         </tr>
                     </thead>
                     <tbody>
                         {commande.produits.map((produit, index) => (
                             <tr key={index}>
                                 <td>{produit.quantite}</td>
-                                <td>{produit.uniteChoisie || "PCE"}</td>
+                               
                                 <td>{produit.produit ? produit.produit.nom : 'Nom inconnu'}</td> {/* Protection ici */}
                                 <td>{produit.prixdevente} Ariary</td>
+                                <td>{produit.quantite * produit.prixdevente }</td>
                             </tr>
                         ))}
 
@@ -185,7 +201,7 @@ function Facture8() {
                 <h5>Misaotra Tompoko</h5>
                 <div className="signaturee">
                     <span>Le Client</span>
-                    <span>Le Fournisseur</span>
+                    <span>Magasin</span>
                 </div>
             </div>
         </div>

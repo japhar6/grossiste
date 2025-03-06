@@ -18,11 +18,12 @@ function Caisse() {
   const [suggestions, setSuggestions] = useState([]);
   const [modePaiement, setModePaiement] = useState("");
   const [dateLimiteCredit, setDateLimiteCredit] = useState("");
+  const [datePositionnementCheque, SetdatePositionnementCheque] = useState("");
   const [referencePaiement, setReferencePaiement] = useState("");
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-
+  SetdatePositionnementCheque
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
   };
@@ -119,7 +120,7 @@ function Caisse() {
     }
 
     // Vérifier que la référence de paiement est remplie si nécessaire
-    if ((modePaiement === "mobile money" || modePaiement === "virement bancaire") && !referencePaiement) {
+    if ((modePaiement === "mobile money" || modePaiement === "virement bancaire"|| modePaiement === "cheque") && !referencePaiement) {
       Swal.fire({
         icon: 'warning',
         title: 'Alerte',
@@ -134,6 +135,14 @@ function Caisse() {
         icon: 'warning',
         title: 'Alerte',
         text: 'Veuillez entrer une date limite pour le paiement à crédit.',
+      });
+      return false;
+    }
+    if (modePaiement === "cheque" && !datePositionnementCheque) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Alerte',
+        text: 'Veuillez entrer une date de positionnement  pour le paiement par chèque.',
       });
       return false;
     }
@@ -152,6 +161,7 @@ function Caisse() {
       modePaiement,
       totalPaye: commande.totalGeneral,
       referencePaiement,
+      datePositionnementCheque:modePaiement === "cheque" ? datePositionnementCheque : null,
       dateLimiteCredit: modePaiement === "a credit" ? dateLimiteCredit : null,
       idCaissier,
     };
@@ -250,7 +260,7 @@ function Caisse() {
       if (modePaiement) queryParams.set("modePaiement", modePaiement);
       if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
       if (dateLimiteCredit) queryParams.set("dateLimiteCredit", dateLimiteCredit);
-
+      if (datePositionnementCheque) queryParams.set("datePositionnementCheque", datePositionnementCheque);
       if (client) {
         queryParams.set("client", JSON.stringify(client));
       } else if (commercial) {
@@ -341,9 +351,11 @@ function Caisse() {
                     <option value="mobile money">Mobile Money</option>
                     <option value="a credit">A Crédit</option>
                     <option value="virement bancaire">Virement bancaire</option>
+                    <option value="cheque">Chèque</option>
+                    <option value="versement">Versement</option>
                   </select>
 
-                  {(modePaiement === "mobile money" || modePaiement === "virement bancaire") && (
+                  {(modePaiement === "mobile money" || modePaiement === "virement bancaire"|| modePaiement === "cheque") && (
                     <div className="form-group mt-3">
                       <label htmlFor="referencePaiement">
                         {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}
@@ -358,6 +370,24 @@ function Caisse() {
                       />
                     </div>
                   )}
+
+
+{modePaiement === "cheque" && (
+                    <div className="form-group">
+                      <label htmlFor="datePositionnementCheque">Date de positionement du cheque</label>
+                      <input
+                        type="date"
+                        id="datePositionnementCheque"
+                        className="form-control"
+                        value={datePositionnementCheque}
+                        onChange={(e) => SetdatePositionnementCheque(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+
+
+
                   {modePaiement === "a credit" && (
                     <div className="form-group">
                       <label htmlFor="dateLimiteCredit">Date limite de paiement</label>

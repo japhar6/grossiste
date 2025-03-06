@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from '../api/axios';
-import Swal from "sweetalert2"; 
+import Swal from "sweetalert2";
 import "../Styles/HistoC.css";
 import Sidebar from "../Components/SidebarCaisse";
 import Header from "../Components/NavbarC";
 import { Link } from "react-router-dom";
+
 function HistoC() {
   const [paiements, setPaiements] = useState({ clients: [], commerciaux: [] });
   const [filtreType, setFiltreType] = useState("both");
   const [date, setDate] = useState("");
   const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
   const caissierId = localStorage.getItem("userid");
-  const nom = localStorage.getItem('nom'); 
+  const nom = localStorage.getItem('nom');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +49,7 @@ function HistoC() {
         const matchesDate = !date || new Date(paiement.createdAt).toLocaleDateString() === new Date(date).toLocaleDateString();
         return matchesType && matchesDate;
       })
-      .sort((a, b) => 
+      .sort((a, b) =>
         triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
       ); // Tri selon la sélection
   };
@@ -57,9 +58,9 @@ function HistoC() {
 
   const handleFactureChange = (e, paiementId) => {
     const factureType = e.target.value;
-    
+
     localStorage.setItem("paiementId", paiementId);
-    
+
     if (factureType === "factureNormal") {
       navigate("/FactureNormal");
     } else if (factureType === "Remise") {
@@ -72,15 +73,13 @@ function HistoC() {
       <header></header>
       <main className="center">
         <Sidebar />
-        <section className="contenue">  
+        <section className="contenue">
           <Header />
           <div className="p-3 content center">
             <div className="mini-stat p-3">
               <h6 className="alert alert-info text-start">Historique des Paiements fait par {nom}</h6>
 
-              <Link to='/annulerFact' >
-                  <button>Annuler une Commande</button>
-                </Link>
+          
               <div className="filter-container mb-3">
                 <label>
                   Filtrer par type:
@@ -93,25 +92,28 @@ function HistoC() {
 
                 <label>
                   Filtrer par date:
-                  <input 
-                    type="date" 
-                    className="form-control" 
-                    value={date} 
-                    onChange={e => setDate(e.target.value)} 
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={date}
+                    onChange={e => setDate(e.target.value)}
                   />
                 </label>
 
                 <label>
                   Trier par montant:
                   <select className="form-select" value={triMontant} onChange={e => setTriMontant(e.target.value)}>
-                  <option value="desc">Montant décroissant</option>
-                  <option value="asc">Montant croissant</option></select>
+                    <option value="desc">Montant décroissant</option>
+                    <option value="asc">Montant croissant</option></select>
                 </label>
+                
               </div>
-
+              <Link to='/annulerFact' >
+                <button>Annuler une Commande</button>
+              </Link>
               {filteredPaiements.length === 0 ? (
-                    <div className="alert alert-warning" role="alert">
-                <p>Aucun paiement trouvé.</p> </div>
+                <div className="alert alert-warning" role="alert">
+                  <p>Aucun paiement trouvé.</p> </div>
               ) : (
                 <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
                   <table className="tableZA table-striped">
@@ -122,56 +124,43 @@ function HistoC() {
                         <th>Montant Payé</th>
                         <th>Statut</th>  <th>Mode de paiement</th>
                         <th>Date de payement</th>
-                       
+
                         <th>Facture</th>
                       </tr>
                     </thead>
                     <tbody>
-  {filteredPaiements.map((paiement) => {
-    const estEnRetard = paiement.modePaiement === "a credit" &&
-      paiement.dateLimiteCredit &&
-      new Date(paiement.dateLimiteCredit) <= new Date();
+                      {filteredPaiements.map((paiement) => (
+                        <tr key={paiement._id}>
+                          <td>{paiement.commandeId?.referenceFacture}</td>
+                          <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
+                          <td>{paiement.montantPaye} ariary</td>
 
-    return (
-      <tr key={paiement._id} className={estEnRetard ? "clignotant" : ""} onClick={() => handleRowClick(paiement)}>
-        <td>{paiement.commandeId?.referenceFacture}</td>
-        <td>{paiement.type === "commercial" ? paiement.commercialNom : paiement.clientNom}</td>
-
-        <td className="text-noir" style={{ color: "black" }}>
-          <ul className="produit-list">
-            {paiement.commandeId?.produits?.length > 0 ? (
-              paiement.commandeId.produits.map((produit) => (
-                <li key={produit._id}>
-                  {produit.produit?.nom || "Inconnu"} - {produit.quantite} x {produit.prixdevente} ariary
-                </li>
-              ))
-            ) : (
-              <li>Aucun produit</li>
-            )}
-          </ul>
-        </td>
-
-        <td>{paiement.montantPaye} ariary</td>
-        <td>
-          {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
-          {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
-            <span style={{ color: "red", fontWeight: "bold" }}>
-              📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
-            </span>
-          )}
-          {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
-            <span style={{ color: "blue", fontWeight: "bold" }}>
-              🔢 Réf : {paiement.referencePaiement}
-            </span>
-          )}
-        </td>
-        <td>{paiement.statut}</td>
-        <td>{paiement.idCaissier && paiement.idCaissier.nom ? paiement.idCaissier.nom : "Non spécifié"}</td>
-        <td>{new Date(paiement.createdAt).toLocaleDateString()}</td>
-      </tr>
-    );
-  })}
-</tbody>
+                          <td>{paiement.statut}</td>
+                          <td>
+                            {paiement.modePaiement ? paiement.modePaiement : "Non spécifié"}
+                            {paiement.modePaiement === "a credit" && paiement.dateLimiteCredit && (
+                              <span style={{ color: "red", fontWeight: "bold" }}>
+                                {" "} 📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}
+                              </span>
+                            )}
+                            {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+                              <span style={{ color: "blue", fontWeight: "bold" }}>
+                                {" "} 🔢 Réf : {paiement.referencePaiement}
+                              </span>
+                            )}
+                          </td>
+                          <td>{new Date(paiement.createdAt).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</td>
+                          <td>
+                            <select className="form-control" onChange={(e) => handleFactureChange(e, paiement._id)}>
+                              <option>Selectionner la facture</option>
+                              <option value="factureNormal">Facture normale</option>
+                              <option value="Remise">Avec Remise</option>
+                              <option value="">Sans prix</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
                   </table>
                 </div>
               )}

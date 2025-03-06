@@ -10,6 +10,7 @@ function FactureRem() {
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
+ const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -32,6 +33,8 @@ function FactureRem() {
       setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
       setClient(clientData);
       setCommercial(commercialData);
+      setdatePositionnementCheque(queryParams.get("datePositionnementCheque"));
+
     } catch (error) {
       console.error("Erreur lors du traitement des données de l'URL", error);
     }
@@ -101,101 +104,97 @@ function FactureRem() {
   
     const clientOuCommercial = client || commercial;
 
-  return (
-    <div className="facture-container">
-      <div className="facture-header">
-        <img src={Logo} alt="Logo" width={150} />
-        <div className="infoCompany">
-          <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
-          <p>Vente de Marchandises</p>
-          <p>Tnambao II, TAMATAVE</p>
-          <p>034 13 881 72</p>
-        </div>
-      </div>
-      <hr />
-      <div className="facture-info p-3">
-        <div style={{ float: "left" }}>
-          <p>
-            <strong>Date :</strong> {new Date().toLocaleDateString()}
-          </p>
-          <p>
-          <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
-          </p>
-          <p>
-            <strong>Adresse :</strong>    {clientOuCommercial?.adresse || "..................."}
-          </p>
-          <p>
-            <strong>Mode de paiement :</strong> {modePaiement || "............."}
-          </p>
-        </div>
-        <div style={{ float: "right" }}>
-          <h3>FACTURE DE REMISE</h3>
-          <p>
-            <strong>N° :</strong> {commande.referenceFacture}
-          </p>
-          <p>
-            <strong>Date limite de paiement :</strong>{" "}
-            {dateLimiteCredit || "..........."}
-          </p>
-          <p>
-            <strong>Référence :</strong> {referencePaiement || "..........."}
-          </p>
-        </div>
-      </div>
-      <h1>-------------------------------</h1>
-      <div className="facture-details mt-4">
-        <table className="table table-responsive table-bordered">
-          <thead>
-            <tr>
-              <th>Qté</th>
-              <th>Unité</th>
-              <th>Désignation</th>
-              <th>Entrepot</th>
-              <th>Type de remise</th>
-              <th>PU</th>
-              <th>Montant Avant Remise</th>
-              <th>Montant Après Remise</th>
-            </tr>
-          </thead>
-          <tbody>
-            {commande.produits.map((produit, index) => (
-              <tr key={index}>
-                <td>{produit.quantite}</td>
-                <td>{produit.uniteChoisie}</td>
-                <td>{produit.produit.nom}</td>
-                <td>{produit.entrepotId.nom}</td>
-                <td>{`${produit.typeRemise}: ${produit.valeurRemise}`}</td>
-                <td>{produit.prixdevente} Ariary</td>
-                <td>{produit.quantite * produit.prixdevente} Ariary</td>
-                <td>{produit.montantApresRemise} Ariary</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="facture-summary">
-        <p>
-          <strong>Total Ariary :</strong> {commande.totalGeneral} Ariary
-        </p>
-        <p>
-          <strong>Total en FMG :</strong> {commande.totalGeneral * 5} FMG
-        </p>
-      </div>
-
-      <div className="facture-footer">
-        <p>
-          Arrêtée la présente facture à la somme de   {convertirEnLettres(commande.totalGeneral)}  Ariary
-        </p>
-        <p>Misaotra Tompoko</p>
-        <div className="signature">
-          <span>Le Client</span>
-          <span>Le Fournisseur</span>
-        </div>
-      </div>
-   
-    </div>
-  );
+ return (
+     <div className="facture-container">
+       <div className="facture-header">
+         <img src={Logo} alt="Logo" width={150} />
+         <div className="infoCompany">
+           <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
+           <p>Vente de Marchandises</p>
+           <p>Tnambao II, TAMATAVE</p>
+           <p>034 13 881 72</p>
+           <h3>FACTURE DE REMISE</h3>
+         </div>
+       </div>
+       <hr />
+       <div className="facture-info p-3">
+         <div style={{ float: "left" }}>
+           <p><strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', })}</p>
+           <p><strong>Client :</strong> {paiement.commercialNom === "Inconnu" && paiement.clientNom !== "Inconnu"
+             ? paiement.clientNom : paiement.commercialNom || "Non spécifié"}</p>
+           <p><strong>Adresse :</strong> {paiement.clientAdresse || paiement.ComAdresse || "..................."}</p>
+           <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
+           
+         </div>
+         <div style={{ float: "right" }}>
+      
+      
+           <div className="center">
+            <p><strong>N° :</strong> {paiement.referenceFacture}</p> 
+           
+           </div>
+           <p><strong>Type de remise :</strong> {
+   paiement.commandeId.typeRemise === 'parProduit' 
+     ? 'Par Produit' 
+     : paiement.commandeId.typeRemise === 'pourcentage' 
+       ? `Remise en pourcentage : ${paiement.commandeId.valeurRemise}%` 
+       : paiement.commandeId.typeRemise === 'fixe' 
+         ? `Remise fixe : ${paiement.commandeId.valeurRemise} Ariary` 
+         : 'Aucune remise'
+ }</p>
+ 
+ 
+           <p><strong>Date limite de paiement :</strong> {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', }) || "..........."}</p>
+           <p><strong>Référence :</strong> {referencePaiement || "..........."}</p>
+ 
+ 
+         </div>
+       </div>
+       <h1>-------------------------------</h1>
+       <div className="facture-details mt-4">
+         <table className="table table-responsive table-bordered">
+           <thead>
+             <tr>
+               <th>Qté</th>
+               <th>Unite</th>
+               <th>Désignation</th>
+               <th>PU</th>
+               <th>Montant à payé</th>
+             </tr>
+           </thead>
+           <tbody>
+             {paiement?.commandeId?.produits?.length > 0 ? (
+               paiement.commandeId.produits.map((produit, index) => (
+                 <tr key={index}>
+                   <td>{produit.quantite}</td>
+                   <td>{produit.uniteChoisie}</td>
+                   <td>{produit.produit.nom}</td>
+                   <td>{produit.prixdevente} Ariary</td>
+                   <td>{produit.quantite * produit.prixdevente} Ariary</td>
+                 </tr>
+               ))
+             ) : (
+               <tr><td colSpan="7">Aucun produit trouvé</td></tr>
+             )}
+           </tbody>
+         </table>
+       </div>
+ 
+       <div className="facture-summary">
+         <p><strong>Total Ariary :</strong> {paiement.totalPaiement} Ariary</p>
+         <p><strong>Total en FMG :</strong> {paiement.totalPaiement * 5} FMG</p>
+       </div>
+ 
+       <div className="facture-footer">
+         <p>Arrêtée la présente facture à la somme de {convertirEnLettres(paiement.totalPaiement)} Ariary</p>
+         <p>Misaotra Tompoko</p>
+         <div className="signature">
+           <span>Le Client</span>
+           <span>Magasin</span>
+         </div>
+       </div>
+     </div>
+   );
 }
 
 export default FactureRem;

@@ -9,32 +9,7 @@ function Facture() {
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
-  const [nomEntrepot, setNomentrepot] = useState(null);
-  useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-
-    try {
-      const commandeData = queryParams.get("commande")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
-        : null;
-      const clientData = queryParams.get("client")
-        ? JSON.parse(decodeURIComponent(queryParams.get("client")))
-        : null;
-      const commercialData = queryParams.get("commercial")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
-        : null;
-      setNomentrepot(queryParams.get("nomEntrepot"));
-      setCommande(commandeData);
-      setModePaiement(queryParams.get("modePaiement"));
-      setReferencePaiement(queryParams.get("referencePaiement"));
-      setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
-      setClient(clientData);
-      setCommercial(commercialData);
-    } catch (error) {
-      console.error("Erreur lors du traitement des données de l'URL", error);
-    }
-  }, []);
-
+  const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
   function convertirEnLettres(nombre) {
     const nombresFr = [
         "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", 
@@ -82,14 +57,41 @@ function Facture() {
     }
     return result.trim();
 }
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+
+    try {
+      const commandeData = queryParams.get("commande")
+        ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
+        : null;
+      const clientData = queryParams.get("client")
+        ? JSON.parse(decodeURIComponent(queryParams.get("client")))
+        : null;
+      const commercialData = queryParams.get("commercial")
+        ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
+        : null;
+
+      setCommande(commandeData);
+      setModePaiement(queryParams.get("modePaiement"));
+      setReferencePaiement(queryParams.get("referencePaiement"));
+      setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
+      setClient(clientData);
+      setCommercial(commercialData);
+      setdatePositionnementCheque(queryParams.get("datePositionnementCheque"));
+    } catch (error) {
+      console.error("Erreur lors du traitement des données de l'URL", error);
+    }
+  }, []);
+
   useEffect(() => {
     if (commande) {
       setTimeout(() => {
-        window.print(); // Imprime après 2 secondes
+        window.print(); 
         setTimeout(() => {
           window.close(); // Ferme l'onglet après l'impression
-        }, 500); // 1 seconde après impression
-      }, 900);
+        }, 1000); // 1 seconde après impression
+      }, 2000);
     }
   }, [commande]);
 
@@ -104,20 +106,20 @@ function Facture() {
       <div className="facture-header">
         <img src={Logo} alt="Logo" width={150} />
         <div className="infoCompany">
-          <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
-          <p>Vente de Marchandises</p>
-          <p>Tnambao II, TAMATAVE</p>
-          <p>034 13 881 72</p>
-        </div>
+                    <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
+                    <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
+                    <h5 className="fw-bold">Tanambao II, TOAMASINA</h5>
+                    <h5 className="fw-bold">+ 261 34 13 881 72</h5>
+                </div>
       </div>
       <h1>-------------------------------</h1>
       <div className="facture-info p-3">
         <div style={{ float: "left" }}>
           <p>
-            <strong>Date :</strong> {new Date().toLocaleDateString()}
+            <strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}
           </p>
           <p>
-            <strong>Commerciale :</strong> {clientOuCommercial?.nom || "Non spécifié"}
+            <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
           </p>
           <p>
             <strong>Adresse :</strong>{" "}
@@ -127,15 +129,24 @@ function Facture() {
             <strong>Mode de paiement :</strong> {modePaiement || "............."}
           </p>
         </div>
-        <div style={{ float: "right" }}>
+        <div style={{ float: "right"}}>
           <h3>FACTURE</h3>
           <p>
             <strong>N° :</strong> {commande.referenceFacture}
           </p>
-          <p>
-            <strong>Date limite de paiement :</strong>{" "}
-            {dateLimiteCredit || "..........."}
-          </p>
+          {modePaiement === "a credit" && (
+    <p>
+        <strong>Date limite de paiement :</strong>{" "}
+        {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
+    </p>
+)}
+
+{modePaiement === "cheque" && (
+    <p>
+        <strong>Date de positionnement :</strong>{" "}
+        {new Date(datePositionnementCheque).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
+    </p>
+)}
           <p>
             <strong>Référence :</strong> {referencePaiement || "..........."}
           </p>
@@ -148,23 +159,24 @@ function Facture() {
             <tr>
               <th>Qté</th>
               <th>Unité</th>
-
-              <th>Dépôt</th>
+              <th>Désignation</th>
+              <th>Entrepot</th>
               <th>PU</th>
               <th>Montant</th>
             </tr>
           </thead>
           <tbody>
-            {commande.produits.map((produit, index) => (
-              <tr key={index}>
-                <td>{produit.quantite}</td>
-                <td>{produit.uniteChoisie || "PCE"}</td>
-                <td>{produit.produit.nom}</td>
+          {commande.produits.map((produit, index) => (
+  <tr key={index}>
+    <td>{produit.quantite}</td>
+    <td>{produit.uniteChoisie || "PCE"}</td>
+    <td>{produit.produit ? produit.produit.nom : 'Nom inconnu'}</td> {/* Protection ici */}
+    <td>{produit.entrepotId ? produit.entrepotId.nom : 'Entrepôt inconnu'}</td> {/* Protection ici */}
+    <td>{produit.prixdevente} Ariary</td>
+    <td>{produit.total} Ariary</td>
+  </tr>
+))}
 
-                <td>{produit.prixdevente} Ariary</td>
-                <td>{produit.total} Ariary</td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>
@@ -180,12 +192,12 @@ function Facture() {
 
       <div className="facture-footer">
         <p>
-          Arrêtée la présente facture à la somme de {convertirEnLettres(commande.totalGeneral)} Ariary
+          Arrêtée la présente facture à la somme de  {convertirEnLettres(commande.totalGeneral)}   Ariary
         </p>
         <p>Misaotra Tompoko</p>
         <div className="signature">
           <span>Le Client</span>
-          <span>Le Fournisseur</span>
+          <span> Magasin</span>
         </div>
       </div>
     </div>

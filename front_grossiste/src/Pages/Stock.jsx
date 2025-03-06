@@ -192,7 +192,7 @@ function Stock() {
     const handlePrint = () => {
       const printContent = document.getElementById("table-to-print").outerHTML;
       const printWindow = window.open('', '', 'height=500,width=800');
-      printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+      printWindow.document.write('<html><head><title>Impression des stocks</title>');
       printWindow.document.write(`
         <style>
           body {
@@ -219,7 +219,7 @@ function Stock() {
         </style>
       `);
       printWindow.document.write('</head><body>');
-      printWindow.document.write('<h1>Inventaires filtrés</h1>');
+      printWindow.document.write('<h1>Historiques des stocks filtrés</h1>');
       printWindow.document.write(printContent);
       printWindow.document.write('</body></html>');
       printWindow.document.close();

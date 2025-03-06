@@ -173,6 +173,7 @@ function AchatProduits() {
                 title: 'Erreur de données',
                 text: 'Chaque unité doit avoir un nom, un facteur de conversion et un prix de vente.',
             });
+            setLoadingAction(false);
             return; // Ne pas continuer si les unités sont invalides
         }
 
@@ -880,6 +881,7 @@ function AchatProduits() {
                                                 <div key={index} className="unite-section mt-2 border rounded p-3">
                                                     <div className="form-group">
                                                         <input
+                                                        min="1"
                                                             type="text"
                                                             className="form-control"
                                                             placeholder="Nom de l'unité"

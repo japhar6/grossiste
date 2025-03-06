@@ -150,43 +150,48 @@ function HistoAcha() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {filteredPaniers.map((panier) => (
-                                                <tr key={panier._id}>
-                                                    <td>{new Date(panier.dateAchat).toLocaleDateString()}</td>
-                                                    <td>
-                                                        {panier.achats.map((achat, index) => (
-                                                            <div key={index}>
-                                                                <strong>{achat.produit.nom}</strong> x {achat.quantite} {achat.unite}
-                                                            </div>
-                                                        ))}
-                                                    </td>
-                                                    <td>{panier.statut}</td>
-                                                    <td>{panier.totalGeneral} ariary</td>
-                                                    <td>
-                                                        {panier.dateLimiteCredit && (
-                                                            <span className="date-limite" style={{ color: 'black' }}>
-                                                                📅 Échéance: {new Date(panier.dateLimiteCredit).toLocaleDateString()}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td>{panier.modePaiement || "Non renseigné"}</td>
+    {filteredPaniers.length === 0 ? (
+        <tr>
+            <td colSpan="8" className="text-center">Aucun achat par crédit trouvé</td>
+        </tr>
+    ) : (
+        filteredPaniers.map((panier) => (
+            <tr key={panier._id}>
+                <td>{new Date(panier.dateAchat).toLocaleDateString()}</td>
+                <td>
+                    {panier.achats.map((achat, index) => (
+                        <div key={index}>
+                            <strong>{achat.produit.nom}</strong> x {achat.quantite} {achat.unite}
+                        </div>
+                    ))}
+                </td>
+                <td>{panier.statut}</td>
+                <td>{panier.totalGeneral} ariary</td>
+                <td>
+                    {panier.dateLimiteCredit && (
+                        <span className="date-limite" style={{ color: 'black' }}>
+                            📅 Échéance: {new Date(panier.dateLimiteCredit).toLocaleDateString()}
+                        </span>
+                    )}
+                </td>
+                <td>{panier.modePaiement || "Non renseigné"}</td>
+                <td>{panier.totalGeneral || "Non renseigné"}</td>
+                <td>
+                    {panier.statut === 'non payé' && (
+                        <button
+                            className="btn btn-success btn-sm w-auto p-2"
+                            onClick={() => handlePaiement(panier._id)}
+                            disabled={loadingAction}
+                        >
+                            Payer
+                        </button>
+                    )}
+                </td>
+            </tr>
+        ))
+    )}
+</tbody>
 
-                                                    <td>{panier.totalGeneral || "Non renseigné"}</td>
-                                                    <td>
-                                                        {panier.statut === 'non payé' && (
-                                                            <button
-                                                                className="btn btn-success btn-sm w-auto p-2"  // Réduit la taille avec btn-sm, et ajuste la largeur avec w-auto
-
-                                                                onClick={() => handlePaiement(panier._id)}  // Appel à la fonction pour marquer comme payé
-                                                                disabled={loadingAction} // Désactive le bouton pendant le traitement
-                                                            >
-                                                                Payer
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
                                     </table>
                                 </div>
                             )}

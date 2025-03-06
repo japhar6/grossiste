@@ -57,17 +57,17 @@ function FactureSans() {
       <div className="facture-header">
         <img src={Logo} alt="Logo" width={150} />
         <div className="infoCompany">
-          <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
-          <p>Vente de Marchandises</p>
-          <p>Tnambao II, TAMATAVE</p>
-          <p>034 13 881 72</p>
-        </div>
+                    <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
+                    <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
+                    <h5 className="fw-bold">Tanambao II, TOAMASINA</h5>
+                    <h5 className="fw-bold">+ 261 34 13 881 72</h5>
+                </div>
       </div>
       <h1>-------------------------------</h1>
       <div className="facture-info p-3">
         <div style={{ float: "left" }}>
           <p>
-            <strong>Date :</strong> {new Date().toLocaleDateString()}
+            <strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}
           </p>
           <p>
             <strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}
@@ -87,7 +87,7 @@ function FactureSans() {
           </p>
           <p>
             <strong>Date limite de paiement :</strong>{" "}
-            {dateLimiteCredit || "..........."}
+            {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
           </p>
           <p>
             <strong>Référence :</strong> {referencePaiement || "..........."}

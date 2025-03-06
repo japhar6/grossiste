@@ -138,6 +138,7 @@ function HistoC() {
     if (paiement.modePaiement) queryParams.set("modePaiement", paiement.modePaiement);
     if (paiement.referencePaiement) queryParams.set("referencePaiement", paiement.referencePaiement);
     if (paiement.dateLimiteCredit) queryParams.set("dateLimiteCredit", paiement.dateLimiteCredit);
+    if ( paiement.commandeId.typeRemise) queryParams.set("typeRemise",  paiement.commandeId.typeRemise);
 
     // Utilisation des valeurs paiement.clientNom et paiement.commercialNom
     if (paiement.clientNom) {
@@ -152,6 +153,7 @@ function HistoC() {
       dateLimiteCredit: paiement.dateLimiteCredit,
       client: paiement.clientNom,
       commercial: paiement.commercialNom,
+      typeremise : paiement.commandeId.typeRemise
     });
 
 
@@ -176,7 +178,7 @@ function HistoC() {
   const handlePrint = () => {
     const printContent = document.getElementById("table-to-print").outerHTML;
     const printWindow = window.open('', '', 'height=500,width=800');
-    printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+    printWindow.document.write('<html><head><title>Impression des paiements</title>');
     printWindow.document.write(`
       <style>
         body {
@@ -203,7 +205,7 @@ function HistoC() {
       </style>
     `);
     printWindow.document.write('</head><body>');
-    printWindow.document.write('<h1>Inventaires filtrés</h1>');
+    printWindow.document.write('<h1>Historique de paiement filtrés</h1>');
     printWindow.document.write(printContent);
     printWindow.document.write('</body></html>');
     printWindow.document.close();
@@ -348,14 +350,12 @@ function HistoC() {
                 <Link to='/histodecaisse' >
                   <button className=" m-2">Historique de decaissement</button>
                 </Link>
-                <Link to='/annulerFact' >
-                  <button className=" m-2">Annuler une Commande</button>
-                </Link>
+              
                 <button className="btn btn-primary m-2 w-25" onClick={handlePrint}>Imprimer</button>
               </div>
               {filteredPaiements.length === 0 ? (
                 <table className="tableZA table-striped" id="table-to-print">
-                  <thead className="table-light">
+                  <thead className="table-light" >
                     <tr>
                       <th>Reference Facture</th>
                       <th>{filtreType === "commercial" ? "Commercial" : "Client"}</th>
@@ -391,8 +391,9 @@ function HistoC() {
 
                         <th>Produits</th>
                         <th>Montant Payé</th>
-                        <th>Statut</th>
+                       
                         <th>Mode de payement</th>
+                        <th>Statut</th>
                         <th>Fait par :</th>
                         <th>Date de paiement</th>
                       </tr>
@@ -430,9 +431,14 @@ function HistoC() {
                                   📅 Échéance : {new Date(paiement.dateLimiteCredit).toLocaleDateString()}
                                 </span>
                               )}
-                              {["mobile money", "virement bancaire"].includes(paiement.modePaiement) && paiement.referencePaiement && (
+                              {["mobile money", "virement bancaire","cheque","versement"].includes(paiement.modePaiement) && paiement.referencePaiement && (
                                 <span style={{ color: "blue", fontWeight: "bold" }}>
                                   🔢 Réf : {paiement.referencePaiement}
+                                </span>
+                              )}
+                                 {paiement.modePaiement === "cheque" && paiement.datePositionnementCheque && (
+                                <span style={{ color: "red", fontWeight: "bold" }}>
+                                  📅 Date : {new Date(paiement.datePositionnementCheque).toLocaleDateString()}
                                 </span>
                               )}
                             </td>

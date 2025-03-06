@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import "../Styles/Histov.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
-import EditCommandeModal from '../Components/EditCommande'; 
+import EditCommandeModal from '../Components/EditCommande';
 
 function HistoV() {
   const [commandes, setCommandes] = useState([]); const [dateStart, setDateStart] = useState("");  // Date de début
@@ -22,7 +22,7 @@ function HistoV() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [filtreTypeClient, setfiltreTypeClient] = useState("");
   const [filtreNomProduit, setFiltreNomProduit] = useState(""); // État pour le nom du produit
- 
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedCommande, setSelectedCommande] = useState(null);
   const [orderBy, setOrderBy] = useState("nom");
@@ -39,7 +39,7 @@ function HistoV() {
 
 
 
-  
+
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
@@ -131,7 +131,7 @@ function HistoV() {
     const handlePrint = () => {
       const printContent = document.getElementById("table-to-print").outerHTML;
       const printWindow = window.open('', '', 'height=500,width=800');
-      printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+      printWindow.document.write('<html><head><title>Impression des commandes</title>');
       printWindow.document.write(`
         <style>
           body {
@@ -158,7 +158,7 @@ function HistoV() {
         </style>
       `);
       printWindow.document.write('</head><body>');
-      printWindow.document.write('<h1>Inventaires filtrés</h1>');
+      printWindow.document.write('<h1>Historiques des commandes filtrés</h1>');
       printWindow.document.write(printContent);
       printWindow.document.write('</body></html>');
       printWindow.document.close();
@@ -413,9 +413,9 @@ function HistoV() {
             </div>
           </div>
           <div>
-     
-         
-    </div>
+
+
+          </div>
         </section>
       </main>
     </>

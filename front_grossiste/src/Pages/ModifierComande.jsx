@@ -109,6 +109,7 @@ const produitsData = produitsToUpdate.map(produit => ({
             confirmButtonText: 'OK'
           }).then(() => {
             localStorage.removeItem('referenceFacture');
+            window.location.reload();
         });
         
       } else {
@@ -149,7 +150,7 @@ const produitsData = produitsToUpdate.map(produit => ({
             <div className="bg-light p-4 rounded shadow-sm">
               <h2 className="mb-4">Détails de la Commande</h2>
               <p><strong>Référence :</strong> {selectedCommande.referenceFacture}</p>
-              <p><strong>Date :</strong> {new Date(selectedCommande.createdAt).toLocaleDateString()}</p>
+              <p><strong>Date :</strong> {new Date(selectedCommande.createdAt).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</p>
 
               <h4>Produits</h4>
               <table className="table table-striped table-hover">
