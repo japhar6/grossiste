@@ -8,7 +8,8 @@ import Sound from "../assets/mixkit-clear-announce-tones-2861.wav";
 import generateInvoice from "../config/generateInvoice";
 import generateDiscountInvoice from "../config/generateCreditInvoice";
 import { useNavigate } from "react-router-dom";
-
+import Pusher from 'pusher-js';
+import audio from '../assets/mixkit-positive-notification-951.wav';
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -25,9 +26,33 @@ function Caisse() {
   const [loadingAction, setLoadingAction] = useState(false);
   const [argentRendu, setArgentRendu] = useState(0);
   const [argentDonne, setArgentDonne] = useState(0);
-
+  const [notifications, setNotifications] = useState([]);
   const isDisabled = commande?.clientId?.creerPar === "vendeur" && modePaiement === "credit";
+const notificationSound = new Audio(audio);
+  useEffect(() => {
+    // Configurer Pusher pour recevoir des événements
+   const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
+        cluster: 'mt1',
+      });
+    // Abonnement au canal pour recevoir les notifications de nouvelles commandes
+    const channel = pusher.subscribe('caissier-channel');
+    channel.bind('nouveau-comande', (data) => {
+      // Recevoir le message de notification
+      setNotifications((prevNotifications) => {
+        // Si la notification existe déjà, ne pas l'ajouter
+        if (!prevNotifications.some(notif => notif.message === data.message)) {
+          notificationSound.play();
+          return [...prevNotifications, data.message];
+        }
+        return prevNotifications;
+      });
+    });
 
+    // Nettoyage lors de la fermeture du composant
+    return () => {
+      pusher.unsubscribe('caissier-channel');
+    };
+  }, []);
 
   console.log("isDisabled:", isDisabled);
 
@@ -40,6 +65,10 @@ function Caisse() {
     const audio = new Audio(Sound);
     audio.play();
   };
+
+
+
+
 
 
   const idCaissier = localStorage.getItem("userid");

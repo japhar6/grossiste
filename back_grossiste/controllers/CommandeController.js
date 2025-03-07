@@ -7,6 +7,7 @@ const Stock = require('../models/Stock');
 const Vente = require('../models/Ventes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Paiement = require("../models/Paiement");
+const pusher = require('../config/pusher');  
 
 exports.ajouterCommande = async (req, res) => {
     try {
@@ -26,6 +27,9 @@ exports.ajouterCommande = async (req, res) => {
             if (!commercialId) return res.status(400).json({ message: "commercialId est requis pour un Commercial." });
             clientOuCommercial = await Commercial.findById(commercialId);
         }
+
+
+
 
         if (!clientOuCommercial) {
             return res.status(404).json({ message: `${typeClient} non trouvé avec cet ID.` });
@@ -82,7 +86,11 @@ exports.ajouterCommande = async (req, res) => {
         console.log("Commande créée avec succès :", nouvelleCommande);
 
 
-     
+      // Émettre un événement Pusher avec juste l'ID de la commande
+ pusher.trigger('caissier-channel', 'nouveau-comande', {
+    message: 'Nouvelle commande reçue.',
+   
+  });
         
         res.status(201).json({
             message: "Commande créée avec succès.",
