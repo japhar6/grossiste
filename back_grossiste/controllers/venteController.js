@@ -141,18 +141,13 @@ console.log(`${remainingQuantity} ${item.uniteChoisie} = ${quantityInMinUnit} ${
         res.status(400).json({ message: error.message });
     }
 };
-
-
-
-
-
-
 exports.validerRetourProduits = async (req, res) => {
     try {
-        const { venteComId, magasinierId } = req.body;
+        const { venteComId, magasinierId, entrepotChoisiId } = req.body;
 
         // Vérifier si la vente existe
         const venteCom = await VenteCom.findById(venteComId).populate('produitsRestants.produitId');
+        
         if (!venteCom) {
             return res.status(404).json({ message: "Vente non trouvée" });
         }
@@ -162,20 +157,24 @@ exports.validerRetourProduits = async (req, res) => {
             return res.status(400).json({ message: "Aucun produit restant à retourner" });
         }
 
+        // Vérifier si le magasinier est lié à l'entrepôt choisi
+        const magasinier = await Magasinier.findById(magasinierId);
+        if (!magasinier) {
+            return res.status(404).json({ message: "Magasinier non trouvé" });
+        }
+
+        // Vérifier que l'entrepôt choisi par le magasinier est valide
+        if (!magasinier.entrepots.some(entrepot => entrepot._id.toString() === entrepotChoisiId)) {
+            return res.status(400).json({ message: "L'entrepôt choisi n'est pas lié au magasinier" });
+        }
+
         // Mettre à jour le stock
         await Promise.all(venteCom.produitsRestants.map(async (item) => {
-            const stock = await Stock.findOne({ produit: item.produitId._id, statut: 'actif' });
+            const stock = await Stock.findOne({ produit: item.produitId._id, statut: 'actif', entrepot: entrepotChoisiId });
 
             if (!stock) {
-                throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom}`);
+                throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom} dans l'entrepôt choisi`);
             }
-            // Vérifie si l'entrepôt est défini pour chaque produit
-            if (!item.entrepotId) {
-                throw new Error(`Entrepôt non défini pour le produit ${item.produit.nom}`);
-            }
-
-            let entrepotId = item.entrepotId._id; // Accède à l'ID de l'entrepôt uniquement s'il est défini
-            console.log(`Produit: ${item.produit.nom}, Quantité demandée: ${remainingQuantity}, Entrepôt: ${item.entrepotId.nom}`);
 
             // Affichage des détails de l'unité de retour et de l'unité du stock
             console.log(`Produit retourné : ${item.produitId.nom}`);
@@ -217,7 +216,7 @@ exports.validerRetourProduits = async (req, res) => {
         const tousLesProduitsRetournés = venteCom.produitsRestants.every(item => item.quantiteRestante > 0);
 
         if (tousLesProduitsRetournés) {
-            paiementCom.statut = "Produits retourner";
+            paiementCom.statut = "Produits retournés";
         }
 
         await paiementCom.save();
@@ -232,6 +231,7 @@ exports.validerRetourProduits = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 exports.getAllVentes = async (req, res) => {
     try {
