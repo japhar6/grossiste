@@ -2,11 +2,12 @@ const Vente = require('../models/Ventes');
 const Commande = require('../models/Commandes');
 const Stock = require('../models/Stock');
 const Entrepot = require('../models/Entrepot');
+const User = require('../models/User');
 const Produit = require("../models/Produits");
 const VenteCom = require('../models/VenteComm');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 // Controller pour l'historique des sorties
-const User = require('../models/User');  // Assurez-vous de bien inclure votre modèle User
+ // Assurez-vous de bien inclure votre modèle User
 // Fonction de conversion d'unité
 function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
     // Trouver l'unité de départ
@@ -157,13 +158,13 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
     }
 };
 
+
 exports.validerRetourProduits = async (req, res) => {
     try {
-        const { venteComId, magasinierId, entrepotChoisiId } = req.body;
+        const { venteComId, magasinierId } = req.body;
 
         // Vérifier si la vente existe
         const venteCom = await VenteCom.findById(venteComId).populate('produitsRestants.produitId');
-
         if (!venteCom) {
             return res.status(404).json({ message: "Vente non trouvée" });
         }
@@ -173,45 +174,17 @@ exports.validerRetourProduits = async (req, res) => {
             return res.status(400).json({ message: "Aucun produit restant à retourner" });
         }
 
-        // Vérifier si le magasinier est lié à l'entrepôt choisi
-        const magasinier = await Magasinier.findById(magasinierId);
-        if (!magasinier) {
-            return res.status(404).json({ message: "Magasinier non trouvé" });
-        }
-
-        // Vérifier que l'entrepôt choisi par le magasinier est valide
-        if (!magasinier.entrepots.some(entrepot => entrepot._id.toString() === entrepotChoisiId)) {
-            return res.status(400).json({ message: "L'entrepôt choisi n'est pas lié au magasinier" });
-        }
-
         // Mettre à jour le stock
         await Promise.all(venteCom.produitsRestants.map(async (item) => {
-            const stock = await Stock.findOne({ produit: item.produitId._id, statut: 'actif', entrepot: entrepotChoisiId });
+            const stock = await Stock.findOne({ produit: item.produitId._id, statut: 'actif' });
 
             if (!stock) {
-                throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom} dans l'entrepôt choisi`);
-            }
-
-            // Affichage des détails de l'unité de retour et de l'unité du stock
-            console.log(`Produit retourné : ${item.produitId.nom}`);
-            console.log(`Unité de retour : ${item.unite}`);
-            console.log(`Unité de stock : ${stock.unite}`);
-            console.log(`Quantité retournée : ${item.quantiteRestante}`);
-
-            // Vérifier si l'unité du produit retourné correspond à l'unité du stock
-            if (item.unite !== stock.unite) {
-                // Convertir la quantité retournée dans l'unité du stock
-                console.log(`Les unités sont différentes, conversion nécessaire.`);
-                item.quantiteRestante = await convertirQuantite(item.quantiteRestante, item.unite, item.produitId._id, stock.unite);
-                console.log(`Quantité après conversion : ${item.quantiteRestante}`);
+                throw new Error(`Stock introuvable pour le produit : ${item.produitId.nom}`);
             }
 
             // Ajouter la quantité retournée au stock
             stock.quantite += item.quantiteRestante;
             stock.valeurTotale = stock.quantite * stock.prixUnitaire;
-
-            console.log(`Quantité totale mise à jour dans le stock : ${stock.quantite}`);
-            console.log(`Valeur totale mise à jour du stock : ${stock.valeurTotale}`);
 
             await stock.save();
         }));
@@ -232,7 +205,7 @@ exports.validerRetourProduits = async (req, res) => {
         const tousLesProduitsRetournés = venteCom.produitsRestants.every(item => item.quantiteRestante > 0);
 
         if (tousLesProduitsRetournés) {
-            paiementCom.statut = "Produits retournés";
+            paiementCom.statut = "Produits retourner";
         }
 
         await paiementCom.save();
@@ -247,6 +220,7 @@ exports.validerRetourProduits = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 exports.getAllVentes = async (req, res) => {

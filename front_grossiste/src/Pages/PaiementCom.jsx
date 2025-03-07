@@ -299,11 +299,7 @@ function PaiementCom() {
         factureWindow.focus();
       }
     } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: "Le paiement n'a pas été validé.",
-      });
+     
     }
   };
 

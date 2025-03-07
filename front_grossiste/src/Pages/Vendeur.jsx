@@ -958,21 +958,24 @@ console.log("entrepot",responseSecondaire.data.entrepotId);
                     }
                   </tbody >
                 </table >
+
+                <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
+
+                <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }}   onClick={handleClick} disabled={loadingAction}>
+
+{loadingAction ? (
+  <>
+    <span className="spinner-border spinner-border-sm"></span> Chargement...
+  </>
+) : (
+  "  Enregistrer la Commande"
+)}
+</button>
               </div >
 
 
-              <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
-
-              <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }}   onClick={handleClick} disabled={loadingAction}>
-
-                {loadingAction ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm"></span> Chargement...
-                  </>
-                ) : (
-                  "  Enregistrer la Commande"
-                )}
-              </button>
+        
+             
             </div >
 
           </div >

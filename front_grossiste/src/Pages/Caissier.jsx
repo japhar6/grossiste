@@ -300,11 +300,7 @@ function Caisse() {
         openInvoices();
       }
     } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: "Le paiement n'a pas été validé.",
-      });
+    
     }
   };
   const handleArgentDonneChange = (event) => {
