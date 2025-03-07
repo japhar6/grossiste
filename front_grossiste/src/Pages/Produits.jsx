@@ -4,6 +4,7 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import axios from '../api/axios';
 import { Modal, Button, Form, Spinner } from "react-bootstrap";
+import Swal from 'sweetalert2';
 
 function ListeProduits() {
   const [produits, setProduits] = useState([]);
@@ -21,6 +22,9 @@ function ListeProduits() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+  const [produitInfo, setProduitInfo] = useState(null);
 
   const filtrerProduits = () => {
     return produits.filter((produit) => {
@@ -134,6 +138,55 @@ function ListeProduits() {
       setLoadingAction(false);
     }
   };
+
+  const handleShowModal = (produit) => {
+    setProduitInfo(produit); // Charger les informations du produit dans le modal
+    setShowModal(true); // Afficher le modal
+
+    // Charger la conversion de chaque unité dans le modal
+    const uniteActuelle = produit.unites.find((u) => u.nom === produit.unites[0]?.nom);
+    setUniteSelectionnee((prev) => ({
+      ...prev,
+      [produit._id]: uniteActuelle?.nom,
+    }));
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false); // Fermer le modal
+    setProduitInfo(null); // Réinitialiser les informations du produit
+  };
+
+  const handleModifierProduit = async () => {
+    const updates = {
+      nom: produitInfo.nom,
+      unites: produitInfo.unites, // Assurez-vous que chaque unité est correctement modifiée
+    };
+  
+    setLoadingAction(true);
+    try {
+      // Envoyer les données mises à jour à l'API
+      await axios.put(`/api/produits/info/${produitInfo._id}`, updates);
+      fetchProduits(); // Rafraîchir la liste des produits
+      handleCloseModal(); // Fermer le modal après la mise à jour
+      Swal.fire({
+        icon: 'success',
+        title: 'Produit mis à jour !',
+        text: 'Les informations du produit ont été modifiées avec succès.',
+        confirmButtonColor: '#3085d6',
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du produit:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: "La mise à jour du produit a échoué.",
+        confirmButtonColor: '#d33',
+      });
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+  
 
   return (
     <>
@@ -316,6 +369,7 @@ function ListeProduits() {
                                       Modifier
                                     </button>
                                   )}
+                                  <button className="btnpro btn-primary" onClick={() => handleShowModal(produit)}>Info</button>
                                 </td>
 
 
@@ -327,6 +381,66 @@ function ListeProduits() {
                     </table>
                   </div>
                 </div>)}
+              <Modal show={showModal} onHide={handleCloseModal}>
+                <Modal.Header closeButton>
+                  <Modal.Title>Modifier Produit</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <Form>
+                    {/* Affichage du nom du produit */}
+                    <Form.Group controlId="nomProduit">
+                      <Form.Label>Nom du produit</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={produitInfo?.nom}
+                        onChange={(e) => setProduitInfo({ ...produitInfo, nom: e.target.value })}
+                      />
+                    </Form.Group>
+
+                    {/* Affichage des unités et de leurs conversions */}
+                    <Form.Group controlId="uniteProduit">
+                      <Form.Label>Unités</Form.Label>
+                      {produitInfo?.unites.map((unite, index) => (
+                        <div key={unite._id} className="unite-row">
+                          <div className="unite-column">
+                            <Form.Label>Nom de l'unité</Form.Label>
+                            <Form.Control
+                              type="text"
+                              value={unite.nom}
+                              onChange={(e) => {
+                                const newUnites = [...produitInfo.unites];
+                                newUnites[index].nom = e.target.value;
+                                setProduitInfo({ ...produitInfo, unites: newUnites });
+                              }}
+                            />
+                          </div>
+                          <div className="unite-column">
+                            <Form.Label>Conversion</Form.Label>
+                            <Form.Control
+                              type="number"
+                              value={unite.conversion}
+                              onChange={(e) => {
+                                const newUnites = [...produitInfo.unites];
+                                newUnites[index].conversion = parseInt(e.target.value);
+                                setProduitInfo({ ...produitInfo, unites: newUnites });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </Form.Group>
+                  </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button variant="secondary" onClick={handleCloseModal}>
+                    Fermer
+                  </Button>
+                  <Button variant="primary" onClick={handleModifierProduit} disabled={loadingAction}>
+                    {loadingAction ? "Chargement..." : "Sauvegarder"}
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+
             </div>
           </div>
         </section>

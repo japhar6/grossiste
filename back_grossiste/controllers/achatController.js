@@ -11,7 +11,7 @@ const Entrepot = require('../models/Entrepot'); // Respecte la casse
 const { ObjectId } = require('mongodb');
 exports.ajouterAchat = async (req, res) => {
     try {
-        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee, unite } = req.body; // Ajout de 'unite'
+        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee, unite, entrepotId } = req.body; // Ajout de 'unite'
 
         // Vérification de la validité des entrées
         if (isNaN(quantite) || quantite <= 0) {
@@ -47,6 +47,18 @@ exports.ajouterAchat = async (req, res) => {
         if (!panierExistant) {
             return res.status(404).json({ message: "Panier non trouvé" });
         }
+
+        if (!mongoose.Types.ObjectId.isValid(entrepotId)) {
+            return res.status(400).json({ message: "L'ID de l'entrepôt est invalide" });
+        }
+        
+        console.log("ID de l'entrepôt reçu :", entrepotId);
+        
+        const entrepot = await Entrepot.findById(entrepotId);
+        if (!entrepot) {
+            return res.status(404).json({ message: "Entrepôt non trouvé" });
+        }        
+        
 
         // Calculer le total de l'achat basé uniquement sur la quantité achetée
         const total = quantite * prixAchat;
@@ -85,7 +97,7 @@ exports.ajouterAchat = async (req, res) => {
             panier: panierExistant._id,
             ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false,
             unite,
-            entrepot: null
+            entrepot: entrepotId
         });
 
         await nouvelAchat.save();
@@ -130,9 +142,9 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
 exports.validerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;
-        const { entrepotId, modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque } = req.body; // Déstructuration ici
+        const { modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque } = req.body; // Déstructuration ici
 
-        console.log("🔍 Validation du panier - ID du panier:", panierId, "Entrepôt:", entrepotId);
+        console.log("🔍 Validation du panier - ID du panier:", panierId);
 
         // Trouver le panier existant
          const panier = await Panier.findById(panierId);
@@ -170,11 +182,6 @@ exports.validerPanier = async (req, res) => {
             return res.status(404).json({ message: "Aucun achat trouvé pour ce panier" });
         }
 
-        const entrepot = await Entrepot.findById(entrepotId);
-        if (!entrepot) {
-            return res.status(404).json({ message: "Entrepôt non trouvé" });
-        }
-
         for (const achat of achats) {
             const prixUnitaire = achat.prixAchat || 0;
 
@@ -184,10 +191,8 @@ exports.validerPanier = async (req, res) => {
             console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantiteTotale} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
 
             // Ajout ou mise à jour du stock
-            await ajouterOuMettreAJourStock(entrepotId, achat.produit._id, quantite, prixUnitaire, unite);
+            await ajouterOuMettreAJourStock(achat.entrepot, achat.produit._id, quantite, prixUnitaire, unite);
 
-            achat.entrepot = entrepotId; // Ajout de l'entrepôt à l'achat
-            await achat.save();
         }
 
         // Réponse avec les détails du panier validé

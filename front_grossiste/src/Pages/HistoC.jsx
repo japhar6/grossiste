@@ -81,22 +81,24 @@ function HistoC() {
 
 
   const filteredPaiements = getFilteredPaiements();
-  useEffect(() => {
-    const paiementsEnRetard = filteredPaiements.filter(paiement =>
-      paiement.modePaiement === "a credit" &&
-      paiement.dateLimiteCredit &&
-      new Date(paiement.dateLimiteCredit) <= new Date()
-    );
+useEffect(() => {
+  const paiementsEnRetard = filteredPaiements.filter(paiement =>
+    paiement.modePaiement === "a credit" &&
+    paiement.dateLimiteCredit &&
+    new Date(paiement.dateLimiteCredit) <= new Date() &&
+    paiement.statut === "non payé"
+  );
 
-    if (paiementsEnRetard.length > 0) {
-      Swal.fire({
-        title: "⚠️ Paiements en retard !",
-        text: `Il y a ${paiementsEnRetard.length} paiement(s) à crédit arrivés à échéance.`,
-        icon: "warning",
-        confirmButtonText: "Ok",
-      }); notificationSound.play();
-    }
-  }, [filteredPaiements]);
+  if (paiementsEnRetard.length > 0 || paiementsEnRetard.statut === "non payé") {
+    Swal.fire({
+      title: "⚠️ Paiements en retard !",
+      text: `Il y a ${paiementsEnRetard.length} paiement(s) à crédit arrivés à échéance.`,
+      icon: "warning",
+      confirmButtonText: "Ok",
+    }); notificationSound.play();
+  }
+}, [filteredPaiements]);
+
 
   const handleRowClick = async (paiement) => {
     const { value: typeFacture, isDismissed } = await Swal.fire({
@@ -350,7 +352,9 @@ function HistoC() {
                 <Link to='/histodecaisse' >
                   <button className=" m-2">Historique de decaissement</button>
                 </Link>
-              
+                <Link to='/HistoComDecom' >
+                  <button className=" m-2">Recherche avancer</button>
+                </Link>
                 <button className="btn btn-primary m-2 w-25" onClick={handlePrint}>Imprimer</button>
               </div>
               {filteredPaiements.length === 0 ? (
@@ -401,8 +405,9 @@ function HistoC() {
                     <tbody>
                       {filteredPaiements.map((paiement) => {
                         const estEnRetard = paiement.modePaiement === "a credit" &&
-                          paiement.dateLimiteCredit &&
-                          new Date(paiement.dateLimiteCredit) <= new Date();
+                        paiement.dateLimiteCredit &&
+                        new Date(paiement.dateLimiteCredit) <= new Date() &&
+                        paiement.statut === "non payé";
 
                         return (
                           <tr key={paiement._id} className={estEnRetard ? "clignotant" : ""} onClick={() => handleRowClick(paiement)}>

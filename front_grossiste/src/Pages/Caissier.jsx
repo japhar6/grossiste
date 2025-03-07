@@ -29,30 +29,8 @@ function Caisse() {
   const [notifications, setNotifications] = useState([]);
   const isDisabled = commande?.clientId?.creerPar === "vendeur" && modePaiement === "credit";
 const notificationSound = new Audio(audio);
-  useEffect(() => {
-    // Configurer Pusher pour recevoir des événements
-   const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
-        cluster: 'mt1',
-      });
-    // Abonnement au canal pour recevoir les notifications de nouvelles commandes
-    const channel = pusher.subscribe('caissier-channel');
-    channel.bind('nouveau-comande', (data) => {
-      // Recevoir le message de notification
-      setNotifications((prevNotifications) => {
-        // Si la notification existe déjà, ne pas l'ajouter
-        if (!prevNotifications.some(notif => notif.message === data.message)) {
-          notificationSound.play();
-          return [...prevNotifications, data.message];
-        }
-        return prevNotifications;
-      });
-    });
 
-    // Nettoyage lors de la fermeture du composant
-    return () => {
-      pusher.unsubscribe('caissier-channel');
-    };
-  }, []);
+const idCaissier = localStorage.getItem("userid");
 
   console.log("isDisabled:", isDisabled);
 
@@ -70,8 +48,33 @@ const notificationSound = new Audio(audio);
 
 
 
+  useEffect(() => {
+    // Configurer Pusher pour recevoir des événements
+   const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
+        cluster: 'mt1',
+      });
+    // Abonnement au canal pour recevoir les notifications de nouvelles commandes
+    const channel = pusher.subscribe('caissier-channel');
+    channel.bind('nouveau-comande', (data) => {
+      // Recevoir le message de notification
+      setNotifications((prevNotifications) => {
+        // Si la notification existe déjà, ne pas l'ajouter
+        if (!prevNotifications.some(notif => notif.message === data.message)) {
+          notificationSound.play();
+          return [...prevNotifications, data.message];
+        }
+        return prevNotifications;
+      });
+        // Lorsque nous recevons une nouvelle notification, on recharge les données
+        fetchReferences();
+    });
 
-  const idCaissier = localStorage.getItem("userid");
+    // Nettoyage lors de la fermeture du composant
+    return () => {
+      pusher.unsubscribe('caissier-channel');
+    };
+  }, []);
+
 
   useEffect(() => {
     const fetchReferences = async () => {
