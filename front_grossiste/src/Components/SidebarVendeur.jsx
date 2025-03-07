@@ -7,7 +7,7 @@ import {
     faChevronRight,
     faCashRegister, faTags, faBoxes,
 } from '@fortawesome/free-solid-svg-icons';
-
+import Logo from '../assets/logoo.png'
 
 function SidebarVendeur() {
     const [collapsed, setCollapsed] = useState(false); // Gestion du mode collapsed
@@ -96,8 +96,8 @@ function SidebarVendeur() {
                 {!hidden && (
                     <>
                         <h1 className='gradient text-center'>
-                            {collapsed ? " " : "GROSSISTE"}
-                        </h1>
+                              {collapsed ? "" : <img src={Logo} width={150} className='logoo'/>} 
+                                   </h1>
 
                         <div className="menu mt-2 p-2 pt-1">
                             {buttons.map((button, index) => (

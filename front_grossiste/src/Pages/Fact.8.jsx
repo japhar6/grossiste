@@ -11,53 +11,97 @@ function Facture8() {
     const [commercial, setCommercial] = useState(null);
  const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
  
-    function convertirEnLettres(nombre) {
-        const nombresFr = [
-            "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf",
-            "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize",
-            "dix-sept", "dix-huit", "dix-neuf", "vingt", "trente", "quarante",
-            "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"
-        ];
+   
+  
+  function convertirEnLettres(nombre) {
+    const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
+    const dizaines = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+    const exceptions = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+    const grandsNombres = ["", "mille", "million", "milliard"];
 
-        const convertHundreds = (n) => {
-            let result = '';
-            if (n >= 100) {
-                result += nombresFr[Math.floor(n / 100)] + ' cent';
-                n %= 100;
-            }
-            if (n >= 20) {
-                result += ' ' + nombresFr[Math.floor(n / 10) + 18];
-                n %= 10;
-            }
-            if (n > 0) {
-                result += (result ? '-' : '') + nombresFr[n];
-            }
-            return result;
-        };
+    if (nombre === 0) return "zéro";
+    if (nombre < 0) return "moins " + convertirEnLettres(-nombre);
 
-        if (nombre === 0) return 'zéro';
-        if (nombre < 0) return 'moins ' + convertirEnLettres(-nombre);
+    let resultat = "";
+    let part = 0;
 
-        let result = '';
-        let part = 0;
-        const units = ['', ' mille', ' million', ' milliard'];
-
-        while (nombre > 0) {
-            const currentPart = nombre % 1000;
-            if (currentPart > 0) {
-                let partResult = convertHundreds(currentPart);
-                if (part === 1 && currentPart === 1) {
-                    partResult = 'mille';  // Si c'est exactement 1000, on ne met pas "un"
-                } else {
-                    partResult += units[part];
-                }
-                result = partResult + (result ? ' ' + result : '');
+    while (nombre > 0) {
+        let n = nombre % 1000;
+        if (n > 0) {
+            let segment = convertirCentaines(n);
+            if (part === 1 && n === 1) {
+                segment = "mille"; // Cas particulier de "mille"
+            } else if (part > 0) {
+                segment += " " + grandsNombres[part];
             }
-            nombre = Math.floor(nombre / 1000);
-            part++;
+            resultat = segment + (resultat ? " " + resultat : "");
         }
-        return result.trim();
+        nombre = Math.floor(nombre / 1000);
+        part++;
     }
+
+    return resultat.trim();
+}
+
+function convertirCentaines(nombre) {
+  const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
+  const dizaines = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "", "quatre-vingts", ""];
+  const exceptions = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+
+  let resultat = "";
+
+  // Gestion des centaines
+  if (nombre >= 100) {
+      let centaines = Math.floor(nombre / 100);
+      if (centaines > 1) {
+          resultat += unites[centaines] + " cent";
+      } else {
+          resultat += "cent";
+      }
+      if (nombre % 100 === 0) {
+          resultat += "s"; // Ex : "trois cents"
+      }
+      nombre %= 100;
+      if (nombre > 0) {
+          resultat += " ";
+      }
+  }
+
+  // Gestion des exceptions (10 à 19)
+  if (nombre >= 10 && nombre < 20) {
+      resultat += exceptions[nombre - 10];
+      return resultat.trim();
+  }
+
+  // Gestion des dizaines spéciales (70-99)
+  if (nombre >= 70 && nombre < 80) {
+      resultat += "soixante-" + exceptions[nombre - 70];
+      return resultat.trim();
+  }
+  if (nombre >= 90) {
+      resultat += "quatre-vingt-" + exceptions[nombre - 90];
+      return resultat.trim();
+  }
+
+  // Gestion normale des dizaines
+  let dizaine = Math.floor(nombre / 10);
+  let unite = nombre % 10;
+  if (dizaine > 0) {
+      resultat += dizaines[dizaine];
+      if (unite === 1 && dizaine !== 8) {
+          resultat += "-et-";
+      } else if (unite > 0) {
+          resultat += "-";
+      }
+  }
+
+  // Ajout des unités
+  if (unite > 0) {
+      resultat += unites[unite];
+  }
+
+  return resultat.trim();
+}
 
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);

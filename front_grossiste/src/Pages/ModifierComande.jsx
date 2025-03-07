@@ -23,7 +23,7 @@ const CommandeDetails = ({ closeModal }) => {
     if (reference) {
       setReferenceFacture(reference);
 
-      axios.get(`http://localhost:5000/api/commandes/reference/${reference}`)
+      axios.get(`/api/commandes/reference/${reference}`)
         .then((response) => {
           setSelectedCommande(response.data);
           setProduitsToUpdate(response.data.produits);

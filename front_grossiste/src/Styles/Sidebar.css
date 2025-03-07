@@ -21,7 +21,7 @@
 .menu {
   display: flex;
   flex-direction: column;
-  height: 82vh !important;
+  height: 65vh !important;
 
   overflow-y: scroll !important;
 }
@@ -104,7 +104,9 @@
     justify-content: center;
     padding: 9px;
   }
-
+  .logoo{
+    width: 50px !important;
+  }
   .aside .sidebar-item span {
     display: none;
   }

@@ -21,7 +21,7 @@ function Stock() {
   const [dateFilter, setDateFilter] = useState('');
   const [sortBy, setSortBy] = useState('nom');
   const [notifiedProducts, setNotifiedProducts] = useState([]); // Nouveau state pour gérer les produits notifiés
-
+const [nomEntrepot,setnomEntrepot]= useState([]);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -39,15 +39,15 @@ function Stock() {
 
     fetchEntrepots();
   }, []);
-
+/* &&
+!isNotificationSentToday(stock.produit._id, today)*/
   useEffect(() => {
     const checkAndSendNotification = () => {
       const today = new Date().toISOString().split('T')[0];
 
       const ruptureDeStock = stocks.filter(stock =>
         stock.quantite < stock.produit.quantiteMinimum &&
-        !notifiedProducts.includes(stock.produit._id) &&
-        !isNotificationSentToday(stock.produit._id, today)
+        !notifiedProducts.includes(stock.produit._id)
       );
 
       if (ruptureDeStock.length > 0) {
@@ -56,14 +56,14 @@ function Stock() {
             const data = {
               "produit": stock.produit.nom,
               "quantiteRestante": String(stock.quantite),
-              "entrepot": selectedEntrepot ? selectedEntrepot.nom : "Inconnu" // Ajout du nom de l'entrepôt
+              "entrepot":  nomEntrepot
             };
 
-            console.log(data);
+            console.log("mr",data);
 
             axios.post('/api/notif/rupture-stock', data)
               .then(response => {
-                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom} dans l'entrepôt ${selectedEntrepot ? selectedEntrepot.nom : "Inconnu"} !`);
+                toast.warn(`Attention : Rupture de stock sur ${stock.produit.nom} dans l'entrepôt ${nomEntrepot ? nomEntrepot : "Inconnu"} !`);
 
                 setNotifiedProducts(prevState => [...prevState, stock.produit._id]);
                 localStorage.setItem('notifiedProducts', JSON.stringify([...notifiedProducts, stock.produit._id]));
@@ -81,12 +81,12 @@ function Stock() {
       }
     };
 
-
+/*
     // Fonction pour vérifier si une notification a déjà été envoyée aujourd'hui
     const isNotificationSentToday = (produitId, today) => {
       const notifications = JSON.parse(localStorage.getItem('sentNotifications')) || [];
       return notifications.some(notification => notification.produitId === produitId && notification.date === today);
-    };
+    };*/
 
     // Fonction pour enregistrer l'envoi de la notification avec la date
     const storeNotificationSent = (produitId, today) => {
@@ -95,7 +95,7 @@ function Stock() {
       localStorage.setItem('sentNotifications', JSON.stringify(notifications));
     };
 
-
+ 
 
     checkAndSendNotification();
   }, [stocks, notifiedProducts]); // Se déclenche lorsque les stocks ou les produits notifiés changent
@@ -105,10 +105,16 @@ function Stock() {
     const entrepotId = event.target.value;
     const selected = entrepots.find(e => e._id === entrepotId);
 
+console.log("itay",selected.nom);
+setnomEntrepot(selected?.nom || '');  // Met à jour l'état avec le nom de l'entrepôt
+
+console.log("anarana",nomEntrepot);
+
+
     setSelectedEntrepot(entrepotId);
     setMagasinier(selected?.magasinier?.nom || '');
 
-    setLoading(true);
+;    setLoading(true);
     setError(null);
 
     try {
@@ -158,7 +164,10 @@ function Stock() {
       [produitId]: nouvelleUnite,
     }));
   };
-
+  useEffect(() => {
+    console.log("anarana", nomEntrepot); // Affiche la nouvelle valeur de nomEntrepot après sa mise à jour
+  }, [nomEntrepot]); // Cela se déclenchera chaque fois que nomEntrepot change
+  
 
   const isRuptureDeStock = (stock) => {
     return stock.quantite < stock.produit.quantiteMinimum;
@@ -189,11 +198,11 @@ function Stock() {
       }
       return 0;
     });
-    const handlePrint = () => {
-      const printContent = document.getElementById("table-to-print").outerHTML;
-      const printWindow = window.open('', '', 'height=500,width=800');
-      printWindow.document.write('<html><head><title>Impression des stocks</title>');
-      printWindow.document.write(`
+  const handlePrint = () => {
+    const printContent = document.getElementById("table-to-print").outerHTML;
+    const printWindow = window.open('', '', 'height=500,width=800');
+    printWindow.document.write('<html><head><title>Impression des stocks</title>');
+    printWindow.document.write(`
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -218,13 +227,13 @@ function Stock() {
           }
         </style>
       `);
-      printWindow.document.write('</head><body>');
-      printWindow.document.write('<h1>Historiques des stocks filtrés</h1>');
-      printWindow.document.write(printContent);
-      printWindow.document.write('</body></html>');
-      printWindow.document.close();
-      printWindow.print();
-    };
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<h1>Historiques des stocks filtrés</h1>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   return (
     <>
@@ -254,7 +263,7 @@ function Stock() {
             {selectedEntrepot && (
               <h6 className="alert alert-success mt-3">
                 <strong>Géré par le Magasinier :</strong> {magasinier || 'Aucun'}
-                </h6>
+              </h6>
             )}
 
             {selectedEntrepot && (
@@ -305,7 +314,7 @@ function Stock() {
                 <table className="tableSt table-bordered mt-3" id="table-to-print">
                   <thead>
                     <tr>
-                    <th className="bg-success">Nom du produit</th>
+                      <th className="bg-success">Nom du produit</th>
                       <th className="bg-success">Catégorie</th>
                       <th className="bg-success">Quantité</th>
                       <th className="bg-success">Unité</th>
@@ -339,10 +348,10 @@ function Stock() {
                         <td>{stock.produit.categorie}</td>
                         <td>{stock.produit.quantiteMinimum}</td>
                         <td>{new Date(stock.dateEntree).toLocaleDateString('fr-FR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}</td>
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}</td>
                       </tr>
                     ))}
                   </tbody>
