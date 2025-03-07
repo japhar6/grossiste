@@ -79,7 +79,7 @@ const HistoriqueDecaissementPage = () => {
                             <td>{decaissement.montant}Ariary</td>
                             <td>{decaissement.periode}</td>
                             <td>{decaissement.mode}</td>
-                            <td>{decaissement.reference || '-'}</td>
+                            <td>{decaissement.referencePaiement || '-'}</td>
                           </tr>
                         ))
                       ) : (

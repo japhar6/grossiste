@@ -26,25 +26,29 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
     // Conversion
     let nouvelleQuantite = quantite * (uniteCible.conversion / uniteSource.conversion);
     return { quantite: nouvelleQuantite, unite: uniteCible.nom };
-}
-exports.validerVente = async (req, res) => {
+}exports.validerVente = async (req, res) => {
     try {
         let { commandeId, magasinierId } = req.body;
 
-        // Récupérer la commande
-        let commande = await Commande.findById(commandeId).populate('produits.produit');
+        // Récupérer la commande et s'assurer que les unités des produits sont bien peuplées
+        let commande = await Commande.findById(commandeId)
+            .populate({
+                path: 'produits.produit',
+                populate: { path: 'unites' } // Peupler les unités du produit
+            });
+
         if (!commande) {
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
-        // Vérifier si tous les produits ont un entrepotId défini
+        // Vérifier si tous les produits ont un entrepôt défini
         for (let item of commande.produits) {
             if (!item.entrepotId) {
                 return res.status(400).json({ message: `Entrepôt non défini pour le produit "${item.produit.nom}"` });
             }
         }
 
-        // Créer une vente
+        // Créer une vente vide
         let vente = new Vente({
             commandeId,
             produits: [],
@@ -53,75 +57,86 @@ exports.validerVente = async (req, res) => {
             dateValidationMagasinier: Date.now(),
         });
 
-        // Réduction du stock et gestion de l'état des produits
-        await Promise.all(commande.produits.map(async (item) => {
-            let remainingQuantity = item.quantite;  // Quantité à traiter
-            let produitId = item.produit._id;
-            let produit = await Produit.findById(produitId);
-            let entrepotId = item.entrepotId._id;  // L'entrepôt spécifique à chaque produit
+        // 1️⃣ Regrouper les quantités par produit et entrepôt
+        let produitsRegroupes = {};
 
-            console.log(`Produit: ${item.produit.nom}, Quantité demandée: ${remainingQuantity}, Entrepôt: ${item.entrepotId.nom}`);
+        commande.produits.forEach((item) => {
+            let produitId = item.produit._id.toString();
+            let entrepotId = item.entrepotId.toString();
+            let key = `${produitId}-${entrepotId}`; // Clé unique pour regrouper par produit et entrepôt
 
-            let stocks = await Stock.find({ produit: produitId, entrepot: entrepotId }).sort({ dateEntree: 1 });
+            // Convertir la quantité vers l'unité la plus petite
+            let { quantite: quantiteMinUnite, unite } = convertirUnite(item.quantite, item.uniteChoisie, item.produit.unites);
+
+            if (!produitsRegroupes[key]) {
+                produitsRegroupes[key] = {
+                    produit: item.produit,
+                    entrepotId: item.entrepotId,
+                    quantiteTotale: 0,
+                    unite: unite, // L’unité de base
+                };
+            }
+            produitsRegroupes[key].quantiteTotale += quantiteMinUnite;
+        });
+
+        // 2️⃣ Réduire le stock en fonction des quantités regroupées
+        await Promise.all(Object.values(produitsRegroupes).map(async (groupedItem) => {
+            let { produit, entrepotId, quantiteTotale, unite } = groupedItem;
+
+            console.log(`Produit: ${produit.nom}, Quantité totale demandée: ${quantiteTotale} (${unite}), Entrepôt: ${entrepotId}`);
+
+            let stocks = await Stock.find({ produit: produit._id, entrepot: entrepotId }).sort({ dateEntree: 1 });
 
             if (stocks.length === 0) {
-                console.log(`🚨 Le produit "${item.produit.nom}" est en rupture de stock dans l'entrepôt "${item.entrepotId.nom}".`);
-                throw new Error(`🚨 Le produit "${item.produit.nom}" est en rupture de stock dans l'entrepôt "${item.entrepotId.nom}".`);
+                console.log(`🚨 Rupture de stock pour "${produit.nom}" dans l'entrepôt "${entrepotId}".`);
+                throw new Error(`🚨 Stock insuffisant pour "${produit.nom}" dans l'entrepôt "${entrepotId}".`);
             }
 
-         // Conversion de l'unité si nécessaire
-let { quantite: quantityInMinUnit, unite } = convertirUnite(remainingQuantity, item.uniteChoisie, produit.unites);
+            let remainingQuantity = quantiteTotale; // Quantité totale à soustraire
 
-// Affichage détaillé de la conversion
-console.log(`Conversion de la quantité:`);
-console.log(`${remainingQuantity} ${item.uniteChoisie} = ${quantityInMinUnit} ${unite}`);
-
-
-            for (let i = 0; i < stocks.length; i++) {
-                let stock = stocks[i];
+            for (let stock of stocks) {
                 console.log(`Stock disponible: ${stock.quantite} (prix unitaire: ${stock.prixUnitaire})`);
 
-                if (quantityInMinUnit <= 0) break;
+                if (remainingQuantity <= 0) break;
 
                 let availableQuantity = stock.quantite;
 
-                // Soustraction de la quantité du stock
-                if (availableQuantity >= quantityInMinUnit) {
-                    stock.quantite -= quantityInMinUnit;
+                if (availableQuantity >= remainingQuantity) {
+                    stock.quantite -= remainingQuantity;
                     stock.valeurTotale = stock.quantite * stock.prixUnitaire;
                     await stock.save();
-                    console.log(`Réduction du stock: Nouveau stock pour "${item.produit.nom}" est ${stock.quantite}`);
-                    quantityInMinUnit = 0;  // Tout a été soustrait
+                    console.log(`Stock mis à jour: ${stock.quantite} restant pour "${produit.nom}"`);
+                    remainingQuantity = 0;
                 } else {
-                    quantityInMinUnit -= availableQuantity;
+                    remainingQuantity -= availableQuantity;
                     stock.quantite = 0;
                     stock.valeurTotale = 0;
                     await stock.save();
-                    console.log(`Réduction partielle du stock. Stock restant pour "${item.produit.nom}": ${stock.quantite}`);
+                    console.log(`Stock vidé pour "${produit.nom}". Quantité restante à soustraire: ${remainingQuantity}`);
                 }
             }
 
-            // Si après toute la soustraction il reste une quantité non soustraite
-            if (quantityInMinUnit > 0) {
-                console.log(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt "${item.entrepotId.nom}".`);
-                throw new Error(`🚨 Stock insuffisant pour "${item.produit.nom}" dans l'entrepôt "${item.entrepotId.nom}".`);
+            if (remainingQuantity > 0) {
+                console.log(`🚨 Stock insuffisant après soustraction pour "${produit.nom}"`);
+                throw new Error(`🚨 Stock insuffisant après soustraction pour "${produit.nom}"`);
             }
 
-            // Ajoute les informations de produit à la vente
+            // Ajouter le produit à la vente avec la bonne quantité convertie
             vente.produits.push({
-                produit: item.produit._id,
-                quantite: item.quantite,
-                quantiteConvertie: quantityInMinUnit,  // Cette valeur doit maintenant être correcte
+                produit: produit._id,
+                quantite: quantiteTotale,
+                quantiteConvertie: quantiteTotale,  // Maintenant correcte
                 unite: unite,
-                entrepotId: item.entrepotId._id
+                entrepotId: entrepotId
             });
 
-            console.log(`Produit "${item.produit.nom}" ajouté à la vente avec ${item.quantite} unité(s) de type "${unite}"`);
+            console.log(`✅ Produit "${produit.nom}" ajouté à la vente avec ${quantiteTotale} unité(s) de type "${unite}"`);
         }));
 
         await vente.save();
         console.log(`Vente validée avec succès. Vente ID: ${vente._id}`);
 
+        // Mettre à jour la commande
         commande.statut = 'payé et livré';
         commande.modeLivraison = 'magasin';
         commande.dateSortie = Date.now();
@@ -131,7 +146,7 @@ console.log(`${remainingQuantity} ${item.uniteChoisie} = ${quantityInMinUnit} ${
             message: "✅ Vente validée avec succès et commande marquée comme livrée",
             vente,
             produits: vente.produits.map(item => ({
-                produit: item.produit.nom,
+                produit: item.produit,
                 quantiteConvertie: item.quantiteConvertie,
                 unite: item.unite
             })),
@@ -141,13 +156,14 @@ console.log(`${remainingQuantity} ${item.uniteChoisie} = ${quantityInMinUnit} ${
         res.status(400).json({ message: error.message });
     }
 };
+
 exports.validerRetourProduits = async (req, res) => {
     try {
         const { venteComId, magasinierId, entrepotChoisiId } = req.body;
 
         // Vérifier si la vente existe
         const venteCom = await VenteCom.findById(venteComId).populate('produitsRestants.produitId');
-        
+
         if (!venteCom) {
             return res.status(404).json({ message: "Vente non trouvée" });
         }

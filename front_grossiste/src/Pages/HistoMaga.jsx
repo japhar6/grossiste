@@ -95,7 +95,7 @@ const sortedCommandes = filteredCommandes.sort((a, b) => {
 const handlePrint = () => {
   const printContent = document.getElementById("table-to-print").outerHTML;
   const printWindow = window.open('', '', 'height=500,width=800');
-  printWindow.document.write('<html><head><title>Impression des inventaires</title>');
+  printWindow.document.write('<html><head><title>Impression de sortie de stock</title>');
   printWindow.document.write(`
     <style>
       body {
@@ -122,7 +122,7 @@ const handlePrint = () => {
     </style>
   `);
   printWindow.document.write('</head><body>');
-  printWindow.document.write('<h1>Inventaires filtrés</h1>');
+  printWindow.document.write('<h1>Historique de sortie de stock </h1>');
   printWindow.document.write(printContent);
   printWindow.document.write('</body></html>');
   printWindow.document.close();

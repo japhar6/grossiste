@@ -17,7 +17,7 @@ function HistoAcha() {
     const [filtreDateLimite, setFiltreDateLimite] = useState("");
     const [loadingEntrepots, setLoadingEntrepots] = useState(false);
     const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
-    const [loadingAction, setLoadingAction] = useState(false);  // Gérer l'état de chargement pour l'action de paiement
+    const [loadingAction, setLoadingAction] = useState(false);
     const notificationSound = new Audio(audio);
 
     const handlePaiement = (panierId) => {
@@ -26,32 +26,28 @@ function HistoAcha() {
             return;
         }
 
-        // Affichage d'une boîte de confirmation avec SweetAlert
         Swal.fire({
             title: 'Êtes-vous sûr ?',
             text: "Voulez-vous vraiment marquer ce panier comme payé ?",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Oui, payer',  // Texte du bouton de confirmation
+            confirmButtonText: 'Oui, payer',
             cancelButtonText: 'Annuler',
             preConfirm: () => {
-                // Lorsque l'utilisateur confirme, on effectue l'appel API
-                setLoadingAction(true); // Active le spinner
-                Swal.showLoading();  // Affiche un spinner dans la boîte de dialogue
+                setLoadingAction(true);
+                Swal.showLoading();
                 return axios.put(`/api/paniers/modifier-statut/${panierId}`, {
-                    statut: 'payé',  // On change le statut en "Payé"
+                    statut: 'payé',
                 });
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                // Traitement si la requête API réussit
-                window.location.reload();  // Rechargement de la page après paiement
-                setLoadingAction(false);  // Désactivation du spinner
+                window.location.reload();
+                setLoadingAction(false);
                 setPaniers(paniers.map(item =>
                     item.id === panierId ? { ...item, statut: 'Payé' } : item
                 ));
 
-                // Affichage d'une confirmation avec SweetAlert
                 Swal.fire(
                     'Payé!',
                     'Le panier a été marqué comme payé.',
@@ -60,8 +56,7 @@ function HistoAcha() {
             }
         }).catch((error) => {
             console.error("Erreur lors de la modification du statut :", error);
-            setLoadingAction(false);  // Désactivation du spinner en cas d'erreur
-            // Affichage d'une erreur si l'API échoue
+            setLoadingAction(false);
             Swal.fire(
                 'Erreur',
                 "Une erreur est survenue, veuillez réessayer.",
@@ -70,7 +65,6 @@ function HistoAcha() {
         });
     };
 
-
     useEffect(() => {
         setLoadingEntrepots(true);
         const fetchPaniers = async () => {
@@ -78,10 +72,20 @@ function HistoAcha() {
                 const response = await axios.get(`/api/paniers/tous/crédit`);
                 setPaniers(response.data.paniers);
                 setLoadingEntrepots(false);
+
+                const paniersEnRetard = response.data.paniers.filter(panier => new Date(panier.dateLimiteCredit) < new Date());
+                if (paniersEnRetard.length > 0) {
+                    notificationSound.play();
+                    Swal.fire({
+                        title: '⚠️ Alertes Échéances',
+                        text: `¨Votre date de paiement est atteint pour l'achat !`,
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                }
             } catch (error) {
                 console.error("Erreur lors de la récupération des paniers:", error);
                 setLoadingEntrepots(false);
-
             }
         };
 
@@ -104,7 +108,7 @@ function HistoAcha() {
                     return matchProduit && matchFournisseur && matchMontant && matchStatut && matchDateLimite;
                 })
             )
-            .sort((a, b) => (triMontant === "asc" ? a.totalGeneral - b.totalGeneral : b.totalGeneral - a.totalGeneral)); // Tri montant
+            .sort((a, b) => (triMontant === "asc" ? a.totalGeneral - b.totalGeneral : b.totalGeneral - a.totalGeneral));
     };
 
     const filteredPaniers = getFilteredPaniers();
@@ -120,7 +124,6 @@ function HistoAcha() {
                         <div className="mini-stat p-3">
                             <h6 className="alert alert-info text-start">Historique des Paniers</h6>
                             <div className="filter-container mb-3 d-flex flex-wrap justify-content-between gap-2">
-                                {/* Filters */}
                             </div>
 
                             {loadingEntrepots ? (
@@ -146,52 +149,51 @@ function HistoAcha() {
                                                 <th>Mode de Paiement</th>
 
                                                 <th>Montant Payé</th>
-                                                <th>Actions</th> {/* Nouvelle colonne pour l'action "Payer" */}
+                                                <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-    {filteredPaniers.length === 0 ? (
-        <tr>
-            <td colSpan="8" className="text-center">Aucun achat par crédit trouvé</td>
-        </tr>
-    ) : (
-        filteredPaniers.map((panier) => (
-            <tr key={panier._id}>
-                <td>{new Date(panier.dateAchat).toLocaleDateString()}</td>
-                <td>
-                    {panier.achats.map((achat, index) => (
-                        <div key={index}>
-                            <strong>{achat.produit.nom}</strong> x {achat.quantite} {achat.unite}
-                        </div>
-                    ))}
-                </td>
-                <td>{panier.statut}</td>
-                <td>{panier.totalGeneral} ariary</td>
-                <td>
-                    {panier.dateLimiteCredit && (
-                        <span className="date-limite" style={{ color: 'black' }}>
-                            📅 Échéance: {new Date(panier.dateLimiteCredit).toLocaleDateString()}
-                        </span>
-                    )}
-                </td>
-                <td>{panier.modePaiement || "Non renseigné"}</td>
-                <td>{panier.totalGeneral || "Non renseigné"}</td>
-                <td>
-                    {panier.statut === 'non payé' && (
-                        <button
-                            className="btn btn-success btn-sm w-auto p-2"
-                            onClick={() => handlePaiement(panier._id)}
-                            disabled={loadingAction}
-                        >
-                            Payer
-                        </button>
-                    )}
-                </td>
-            </tr>
-        ))
-    )}
-</tbody>
-
+                                            {filteredPaniers.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="8" className="text-center">Aucun achat par crédit trouvé</td>
+                                                </tr>
+                                            ) : (
+                                                filteredPaniers.map((panier) => (
+                                                    <tr key={panier._id} style={new Date(panier.dateLimiteCredit) < new Date() ? { animation: 'clignoter 1s infinite alternate', backgroundColor: 'red' } : {}}>
+                                                        <td>{new Date(panier.dateAchat).toLocaleDateString()}</td>
+                                                        <td>
+                                                            {panier.achats.map((achat, index) => (
+                                                                <div key={index}>
+                                                                    <strong>{achat.produit.nom}</strong> x {achat.quantite} {achat.unite}
+                                                                </div>
+                                                            ))}
+                                                        </td>
+                                                        <td>{panier.statut}</td>
+                                                        <td>{panier.totalGeneral} ariary</td>
+                                                        <td>
+                                                            {panier.dateLimiteCredit && (
+                                                                <span className="date-limite text-danger">
+                                                                    📅 Échéance: {new Date(panier.dateLimiteCredit).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td>{panier.modePaiement || "Non renseigné"}</td>
+                                                        <td>{panier.totalGeneral || "Non renseigné"}</td>
+                                                        <td>
+                                                            {panier.statut === 'non payé' && (
+                                                                <button
+                                                                    className="btn btn-success btn-sm w-auto p-2"
+                                                                    onClick={() => handlePaiement(panier._id)}
+                                                                    disabled={loadingAction}
+                                                                >
+                                                                    Payer
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
                                     </table>
                                 </div>
                             )}
