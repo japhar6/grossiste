@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getNotifications, sendNotification, markAsRead ,envoyerNotificationAdmin,envoyerNotificationRuptureStock,deleteNotification,envoyeralertTransfertAdmin} = require('../controllers/notificationController');
+const { getNotifications, sendNotification, markAsRead ,envoyerNotificationAdminCredit,envoyerNotificationAdmin,envoyerNotificationRuptureStock,deleteNotification,envoyeralertTransfertAdmin} = require('../controllers/notificationController');
 
 // Route pour récupérer les notifications non lues
 router.get('/notifications', getNotifications);
@@ -14,6 +14,7 @@ router.post('/notifications/create', sendNotification);
 
 router.post('/rupture-stock', envoyerNotificationRuptureStock);
 router.post('/envoie-notifications', envoyerNotificationAdmin);
+router.post('/envoie-notificationsCredit', envoyerNotificationAdminCredit);
 router.post('/alert-notifications', envoyeralertTransfertAdmin);
 // Route pour supprimer une notification
 router.delete('/supprimer/:id', deleteNotification);  // Route pour supprimer une notification par son ID

@@ -209,7 +209,7 @@ exports.getCommandeByref = async (req, res) => {
 
         if (referenceFacture) {
             commande = await Commande.findOne({ referenceFacture })
-                .populate("clientId", "nom telephone")
+                .populate("clientId", "nom telephone creerPar")
                 .populate("commercialId", "nom telephone")
                 .populate("produits.produit", "nom")
                 .populate("produits.entrepotId", "nom")

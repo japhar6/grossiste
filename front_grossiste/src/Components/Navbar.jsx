@@ -47,6 +47,17 @@ function Header() {
         return prevNotifications;
       });
     });
+    // Écoute les notifications en temps réel
+    channel.bind('credit', (data) => {
+      setNotifications((prevNotifications) => {
+        // Si la notification existe déjà, ne pas l'ajouter
+        if (!prevNotifications.some(notif => notif.message === data.message)) {
+          notificationSound.play();
+          return [...prevNotifications, data.message];
+        }
+        return prevNotifications;
+      });
+    });
     channel.bind('rupture_stock', (data) => {
       setNotifications((prevNotifications) => {
         // Si la notification existe déjà, ne pas l'ajouter

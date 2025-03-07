@@ -165,6 +165,43 @@ exports.envoyerNotificationAdmin = async (req, res) => {
   }
 }; 
 
+exports.envoyerNotificationAdminCredit = async (req, res) => {
+  try {
+    const { message, idClient } = req.body; // On attend maintenant aussi un idClient dans le corps de la requête
+
+    if (!message || message.trim() === "") {
+      return res.status(400).json({ message: 'Le message de la notification est requis.' });
+    }
+
+    // Créer la notification dans la base de données
+    const notification = new Notification({
+      message: message,
+      lue: false,
+      type: 'credit', // Par défaut, la notification n'est pas lue
+      idClient: idClient || null, // Si un idClient est fourni, on l'ajoute à la notification, sinon on le laisse à null
+    });
+
+    await notification.save();
+
+    // Récupérer l'ObjectId de l'admin
+    const adminUser = await User.findOne({ role: 'admin' });
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Utilisateur admin non trouvé.' });
+    }
+
+    // Envoyer un message de notification via Pusher
+    pusher.trigger('admin-channel', 'credit', {
+      message: message,
+      notificationId: notification._id
+    });
+
+    res.status(201).json({ message: 'Notification envoyée avec succès.', notification });
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de la notification:", error);
+    res.status(500).json({ message: "Erreur lors de l'envoi de la notification", error: error.message });
+  }
+}; 
+
 exports.envoyerNotificationRuptureStock = async (req, res) => {
   try {
     const { produit, quantiteRestante, entrepot,idClient } = req.body; // On récupère les informations nécessaires depuis le corps de la requête

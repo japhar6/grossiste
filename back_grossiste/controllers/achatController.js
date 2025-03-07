@@ -1,9 +1,10 @@
 const Achat = require("../models/Achats");
+const Stock = require('../models/Stock');
 const Produit = require("../models/Produits");
 const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
 const { ajouterOuMettreAJourStock } = require('./stockController');
-const Stock = require('../models/Stock');
+
 const Entrepot = require('../models/Entrepot'); // Respecte la casse
 
 
@@ -294,6 +295,55 @@ exports.supprimerAchat = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la suppression de l'achat", error: error.message });
     }
 };
+
+
+exports.supprimerAchat = async (req, res) => {
+    try {
+        const { codeProduit, nom, total } = req.query; // Paramètres dans l'URL
+
+        // Vérification si les paramètres sont fournis
+        if (!codeProduit || !nom || !total) {
+            return res.status(400).json({ message: "Les paramètres 'codeProduit', 'nom' et 'total' sont requis" });
+        }
+
+        // Trouver l'achat correspondant à ces critères
+        const achatExistant = await Achat.findOne({
+            'produit.codeProduit': codeProduit,
+            'produit.nom': nom,
+            total: total
+        });
+
+        if (!achatExistant) {
+            return res.status(404).json({ message: "Achat non trouvé" });
+        }
+
+        // Trouver le panier associé et mettre à jour le total
+        const panierExistant = await Panier.findById(achatExistant.panier);
+        if (!panierExistant) {
+            return res.status(404).json({ message: "Panier non trouvé" });
+        }
+
+        // Supprimer l'achat du panier
+        panierExistant.achats.pull(achatExistant._id);
+        panierExistant.totalGeneral -= achatExistant.total; // Mettre à jour le total général du panier
+        await panierExistant.save();
+
+        // Supprimer l'achat de la base de données
+        await Achat.findByIdAndDelete(achatExistant._id);
+
+        // Retourner une réponse de succès
+        res.status(200).json({
+            message: "Achat supprimé avec succès",
+            achatSupprime: achatExistant,
+            panierMisAJour: panierExistant
+        });
+
+    } catch (error) {
+        console.error("Erreur lors de la suppression de l'achat:", error);
+        res.status(500).json({ message: "Erreur lors de la suppression de l'achat", error: error.message });
+    }
+};
+
 
 exports.getAchatsByPanier = async (req, res) => {
     try {

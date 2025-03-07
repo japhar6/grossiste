@@ -107,10 +107,11 @@ const convertirQuantite = async (quantite, uniteVendu, produitId) => {
         throw new Error("Erreur lors de la conversion des unités.");
     }
 }
+
 exports.mettreAJourPaiementCommerciale = async (req, res) => {
     try {
         const { referenceFacture } = req.params;
-        const { produitsVendus ,modePaiement,referencePaiement} = req.body;
+        const { produitsVendus ,modePaiement} = req.body;
 
         console.log(`Début de la mise à jour du paiement pour la facture ${referenceFacture}`);
 
@@ -200,9 +201,6 @@ exports.mettreAJourPaiementCommerciale = async (req, res) => {
         paiementCommerciale.montantPaye = isNaN(paiementCommerciale.montantPaye + montantTotalVendu) ? 0 : paiementCommerciale.montantPaye + montantTotalVendu;
         paiementCommerciale.montantRestant = paiementCommerciale.totalPaiement - paiementCommerciale.montantPaye;
 paiementCommerciale.modePaiement=modePaiement;
-paiementCommerciale.referencePaiement=referencePaiement;
-paiementCommerciale.dateLimiteCredit=null;
-
         // Vérification du statut du paiement
         if (paiementCommerciale.montantRestant === 0) {
             paiementCommerciale.statut = "payé complet";
@@ -215,16 +213,6 @@ paiementCommerciale.dateLimiteCredit=null;
         // Sauvegarder le paiement mis à jour
         await paiementCommerciale.save();
         console.log(`Paiement mis à jour avec succès.`);
-
-        // Création de l'enregistrement dans fondCaisse
-        const fondCaisse = new FoncdCaisse({
-            totalPaiement: paiementCommerciale.montantPaye,
-            datePaiement: new Date()
-        });
-
-        // Sauvegarder le fondCaisse
-        await fondCaisse.save();
-        console.log(`Enregistrement dans le fond de caisse créé avec succès.`);
 
         const convertirQuantite = async (quantite, uniteVendu, produitId, uniteReference) => {
             try {
@@ -384,8 +372,6 @@ paiementCommerciale.dateLimiteCredit=null;
         res.status(400).json({ message: error.message });
     }
 };
-
-
 
 
 

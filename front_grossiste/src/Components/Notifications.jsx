@@ -4,11 +4,14 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import { useNavigate } from 'react-router-dom';
 import "../Styles/Notification.css"; // N'oublie pas d'ajouter les nouveaux styles ici
-
+import Swal from "sweetalert2";
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
-
+  const [dureeLimite, setDureeLimite] = useState("");
+  const handleDureeChange = (e) => {
+    setDureeLimite(e.target.value); // Assure-toi de bien récupérer la durée
+  };
   useEffect(() => {
     const loadNotifications = async () => {
       try {
@@ -88,6 +91,84 @@ console.log("Référence Facture stockée dans localStorage : ", localStorage.ge
       // Rediriger vers la page Client
       navigate(`/transfertAdmin`);
     }
+    else if (notification.type === 'credit') {
+      // Récupérer le message complet de la notification
+      const message = notification.message; // message contient déjà le nom du client
+    
+      // Extraire le nom du client du message
+      const clientNom = message.match(/Le client (.*?) demande/); // Cela extrait le nom du client
+    
+      if (clientNom && clientNom[1]) {
+        // Si un nom est trouvé dans le message
+        Swal.fire({
+          title: 'Valider la demande de crédit',
+          html: `
+            <p>Voulez-vous valider cette demande de paiement à crédit pour ${clientNom ? clientNom[1] : 'Nom introuvable'} ?</p>
+            <label for="creditDate">Date limite du crédit:</label>
+            <input type="date" id="creditDate" class="swal2-input" />
+          `,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Oui, valider',
+          cancelButtonText: 'Annuler'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            const creditDate = document.getElementById('creditDate').value; // Récupère la date entrée par l'admin
+            
+            if (!creditDate) {
+              Swal.fire({
+                title: 'Erreur',
+                text: 'Veuillez entrer une date limite valide.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+              });
+              return;
+            }
+            
+            try {
+              console.log("Client ID:", notification.idClient);
+              console.log("Date limite:", creditDate);
+        
+              // Appel à la route API pour modifier 'creerPar' à 'admin' et envoyer la date limite
+              const response = await axios.post('/api/client/modifier-credit', {
+                clientId: notification.idClient, // Assure-toi que notification contient clientId
+                creditDate: creditDate // Envoie la date limite
+              });
+        
+              if (response.status === 200) {
+                Swal.fire({
+                  title: 'Succès!',
+                  text: 'Demande de crédit validée, le statut du client a été mis à jour et la notification envoyée au caissier.',
+                  icon: 'success',
+                  confirmButtonText: 'OK'
+                });
+                navigate(`/admin`);
+              }
+            } catch (error) {
+              console.error('Erreur lors de la validation de la demande de crédit', error);
+              Swal.fire({
+                title: 'Erreur',
+                text: 'Une erreur est survenue. Veuillez réessayer.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+              });
+            }
+          }
+        });
+        
+        
+      } else {
+        // Si le nom du client n'est pas trouvé dans le message
+        Swal.fire({
+          title: 'Erreur',
+          text: 'Le nom du client n\'a pas pu être extrait.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+      }
+    }
+    
+    
 
     else {
       navigate(`/default-page`); // Une page par défaut au cas où

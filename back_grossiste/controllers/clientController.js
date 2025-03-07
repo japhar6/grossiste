@@ -1,46 +1,63 @@
 const Client = require('../models/Client');
-
 exports.createClient = async (req, res) => {
   try {
-    const { nom, telephone, adresse, nif, stat, remises } = req.body;
+    console.log("Données reçues :", req.body);
+    console.log("Fichier reçu :", req.file); // Vérifier si le fichier est bien envoyé
 
-    // Vérification que le nom est bien fourni
-    if (!nom) {
-      return res.status(400).json({ message: "Le nom du client est requis." });
+    const { nom, telephone, adresse, remises, creerPar } = req.body;
+
+    // Vérification des données
+    if (!nom || !telephone || !adresse) {
+      return res.status(400).json({ message: "Les informations obligatoires sont manquantes." });
     }
 
     // Récupération du chemin de l'image téléchargée
     const nifStatImage = req.file ? `/uploads/nifstat/${req.file.filename}` : null;
-    
-    // Initialisation des remises
-    const clientRemises = remises || {
-      remiseGlobale: 0,
-      remiseFixe: 0,
-      remiseParProduit: 0
-    };
 
-    // Création d'un nouveau client
+
+
+
+    // Création du client
     const newClient = new Client({
       nom,
       telephone,
       adresse,
-      nif,
-      stat,
- 
-      nifStatImage, // Stocke le chemin du fichier
-      remises: clientRemises
+      remises,
+      creerPar,  
+      nifStatImage
     });
 
+    // Sauvegarde du client dans la base de données
     await newClient.save();
-    console.log("✅ Client créé :", newClient);
 
+    console.log("Client créé avec succès :", newClient);
     res.status(201).json(newClient);
   } catch (error) {
-    console.error("❌ Erreur serveur :", error);
+    console.error("Erreur lors de la création du client :", error);
     res.status(500).json({ message: "Erreur lors de la création du client", error });
   }
 };
 
+
+
+// Créer un nouveau client
+exports.createClientAdmin = async (req, res) => {
+  try {
+      const { nom, telephone, adresse, remises } = req.body;
+
+      const newClient = new Client({
+          nom,
+          telephone,
+          adresse,
+          remises: remises || undefined
+      });
+
+      const savedClient = await newClient.save();
+      res.status(201).json(savedClient);
+  } catch (error) {
+      res.status(500).json({ message: 'Erreur lors de la création du client', error });
+  }
+};
 
 exports.countClient = async (req, res) => {
   try {
@@ -102,21 +119,3 @@ exports.deleteClient = async (req, res) => {
   }
 };
 
-// Créer un nouveau client
-exports.createClientAdmin = async (req, res) => {
-  try {
-      const { nom, telephone, adresse, remises } = req.body;
-
-      const newClient = new Client({
-          nom,
-          telephone,
-          adresse,
-          remises: remises || undefined
-      });
-
-      const savedClient = await newClient.save();
-      res.status(201).json(savedClient);
-  } catch (error) {
-      res.status(500).json({ message: 'Erreur lors de la création du client', error });
-  }
-};
