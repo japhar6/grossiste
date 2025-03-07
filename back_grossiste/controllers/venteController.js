@@ -171,11 +171,11 @@ exports.validerRetourProduits = async (req, res) => {
             }
             // Vérifie si l'entrepôt est défini pour chaque produit
             if (!item.entrepotId) {
-                throw new Error(`Entrepôt non défini pour le produit ${item.produit.nom}`);
+                throw new Error(`Entrepôt non défini pour le produit ${item.produitId.nom}`);
             }
 
             let entrepotId = item.entrepotId._id; // Accède à l'ID de l'entrepôt uniquement s'il est défini
-            console.log(`Produit: ${item.produit.nom}, Quantité demandée: ${remainingQuantity}, Entrepôt: ${item.entrepotId.nom}`);
+            console.log(`Produit: ${item.produitId.nom}, Quantité demandée: ${remainingQuantity}, Entrepôt: ${item.entrepotId.nom}`);
 
             // Affichage des détails de l'unité de retour et de l'unité du stock
             console.log(`Produit retourné : ${item.produitId.nom}`);
