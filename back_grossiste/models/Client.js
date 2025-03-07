@@ -17,6 +17,12 @@ const clientSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  creerPar: { 
+    type: String, 
+    enum: ["admin", "vendeur"], 
+    default: "vendeur"  
+  }
+  ,
   statut: {
     type: String,
     enum: ['actif', 'inactif'],

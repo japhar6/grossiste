@@ -108,31 +108,44 @@ function ClientsList() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+      
         const remises = {
-            remiseFixe: newClient.typeRemise === 'remiseFixe' ? Number(newClient.remiseValeur) : 0,
-            remiseParProduit: newClient.typeRemise === 'remiseParProduit' ? Number(newClient.remiseValeur) : 0,
-            remiseGlobale: newClient.typeRemise === 'remiseGlobale' ? Number(newClient.remiseValeur) : 0
-        };  setLoading(true);
-
-        try {  
-            const response = await axios.post("/api/client/ajouter", {
-                nom: newClient.nom,
-                telephone: newClient.telephone,
-                adresse: newClient.adresse,
-                remises
-            });
-            setClients([...clients, response.data]);
-            handleClose();  setLoading(false);
-            Swal.fire({
-                icon: 'success',
-                title: 'Client ajouté avec succès!',
-                showConfirmButton: false,
-                timer: 1500
-            });
+          remiseFixe: newClient.typeRemise === "remiseFixe" ? Number(newClient.remiseValeur) : 0,
+          remiseParProduit: newClient.typeRemise === "remiseParProduit" ? Number(newClient.remiseValeur) : 0,
+          remiseGlobale: newClient.typeRemise === "remiseGlobale" ? Number(newClient.remiseValeur) : 0,
+        };
+      
+        console.log("Valeur de creerPar avant l'envoi :", "admin");
+      
+        setLoading(true);
+      
+        try {
+          const response = await axios.post("/api/client/", {
+            nom: newClient.nom,
+            telephone: newClient.telephone,
+            adresse: newClient.adresse,
+            remises: remises,
+            creerPar: "admin",  // Vérifie que cette valeur est bien envoyée
+          });
+      
+          console.log("Réponse du serveur :", response.data);
+      
+          setClients([...clients, response.data]);
+          handleClose();
+          setLoading(false);
+          Swal.fire({
+            icon: "success",
+            title: "Client ajouté avec succès!",
+            showConfirmButton: false,
+            timer: 1500,
+          });
         } catch (error) {
-            console.error("Erreur lors de l'ajout du client :", error);  setLoading(false);
+          console.error("Erreur lors de l'ajout du client :", error);
+          setLoading(false);
         }
-    };
+      };
+      
+        
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);

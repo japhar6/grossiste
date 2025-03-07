@@ -26,6 +26,11 @@ function Caisse() {
   const [argentRendu, setArgentRendu] = useState(0);
   const [argentDonne, setArgentDonne] = useState(0);
 
+  const isDisabled = commande?.clientId?.creerPar === "vendeur" && modePaiement === "credit";
+
+
+  console.log("isDisabled:", isDisabled);
+
   SetdatePositionnementCheque
   const handleChangeModePaiement = (e) => {
     setModePaiement(e.target.value);
@@ -212,6 +217,57 @@ function Caisse() {
     }
   };
 
+
+
+
+
+  const handlePaymentChange = async (value) => {
+    if (value === "a credit" && commande.clientId && commande.clientId.creerPar === "vendeur") {
+      setLoadingAction(true);
+
+      // Vérification que commande.client et commande.client.nom existent
+      const clientNom = commande.clientId && commande.clientId.nom ? commande.clientId.nom : "Client inconnu";
+
+      const message = `Le client ${clientNom} demande un paiement à crédit.`;
+
+      try {
+        const response = await axios.post(
+          "/api/notif/envoie-notificationsCredit",
+          {
+            message: message,
+            idClient: commande.clientId._id,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        console.log("Réponse de l'API:", response.data);
+        Swal.fire({
+          title: "Succès!",
+          text: "Demande de paiement à crédit envoyée à l'admin!",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+
+      } catch (error) {
+        console.error("Erreur lors de l'envoi de la notification", error);
+        Swal.fire({
+          title: "Erreur",
+          text: "Une erreur est survenue. Veuillez réessayer.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      } finally {
+        setLoadingAction(false);
+      }
+    }
+  };
+
+
+
+
+
   const navigate = useNavigate();
   const handleGenerateInvoice = async () => {
     const { value: typeFacture, isDismissed } = await Swal.fire({
@@ -300,7 +356,7 @@ function Caisse() {
         openInvoices();
       }
     } else {
-    
+
     }
   };
   const handleArgentDonneChange = (event) => {
@@ -313,7 +369,7 @@ function Caisse() {
     } else {
       setArgentRendu(0); // Si l'argent donné est inférieur au total, pas de rendu
     }
-  };  
+  };
 
   return (
     <main className="center">
@@ -349,16 +405,42 @@ function Caisse() {
                   <select
                     className="form-control mt-2"
                     value={modePaiement}
-                    onChange={(e) => setModePaiement(e.target.value)}
+                    onChange={(e) => {
+                      setModePaiement(e.target.value);
+                      handlePaymentChange(e.target.value); // Vérifie si une demande doit être envoyée
+                    }}
                   >
                     <option value="">Sélectionner le mode de paiement</option>
-                    <option value="espèce">Espèce</option>
-                    <option value="mobile money">Mobile Money</option>
-                    <option value="a credit">A Crédit</option>
-                    <option value="virement bancaire">Virement bancaire</option>
-                    <option value="cheque">Chèque</option>
-                    <option value="versement">Versement</option>
+
+                    {/* Vérifiez si la commande est récupérée et que le client a été créé par un vendeur */}
+                    {commande && commande.typeClient === "Client" ? (
+                      <>
+                        {commande && commande.clientId && commande.clientId.creerPar === "vendeur" && commande.clientId.nom ? (
+                          <>
+                            <option value="espèce">Espèce</option>
+                            <option value="mobile money">Mobile Money</option>
+                            <option value="a credit">A Crédit</option>
+                          </>
+                        ) : (
+                          <>
+                            <option value="espèce">Espèce</option>
+                            <option value="mobile money">Mobile Money</option>
+                            <option value="a credit">A Crédit</option>
+                            <option value="virement bancaire">Virement bancaire</option>
+                            <option value="cheque">Chèque</option>
+                            <option value="versement">Versement</option>
+                          </>
+                        )}
+                      </>
+                    ) : commande && commande.typeClient === "Commercial" ? (
+                      <>
+                        <option value="a credit">A Crédit</option>
+                      </>
+                    ) : null}
+
+
                   </select>
+
 
                   {(modePaiement === "mobile money" || modePaiement === "virement bancaire" || modePaiement === "cheque") && (
                     <div className="form-group mt-3">
@@ -393,7 +475,7 @@ function Caisse() {
 
 
 
-                  {modePaiement === "a credit" && (
+                  {modePaiement === "a credit" && commande && commande.clientId && commande.clientId.creerPar === "admin" && (
                     <div className="form-group">
                       <label htmlFor="dateLimiteCredit">Date limite de paiement</label>
                       <input
@@ -480,38 +562,40 @@ function Caisse() {
                   </tbody>
                 </table>
                 <div className="payment-container">
-                {commande.typeRemise !== null ? (
-  <h6 className="total mt-5 mb-4">
-    Total du commande après remise : {commande.totalGeneral} Ariary
-  </h6>
-) : (
-  <h6 className="total mt-5 mb-4">
-    Total du commande : {commande.totalGeneral} Ariary
-  </h6>
-)}
-  
-        <input
-          type="number"
-          className="form-control p-3"
-          placeholder="Argent donné"
-          value={argentDonne}
-          onChange={handleArgentDonneChange}
-        />
-        <h5 className={`total-rendered mt-5 ${argentRendu > 0 ? "positive" : "negative"} `}>
-          {argentRendu > 0 ? `Total rendu: ${argentRendu} Ariary` : "Pas assez d'argent"}
-        </h5>
-</div>
+                  {commande.typeRemise !== null ? (
+                    <h6 className="total mt-5 mb-4">
+                      Total du commande après remise : {commande.totalGeneral} Ariary
+                    </h6>
+                  ) : (
+                    <h6 className="total mt-5 mb-4">
+                      Total du commande : {commande.totalGeneral} Ariary
+                    </h6>
+                  )}
+
+                  <input
+                    type="number"
+                    className="form-control p-3"
+                    placeholder="Argent donné"
+                    value={argentDonne}
+                    onChange={handleArgentDonneChange}
+                  />
+                  <h5 className={`total-rendered mt-5 ${argentRendu > 0 ? "positive" : "negative"} `}>
+                    {argentRendu > 0 ? `Total rendu: ${argentRendu} Ariary` : "Pas assez d'argent"}
+                  </h5>
+                </div>
 
                 <button
                   className="btnVA btn-success mt-3"
                   onClick={() => {
-
                     handleGenerateInvoice();
                     // validerPaiement(); 
                   }}
+                  disabled={commande.clientId.creerPar.trim().toLowerCase() === "vendeur" && modePaiement.trim().toLowerCase() === "a credit"}
+                // Désactiver si les deux conditions sont vraies
                 >
                   <i className="fa fa-check-circle"></i> Valider le paiement
                 </button>
+
               </div>
             )}
           </div>

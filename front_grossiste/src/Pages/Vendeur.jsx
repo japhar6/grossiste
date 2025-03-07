@@ -376,14 +376,7 @@ if (!uniteChoisieDetails) {
 
             // Vérifier la quantité dans l'entrepôt secondaire
             if (quantiteConvertie <= quantiteDisponibleSecondaire) {
-              // Utiliser l'entrepôt secondaire si la quantité est suffisante
-              Swal.fire({
-                title: 'Quantité suffisante',
-                text: `Disponible dans l'entrepôt secondaire ${nomSecondaire}.`,
-                icon: 'info',
-                confirmButtonText: 'OK',
-              });
-console.log("entrepot",responseSecondaire.data.entrepotId);
+     
               // Ajouter le produit avec l'entrepôt secondaire
               setCommande((prevCommande) => {
                 return [...prevCommande, {
@@ -404,14 +397,7 @@ console.log("entrepot",responseSecondaire.data.entrepotId);
             }
           }
         } else {
-          // Si la quantité est suffisante dans l'entrepôt principal
-          Swal.fire({
-            title: 'Quantité suffisante',
-            text: `Disponible dans l'entrepôt principal ${nomPrincipal}.`,
-            icon: 'info',
-            confirmButtonText: 'OK',
-          });
-          console.log("entrepot 1",entrepotIdPrincipal);
+       
           // Ajouter le produit avec l'entrepôt principal
           setCommande((prevCommande) => {
             return [...prevCommande, {
@@ -494,15 +480,16 @@ console.log("entrepot",responseSecondaire.data.entrepotId);
         const response = await axios.post("/api/commandes/ajouter", commandeData);
         console.log("Commande créée avec succès:", response.data); 
           const { _id, referenceFacture } = response.data.commande;
-    
-        Swal.fire({
-          title: "Commande créée avec succès",
-          text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-    window.location.reload();
-
+          playSound();
+          Swal.fire({
+            title: "Commande créée avec succès",
+            text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            window.location.reload(); // Recharge la page après le clic sur OK
+          });
+          
         setCommande([]);
     
         return { commandeId: _id, referenceFacture }; // Retourne l'ID de la commande créée
@@ -576,7 +563,15 @@ console.log("entrepot",responseSecondaire.data.entrepotId);
           // Cas : Enregistrer la commande seule
           const commande = await creerCommande("en cours"); // Attendre la création de la commande
           if (commande) {
-            Swal.fire("✅ Commande enregistrée !", "", "success");playSound();
+            Swal.fire({
+              title: "Commande créée avec succès",
+              text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
+              icon: "success",
+              confirmButtonText: "OK",
+            }).then(() => {
+              window.location.reload(); // Recharge la page après le clic sur OK
+            });
+            ;playSound();
           }
         } else if (result.isDenied) {
           // Cas : Enregistrer + Notifier admin
