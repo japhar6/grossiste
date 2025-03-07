@@ -37,7 +37,10 @@ router.get('/suggestions', commandeController.getSuggestions);
 router.get('/factmo', commandeController.getSuggestionscom);
 router.get('/factmocli', commandeController.getSuggestionscomcre);
 router.put('/sortieFournisseur/:commandeId', commandeController.sortieFournisseur);
-router.get('/toutfact', commandeController.getSuggestionstous);router.put('/update-prix/:referenceFacture', async (req, res) => {
+router.get('/commandeDecomposees', commandeController.getCommandesDecomposees);
+router.get('/toutfact', commandeController.getSuggestionstous);
+
+router.put('/update-prix/:referenceFacture', async (req, res) => {
   console.log("📥 Données reçues:", req.body);
   
   const { referenceFacture } = req.params;

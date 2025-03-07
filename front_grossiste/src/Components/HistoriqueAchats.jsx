@@ -39,23 +39,48 @@ const HistoriqueAchats = () => {
 
     );
 
-    const getLargestUnit = (product) => {
-        if (!product?.unites || product.unites.length === 0) return "Aucune unité";
-
-        const largestUnit = product.unites.reduce((prev, current) =>
-            (prev.conversion < current.conversion ? prev : current)
-        );
-
-        return largestUnit.nom || "Inconnu";
-    };
-
     // Collecte des catégories et entrepôts uniques pour le filtrage
     const categories = [...new Set(achats.map(achat => achat.produit?.categorie))];
     const entrepots = [...new Set(achats
         .map(achat => achat.entrepot)
         .filter(entrepot => entrepot) // Filtrer les valeurs nulles
     )];
-
+    const handlePrint = () => {
+        const printContent = document.getElementById("table-to-print").outerHTML;
+        const printWindow = window.open('', '', 'height=500,width=800');
+        printWindow.document.write('<html><head><title>Impression des achats</title>');
+        printWindow.document.write(`
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              padding: 0;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            th, td {
+              padding: 8px;
+              text-align: left;
+              border: 1px solid #ddd;
+            }
+            th {
+              background-color: #f4f4f4;
+            }
+            tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+          </style>
+        `);
+        printWindow.document.write('</head><body>');
+        printWindow.document.write('<h1>Historiques des achats filtrés</h1>');
+        printWindow.document.write(printContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+      };
 
     return (
         <div>
@@ -104,11 +129,12 @@ const HistoriqueAchats = () => {
                         </option>
                     ))}
                 </select>
+                <button className="btn btn-primary w-75 m-2" onClick={handlePrint}>Imprimer</button>
 
 
             </div>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                <div className="table-responsive table-striped">
+                <div className="table-responsive table-striped" id="table-to-print">
                     <table className="tableSt mt-3">
                         <thead>
                             <tr>
@@ -131,7 +157,7 @@ const HistoriqueAchats = () => {
                                         <td>{achat.produit?.nom || "Inconnu"}</td>
                                         <td>{achat.produit?.categorie || "Non spécifiée"}</td>
                                         <td>{achat.fournisseur?.nom || "Non spécifié"}</td>
-                                        <td>{achat.quantite} {getLargestUnit(achat.produit)}</td>
+                                        <td>{achat.quantite} {achat.unite}</td>
                                         <td>{achat.entrepot?.nom || "Non spécifié"}</td>
                                         <td>{achat.prixAchat ? achat.prixAchat.toLocaleString() : "0"} Ar</td>
                                         <td>{achat.total ? achat.total.toLocaleString() : "0"} Ar</td>

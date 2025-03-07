@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const achatSchema = new mongoose.Schema({
-  entrepot: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot', default: null },
+  entrepot: { type: mongoose.Schema.Types.ObjectId, ref: 'Entrepot', required: true },
   produit: { type: mongoose.Schema.Types.ObjectId, ref: 'Produit', required: true },
   fournisseur: { type: mongoose.Schema.Types.ObjectId, ref: 'Fournisseur', required: true },
   quantite: { type: Number, required: true },

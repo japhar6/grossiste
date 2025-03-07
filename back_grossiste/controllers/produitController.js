@@ -186,3 +186,50 @@ exports.supprimerProduit = async (req, res) => {
         res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
     }
 };
+
+exports.modifierUnites = async (req, res) => {
+    try {
+        const { produitId } = req.params; // L'ID du produit à modifier
+        const { nom, unites } = req.body;
+
+        // Récupérer le produit par son ID
+        const produit = await Produit.findById(produitId);
+        if (!produit) {
+            return res.status(404).json({ message: "❌ Produit introuvable." });
+        }
+
+        // Mise à jour du nom du produit si fourni
+        if (nom) {
+            produit.nom = nom;
+        }
+
+        // Mise à jour des unités (seulement nom et conversion)
+        if (unites && Array.isArray(unites)) {
+            for (let i = 0; i < unites.length; i++) {
+                const { nom: uniteNom, conversion } = unites[i];
+
+                // Vérifier si chaque unité contient les informations nécessaires
+                if (!uniteNom || typeof conversion !== 'number') {
+                    return res.status(400).json({ message: "❌ Chaque unité doit avoir un nom et un facteur de conversion valide." });
+                }
+
+                // Mettre à jour l'unité dans le produit
+                const uniteExistante = produit.unites.find(u => u.nom === uniteNom);
+                if (uniteExistante) {
+                    uniteExistante.conversion = conversion;
+                } else {
+                    // Si l'unité n'existe pas, on l'ajoute
+                    produit.unites.push({ nom: uniteNom, conversion });
+                }
+            }
+        }
+
+        // Sauvegarder les modifications
+        await produit.save();
+
+        res.status(200).json({ message: "✅ Produit mis à jour avec succès", produit });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du produit:", error);
+        res.status(500).json({ message: "❌ Erreur serveur", error: error.message });
+    }
+};

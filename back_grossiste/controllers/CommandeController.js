@@ -584,3 +584,59 @@ exports.annulerVenteParReference = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
+
+exports.getCommandesDecomposees = async (req, res) => {
+    try {
+        // Récupérer les commandes où le statut est 'payé' ou 'payé et livré'
+        const commandes = await Commande.find({
+            statut: { $in: ['payé', 'payé et livré'] }
+        })
+        .populate('clientId', 'nom')  // Optionnel : Récupérer le nom du client
+        .populate('commercialId', 'nom') // Optionnel : Récupérer le nom du commercial
+        .populate('produits.produit', 'nom'); // Optionnel : Récupérer le nom du produit
+
+        // Vérifier si des commandes sont trouvées
+        if (commandes.length === 0) {
+            return res.status(404).json({ message: 'Aucune commande trouvée avec ces statuts' });
+        }
+
+        // Initialiser un tableau pour stocker les informations des produits
+        const produitsDecomposes = [];
+
+        // Parcourir toutes les commandes
+        commandes.forEach(commande => {
+            // Récupérer le nom du client ou du commercial
+            const nomClient = commande.typeClient === 'Client' ? commande.clientId.nom : commande.commercialId.nom;
+
+            // Date de la commande
+            const dateCommande = new Date(commande.createdAt).toLocaleDateString('fr-FR');
+
+            // Pour chaque produit de la commande, ajouter l'information dans le tableau
+            commande.produits.forEach(produitDetail => {
+                const produitNom = produitDetail.produit.nom;
+                const quantite = produitDetail.quantite;
+                const referenceFacture = commande.referenceFacture;
+                const uniteChoisie = produitDetail.uniteChoisie || ''; // Si pas d'unité choisie, mettre une chaîne vide
+
+                // Ajouter chaque produit avec ses détails séparés
+                produitsDecomposes.push({
+                    referenceFacture,
+                    client: nomClient,
+                    produit: produitNom,
+                    unite: uniteChoisie,
+                    quantite: quantite,
+                    dateCommande: dateCommande
+                });
+            });
+        });
+
+        // Répondre avec les produits décomposés
+        res.status(200).json({ produits: produitsDecomposes });
+
+    } catch (error) {
+        // En cas d'erreur serveur
+        console.error(error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};

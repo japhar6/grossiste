@@ -501,6 +501,7 @@ function AchatProduits() {
             dateAchat: new Date().toISOString(),
             ristourneAppliquee: pourcentageManuel,
             unite: unite.value || unite.label, // Changez ici pour envoyer le nom de l'unité
+            entrepotId: entrepot,
         };
 
         try {
@@ -592,10 +593,10 @@ function AchatProduits() {
 
     const validerPanier = async () => {
         setLoadingAction(true); // Démarre le chargement
-        if (!entrepot || !modePaiement) {
+        if (!modePaiement) {
             Swal.fire({
                 title: "Erreur",
-                text: "L'entrepôt et le mode de paiement sont obligatoires.",
+                text: "Le mode de paiement sont obligatoires.",
                 icon: "error",
                 confirmButtonText: "OK",
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
@@ -637,7 +638,6 @@ function AchatProduits() {
 
         try {
             const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                entrepotId: entrepot,
                 modePaiement: modePaiement,
                 dateLimiteCredit: dateLimiteCredit,
                 referencePaiement: referencePaiement,
@@ -1032,7 +1032,18 @@ function AchatProduits() {
                                                 onChange={handlePrixAchatChange}
                                                 disabled={!fournisseur}
                                             />
-
+                                            <select
+                                                className="form-control custom-select"
+                                                value={entrepot}
+                                                onChange={handleEntrepotChange}
+                                            >
+                                                <option value="">Choisir un entrepôt</option>
+                                                {entrepots.map((entrepotItem) => (
+                                                    <option key={entrepotItem._id} value={entrepotItem._id}>
+                                                        {entrepotItem.nom}
+                                                    </option>
+                                                ))}
+                                            </select>
 
                                             <button className="btn btn-success mt-3"
                                                 style={{ width: 'auto' }} onClick={ajouterAuPanier} disabled={loadingAction}>
@@ -1112,18 +1123,6 @@ function AchatProduits() {
                                         <h6 className="total-text" >Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
                                         <div className="fournisseur-section">
                                             <h6><i className="fa fa-truck"></i> Sélection de l'entrepôt</h6>
-                                            <select
-                                                className="form-control custom-select"
-                                                value={entrepot}
-                                                onChange={handleEntrepotChange}
-                                            >
-                                                <option value="">Choisir un entrepôt</option>
-                                                {entrepots.map((entrepotItem) => (
-                                                    <option key={entrepotItem._id} value={entrepotItem._id}>
-                                                        {entrepotItem.nom}
-                                                    </option>
-                                                ))}
-                                            </select>
                                             <select
                                                 className="form-control custom-select"
                                                 value={modePaiement}
