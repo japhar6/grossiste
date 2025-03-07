@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import '../Styles/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Logo from '../assets/logoo.png'
 import { 
   faChevronLeft, 
   faChevronRight, 
@@ -31,6 +32,49 @@ function Sidebar() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Variables pour gérer le swipe
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    useEffect(() => {
+        const handleTouchStart = (e) => {
+            touchStartX = e.touches[0].clientX;
+            console.log("Touch Start:", touchStartX);
+        };
+
+        const handleTouchMove = (e) => {
+            touchEndX = e.touches[0].clientX;
+        };
+
+        const handleTouchEnd = () => {
+            const swipeDistance = touchEndX - touchStartX;
+            console.log("Swipe Distance:", swipeDistance);
+
+            // On vérifie que le swipe commence bien à gauche (moins de 30px)
+            if (touchStartX > 40) {
+                console.log("Swipe ignoré (pas assez à gauche)");
+                return;
+            }
+
+            if (swipeDistance > 50) {
+                console.log("Ouvrir sidebar");
+                setHidden(false);
+            } else if (swipeDistance < -50) {
+                console.log("Fermer sidebar");
+                setHidden(true);
+            }
+        };
+
+        document.addEventListener("touchstart", handleTouchStart);
+        document.addEventListener("touchmove", handleTouchMove);
+        document.addEventListener("touchend", handleTouchEnd);
+
+        return () => {
+            document.removeEventListener("touchstart", handleTouchStart);
+            document.removeEventListener("touchmove", handleTouchMove);
+            document.removeEventListener("touchend", handleTouchEnd);
+        };
+    }, []);
     const toggleSidebar = () => {
         if (isMobile) {
             setHidden(!hidden);
@@ -71,10 +115,10 @@ function Sidebar() {
             {!hidden && (
                 <>
                     <h1 className='gradient text-center'>
-                        {collapsed ? "" : "GROSSISTE"}
+                        {collapsed ? "" : <img src={Logo} width={150} className='logoo'/>} 
                     </h1>
 
-                    <div className="menu">
+                    <div className="menu mt-4">
                         {buttons.map((button, index) => (
                             <Link 
                                 to={button.path} 

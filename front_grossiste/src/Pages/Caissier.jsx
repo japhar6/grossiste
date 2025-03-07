@@ -483,8 +483,17 @@ function Caisse() {
                     ))}
                   </tbody>
                 </table>
-                <h6 className="total mt-5 mb-4">Total du commande : {commande.totalGeneral} Ariary</h6>
                 <div className="payment-container">
+                {commande.typeRemise !== null ? (
+  <h6 className="total mt-5 mb-4">
+    Total du commande après remise : {commande.totalGeneral} Ariary
+  </h6>
+) : (
+  <h6 className="total mt-5 mb-4">
+    Total du commande : {commande.totalGeneral} Ariary
+  </h6>
+)}
+  
         <input
           type="number"
           className="form-control p-3"

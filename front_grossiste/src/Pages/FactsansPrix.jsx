@@ -127,7 +127,7 @@ function FactureSans() {
         <p>Misaotra Tompoko</p>
         <div className="signature">
           <span>Le Client</span>
-          <span>Le Fournisseur</span>
+          <span>Magasin</span>
         </div>
       </div>
     </div>

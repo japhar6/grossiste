@@ -39,60 +39,104 @@ function FactureRem() {
       console.error("Erreur lors du traitement des données de l'URL", error);
     }
   }, []);
+
   
   function convertirEnLettres(nombre) {
-    const nombresFr = [
-        "", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", 
-        "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", 
-        "dix-sept", "dix-huit", "dix-neuf", "vingt", "trente", "quarante", 
-        "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"
-    ];
-  
-    const convertHundreds = (n) => {
-        let result = '';
-        if (n >= 100) {
-            result += nombresFr[Math.floor(n / 100)] + ' cent';
-            n %= 100;
-        }
-        if (n >= 20) {
-            result += ' ' + nombresFr[Math.floor(n / 10) + 18];
-            n %= 10;
-        }
-        if (n > 0) {
-            result += (result ? '-' : '') + nombresFr[n];
-        }
-        return result;
-    };
-  
-    if (nombre === 0) return 'zéro';
-    if (nombre < 0) return 'moins ' + convertirEnLettres(-nombre);
-  
-    let result = '';
+    const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
+    const dizaines = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+    const exceptions = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+    const grandsNombres = ["", "mille", "million", "milliard"];
+
+    if (nombre === 0) return "zéro";
+    if (nombre < 0) return "moins " + convertirEnLettres(-nombre);
+
+    let resultat = "";
     let part = 0;
-    const units = ['',' mille',' million',' milliard'];
-  
+
     while (nombre > 0) {
-        const currentPart = nombre % 1000;
-        if (currentPart > 0) {
-            let partResult = convertHundreds(currentPart);
-            if (part === 1 && currentPart === 1) {
-                partResult = 'mille';  // Si c'est exactement 1000, on ne met pas "un"
-            } else {
-                partResult += units[part];
+        let n = nombre % 1000;
+        if (n > 0) {
+            let segment = convertirCentaines(n);
+            if (part === 1 && n === 1) {
+                segment = "mille"; // Cas particulier de "mille"
+            } else if (part > 0) {
+                segment += " " + grandsNombres[part];
             }
-            result = partResult + (result ? ' ' + result : '');
+            resultat = segment + (resultat ? " " + resultat : "");
         }
         nombre = Math.floor(nombre / 1000);
         part++;
     }
-    return result.trim();
+
+    return resultat.trim();
 }
+
+function convertirCentaines(nombre) {
+  const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
+  const dizaines = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "", "quatre-vingts", ""];
+  const exceptions = ["dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+
+  let resultat = "";
+
+  // Gestion des centaines
+  if (nombre >= 100) {
+      let centaines = Math.floor(nombre / 100);
+      if (centaines > 1) {
+          resultat += unites[centaines] + " cent";
+      } else {
+          resultat += "cent";
+      }
+      if (nombre % 100 === 0) {
+          resultat += "s"; // Ex : "trois cents"
+      }
+      nombre %= 100;
+      if (nombre > 0) {
+          resultat += " ";
+      }
+  }
+
+  // Gestion des exceptions (10 à 19)
+  if (nombre >= 10 && nombre < 20) {
+      resultat += exceptions[nombre - 10];
+      return resultat.trim();
+  }
+
+  // Gestion des dizaines spéciales (70-99)
+  if (nombre >= 70 && nombre < 80) {
+      resultat += "soixante-" + exceptions[nombre - 70];
+      return resultat.trim();
+  }
+  if (nombre >= 90) {
+      resultat += "quatre-vingt-" + exceptions[nombre - 90];
+      return resultat.trim();
+  }
+
+  // Gestion normale des dizaines
+  let dizaine = Math.floor(nombre / 10);
+  let unite = nombre % 10;
+  if (dizaine > 0) {
+      resultat += dizaines[dizaine];
+      if (unite === 1 && dizaine !== 8) {
+          resultat += "-et-";
+      } else if (unite > 0) {
+          resultat += "-";
+      }
+  }
+
+  // Ajout des unités
+  if (unite > 0) {
+      resultat += unites[unite];
+  }
+
+  return resultat.trim();
+}
+
    useEffect(() => {
       if (commande) {
         setTimeout(() => {
           window.print(); // Imprime après 2 secondes
           setTimeout(() => {
-            window.close(); // Ferme l'onglet après l'impression
+           window.close(); // Ferme l'onglet après l'impression
           }, 1000); // 1 seconde après impression
         }, 2000);
       }
@@ -111,7 +155,7 @@ function FactureRem() {
          <div className="infoCompany">
            <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
            <p>Vente de Marchandises</p>
-           <p>Tnambao II, TAMATAVE</p>
+           <p>Tanambao II, Toamasina</p>
            <p>034 13 881 72</p>
            <h3>FACTURE DE REMISE</h3>
          </div>
@@ -120,32 +164,45 @@ function FactureRem() {
        <div className="facture-info p-3">
          <div style={{ float: "left" }}>
            <p><strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', })}</p>
-           <p><strong>Client :</strong> {paiement.commercialNom === "Inconnu" && paiement.clientNom !== "Inconnu"
-             ? paiement.clientNom : paiement.commercialNom || "Non spécifié"}</p>
-           <p><strong>Adresse :</strong> {paiement.clientAdresse || paiement.ComAdresse || "..................."}</p>
-           <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
+           <p><strong>Client :</strong> {clientOuCommercial?.nom || "Non spécifié"}</p>
+           <p>
+            <strong>Adresse :</strong>    {clientOuCommercial?.adresse || "..................."}
+          </p>
+                     <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
            
          </div>
          <div style={{ float: "right" }}>
       
       
            <div className="center">
-            <p><strong>N° :</strong> {paiement.referenceFacture}</p> 
+            <p><strong>N° :</strong> {commande.referenceFacture}</p> 
            
            </div>
            <p><strong>Type de remise :</strong> {
-   paiement.commandeId.typeRemise === 'parProduit' 
+   commande.typeRemise === 'parProduit' 
      ? 'Par Produit' 
-     : paiement.commandeId.typeRemise === 'pourcentage' 
-       ? `Remise en pourcentage : ${paiement.commandeId.valeurRemise}%` 
-       : paiement.commandeId.typeRemise === 'fixe' 
-         ? `Remise fixe : ${paiement.commandeId.valeurRemise} Ariary` 
+     : commande.typeRemise === 'pourcentage' 
+       ? `Remise en pourcentage : ${commande.valeurRemise}%` 
+       : commande.typeRemise === 'montantFixe' 
+         ? `Remise fixe : ${commande.valeurRemise} Ariary` 
          : 'Aucune remise'
  }</p>
+     {modePaiement === "a credit" && (
+    <p>
+         <p><strong>Date limite de paiement :</strong> {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', }) || "..........."}</p>
+
+    </p>
+)}
+
+{modePaiement === "cheque" && (
+    <p>
+        <strong>Date de positionnement :</strong>{" "}
+        {datePositionnementCheque || "..........."}
+    </p>
+)}
+       
  
- 
-           <p><strong>Date limite de paiement :</strong> {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', }) || "..........."}</p>
-           <p><strong>Référence :</strong> {referencePaiement || "..........."}</p>
+       <p><strong>Référence :</strong> {referencePaiement || "..........."}</p>
  
  
          </div>
@@ -163,9 +220,9 @@ function FactureRem() {
              </tr>
            </thead>
            <tbody>
-             {paiement?.commandeId?.produits?.length > 0 ? (
-               paiement.commandeId.produits.map((produit, index) => (
-                 <tr key={index}>
+             {commande.produits.length > 0 ? (
+               commande.produits.map((produit, index) => (
+                <tr key={index}>
                    <td>{produit.quantite}</td>
                    <td>{produit.uniteChoisie}</td>
                    <td>{produit.produit.nom}</td>
@@ -181,18 +238,63 @@ function FactureRem() {
        </div>
  
        <div className="facture-summary">
-         <p><strong>Total Ariary :</strong> {paiement.totalPaiement} Ariary</p>
-         <p><strong>Total en FMG :</strong> {paiement.totalPaiement * 5} FMG</p>
-       </div>
+  <p className="flex justify-around items-center">
+    <span style={{ marginRight: '10%' }}>
+      <strong>Total avant remise en Ariary :</strong> 
+      {(() => {
+        if (commande.typeRemise === 'pourcentage') {
+          // Calcul avant remise pour le type pourcentage
+          return (commande.totalGeneral) / (1 - commande.valeurRemise / 100);
+        } else if (commande.typeRemise === 'montantFixe') {
+          // Calcul avant remise pour le type montant fixe
+          return (commande.totalGeneral) + commande.valeurRemise;
+        } else {
+          // Pas de remise, retourne le montant normal
+          return commande.totalGeneral;
+        }
+      })()} Ariary
+    </span>
+
+    <span style={{ marginRight: '10%' }}>
+      <strong>Total Ariary :</strong> {commande.totalGeneral} Ariary
+    </span>
+  </p>
+
+  <p>
+    <span style={{ marginRight: '10%' }}>
+      <strong>Total avant remise en FMG :</strong> 
+      {(() => {
+        if (commande.typeRemise === 'pourcentage') {
+          // Si la remise est un pourcentage, on inverse le calcul
+          return (commande.totalGeneral / (1 - commande.valeurRemise / 100)) * 5;
+        } else if (commande.typeRemise === 'montantFixe') {
+          // Si la remise est un montant fixe, on inverse le calcul
+          return (commande.totalGeneral * 5) + (commande.valeurRemise * 5);
+        } else {
+          // Pas de remise, retour du montant normal
+          return commande.totalGeneral * 5;
+        }
+      })()} FMG
+    </span>
+
+    <span style={{ marginRight: '10%' }}>
+      <strong>Total en FMG :</strong> {commande.totalGeneral * 5} FMG
+    </span>
+  </p>
+</div>
+
+    
  
-       <div className="facture-footer">
-         <p>Arrêtée la présente facture à la somme de {convertirEnLettres(paiement.totalPaiement)} Ariary</p>
-         <p>Misaotra Tompoko</p>
-         <div className="signature">
-           <span>Le Client</span>
-           <span>Magasin</span>
-         </div>
-       </div>
+      <div className="facture-footer">
+        <p>
+          Arrêtée la présente facture à la somme de   {convertirEnLettres(commande.totalGeneral)}  Ariary
+        </p>
+        <p>Misaotra Tompoko</p>
+        <div className="signature">
+          <span>Le Client</span>
+          <span>Magasin</span>
+        </div>
+      </div>
      </div>
    );
 }

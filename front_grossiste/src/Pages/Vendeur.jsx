@@ -40,7 +40,7 @@ function PriseCommande() {
   const [produits, setProduits] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [entrepotId, setEntrepotId] = useState(null); // Initialisation de l'état pour l'ID de l'entrepôt
-
+  const [uniteChoisieDetails, setUniteChoisieDetails] = useState(null);
   const [categorie, setCategorie] = useState("");
   const [categories, setCategories] = useState([]);
   const [remisesClient, setRemisesClient] = useState(null);
@@ -122,7 +122,7 @@ function PriseCommande() {
       // Validation des champs selon le type (client ou commercial)
       if (type === "client") {
         if (!newPerson.nom) {
-          Swal.fire("Info", "Tous les champs nécessaires doivent être remplis pour le client", "info");
+          Swal.fire("Info", "Le nom est requis pour le client", "info");
           return;
         }
 
@@ -160,8 +160,8 @@ function PriseCommande() {
           setClients(updatedList.data);
         }
       } else if (type === "commercial") {
-        if (!newPerson.nom || !newPerson.telephone || !newPerson.email) {
-          Swal.fire("Info", "Tous les champs nécessaires doivent être remplis pour le commercial", "info");
+        if (!newPerson.nom ) {
+          Swal.fire("Info", "Le nom est requis pour le commercial", "info");
           return;
         }
 
@@ -275,7 +275,7 @@ function PriseCommande() {
 
     return nouvelleQuantite;
   };
-  console.log("Commande actuelle :", commande);
+
 
   const totalCommande = commande.reduce((total, item) => {
     const quantite = Number(item.quantite) || 0;
@@ -286,12 +286,10 @@ function PriseCommande() {
     return total + quantite * prix;
   }, 0);
 
-  console.log("Total Commande Calculé:", totalCommande);
-
+  
 
   const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
-    console.log("handleCheckboxChange appelé pour :", produit.nom, "Quantité :", quantite, "isChecked :", isChecked);
-
+   
     // Vérifier si une unité est choisie
     if (!produit.uniteChoisie) {
       Swal.fire({
@@ -307,18 +305,36 @@ function PriseCommande() {
     if (quantite <= 0) return;
 
     try {
-      // Trouver l'unité avec la plus petite conversion (la plus petite unité)
-      const uniteLaPlusPetite = produit.unites.reduce((prev, current) => {
-        return prev.conversion > current.conversion ? prev : current;
-      });
+       // Trouver l'unité choisie
+  // Trouver l'unité choisie dans la liste des unités du produit
+const uniteChoisieDetails = produit.unites.find(u => u.nom === produit.uniteChoisie);
 
-      console.log(`Unité la plus petite choisie : ${uniteLaPlusPetite.nom} avec conversion : ${uniteLaPlusPetite.conversion}`);
+if (!uniteChoisieDetails) {
+  console.error("Unité choisie introuvable pour le produit :", produit.nom);
+  Swal.fire({
+    title: 'Erreur',
+    text: `L'unité sélectionnée (${produit.uniteChoisie}) n'existe pas pour ce produit.`,
+    icon: 'error',
+    confirmButtonText: 'OK',
+  });
+  return; // Sortir de la fonction pour éviter une erreur
+}
 
+
+     // Trouver l'unité avec la plus petite conversion
+    const uniteLaPlusPetite = produit.unites.reduce((prev, current) => 
+      prev.conversion > current.conversion ? prev : current
+    );
+    console.log(`Unité la plus petite : ${uniteLaPlusPetite.nom}, conversion : ${uniteLaPlusPetite.conversion}`);
+
+
+     
+      
       // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
       let quantiteConvertie = quantite;
       if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
-        quantiteConvertie = quantite * uniteLaPlusPetite.conversion;
-        console.log(`Quantité convertie : ${quantiteConvertie}`);
+        quantiteConvertie = (quantite * uniteLaPlusPetite.conversion)/uniteChoisieDetails.conversion;
+        console.log(`Quantité convertie : ${quantite}  ${produit.uniteChoisie} =   ${quantiteConvertie} ${uniteLaPlusPetite.nom}`);
       } else {
         console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
       }
@@ -485,7 +501,7 @@ console.log("entrepot",responseSecondaire.data.entrepotId);
           icon: "success",
           confirmButtonText: "OK",
         });
-    
+    window.location.reload();
 
         setCommande([]);
     
