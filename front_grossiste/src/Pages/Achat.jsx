@@ -1122,7 +1122,7 @@ function AchatProduits() {
                                     <div className="total-validation-container">
                                         <h6 className="total-text" >Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
                                         <div className="fournisseur-section">
-                                            <h6><i className="fa fa-truck"></i> Sélection de l'entrepôt</h6>
+                                            <h6><i className="fa fa-card"></i> Sélection le mode de paiement</h6>
                                             <select
                                                 className="form-control custom-select"
                                                 value={modePaiement}
