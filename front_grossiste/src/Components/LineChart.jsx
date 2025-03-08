@@ -76,9 +76,9 @@ const LineChart = () => {
           paiementDataCommerciaux = new Array(hourlyData.length).fill(totalPaiementsCommercial || 0);
           setCategories(hourlyData); // Catégories pour les heures du jour
         } else if (periode === 'hebdomadaire') {
-          paiementDataClassiques = [totalPaiements, totalPaiements + 1000, totalPaiements + 2000, totalPaiements + 1500];
-          paiementDataCommerciaux = [totalPaiementsCommercial, totalPaiementsCommercial + 700, totalPaiementsCommercial + 1500, totalPaiementsCommercial + 1200];
-          setCategories(['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']); // Catégories pour les jours de la semaine
+          paiementDataClassiques = totalPaiements ? [totalPaiements, totalPaiements + 1000, totalPaiements + 2000, totalPaiements + 1500] : [0, 0, 0, 0];
+          paiementDataCommerciaux = totalPaiementsCommercial ? [totalPaiementsCommercial, totalPaiementsCommercial + 700, totalPaiementsCommercial + 1500, totalPaiementsCommercial + 1200] : [0, 0, 0, 0];
+          setCategories(['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi']);
         }
 
         // Mettre à jour les catégories et les données

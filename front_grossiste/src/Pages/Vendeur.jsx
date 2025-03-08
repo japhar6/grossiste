@@ -173,7 +173,7 @@ function PriseCommande() {
             'Content-Type': 'application/json',
           }
         });
-        console.log(response.data);
+     
         if (response.data) {
           Swal.fire({
             icon: "success",

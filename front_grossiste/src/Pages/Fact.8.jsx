@@ -217,7 +217,7 @@ function convertirCentaines(nombre) {
                     <tbody>
                         {commande.produits.map((produit, index) => (
                             <tr key={index}>
-                                <td>{produit.quantite}</td>
+                                <td className="fw-bold">{produit.quantite}</td>
                                
                                 <td>{produit.produit ? produit.produit.nom : 'Nom inconnu'}</td> {/* Protection ici */}
                                 <td>{produit.prixdevente} Ariary</td>

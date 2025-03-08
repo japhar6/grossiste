@@ -27,6 +27,7 @@ function Personnels() {
   const [loadingAction, setLoadingAction] = useState(false);
   const [error, setError] = useState('');
   const [loadingList, setLoadingList] = useState(false);
+ 
 
   useEffect(() => {
     // Fonction pour récupérer le comptage des utilisateurs par rôle
@@ -477,6 +478,9 @@ function Personnels() {
                 </p>
                 <p className="alert alert-light">
                   <strong>Email:</strong> {selectedUser.email}
+                </p>
+                <p className="alert alert-light">
+                  <strong>Mot de Passe:</strong> {selectedUser.password}
                 </p>
                 <p className="alert alert-light">
                   <strong>Poste:</strong> {selectedUser.role}

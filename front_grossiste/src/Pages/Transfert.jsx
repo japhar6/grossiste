@@ -21,6 +21,7 @@ const Transfert = () => {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userid");
   const [loading, setLoading] = useState(false);
+  const [selectedEntrepot, setSelectedEntrepot] = useState(null);
   const [error, setError] = useState(null);
   const [produit, setProduit] = useState(null);
   useEffect(() => {
@@ -150,6 +151,7 @@ const Transfert = () => {
               className="btn btn-success mb-3 new"
               onClick={() => setShowModal(true)}
               style={{width:'auto'}}
+              disabled={!entrepotSource}
             >
               Nouveau Transfert
             </button>

@@ -30,24 +30,9 @@ const clientSchema = new mongoose.Schema({
   }, nif: { type: String, default: null },
   stat: { type: String, default: null },
   nifStatImage: { type: String, default: null }  ,
-  remises: {
-    type: {
-      remiseGlobale: { 
-        type: Number, 
-        default: 0 
-      },
-      remiseFixe: {  
-        type: Number,
-        default: 0
-      },
-      remiseParProduit: { 
-        type: Number,
-        default: 0
-      }, 
-      _id: false  
-    },
-    required: false,
-  }
+  
+
+  
 });
 
 module.exports = mongoose.model('Client', clientSchema);

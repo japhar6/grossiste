@@ -15,8 +15,6 @@ function ClientsList() {
         nom: '',
         telephone: '',
         adresse: '',
-        typeRemise: 'remiseFixe',
-        remiseValeur: 0,
         nif: '',
         stat: '',
         nifStatImage: null
@@ -53,6 +51,7 @@ function ClientsList() {
                 setLoadingList(false); // <-- Ici aussi en cas d'erreur
             });
     }, []);
+
     const handleRowClick = (client) => {
         setSelectedClient(client);
         setShowModalila(true);
@@ -73,8 +72,7 @@ function ClientsList() {
                     // Pré-remplir les informations dans le modal d'édition
                     setCurrentClient({
                         ...clientData,
-                        typeRemise: clientData.remises.remiseFixe ? 'remiseFixe' : clientData.remises.remiseParProduit ? 'remiseParProduit' : 'remiseGlobale',
-                        remiseValeur: clientData.remises.remiseFixe || clientData.remises.remiseParProduit || clientData.remises.remiseGlobale
+                        
                     });
                     setShowEditModal(true); // Ouvrir le modal d'édition
                 })
@@ -88,7 +86,9 @@ function ClientsList() {
     const handleClose = () => setShowModal(false);
     const handleEditShow = (client) => {
         setCurrentClient(client);
+        setShowModalila(false);
         setShowEditModal(true);
+     
     };
     const handleEditClose = () => setShowEditModal(false);
 
@@ -105,31 +105,27 @@ function ClientsList() {
         const { name, value } = e.target;
         setCurrentClient({ ...currentClient, [name]: value });
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-      
-        const remises = {
-          remiseFixe: newClient.typeRemise === "remiseFixe" ? Number(newClient.remiseValeur) : 0,
-          remiseParProduit: newClient.typeRemise === "remiseParProduit" ? Number(newClient.remiseValeur) : 0,
-          remiseGlobale: newClient.typeRemise === "remiseGlobale" ? Number(newClient.remiseValeur) : 0,
-        };
-      
-        console.log("Valeur de creerPar avant l'envoi :", "admin");
-      
         setLoading(true);
       
+        const formData = new FormData();
+        formData.append('nom', newClient.nom);
+        formData.append('telephone', newClient.telephone);
+        formData.append('adresse', newClient.adresse);
+        formData.append('nif', newClient.nif);
+        formData.append('stat', newClient.stat);
+        formData.append('nifStatImage', newClient.nifStatImage); // Fichier de l'image
+        formData.append('creerPar', "admin");
+  
         try {
-          const response = await axios.post("/api/client/", {
-            nom: newClient.nom,
-            telephone: newClient.telephone,
-            adresse: newClient.adresse,
-            remises: remises,
-            creerPar: "admin",  // Vérifie que cette valeur est bien envoyée
+          const response = await axios.post("/api/client/", formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           });
       
           console.log("Réponse du serveur :", response.data);
-      
           setClients([...clients, response.data]);
           handleClose();
           setLoading(false);
@@ -145,23 +141,22 @@ function ClientsList() {
         }
       };
       
+      
         
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
     
-        const remises = {
-            remiseFixe: currentClient.typeRemise === 'remiseFixe' ? Number(currentClient.remiseValeur) : 0,
-            remiseParProduit: currentClient.typeRemise === 'remiseParProduit' ? Number(currentClient.remiseValeur) : 0,
-            remiseGlobale: currentClient.typeRemise === 'remiseGlobale' ? Number(currentClient.remiseValeur) : 0
-        };
+        
     
         try {
             const response = await axios.put(`/api/client/modifier/${currentClient._id}`, {
                 nom: currentClient.nom,
                 telephone: currentClient.telephone,
                 adresse: currentClient.adresse,
-                remises
+                nif : currentClient.nif,
+                stat:currentClient.stat
+,          
             });
     
             setClients(clients.map(client => client._id === currentClient._id ? response.data.client : client));
@@ -301,9 +296,7 @@ function ClientsList() {
                                             <th>Téléphone</th>
                                             <th>Adresse</th>
                                             <th>Date d'ajout</th>
-                                            <th>Remise fixe</th>
-                                            <th>Remise par produit</th>
-                                            <th>Remise prix global</th>
+                                           
                                             <th>Nif</th>
                                             <th>Stat</th>
                                             <th>Action</th>
@@ -317,16 +310,28 @@ function ClientsList() {
                                                 <td>{client.telephone}</td>
                                                 <td>{client.adresse}</td>
                                                 <td>{new Date(client.dateInscription).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</td>
-                                                <td>{client.remises ? client.remises.remiseFixe : 'Pas de remise'}</td>
-                                                <td>{client.remises ? client.remises.remiseParProduit : 'Pas de remise'}%</td>
-                                                <td>{client.remises ? client.remises.remiseGlobale : 'Pas de remise'}Ariary</td>
+                                                
                                                 <td>{client.nif }</td>
-                                                <td>{client.star}</td>
+                                                <td>{client.stat}</td>
                                                 <td>
-                                                    <button className="btn btn-warning m-1"  onClick={() => handleEditShow(client)}>
+                                                    <button className="btn btn-warning m-1"  
+                                                    
+                                                    
+                                                    onClick={(event) => {
+                                                        event.stopPropagation(); // Empêche d'ouvrir la modal de la ligne
+                                                        handleEditShow(client); // Fonction pour modifier le client
+                                                      }}
+                                                     >
                                                         <i className="fas fa-edit"></i>
                                                     </button>
-                                                    <button className="btn btn-danger m-1" onClick={() => handleDelete(client._id)}>
+                                                    <button className="btn btn-danger m-1"
+                                                        
+                                                        onClick={(event) => {
+                                                            event.stopPropagation(); // Empêche d'ouvrir la modal de la ligne
+                                                            handleDelete(client._id) // Fonction pour modifier le client
+                                                          }}
+                                                       
+                                                   >
                                                         <i className="fas fa-trash"></i>
                                                     </button>
                                                 </td>
@@ -358,18 +363,8 @@ function ClientsList() {
                             <Form.Label>Adresse</Form.Label>
                             <Form.Control type="text" name="adresse" value={newClient.adresse} onChange={handleChange} />
                         </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Type de remise</Form.Label>
-                            <Form.Control as="select" name="typeRemise" value={newClient.typeRemise} onChange={handleChange}>
-                                <option value="remiseFixe">Remise fixe</option>
-                                <option value="remiseParProduit">Remise par produit</option>
-                                <option value="remiseGlobale">Remise globale</option>
-                            </Form.Control>
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Valeur de la remise</Form.Label>
-                            <Form.Control type="number" name="remiseValeur" value={newClient.remiseValeur} onChange={handleChange} />
-                        </Form.Group>
+                     
+                     
                         <Form.Group>
                             <Form.Label>NIF</Form.Label>
                             <Form.Control type="text" name="nif" value={newClient.nif} onChange={handleChange} />
@@ -413,25 +408,15 @@ function ClientsList() {
                 <Form.Label>Adresse</Form.Label>
                 <Form.Control type="text" name="adresse" value={currentClient.adresse} onChange={handleEditChange} />
             </Form.Group>
-            <Form.Group>
-                <Form.Label>Type de remise</Form.Label>
-                <Form.Control as="select" name="typeRemise" value={currentClient.typeRemise} onChange={handleEditChange}>
-                    <option value="remiseFixe">Remise fixe</option>
-                    <option value="remiseParProduit">Remise par produit</option>
-                    <option value="remiseGlobale">Remise globale</option>
-                </Form.Control>
-            </Form.Group>
-            <Form.Group>
-                <Form.Label>Valeur de la remise</Form.Label>
-                <Form.Control type="number" name="remiseValeur" value={currentClient.remiseValeur} onChange={handleEditChange} />
-            </Form.Group>
+           
+           
             <Form.Group>
                             <Form.Label>NIF</Form.Label>
-                            <Form.Control type="text" name="nif" value={newClient.nif} onChange={handleChange} />
+                            <Form.Control type="text" name="nif" value={currentClient.nif} onChange={handleEditChange} />
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>STAT</Form.Label>
-                            <Form.Control type="text" name="stat" value={newClient.stat} onChange={handleChange} />
+                            <Form.Control type="text" name="stat" value={currentClient.stat} onChange={handleEditChange} />
                         </Form.Group>
                         
             <Button 
