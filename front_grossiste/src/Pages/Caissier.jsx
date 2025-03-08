@@ -28,9 +28,9 @@ function Caisse() {
   const [argentDonne, setArgentDonne] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const isDisabled = commande?.clientId?.creerPar === "vendeur" && modePaiement === "credit";
-const notificationSound = new Audio(audio);
+  const notificationSound = new Audio(audio);
 
-const idCaissier = localStorage.getItem("userid");
+  const idCaissier = localStorage.getItem("userid");
 
   console.log("isDisabled:", isDisabled);
 
@@ -50,9 +50,9 @@ const idCaissier = localStorage.getItem("userid");
 
   useEffect(() => {
     // Configurer Pusher pour recevoir des événements
-   const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
-        cluster: 'mt1',
-      });
+    const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
+      cluster: 'mt1',
+    });
     // Abonnement au canal pour recevoir les notifications de nouvelles commandes
     const channel = pusher.subscribe('caissier-channel');
     channel.bind('nouveau-comande', (data) => {
@@ -65,8 +65,8 @@ const idCaissier = localStorage.getItem("userid");
         }
         return prevNotifications;
       });
-        // Lorsque nous recevons une nouvelle notification, on recharge les données
-        fetchReferences();
+      // Lorsque nous recevons une nouvelle notification, on recharge les données
+      fetchReferences();
     });
 
     // Nettoyage lors de la fermeture du composant
@@ -252,28 +252,27 @@ const idCaissier = localStorage.getItem("userid");
 
 
 
-
   const handlePaymentChange = async (value) => {
-    if (value === "a credit" && commande.clientId && commande.clientId.creerPar === "vendeur") {
+    if (value === "a credit" && commande?.clientId?.creerPar === "vendeur") {
       setLoadingAction(true);
-
-      // Vérification que commande.client et commande.client.nom existent
-      const clientNom = commande.clientId && commande.clientId.nom ? commande.clientId.nom : "Client inconnu";
-
+  
+      // Vérification que commande.clientId et son nom existent
+      const clientNom = commande?.clientId?.nom || "Client inconnu";
+  
       const message = `Le client ${clientNom} demande un paiement à crédit.`;
-
+  
       try {
         const response = await axios.post(
           "/api/notif/envoie-notificationsCredit",
           {
             message: message,
-            idClient: commande.clientId._id,
+            idClient: commande?.clientId?._id,
           },
           {
             headers: { "Content-Type": "application/json" },
           }
         );
-
+  
         console.log("Réponse de l'API:", response.data);
         Swal.fire({
           title: "Succès!",
@@ -281,7 +280,7 @@ const idCaissier = localStorage.getItem("userid");
           icon: "success",
           confirmButtonText: "OK",
         });
-
+  
       } catch (error) {
         console.error("Erreur lors de l'envoi de la notification", error);
         Swal.fire({
@@ -295,6 +294,7 @@ const idCaissier = localStorage.getItem("userid");
       }
     }
   };
+  
 
 
 
@@ -434,44 +434,43 @@ const idCaissier = localStorage.getItem("userid");
                       ))}
                     </ul>
                   )}
-                  <select
-                    className="form-control mt-2"
-                    value={modePaiement}
-                    onChange={(e) => {
-                      setModePaiement(e.target.value);
-                      handlePaymentChange(e.target.value); // Vérifie si une demande doit être envoyée
-                    }}
-                  >
-                    <option value="">Sélectionner le mode de paiement</option>
+            <select
+  className="form-control mt-2"
+  value={modePaiement}
+  onChange={(e) => {
+    setModePaiement(e.target.value);
+    handlePaymentChange(e.target.value); // Vérifie si une demande doit être envoyée
+  }}
+>
+  <option value="">Sélectionner le mode de paiement</option>
 
-                    {/* Vérifiez si la commande est récupérée et que le client a été créé par un vendeur */}
-                    {commande && commande.typeClient === "Client" ? (
-                      <>
-                        {commande && commande.clientId && commande.clientId.creerPar === "vendeur" && commande.clientId.nom ? (
-                          <>
-                            <option value="espèce">Espèce</option>
-                            <option value="mobile money">Mobile Money</option>
-                            <option value="a credit">A Crédit</option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="espèce">Espèce</option>
-                            <option value="mobile money">Mobile Money</option>
-                            <option value="a credit">A Crédit</option>
-                            <option value="virement bancaire">Virement bancaire</option>
-                            <option value="cheque">Chèque</option>
-                            <option value="versement">Versement</option>
-                          </>
-                        )}
-                      </>
-                    ) : commande && commande.typeClient === "Commercial" ? (
-                      <>
-                        <option value="a credit">A Crédit</option>
-                      </>
-                    ) : null}
+  {/* Vérifie si la commande existe et que le type de client est "Client" */}
+  {commande?.typeClient === "Client" ? (
+  <>
+    {commande?.clientId?.creerPar === "vendeur" && commande?.clientId?.nom ? (
 
-
-                  </select>
+        <>
+          <option value="espèce">Espèce</option>
+          <option value="mobile money">Mobile Money</option>
+          <option value="a credit">A Crédit</option>
+        </>
+      ) : (
+        <>
+          <option value="espèce">Espèce</option>
+          <option value="mobile money">Mobile Money</option>
+          <option value="a credit">A Crédit</option>
+          <option value="virement bancaire">Virement bancaire</option>
+          <option value="cheque">Chèque</option>
+          <option value="versement">Versement</option>
+        </>
+      )}
+    </>
+  ) : commande?.typeClient === "Commercial" ? (
+    <>
+      <option value="a credit">A Crédit</option>
+    </>
+  ) : null}
+</select>
 
 
                   {(modePaiement === "mobile money" || modePaiement === "virement bancaire" || modePaiement === "cheque") && (
@@ -506,20 +505,21 @@ const idCaissier = localStorage.getItem("userid");
                   )}
 
 
+{modePaiement === "a credit" &&
+  (commande?.typeClient === "Commercial" || commande?.clientId?.creerPar === "admin") && (
+    <div className="form-group">
+      <label htmlFor="dateLimiteCredit">Date limite de paiement</label>
+      <input
+        type="date"
+        id="dateLimiteCredit"
+        className="form-control"
+        value={dateLimiteCredit}
+        onChange={(e) => setDateLimiteCredit(e.target.value)}
+        required
+      />
+    </div>
+  )}
 
-                  {modePaiement === "a credit" && commande && commande.clientId && commande.clientId.creerPar === "admin" && (
-                    <div className="form-group">
-                      <label htmlFor="dateLimiteCredit">Date limite de paiement</label>
-                      <input
-                        type="date"
-                        id="dateLimiteCredit"
-                        className="form-control"
-                        value={dateLimiteCredit}
-                        onChange={(e) => setDateLimiteCredit(e.target.value)}
-                        required
-                      />
-                    </div>
-                  )}
 
 
 
@@ -622,7 +622,8 @@ const idCaissier = localStorage.getItem("userid");
                     handleGenerateInvoice();
                     // validerPaiement(); 
                   }}
-                  disabled={commande.clientId.creerPar.trim().toLowerCase() === "vendeur" && modePaiement.trim().toLowerCase() === "a credit"}
+                  disabled={commande?.clientId?.creerPar?.trim().toLowerCase() === "vendeur" && modePaiement.trim().toLowerCase() === "a credit"}
+
                 // Désactiver si les deux conditions sont vraies
                 >
                   <i className="fa fa-check-circle"></i> Valider le paiement

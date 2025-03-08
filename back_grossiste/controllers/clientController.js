@@ -4,25 +4,24 @@ exports.createClient = async (req, res) => {
     console.log("Données reçues :", req.body);
     console.log("Fichier reçu :", req.file); // Vérifier si le fichier est bien envoyé
 
-    const { nom, telephone, adresse, remises, creerPar } = req.body;
+    const { nom, telephone, adresse, creerPar,nif,stat } = req.body;
 
     // Vérification des données
-    if (!nom || !telephone || !adresse) {
+    if (!nom ) {
       return res.status(400).json({ message: "Les informations obligatoires sont manquantes." });
     }
 
     // Récupération du chemin de l'image téléchargée
     const nifStatImage = req.file ? `/uploads/nifstat/${req.file.filename}` : null;
 
-
-
-
     // Création du client
     const newClient = new Client({
       nom,
       telephone,
       adresse,
-      remises,
+      nif,
+      stat,
+ 
       creerPar,  
       nifStatImage
     });
@@ -43,13 +42,13 @@ exports.createClient = async (req, res) => {
 // Créer un nouveau client
 exports.createClientAdmin = async (req, res) => {
   try {
-      const { nom, telephone, adresse, remises } = req.body;
+      const { nom, telephone, adresse,creerPar } = req.body;
 
       const newClient = new Client({
           nom,
           telephone,
           adresse,
-          remises: remises || undefined
+          creerPar:"admin"
       });
 
       const savedClient = await newClient.save();
@@ -72,8 +71,8 @@ res.status(500).json({ message: "❌ Erreur lors du comptage des clients", error
 // Récupérer tous les clients
 exports.getAllClients = async (req, res) => {
   try {
-    const clients = await Client.find()
-    .populate('remises')
+    const clients = await Client.find();
+    
     res.status(200).json(clients);
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la récupération des clients', error });

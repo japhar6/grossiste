@@ -7,14 +7,24 @@ import "../Styles/Profile.css";
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Navbar";
 import pardefaut from "../assets/imageprofil.jpg";
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 function Profil() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
   const usId = localStorage.getItem("userid");
+ const [showPassword, setShowPassword] = useState(false);
+ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(prevState => !prevState);
+        console.log('Show Password:', !showPassword);
+    };
 
   const [loadingAction, setLoadingAction] = useState(false);
   useEffect(() => {
@@ -59,6 +69,15 @@ function Profil() {
 
   const handleSave = async () => {
     setLoadingAction(true);
+    if (updatedUser.password && updatedUser.password !== confirmPassword) {
+      Swal.fire({
+        title: "Erreur!",
+        text: "Les mots de passe ne correspondent pas.",
+        icon: "error",
+        confirmButtonText: "Réessayer",
+      });   setLoadingAction(false);
+      return;
+    }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -156,14 +175,34 @@ function Profil() {
                           />
                         </div>
                         <div className="form-group">
-                          <label>Mot de passe </label>
+                        <label>Mot de passe </label>
                           <input
-                            type="text"
+                            type={showPassword ? "text" : "password"}
                             name="password"
                             value={updatedUser.password || ""}
                             onChange={handleInputChange}
+                            style={{ paddingRight: '2.5rem' }}
+                              placeholder="Password"
+                                            autoComplete="off"
                           />
-                        </div>
+                                                    
+                                         <span>
+                                          
+                                              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={() => setShowPassword(!showPassword)} />        
+                                              </span>
+                    
+                                        </div>
+
+
+<div className="form-group">
+                        <input
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirmer le mot de passe"
+              />
+              <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
+              </div>
                         <div className="form-group">
                           <label>Photo</label>
                           <input

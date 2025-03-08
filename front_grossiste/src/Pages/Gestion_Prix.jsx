@@ -217,17 +217,9 @@ function ListeProduits() {
                               <td>{produit.codeProduit}</td>
                               <td>{produit.nom}</td>
                               <td>
-                                {produitAModifier === produit._id ? (
-                                  <input
-                                    type="number"
-                                    className="form-control"
-                                    value={prixAchatModifier[produit._id] || prixAchat}
-                                    onChange={(e) => setPrixAchatModifier((prev) => ({ ...prev, [produit._id]: e.target.value }))}
-                                    placeholder={produit.prixDachat}
-                                  />
-                                ) : (
+                               
                                   <span style={{ color: 'black' }}>{prixAchat} Ariary</span>
-                                )}
+                              
                               </td>
                               <td>
                                 {produitAModifier === produit._id ? (
