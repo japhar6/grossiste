@@ -361,6 +361,14 @@ paiementCommerciale.modePaiement=modePaiement;
         await vente.save();
         console.log(`Enregistrement de la vente créé avec succès.`);
 
+        const foncdCaisse = new FoncdCaisse({
+            totalPaiement: paiementCommerciale.montantPaye,
+            datePaiement: paiementCommerciale.updatedAt || new Date() // Utilisation de la date actuelle si datePaiement est null
+        });
+        // Sauvegarder l'entrée de FoncdCaisse
+        await foncdCaisse.save();
+
+
         return res.status(200).json({
             message: `Paiement et vente mis à jour avec succès`,
             paiementCommerciale,

@@ -490,6 +490,14 @@ exports.mettreAJourPaiement = async (req, res) => {
         // Sauvegarder le paiement mis à jour
         await paiement.save();
 
+        const foncdCaisse = new FoncdCaisse({
+            totalPaiement: paiement.totalPaiement,
+            datePaiement: paiement.datePaiement || new Date() // Utilisation de la date actuelle si datePaiement est null
+        });
+
+        // Sauvegarder l'entrée de FoncdCaisse
+        await foncdCaisse.save();
+
 
 
         // Répondre avec les nouvelles informations du paiement

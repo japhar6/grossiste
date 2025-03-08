@@ -70,7 +70,7 @@ const ClientsCredit = () => {
                                 filteredClients.map((client) => (
                                     <tr key={client._id}>
                                         <td>{client.clientNom || "Inconnu"}</td>
-                                        <td>{client.montant} Ariary</td>
+                                        <td>{client.totalPaiement} Ariary</td>
                                         <td>{client.idCaissier?.nom || "Non spécifié"}</td>
                                         <td>{new Date(client.createdAt).toLocaleDateString()}</td>
                                         <td>

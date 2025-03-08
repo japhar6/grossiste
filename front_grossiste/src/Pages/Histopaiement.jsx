@@ -125,7 +125,7 @@ function HistoC() {
                         <th>Statut</th>  <th>Mode de paiement</th>
                         <th>Date de payement</th>
 
-                        <th>Facture</th>
+                 
                       </tr>
                     </thead>
                     <tbody>
@@ -150,14 +150,7 @@ function HistoC() {
                             )}
                           </td>
                           <td>{new Date(paiement.createdAt).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</td>
-                          <td>
-                            <select className="form-control" onChange={(e) => handleFactureChange(e, paiement._id)}>
-                              <option>Selectionner la facture</option>
-                              <option value="factureNormal">Facture normale</option>
-                              <option value="Remise">Avec Remise</option>
-                              <option value="">Sans prix</option>
-                            </select>
-                          </td>
+                          
                         </tr>
                       ))}
                     </tbody>

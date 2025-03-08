@@ -184,7 +184,6 @@ function SortieStock() {
       return dateB - dateA; // Tri décroissant
     }
   });
-
   const handleSortieFournisseur = async (commande) => {
     if (!commande) {
       Swal.fire({
@@ -194,42 +193,59 @@ function SortieStock() {
       });
       return;
     }
-
-    setLoadingAction(true);
-    try {
-      const response = await axios.put(`/api/commandes/sortieFournisseur/${commande._id}`, {
-        modeLivraison: 'fournisseur',
-        statut: 'payé et livré',
-      });
-
-      // Vérifiez la réponse du backend
-      console.log("Réponse backend:", response.data);
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Succès',
-        text: response.data.message,
-      });
-
-      // Rafraîchir les données ou mettre à jour l'état local
-      // Par exemple, vous pouvez appeler une fonction pour récupérer de nouveau la commande mise à jour :
-      setCommandes(prevCommandes => {
-        return prevCommandes.map(c =>
+  
+    // Demande de confirmation avant de valider
+    const result = await Swal.fire({
+      title: "Confirmation",
+      text: "Voulez-vous vraiment valider cette sortie fournisseur ?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Oui, valider",
+      cancelButtonText: "Annuler",
+      confirmButtonColor: "#28a745",
+      cancelButtonColor: "#d33",
+    });
+  
+    // Si l'utilisateur confirme
+    if (result.isConfirmed) {
+      try {
+        setLoadingAction(true);
+  
+        // Appel API pour mettre à jour la commande
+        const response = await axios.put(`/api/commandes/sortieFournisseur/${commande._id}`, {
+          modeLivraison: 'fournisseur',
+          statut: 'payé et livré',
+        });
+  
+        console.log("Réponse backend:", response.data);
+  
+        // Affichage du succès
+        Swal.fire({
+          icon: 'success',
+          title: 'Succès',
+          text: response.data.message || "La sortie fournisseur a été validée avec succès.",
+        });
+  
+        // Mise à jour de l'état local des commandes après la validation
+        setCommandes(prevCommandes => prevCommandes.map(c =>
           c._id === commande._id ? { ...c, statut: 'payé et livré', modeLivraison: 'fournisseur' } : c
-        );
-      });
-
-    } catch (error) {
-      console.error("Erreur:", error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur',
-        text: error.response?.data?.message || 'Échec de la sortie fournisseur.',
-      });
-    } finally {
-      setLoadingAction(false);
+        ));
+  
+      } catch (error) {
+        console.error("Erreur lors de la validation :", error);
+  
+        Swal.fire({
+          icon: 'error',
+          title: 'Erreur',
+          text: error.response?.data?.message || "Une erreur s'est produite lors de la validation.",
+        });
+  
+      } finally {
+        setLoadingAction(false); // Arrêter le chargement même en cas d'erreur
+      }
     }
   };
+  
 
 
 

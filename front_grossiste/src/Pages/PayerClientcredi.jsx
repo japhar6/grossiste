@@ -160,7 +160,7 @@ function Caisse() {
                   <option value="">Sélectionner le mode de paiement</option>
                   <option value="espèce">Espèce</option>
                   <option value="mobile money">Mobile Money</option>
-                  <option value="a credit">A Crédit</option>
+                
                   <option value="virement bancaire">Virement bancaire</option>
                 </select>
 
