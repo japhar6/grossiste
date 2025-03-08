@@ -10,6 +10,8 @@ import generateDiscountInvoice from "../config/generateCreditInvoice";
 import { useNavigate } from "react-router-dom";
 import Pusher from 'pusher-js';
 import audio from '../assets/mixkit-positive-notification-951.wav';
+import audionotif from '../assets/mixkit-happy-bells-notification-937.wav';
+
 function Caisse() {
   const [referenceFacture, setReferenceFacture] = useState("");
   const [commande, setCommande] = useState(null);
@@ -29,10 +31,15 @@ function Caisse() {
   const [notifications, setNotifications] = useState([]);
   const isDisabled = commande?.clientId?.creerPar === "vendeur" && modePaiement === "credit";
   const notificationSound = new Audio(audio);
+  const notificationSoundnotif = new Audio(audionotif);
+
+
+
+
 
   const idCaissier = localStorage.getItem("userid");
 
-  console.log("isDisabled:", isDisabled);
+
 
   SetdatePositionnementCheque
   const handleChangeModePaiement = (e) => {
@@ -45,27 +52,37 @@ function Caisse() {
   };
 
 
-
-
+  const fetchReferences = async () => {
+    try {
+      const response = await axios.get('/api/commandes/suggestions');
+      setAllReferences(response.data); // Mettre à jour l'état avec les nouvelles données
+    } catch (error) {
+      console.error("Erreur lors de la récupération des références :", error);
+    }
+  };
 
   useEffect(() => {
+    // Initialiser la récupération des données de références au montage du composant
+    fetchReferences();
+
     // Configurer Pusher pour recevoir des événements
     const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
       cluster: 'mt1',
     });
+
     // Abonnement au canal pour recevoir les notifications de nouvelles commandes
     const channel = pusher.subscribe('caissier-channel');
     channel.bind('nouveau-comande', (data) => {
-      // Recevoir le message de notification
+      // Recevoir et traiter les données de la nouvelle commande
       setNotifications((prevNotifications) => {
-        // Si la notification existe déjà, ne pas l'ajouter
         if (!prevNotifications.some(notif => notif.message === data.message)) {
           notificationSound.play();
           return [...prevNotifications, data.message];
         }
         return prevNotifications;
       });
-      // Lorsque nous recevons une nouvelle notification, on recharge les données
+
+      // Recharger les références après avoir reçu une nouvelle commande
       fetchReferences();
     });
 
@@ -73,20 +90,6 @@ function Caisse() {
     return () => {
       pusher.unsubscribe('caissier-channel');
     };
-  }, []);
-
-
-  useEffect(() => {
-    const fetchReferences = async () => {
-      try {
-        const response = await axios.get('/api/commandes/suggestions');
-        setAllReferences(response.data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des références :", error);
-      }
-    };
-
-    fetchReferences();
   }, []);
 
   const handleInputChange = (e) => {

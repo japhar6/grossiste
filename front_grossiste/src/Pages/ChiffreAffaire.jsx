@@ -3,9 +3,11 @@ import Sidebar from "../Components/Sidebar";
 import Header from "../Components/NavbarM";
 import '../Styles/ChiffreAffaire.css';
 import axios from '../api/axios';
-
+import { Modal, Button, Table } from 'react-bootstrap';
+import ReapproListModal from '../Components/ReaproModal';
 function ChiffreAffaire() {
     // États pour stocker les informations
+    const [showReapproModal, setShowReapproModal] = useState(false);
     const [chiffreAffaire, setChiffreAffaire] = useState({
         totalPaiements: 0,
         totalPaiementsCommercial: 0,
@@ -20,7 +22,8 @@ function ChiffreAffaire() {
         totalSalaire: 0,
         nombreSalaire: 0,
         totalPrixInventaire: 0,
-        nombreOperations: 0
+        nombreOperations: 0,
+        montantRefact: 0
     });
     const [loading, setLoading] = useState(true);
     // État pour la période sélectionnée
@@ -57,6 +60,19 @@ function ChiffreAffaire() {
                 console.error("Erreur lors de la récupération des achats", error);
             });
 
+            axios.get(`/api/reapro/total/${periode}`)
+            .then(response => {
+                setChiffreAffaire(prevState => ({
+                    ...prevState,
+                    montantRefact: response.data.totalMontant
+                
+                }))
+                ;
+            
+            })
+            .catch(error => {
+                console.error("Erreur lors de la récupération des achats", error);
+            });
         // Fetch the commission data
         axios.get(`/api/commission/totals/${periode}`)
             .then(response => {
@@ -127,6 +143,9 @@ function ChiffreAffaire() {
                                 <option value="annuel">Annuel</option>
                                 <option value="global">Global</option>
                             </select>
+                            <Button variant="info" onClick={() => setShowReapproModal(true)}>
+        Voir les refacturation
+      </Button>
                         </div>
                     </div>
                     {loading ? (
@@ -164,7 +183,7 @@ function ChiffreAffaire() {
                                                 <>
                                                     <h5 className="card-title">📉 Chiffre d'affaire en Perte</h5>
                                                     <p className="display-6 text-danger fw-bold">
-                                                        {formatCurrency(Math.abs((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
+                                                        {formatCurrency(Math.abs((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
                                                             (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire)))} Ariary
                                                     </p>
                                                 </>
@@ -172,7 +191,7 @@ function ChiffreAffaire() {
                                                 <>
                                                     <h5 className="card-title">📈 Chiffre d'affaire Bénéfice</h5>
                                                     <p className="display-6 text-primary fw-bold">
-                                                        {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
+                                                        {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
                                                             (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire))} Ariary
                                                     </p>
                                                 </>
@@ -218,7 +237,7 @@ function ChiffreAffaire() {
                                                 <>
                                                     <h5 className="card-title">🔴 Perte</h5>
                                                     <p className="display-6 text-danger fw-bold">
-                                                        {formatCurrency(Math.abs((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
+                                                        {formatCurrency(Math.abs((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
                                                             (chiffreAffaire.totalAchats)))} Ariary
                                                     </p>
                                                 </>
@@ -226,7 +245,7 @@ function ChiffreAffaire() {
                                                 <>
                                                     <h5 className="card-title">💹 Bénéfice net</h5>
                                                     <p className="display-6 text-primary fw-bold">
-                                                        {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
+                                                        {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
                                                             (chiffreAffaire.totalAchats))} Ariary
                                                     </p>
                                                 </>
@@ -295,10 +314,24 @@ function ChiffreAffaire() {
                                     <div className="card text-center shadow-sm">
                                         <div className="card-body">
                                             <h5 className="card-title">💵 Total inventaire</h5>
-                                            <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.totalPrixInventaire)} Ariary</p>
+                                            <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.totalPrixInventaire)} </p>
                                         </div>
                                     </div>
-                                </div> </div>
+                                </div>  <div className="col-md-4 mt-3">
+                                    <div className="card text-center shadow-sm">
+                                        <div className="card-body">
+                                            <h5 className="card-title">💵 Total refacturation</h5>
+                                            <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.montantRefact)} </p>
+                                        </div>
+                                    </div>
+                                </div> 
+                                
+                                </div>
+                                <ReapproListModal
+        show={showReapproModal}
+        handleClose={() => setShowReapproModal(false)}
+      
+      />
                         </div>)}
                 </div>
             </section>

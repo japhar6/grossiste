@@ -86,11 +86,13 @@ exports.ajouterCommande = async (req, res) => {
         console.log("Commande créée avec succès :", nouvelleCommande);
 
 
-      // Émettre un événement Pusher avec juste l'ID de la commande
- pusher.trigger('caissier-channel', 'nouveau-comande', {
-    message: 'Nouvelle commande reçue.',
-   
-  });
+        pusher.trigger('caissier-channel', 'nouveau-comande', {
+            message: 'Nouvelle commande reçue.',
+            commandeId: nouvelleCommande._id,  // Envoie l'ID de la commande
+            totalGeneral: nouvelleCommande.totalGeneral, // Ajoute d'autres données si nécessaire
+            produits: produitsDetails, // Tu peux aussi envoyer les détails des produits
+        });
+        
         
         res.status(201).json({
             message: "Commande créée avec succès.",
