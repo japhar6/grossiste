@@ -5,6 +5,7 @@ const fondRistourneSchema = new mongoose.Schema({
   panier: { type: mongoose.Schema.Types.ObjectId, ref: 'Panier', required: true },
   montantRistourne: { type: Number, required: true },
   dateAchat: { type: Date, default: Date.now },
+  refact: { type: String, default: null },
   statut: { 
     type: String, 
     enum: ['En attente', 'Prélevé'], 

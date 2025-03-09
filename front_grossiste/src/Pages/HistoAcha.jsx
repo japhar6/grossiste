@@ -20,50 +20,192 @@ function HistoAcha() {
     const [loadingAction, setLoadingAction] = useState(false);
     const notificationSound = new Audio(audio);
 
-    const handlePaiement = (panierId) => {
+
+    const handlePaiement = async (panierId, fournisseurInfo, typefournisseur) => {
         if (!panierId) {
             console.error("ID du panier manquant.");
             return;
         }
 
-        Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Voulez-vous vraiment marquer ce panier comme payé ?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Oui, payer',
-            cancelButtonText: 'Annuler',
-            preConfirm: () => {
-                setLoadingAction(true);
-                Swal.showLoading();
-                return axios.put(`/api/paniers/modifier-statut/${panierId}`, {
-                    statut: 'payé',
-                });
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.reload();
-                setLoadingAction(false);
-                setPaniers(paniers.map(item =>
-                    item.id === panierId ? { ...item, statut: 'Payé' } : item
-                ));
+        const fournisseurType = typefournisseur || "";
+        console.log('Type de fournisseur:', fournisseurType);
 
-                Swal.fire(
-                    'Payé!',
-                    'Le panier a été marqué comme payé.',
-                    'success'
-                );
+        if (fournisseurType === "prix_libre") {
+            try {
+                Swal.fire({
+                    title: "Confirmation du paiement",
+                    text: "Êtes-vous sûr de vouloir payer ce panier ?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Oui, payer",
+                    cancelButtonText: "Annuler",
+                    preConfirm: async () => {
+                        try {
+                            Swal.showLoading();
+                            const response = await axios.put(`/api/paniers/modifier-statut/${panierId}`, {
+                                statut: "payé",
+                          
+                            });
+    
+                            if (response.status !== 200) {
+                                throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                            }
+                            return response;
+                        } catch (error) {
+                            console.error("Erreur lors de la validation de l'achat:", error);
+                            Swal.fire({
+                                title: "Erreur",
+                                text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                                icon: "error",
+                                confirmButtonText: "OK",
+                            });
+                            return false;
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.reload();
+                        Swal.fire({
+                            title: "Payé!",
+                            text: "Le panier a été marqué comme payé.",
+                            icon: "success",
+                            confirmButtonText: "OK",
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error("Erreur lors du paiement:", error);
             }
-        }).catch((error) => {
-            console.error("Erreur lors de la modification du statut :", error);
-            setLoadingAction(false);
-            Swal.fire(
-                'Erreur',
-                "Une erreur est survenue, veuillez réessayer.",
-                'error'
-            );
-        });
+        }
+else{
+        try {
+            const result = await Swal.fire({
+                title: "Voulez-vous utiliser la ristourne ?",
+                text: "Cela réduira le total du panier.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Oui",
+                cancelButtonText: "Non",
+            });
+
+            let appliquerRistourne = result.isConfirmed;
+            let ristournesSelectionnees = [];
+
+            if (appliquerRistourne) {
+                try {
+                    const { data: ristournes } = await axios.get(`/api/fondRistourne/fournisseur/${fournisseurInfo}`);
+
+                    if (!ristournes.length) {
+                        await Swal.fire({
+                            title: "Aucune ristourne disponible",
+                            text: "Il n'y a pas de ristourne pour ce fournisseur.",
+                            icon: "info",
+                            confirmButtonText: "OK",
+                        });
+                        appliquerRistourne = false;
+                    } else {
+                        let totalSelectionne = 0;
+                        const selectionHtml = ristournes.map((r, index) => `
+                            <div>
+                                <input type="checkbox" id="ristourne_${index}" value="${r.montantRistourne}" class="ristourne-checkbox" style="margin-right:5px;">
+                                <label for="ristourne_${index}">${r.refact} - ${new Date(r.dateAchat).toLocaleDateString()} - ${r.montantRistourne} Ariary</label>
+                            </div>
+                        `).join("");
+
+                        const { value: selection } = await Swal.fire({
+                            title: "Sélectionnez les ristournes à utiliser",
+                            html: `<div id="ristourneList">${selectionHtml}</div>
+                                <hr>
+                                <div style="font-weight:bold; text-align:right;">Total sélectionné: <span id="totalRistourne">0</span> Ariary</div>`
+                            ,
+                            showCancelButton: true,
+                            confirmButtonText: "Valider",
+                            cancelButtonText: "Annuler",
+                            didOpen: () => {
+                                document.querySelectorAll(".ristourne-checkbox").forEach((checkbox) => {
+                                    checkbox.addEventListener("change", () => {
+                                        let total = 0;
+                                        document.querySelectorAll(".ristourne-checkbox:checked").forEach(cb => {
+                                            total += parseFloat(cb.value) || 0;
+                                        });
+                                        document.getElementById("totalRistourne").textContent = total.toLocaleString();
+                                    });
+                                });
+                            }
+                        });
+
+                        if (!selection) {
+                            appliquerRistourne = false;
+                        } else {
+                            ristournesSelectionnees = Array.from(document.querySelectorAll(".ristourne-checkbox:checked"))
+                                .map(cb => parseFloat(cb.value));
+                        }
+                    }
+                } catch (error) {
+                    console.error("Erreur lors de la récupération des ristournes:", error);
+                    await Swal.fire({
+                        title: "Erreur",
+                        text: "Impossible de récupérer les ristournes.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                    appliquerRistourne = false;
+                }
+            }
+
+            Swal.fire({
+                title: "Confirmation du paiement",
+                text: "Êtes-vous sûr de vouloir payer ce panier ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Oui, payer",
+                cancelButtonText: "Annuler",
+                preConfirm: async () => {
+                    try {
+                        Swal.showLoading();
+                        const response = await axios.put(`/api/paniers/modifier-statut/${panierId}`, {
+                            statut: "payé",
+                            appliquerRistourne,
+                            ristournesSelectionnees,
+                        });
+
+                        if (response.status !== 200) {
+                            throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                        }
+                        return response;
+                    } catch (error) {
+                        console.error("Erreur lors de la validation de l'achat:", error);
+                        Swal.fire({
+                            title: "Erreur",
+                            text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                            icon: "error",
+                            confirmButtonText: "OK",
+                        });
+                        return false;
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                    Swal.fire({
+                        title: "Payé!",
+                        text: "Le panier a été marqué comme payé.",
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    });
+                }
+            });
+        } catch (error) {
+            console.error("Erreur lors de l'initialisation du paiement:", error);
+            Swal.fire({
+                title: "Erreur",
+                text: "Une erreur est survenue, veuillez réessayer.",
+                icon: "error",
+                confirmButtonText: "OK",
+            });
+        }}
     };
+
 
     useEffect(() => {
         setLoadingEntrepots(true);
@@ -143,7 +285,7 @@ function HistoAcha() {
                                                 <th>Date de l'achat</th>
                                                 <th>Achat</th>
                                                 <th>Statut</th>
-
+                                                <th>Fournisseur</th>
                                                 <th>Montant Total Général</th>
                                                 <th>Date Limite Crédit</th>
                                                 <th>Mode de Paiement</th>
@@ -169,6 +311,7 @@ function HistoAcha() {
                                                             ))}
                                                         </td>
                                                         <td>{panier.statut}</td>
+                                                        <td>{panier.fournisseur.nom}</td>
                                                         <td>{panier.totalGeneral} ariary</td>
                                                         <td>
                                                             {panier.dateLimiteCredit && (
@@ -183,11 +326,15 @@ function HistoAcha() {
                                                             {panier.statut === 'non payé' && (
                                                                 <button
                                                                     className="btn btn-success btn-sm w-auto p-2"
-                                                                    onClick={() => handlePaiement(panier._id)}
+                                                                    onClick={() => {
+                                                                        console.log("Panier fournisseur :", panier.fournisseur);
+                                                                        handlePaiement(panier._id, panier.fournisseur?._id, panier.fournisseur.type);
+                                                                    }}
                                                                     disabled={loadingAction}
                                                                 >
                                                                     Payer
                                                                 </button>
+
                                                             )}
                                                         </td>
                                                     </tr>

@@ -50,6 +50,7 @@ function AchatProduits() {
 
     const [pourcentageManuel, setPourcentageManuel] = useState(0);
     const [modePaiement, setModePaiement] = useState('');
+    const [refact, setRefact] = useState('');
     const [dateLimiteCredit, setDateLimiteCredit] = useState('');
     const [referencePaiement, setReferencePaiement] = useState('');
     const [dateEncaissementCheque, setDateEncaissementCheque] = useState(''); // Ajout de la date d'encaissement pour le chèque
@@ -588,69 +589,71 @@ function AchatProduits() {
     const handleReferencePaiementChange = (e) => {
         setReferencePaiement(e.target.value);
     };
+    
 
     const handleDateEncaissementChequeChange = (e) => {
         setDateEncaissementCheque(e.target.value);
     };
-
+    const handleRefactchange = (e) => {
+        setRefact(e.target.value);
+    };
     const validerPanier = async () => {
-        setLoadingAction(true); // Démarre le chargement
+        setLoadingAction(true); // Démarrer le chargement
     
         if (!modePaiement) {
             Swal.fire({
-                title: "Erreur",
+                title: "Info",
                 text: "Le mode de paiement est obligatoire.",
-                icon: "error",
+                icon: "info",
                 confirmButtonText: "OK",
-            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
+            }).then(() => setLoadingAction(false));
             return;
         }
     
-        // Si modePaiement est à crédit, vérifier la date limite
-        if (modePaiement === 'crédit' && !dateLimiteCredit) {
+        if (modePaiement === "crédit" && !dateLimiteCredit) {
             Swal.fire({
                 title: "Erreur",
                 text: "La date limite de crédit est obligatoire pour un paiement à crédit.",
                 icon: "error",
                 confirmButtonText: "OK",
-            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
+            }).then(() => setLoadingAction(false));
             return;
         }
     
-        // Si modePaiement est virement bancaire ou mobile money, vérifier la référence
-        if ((modePaiement === 'virement bancaire' || modePaiement === 'mobile money' || modePaiement === 'versement') && !referencePaiement) {
+        if (
+            ["virement bancaire", "mobile money", "versement"].includes(modePaiement) &&
+            !referencePaiement
+        ) {
             Swal.fire({
                 title: "Erreur",
                 text: "La référence du paiement est obligatoire pour ce mode de paiement.",
                 icon: "error",
                 confirmButtonText: "OK",
-            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
+            }).then(() => setLoadingAction(false));
             return;
         }
     
-        // Si modePaiement est chèque, vérifier la référence et la date d'encaissement
-        if (modePaiement === 'chèque' && (!referencePaiement || !dateEncaissementCheque)) {
+        if (modePaiement === "chèque" && (!referencePaiement || !dateEncaissementCheque)) {
             Swal.fire({
                 title: "Erreur",
                 text: "La référence du paiement et la date d'encaissement du chèque sont obligatoires.",
                 icon: "error",
                 confirmButtonText: "OK",
-            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
+            }).then(() => setLoadingAction(false));
             return;
         }
     
-        // Vérifier si le fournisseur est de type "prix libre" (ajoute ta logique ici pour déterminer cela)
-        const fournisseurType = fournisseurInfo?.type || "";  // Remplace ceci par la logique réelle pour obtenir le type de fournisseur
+        const fournisseurType = fournisseurInfo?.type || "";
     
         if (fournisseurType === "prix_libre") {
-            // Si c'est un fournisseur "prix libre", on valide directement le panier sans SweetAlert
             try {
                 const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                    modePaiement: modePaiement,
-                    dateLimiteCredit: dateLimiteCredit,
-                    referencePaiement: referencePaiement,
-                    dateEncaissementCheque: dateEncaissementCheque,
-                    utiliserRistourne: false // Pas de ristourne
+                    modePaiement,
+                    dateLimiteCredit,
+                    referencePaiement,
+                    dateEncaissementCheque,
+                    utiliserRistourne: false,
+                    refact,
                 });
     
                 if (response.status !== 200) {
@@ -659,11 +662,11 @@ function AchatProduits() {
     
                 Swal.fire({
                     title: "Panier validé",
-                    text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
+                    text: "Votre achat a été effectué avec succès.",
                     icon: "success",
                     confirmButtonText: "OK",
                 }).then(() => {
-                    setLoadingAction(false); // Arrêter le chargement après succès
+                    setLoadingAction(false);
                     window.location.reload();
                 });
             } catch (error) {
@@ -673,88 +676,168 @@ function AchatProduits() {
                     text: error.response ? error.response.data.message : "Une erreur est survenue.",
                     icon: "error",
                     confirmButtonText: "OK",
-                }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
+                }).then(() => setLoadingAction(false));
+            }
+        } else if (modePaiement === "crédit") {
+            try {
+                const response = await axios.post(`/api/achats/valider/${panierId}`, {
+                    modePaiement,
+                    dateLimiteCredit,
+                    referencePaiement,
+                    dateEncaissementCheque,
+                    utiliserRistourne: false,
+                    refact,
+                });
+    
+                if (response.status !== 200) {
+                    throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                }
+    
+                Swal.fire({
+                    title: "Panier validé",
+                    text: "Votre achat a été effectué avec succès.",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    setLoadingAction(false);
+                    window.location.reload();
+                });
+            } catch (error) {
+                console.error("Erreur lors de la validation de l'achat :", error);
+                Swal.fire({
+                    title: "Erreur",
+                    text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                }).then(() => setLoadingAction(false));
             }
         } else {
-            // Demander si l'utilisateur souhaite utiliser la ristourne
             const result = await Swal.fire({
                 title: "Voulez-vous utiliser la ristourne ?",
                 text: "Cela réduira le total du panier.",
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonText: "Oui",
-                cancelButtonText: "Non"
+                cancelButtonText: "Non",
             });
     
-            // Si l'utilisateur clique sur "Oui"
-            if (result.isConfirmed) {
+            let utiliserRistourne = result.isConfirmed;
+            let ristournesSelectionnees = [];
+    
+            if (utiliserRistourne) {
                 try {
-                    const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                        modePaiement: modePaiement,
-                        dateLimiteCredit: dateLimiteCredit,
-                        referencePaiement: referencePaiement,
-                        dateEncaissementCheque: dateEncaissementCheque,
-                        utiliserRistourne: true // Utiliser la ristourne
-                    });
+                    const { data: ristournes } = await axios.get(
+                        `/api/fondRistourne/fournisseur/${fournisseurInfo._id}`
+                    );
     
-                    if (response.status !== 200) {
-                        throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                    if (ristournes.length === 0) {
+                        Swal.fire({
+                            title: "Aucune ristourne disponible",
+                            text: "Il n'y a pas de ristourne pour ce fournisseur.",
+                            icon: "info",
+                            confirmButtonText: "OK",
+                        });
+    
+                        utiliserRistourne = false;
+                    } else {
+                        const { value: selection } = await Swal.fire({
+                            title: "Sélectionnez les ristournes à utiliser",
+                            html: `
+                                <div style="text-align:left; max-height:300px; overflow-y:auto;" id="ristourneList">
+                                    ${ristournes
+                                        .map(
+                                            (r, index) => `
+                                        <div>
+                                            <input type="checkbox" id="ristourne_${index}" value="${r.montantRistourne}" class="ristourne-checkbox" style="margin-right:5px;">
+                                            <label for="ristourne_${index}">${r.refact} - 
+                                            ${new Date(r.dateAchat).toLocaleDateString()} - 
+                                            ${r.montantRistourne !== undefined ? r.montantRistourne + " Ariary" : "Montant inconnu"}</label>
+                                        </div>
+                                    `
+                                        )
+                                        .join("")}
+                                </div>
+                                <hr>
+                                <div style="font-weight:bold; text-align:right;">Total sélectionné: <span id="totalRistourne">0</span> Ariary</div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: "Valider",
+                            cancelButtonText: "Annuler",
+                            didOpen: () => {
+                                // Écouteurs d'événements pour calculer la somme des ristournes cochées
+                                const checkboxes = document.querySelectorAll(".ristourne-checkbox");
+                                const totalElement = document.getElementById("totalRistourne");
+                        
+                                checkboxes.forEach((checkbox) => {
+                                    checkbox.addEventListener("change", () => {
+                                        let total = 0;
+                                        checkboxes.forEach((cb) => {
+                                            if (cb.checked) {
+                                                total += parseFloat(cb.value) || 0;
+                                            }
+                                        });
+                                        totalElement.textContent = total.toLocaleString(); // Formatage avec séparateur de milliers
+                                    });
+                                });
+                            }
+                        });
+                        
+    
+                        if (!selection) {
+                            utiliserRistourne = false;
+                        } else {
+                            ristournesSelectionnees = selection;
+                        }
                     }
-    
-                    Swal.fire({
-                        title: "Panier validé",
-                        text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
-                        icon: "success",
-                        confirmButtonText: "OK",
-                    }).then(() => {
-                        setLoadingAction(false); // Arrêter le chargement après succès
-                        window.location.reload();
-                    });
                 } catch (error) {
-                    console.error("Erreur lors de la validation de l'achat :", error);
+                    console.error("Erreur lors de la récupération des ristournes :", error);
                     Swal.fire({
                         title: "Erreur",
-                        text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                        text: "Impossible de récupérer les ristournes.",
                         icon: "error",
                         confirmButtonText: "OK",
-                    }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
-                }
-            } else {
-                // Si l'utilisateur clique sur "Non"
-                try {
-                    const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                        modePaiement: modePaiement,
-                        dateLimiteCredit: dateLimiteCredit,
-                        referencePaiement: referencePaiement,
-                        dateEncaissementCheque: dateEncaissementCheque,
-                        utiliserRistourne: false // Ne pas utiliser la ristourne
                     });
-    
-                    if (response.status !== 200) {
-                        throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
-                    }
-    
-                    Swal.fire({
-                        title: "Panier validé",
-                        text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
-                        icon: "success",
-                        confirmButtonText: "OK",
-                    }).then(() => {
-                        setLoadingAction(false); // Arrêter le chargement après succès
-                        window.location.reload();
-                    });
-                } catch (error) {
-                    console.error("Erreur lors de la validation de l'achat :", error);
-                    Swal.fire({
-                        title: "Erreur",
-                        text: error.response ? error.response.data.message : "Une erreur est survenue.",
-                        icon: "error",
-                        confirmButtonText: "OK",
-                    }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
+                    utiliserRistourne = false;
                 }
+            }
+    
+            try {
+                const response = await axios.post(`/api/achats/valider/${panierId}`, {
+                    modePaiement,
+                    dateLimiteCredit,
+                    referencePaiement,
+                    dateEncaissementCheque,
+                    utiliserRistourne,
+                    ristournesSelectionnees,
+                    refact,
+                });
+    
+                if (response.status !== 200) {
+                    throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                }
+    
+                Swal.fire({
+                    title: "Panier validé",
+                    text: "Votre achat a été effectué avec succès.",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    setLoadingAction(false);
+                    window.location.reload();
+                });
+            } catch (error) {
+                console.error("Erreur lors de la validation de l'achat :", error);
+                Swal.fire({
+                    title: "Erreur",
+                    text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                }).then(() => setLoadingAction(false));
             }
         }
     };
+    
+    
     
 
     const filteredHistorique = historiqueAchats.filter((achat) => {
@@ -1255,7 +1338,12 @@ function AchatProduits() {
                                                     onChange={handleDateEncaissementChequeChange}
                                                 />
                                             )}
+                                              <div>
+                                            <input type="text" 
+                                               className="form-control mt-2 small-input" required  placeholder="Reference de la facture" value={refact}      onChange={handleRefactchange} />
                                         </div>
+                                        </div>
+                                      
 
                                         <div className="button-group" disabled={loadingAction} style={{ display: 'flex', gap: '10px' }}>
                                             <button className="btn7 btn-success" onClick={validerPanier}>

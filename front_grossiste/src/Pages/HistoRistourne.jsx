@@ -17,7 +17,7 @@ function HistoRistourne() {
         const fetchData = async () => {
             try {
                 const response = await axios.get("/api/fondRistourne/fonds");
-                console.log(response.data); // Ajoutez ce log pour vérifier la structure des données
+                console.log(response.data); 
                 setFonds(response.data);
             } catch (error) {
                 Swal.fire("Erreur", "Échec de récupération des données", "error");

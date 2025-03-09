@@ -15,8 +15,8 @@ function ChiffreAffaire() {
         nombrePaiementsCommercial: 0,
         nombreClients: 0,
         nombreCommerciaux: 0,
-        totalAchats: 0,
-        nombreAchats: 0,
+        totalPaniers: 0,
+        nombrePaniers: 0,
         totalCommissions: 0,
         nombreCommissions: 0,
         totalSalaire: 0,
@@ -48,16 +48,16 @@ function ChiffreAffaire() {
                 console.error("Erreur lors de la récupération des paiements", error);
             });
 
-        axios.get(`/api/achats/totals/${periode}`)
+        axios.get(`/api/paniers/totals/${periode}`)
             .then(response => {
                 setChiffreAffaire(prevState => ({
                     ...prevState,
-                    totalAchats: response.data.totalAchats,
-                    nombreAchats: response.data.nombreAchats,
+                    totalPaniers: response.data.totalPaniers,
+                    nombrePaniers: response.data.nombrePaniers,
                 }));
             })
             .catch(error => {
-                console.error("Erreur lors de la récupération des achats", error);
+                console.error("Erreur lors de la récupération des paniers", error);
             });
 
             axios.get(`/api/reapro/total/${periode}`)
@@ -170,7 +170,7 @@ function ChiffreAffaire() {
                                         <div className="card-body">
                                             <h5 className="card-title">🏷️ Total Dépenses</h5>
                                             <p className="display-6 text-danger fw-bold">
-                                                {formatCurrency(chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire)} Ariary
+                                                {formatCurrency(chiffreAffaire.totalPaniers + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire)} Ariary
                                             </p>
                                         </div>
                                     </div>
@@ -179,12 +179,12 @@ function ChiffreAffaire() {
                                     <div className="card text-center shadow-sm">
                                         <div className="card-body">
                                             {((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
-                                                (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire)) < 0 ? (
+                                                (chiffreAffaire.totalPaniers + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire)) < 0 ? (
                                                 <>
                                                     <h5 className="card-title">📉 Chiffre d'affaire en Perte</h5>
                                                     <p className="display-6 text-danger fw-bold">
                                                         {formatCurrency(Math.abs((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
-                                                            (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire)))} Ariary
+                                                            (chiffreAffaire.totalPaniers + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire)))} Ariary
                                                     </p>
                                                 </>
                                             ) : (
@@ -192,7 +192,7 @@ function ChiffreAffaire() {
                                                     <h5 className="card-title">📈 Chiffre d'affaire Bénéfice</h5>
                                                     <p className="display-6 text-primary fw-bold">
                                                         {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
-                                                            (chiffreAffaire.totalAchats + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire))} Ariary
+                                                            (chiffreAffaire.totalPaniers + chiffreAffaire.totalCommissions + chiffreAffaire.totalSalaire + chiffreAffaire.totalPrixInventaire))} Ariary
                                                     </p>
                                                 </>
                                             )}
@@ -233,12 +233,12 @@ function ChiffreAffaire() {
                                     <div className="card text-center shadow-sm">
                                         <div className="card-body">
                                             {((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial) -
-                                                (chiffreAffaire.totalAchats)) < 0 ? (
+                                                (chiffreAffaire.totalPaniers)) < 0 ? (
                                                 <>
                                                     <h5 className="card-title">🔴 Perte</h5>
                                                     <p className="display-6 text-danger fw-bold">
                                                         {formatCurrency(Math.abs((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
-                                                            (chiffreAffaire.totalAchats)))} Ariary
+                                                            (chiffreAffaire.totalPaniers)))} Ariary
                                                     </p>
                                                 </>
                                             ) : (
@@ -246,7 +246,7 @@ function ChiffreAffaire() {
                                                     <h5 className="card-title">💹 Bénéfice net</h5>
                                                     <p className="display-6 text-primary fw-bold">
                                                         {formatCurrency((chiffreAffaire.totalPaiements + chiffreAffaire.totalPaiementsCommercial+chiffreAffaire.montantRefact) -
-                                                            (chiffreAffaire.totalAchats))} Ariary
+                                                            (chiffreAffaire.totalPaniers))} Ariary
                                                     </p>
                                                 </>
                                             )}
@@ -258,7 +258,7 @@ function ChiffreAffaire() {
                                     <div className="card text-center shadow-sm">
                                         <div className="card-body">
                                             <h5 className="card-title">🛍️ Nombre d'Achats Effectués</h5>
-                                            <p className="display-6 text-danger fw-bold">{chiffreAffaire.nombreAchats}</p>
+                                            <p className="display-6 text-danger fw-bold">{chiffreAffaire.nombrePaniers}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +266,7 @@ function ChiffreAffaire() {
                                     <div className="card text-center shadow-sm">
                                         <div className="card-body">
                                             <h5 className="card-title">🛒 Total Achats</h5>
-                                            <p className="display-6 text-danger fw-bold">{formatCurrency(chiffreAffaire.totalAchats)} Ariary</p>
+                                            <p className="display-6 text-danger fw-bold">{formatCurrency(chiffreAffaire.totalPaniers)} Ariary</p>
                                         </div>
                                     </div>
                                 </div>

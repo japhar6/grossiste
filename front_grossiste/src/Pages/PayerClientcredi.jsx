@@ -165,7 +165,7 @@ function Caisse() {
                 </select>
 
                 {/* Référence du paiement si nécessaire */}
-                {(modePaiement === "mobile money" || modePaiement === "virement bancaire") && (
+                {(modePaiement === "mobile money" || modePaiement === "virement bancaire" || modePaiement === "espèce") && (
                   <div className="form-group mt-3">
                     <label htmlFor="referencePaiement">
                       {modePaiement === "mobile money" ? "Référence de la transaction" : "Référence du bordereau"}

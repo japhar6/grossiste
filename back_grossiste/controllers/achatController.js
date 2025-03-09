@@ -148,7 +148,7 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
 exports.validerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;
-        const { modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque, utiliserRistourne } = req.body;
+        const { modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque, utiliserRistourne,refact } = req.body;
 
         console.log("🔍 Validation du panier - ID du panier:", panierId);
 
@@ -162,6 +162,9 @@ exports.validerPanier = async (req, res) => {
             panier.modePaiement = modePaiement;
         }
 
+        if (refact) {
+            panier.refact = refact;
+        }
         if (modePaiement === "crédit" && dateLimiteCredit) {
             panier.dateLimiteCredit = dateLimiteCredit;
         }
@@ -197,45 +200,44 @@ exports.validerPanier = async (req, res) => {
 
         let fondRistourne = await FondRistourne.findOne({ fournisseur });
 
-        if (fondRistourne) {
-            if (utiliserRistourne) {
-                // 🟢 On utilise la ristourne existante pour réduire le total général du panier
-                const ristourneAUtiliser = Math.min(fondRistourne.montantRistourne, panier.totalGeneral);
-                panier.totalGeneral -= ristourneAUtiliser;
-        
-                console.log(`💰 Ristourne utilisée: ${ristourneAUtiliser}, Nouveau total général: ${panier.totalGeneral}`);
-        
-                // ❌ On met le FondRistourne à zéro
-                fondRistourne.montantRistourne = 0;
-        
-                // ✅ On ajoute la nouvelle ristourne du panier
-                fondRistourne.montantRistourne += montantTotalRistourne;
-                console.log(`📊 Nouveau FondRistourne après utilisation et réajout: ${fondRistourne.montantRistourne}`);
-            } else {
-                // 🔄 On n'utilise pas la ristourne, donc on l'accumule simplement
-                fondRistourne.montantRistourne += montantTotalRistourne;
-                console.log(`💼 FondRistourne mis à jour sans utilisation: ${fondRistourne.montantRistourne}`);
-            }
-            
-            await fondRistourne.save();
-        } else if (montantTotalRistourne > 0) {
-            // 🆕 Si aucun FondRistourne n'existe, on le crée
-            fondRistourne = new FondRistourne({
-                panier: panier._id,
-                fournisseur,
-                montantRistourne: montantTotalRistourne,
-                statut: 'En attente'
-            });
-            await fondRistourne.save();
-            console.log("📊 Nouveau FondRistourne créé.");
-        }
+if (fondRistourne && utiliserRistourne) {
+    // 🟢 Utilisation de la ristourne existante pour réduire le total général du panier
+    const ristourneAUtiliser = Math.min(fondRistourne.montantRistourne, panier.totalGeneral);
+    panier.totalGeneral -= ristourneAUtiliser;
+
+    console.log(`💰 Ristourne utilisée: ${ristourneAUtiliser}, Nouveau total général: ${panier.totalGeneral}`);
+
+    await FondRistourne.findByIdAndDelete(fondRistourne._id);
+    console.log("🗑️ FondRistourne supprimé après utilisation.");
+}
+
+// 🆕 Création d'un nouveau FondRistourne à chaque achat, peu importe s'il y en avait déjà un
+if (montantTotalRistourne > 0) {
+    const nouveauFondRistourne = new FondRistourne({
+        panier: panier._id,
+        fournisseur,
+        montantRistourne: montantTotalRistourne,
+        refact,
+        statut: 'En attente'
+    });
+    await nouveauFondRistourne.save();
+    console.log("📊 Nouveau FondRistourne créé.");
+}
+
         
         
 
-        const achats = await Achat.find({ _id: { $in: panier.achats } }).populate('produit');
+        const achats = await Achat.find({ _id: { $in: panier.achats } })
+        .populate('produit');
         if (achats.length === 0) {
             return res.status(404).json({ message: "Aucun achat trouvé pour ce panier" });
         }
+
+
+if (!fournisseur) {
+    return res.status(400).json({ message: "Aucun fournisseur trouvé pour les achats dans ce panier" });
+}
+
 
         for (const achat of achats) {
             const prixUnitaire = achat.prixAchat || 0;
@@ -248,7 +250,9 @@ exports.validerPanier = async (req, res) => {
             // Ajout ou mise à jour du stock
             await ajouterOuMettreAJourStock(achat.entrepot, achat.produit._id, quantite, prixUnitaire, unite);
         }
+        panier.fournisseur = fournisseur;
 
+      
         // Sauvegarde du panier après modification
         await panier.save();
 
@@ -259,6 +263,7 @@ exports.validerPanier = async (req, res) => {
                 totalGeneral: panier.totalGeneral,
                 dateLimiteCredit: panier.dateLimiteCredit,
                 referencePaiement: panier.referencePaiement,
+             
                 dateEncaissementCheque: panier.dateEncaissementCheque,
                 achats
             }
