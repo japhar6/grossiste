@@ -123,8 +123,8 @@ const Transfert = () => {
     setEntrepotSource(entrepotSource);  // Sauvegarder l'entrepôt source
     setProduit(produit);                // Sauvegarder l'objet produit
   };
-  
-  
+
+
   const filteredTransferts = historiqueTransferts.filter((transfert) =>
     statutFiltre ? transfert.statutAdmin === statutFiltre : true
   );
@@ -145,12 +145,12 @@ const Transfert = () => {
         <div className="p-3 content center">
           <div className="mini-stat p-3 bg-light shadow rounded">
             <h6 className="alert alert-info">Transfert Inter-Entrepôts</h6>
-          
-          
+
+
             <button
               className="btn btn-success mb-3 new"
               onClick={() => setShowModal(true)}
-              style={{width:'auto'}}
+              style={{ width: 'auto' }}
               disabled={!entrepotSource}
             >
               Nouveau Transfert
@@ -188,61 +188,61 @@ const Transfert = () => {
               <option value="rejeté">Rejeté</option>
             </select>
             <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-            <table className="table table-bordered table-striped">
-              <thead className="thead-dark">
-                <tr>
-                  <th className="bg-success">Source</th>
-                  <th>Destination</th>
-                  <th className="bg-success">Produit</th>
-                  <th>Quantité</th>
-                  <th className="bg-success">Unité</th>
-                  <th >Date</th>
-                  <th className="bg-success"> Statut</th>
-                  <th >Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTransferts.map((transfert) => (
-                  <tr key={transfert._id}>
-                    <td>{transfert.entrepotSource?.nom || "N/A"}</td>
-                    <td>{transfert.entrepotDestination?.nom || "N/A"}</td>
-                    <td>{transfert.produit?.nom || "N/A"}</td>
-                    <td>{transfert.quantitéEnvoyée}</td>
-                    <td>
-        {
-            transfert.produit?.unites?.length 
-            ? transfert.produit.unites.reduce((max, unite) => unite.conversion > max.conversion ? unite : max, transfert.produit.unites[0]).nom
-            : 'N/A'
-        }
-    </td>
-                    <td>
-                      {new Date(transfert.dateTransfert).toLocaleDateString()}
-                    </td>
-                    <td>{transfert.statutAdmin}</td>
-                    <td>
-                      {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
-                      {handleRecevoirButtonVisibility(transfert) && (
-                        <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() =>
-                          openReceptionModal(
-                            transfert._id,
-                            transfert.quantitéEnvoyée,
-                            transfert.entrepotSource,
-                            transfert.produit // Passe ici l'objet produit
-                          )
-                        }
-                      >
-                        Recevoir
-                      </button>
-                      
-                      )}
-                    </td>
+              <table className="table table-bordered table-striped">
+                <thead className="thead-dark">
+                  <tr>
+                    <th className="bg-success">Source</th>
+                    <th>Destination</th>
+                    <th className="bg-success">Produit</th>
+                    <th>Quantité</th>
+                    <th className="bg-success">Unité</th>
+                    <th >Date</th>
+                    <th className="bg-success"> Statut</th>
+                    <th >Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div> </div> 
+                </thead>
+                <tbody>
+                  {filteredTransferts.map((transfert) => (
+                    <tr key={transfert._id}>
+                      <td>{transfert.entrepotSource?.nom || "N/A"}</td>
+                      <td>{transfert.entrepotDestination?.nom || "N/A"}</td>
+                      <td>{transfert.produit?.nom || "N/A"}</td>
+                      <td>{transfert.quantitéEnvoyée}</td>
+                      <td>
+                        {
+                          transfert.produit?.unites?.length
+                            ? transfert.produit.unites.reduce((max, unite) => unite.conversion > max.conversion ? unite : max, transfert.produit.unites[0]).nom
+                            : 'N/A'
+                        }
+                      </td>
+                      <td>
+                        {new Date(transfert.dateTransfert).toLocaleDateString()}
+                      </td>
+                      <td>{transfert.statutAdmin}</td>
+                      <td>
+                        {/* Affiche "Recevoir" uniquement si c'est l'entrepôt destinataire et les conditions sont remplies */}
+                        {handleRecevoirButtonVisibility(transfert) && (
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() =>
+                              openReceptionModal(
+                                transfert._id,
+                                transfert.quantitéEnvoyée,
+                                transfert.entrepotSource,
+                                transfert.produit // Passe ici l'objet produit
+                              )
+                            }
+                          >
+                            Recevoir
+                          </button>
+
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div> </div>
         </div>
       </section>
 
@@ -254,17 +254,17 @@ const Transfert = () => {
           entrepotSource={entrepot}
         />
       )}
-{showModalReception && (
-  <ReceptionModal
-    show={showModalReception}
-    handleClose={() => setShowModalReception(false)}
-    transfertId={transfertId}
-    quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
-    produit={produit} // Passer l'objet produit à la modal
-    refreshHistorique={fetchHistoriqueTransferts}
-    entrepotSource={entrepotSource}
-  />
-)}
+      {showModalReception && (
+        <ReceptionModal
+          show={showModalReception}
+          handleClose={() => setShowModalReception(false)}
+          transfertId={transfertId}
+          quantiteEnvoyee={quantiteEnvoyee} // Passer la quantité envoyée au modal
+          produit={produit} // Passer l'objet produit à la modal
+          refreshHistorique={fetchHistoriqueTransferts}
+          entrepotSource={entrepotSource}
+        />
+      )}
 
     </main>
   );

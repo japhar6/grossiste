@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import '../Styles/Navbar.css'
+import '../Styles/Navbar.css';
+import Pusher from 'pusher-js';
+import audionotif from '../assets/mixkit-positive-notification-951.wav';
 function Header() {
     const [email, setEmail] = useState("");
     const [currentTime, setCurrentTime] = useState("");
  const [isLoggingOut, setIsLoggingOut] = useState(false);
-   
+     const [notifications, setNotifications] = useState([]);
+    const notificationSoundCom = new Audio(audionotif);
     useEffect(() => {
       const storedEmail = localStorage.getItem("email");
       if (storedEmail) {
@@ -23,7 +26,34 @@ function Header() {
 
     return () => clearInterval(intervalId);
     }, []);
-    
+     useEffect(() => {
+          // Initialiser Pusher avec ta clé et cluster
+          const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
+               cluster: 'mt1',
+             });
+      
+          // S'abonner au canal spécifique (dans ce cas "caissier-channel")
+          const channel = pusher.subscribe('magasinier-channel');
+      
+          channel.bind('nouveau-paiment', (data) => {
+            // Recevoir et traiter les données de la nouvelle commande
+            setNotifications((prevNotifications) => {
+              if (!prevNotifications.some(notif => notif.message === data.message)) {
+                notificationSoundCom.play();
+                return [...prevNotifications, data.message];
+              }
+              return prevNotifications;
+            });
+      
+          });
+          
+      
+          // Nettoyer la connexion à Pusher lorsque le composant est démonté
+          return () => {
+            pusher.unsubscribe('magasinier-channel');
+          };
+        }, []);
+
    const handleLogout = () => {
         Swal.fire({
           title: "Êtes-vous sûr ?",
