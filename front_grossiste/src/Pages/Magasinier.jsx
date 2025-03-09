@@ -6,8 +6,9 @@ import Header from "../Components/NavbarM";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import Swal from 'sweetalert2';
-import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
-
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav";
+import audio from '../assets/mixkit-positive-notification-951.wav';
+import Pusher from 'pusher-js';
 function SortieStock() {
   const [commandes, setCommandes] = useState([]);
   const [commandeSelectionnee, setCommandeSelectionnee] = useState(null);
@@ -20,13 +21,63 @@ function SortieStock() {
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
   const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-
+  const notificationSound = new Audio(audio);
   const [entrepots, setEntrepots] = useState([]);
+    const [notifications, setNotifications] = useState([]);
   const [entrepotSelectionne, setEntrepotSelectionne] = useState(null);
   const playSound = () => {
     const audio = new Audio(Sound);
     audio.play();
   };
+
+
+  const fetchCommandes = async () => {
+    setLoadingEntrepots(true);
+    try {
+      const response = await axios.get("/api/commandes/TermineeLivree");
+      const sortedCommandes = response.data.sort((a, b) => {
+        const dateA = new Date(a.dateCommande);
+        const dateB = new Date(b.dateCommande);
+        return dateB - dateA; // Trier du plus récent au plus ancien
+      });
+      setCommandes(sortedCommandes);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des commandes", error);
+    } finally {
+      setLoadingEntrepots(false); // Toujours désactiver le chargement
+    }
+  };
+
+  useEffect(() => {
+    // Initialiser la récupération des données au montage du composant
+    fetchCommandes();
+
+    // Configurer Pusher pour recevoir des événements
+    const pusher = new Pusher('a8a7ea8b3c692c9f97f7', {
+      cluster: 'mt1',
+    });
+
+    // Abonnement au canal pour recevoir les notifications de nouvelles commandes
+    const channel = pusher.subscribe('magasinier-channel');
+    channel.bind('nouveau-paiment', (data) => {
+      setNotifications((prevNotifications) => {
+        if (!prevNotifications.some(notif => notif.message === data.message)) {
+          notificationSound.play();
+          return [...prevNotifications, data.message];
+        }
+        return prevNotifications;
+      });
+
+      // Recharger les commandes après avoir reçu une nouvelle notification
+      fetchCommandes();
+    });
+
+    // Nettoyage lors de la fermeture du composant
+    return () => {
+      pusher.unsubscribe('magasinier-channel');
+    };
+  }, []); // Ce useEffect s'exécute une seule fois au montage
+
 
 
   // Vérification de l'identité du magasinier
@@ -57,26 +108,6 @@ function SortieStock() {
   }, [magasinierId]);
 
 
-  useEffect(() => {
-    const fetchCommandes = async () => {
-      setLoadingEntrepots(true);
-      try {
-        const response = await axios.get("/api/commandes/TermineeLivree");
-        setLoadingEntrepots(false);
-        const sortedCommandes = response.data.sort((a, b) => {
-          // Assurez-vous que la date est dans le bon format et qu'elle est valide
-          const dateA = new Date(a.dateCommande);
-          const dateB = new Date(b.dateCommande);
-          return dateB - dateA;  // Trier du plus récent au plus ancien
-        });
-        setCommandes(sortedCommandes);
-      } catch (error) {
-        setLoadingEntrepots(true);
-        console.error("Erreur lors de la récupération des commandes", error);
-      }
-    };
-    fetchCommandes();
-  }, []);
 
 
   const getDetailsCommande = (commandeId) => {

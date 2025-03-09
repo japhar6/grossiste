@@ -201,9 +201,11 @@ console.log("Référence Facture stockée dans localStorage : ", localStorage.ge
               >
                     <div className="notification-content">
                     <div className="notification-message p-3">
-                        {/* Diviser le message et styliser le nom du client */}
+                 
                         {notification.message.split("reference").map((part, index) => (
+                             
                           <React.Fragment key={index}>
+                              <p>{notification.createdAt}</p>
                             {index > 0 && <span className="client-name">{notification.clientNom}</span>}
                             {part}
                           </React.Fragment>

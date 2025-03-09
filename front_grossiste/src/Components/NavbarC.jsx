@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import '../Styles/Navbar.css';
+import Pusher from 'pusher-js';
 import audio from '../assets/mixkit-happy-bells-notification-937.wav';
+import audionotif from '../assets/mixkit-positive-notification-951.wav';
 function Header() {
     const [email, setEmail] = useState("");
     const [currentTime, setCurrentTime] = useState("");
     const [isLoggingOut, setIsLoggingOut] = useState(false);
   const notificationSound = new Audio(audio);
+  const notificationSoundCom = new Audio(audionotif);
      const [notifications, setNotifications] = useState([]);
     useEffect(() => {
       const storedEmail = localStorage.getItem("email");
@@ -65,6 +68,18 @@ function Header() {
 
 
       });
+      channel.bind('nouveau-comande', (data) => {
+        // Recevoir et traiter les données de la nouvelle commande
+        setNotifications((prevNotifications) => {
+          if (!prevNotifications.some(notif => notif.message === data.message)) {
+            notificationSoundCom.play();
+            return [...prevNotifications, data.message];
+          }
+          return prevNotifications;
+        });
+  
+      });
+      
   
       // Nettoyer la connexion à Pusher lorsque le composant est démonté
       return () => {

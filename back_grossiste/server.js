@@ -23,7 +23,7 @@ const commissionRoutes = require("./routes/commissionRoute");
 
 
 const entrepotRoutes = require("./routes/entrepotRoute");
-
+const reaproRoutes = require("./routes/reaprovisionementRoute");
 const clientRoutes = require("./routes/clientRoute");
 const stockRoutes = require('./routes/stockRoute');
 
@@ -57,7 +57,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 // Middleware pour les routes des fournisseurs
-
+app.use("/api/reapro", reaproRoutes);
 app.use("/api/fournisseurs", fournisseurRoutes);
 app.use("/api/produits", produitRoutes);
 app.use("/api/users", userRoutes);

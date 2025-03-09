@@ -4,7 +4,7 @@ const VenteCom = require('../models/VenteComm'); // Assure-toi du bon chemin
 const Produit = require("../models/Produits");
 const mongoose = require('mongoose');
 const FoncdCaisse = require('../models/FondCaisse');
-
+const pusher = require('../config/pusher');  
 
 exports.getPaiementsParMode = async (req, res) => {
     try {
@@ -65,6 +65,14 @@ exports.validerPaiementCommerciale = async (req, res) => {
 
         // Sauvegarder le paiement
         await paiementCommerciale.save();
+        pusher.trigger('magasinier-channel', 'nouveau-paiment', {
+            message: 'Nouvelle paiement reçue.',
+            paiement: paiementCommerciale._id,  // Envoie l'ID de la commande
+            montantPaye: paiementCommerciale.montantPaye, // Ajoute d'autres données si nécessaire
+            referenceFacture:paiementCommerciale.referenceFacture, // Tu peux aussi envoyer les détails des produits
+        });
+        
+
 
         commande.paiement = paiementCommerciale._id;
         await commande.save();

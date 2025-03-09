@@ -3,7 +3,7 @@ const Commande = require("../models/Commandes");
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const { sendNotificationToAdmin } = require('../service/payementService');
 const FoncdCaisse = require("../models/FondCaisse");
-
+const pusher = require('../config/pusher');  
 
 const mongoose = require("mongoose");
 exports.validerpayement = async (req, res) => {
@@ -81,6 +81,19 @@ exports.validerpayement = async (req, res) => {
             // Sauvegarder l'entrée de FoncdCaisse
             await foncdCaisse.save();
         }
+
+
+
+      pusher.trigger('magasinier-channel', 'nouveau-paiment', {
+            message: 'Nouvelle paiement reçue.',
+            paiement: paiement._id,  // Envoie l'ID de la commande
+            montantPaye: paiement.montantPaye, // Ajoute d'autres données si nécessaire
+            referenceFacture:paiement.referenceFacture, // Tu peux aussi envoyer les détails des produits
+        });
+        
+
+
+
 
         // Répondre avec les détails du paiement
         return res.status(200).json({
