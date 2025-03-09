@@ -57,6 +57,7 @@ import Histodecaisse from "./Pages/HistoDecaisse.jsx";
 import Annuler from "./Pages/AnnulerFacture.jsx";
 import Facture8 from './Pages/Fact.8.jsx';
 import HistoComDecom from './Pages/HistoComDecom.jsx';
+import HistoRistourne from './Pages/HistoRistourne.jsx';
 
 function App() {
   return (
@@ -97,6 +98,7 @@ function App() {
           <Route path='/factureremisead' element={<FactureRemAd />} />
           <Route path='/ChiffreAffaire' element={<ChiffreAffaire />} />
           <Route path='/HistoComDecom' element={<HistoComDecom/>} />
+          <Route path='/HistoRistourne' element={<HistoRistourne/>} />
           
 
 

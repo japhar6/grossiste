@@ -67,15 +67,15 @@ function AchatProduits() {
 
         setNouveauProduit({ ...nouveauProduit, fournisseur: selectedFournisseurId });
     };
-    const quantiteNumerique = Number(quantite); // Assure-toi que quantite est un nombre
-    const produitsOfferts = fournisseurInfo && fournisseurInfo.type === "ristourne"
+    const quantiteNumerique = Number(prixAchat*quantite ); // Assure-toi que quantite est un nombre
+    const montantRistourne = fournisseurInfo && fournisseurInfo.type === "ristourne"
         ? fournisseurInfo.conditions.typeRistourne === "par_produit"
             ? Math.floor((quantiteNumerique * pourcentageManuel) / 100) // Utilise le pourcentage manuel
             : Math.floor((quantiteNumerique * fournisseurInfo.conditions.ristourne) / 100)
         : 0;
 
 
-    const quantiteTotale = quantiteNumerique + produitsOfferts; // Utiliser quantiteNumerique ici
+    const montantTotale =( quantiteNumerique )+ montantRistourne; // Utiliser quantiteNumerique ici
 
 
 
@@ -498,14 +498,18 @@ function AchatProduits() {
             produit: produitId,
             quantite: quantiteNumerique,
             prixAchat: prixAchat,
+            montantRistourne:montantRistourne,
             dateAchat: new Date().toISOString(),
             ristourneAppliquee: pourcentageManuel,
             unite: unite.value || unite.label, // Changez ici pour envoyer le nom de l'unité
             entrepotId: entrepot,
         };
+        
 
         try {
             const response = await axios.post("/api/achats/ajouter", achatData);
+       
+            
             const data = response.data;
 
             // Vérifier si la réponse contient un achat
@@ -513,10 +517,10 @@ function AchatProduits() {
                 console.log("Données envoyées pour création de l'achat :", data);
 
                 // Afficher les produits offerts si disponible
-                if (data.achat.produitsOfferts > 0) {
+                if (data.achat.montantRistourne > 0) {
                     Swal.fire({
                         title: "Succès",
-                        text: `Achat ajouté avec succès. 🎁 Vous avez reçu ${data.achat.produitsOfferts} produits offerts !`,
+                        text: `Achat ajouté avec succès.`,
                         icon: "success",
                         confirmButtonText: "OK",
                     });
@@ -534,7 +538,7 @@ function AchatProduits() {
                 fetchAchats();
 
                 // Réinitialisation des champs après succès
-                setFournisseur("");
+           
                 setQuantite("");
                 setPrixAchat("");
                 setProduit("");
@@ -589,20 +593,19 @@ function AchatProduits() {
         setDateEncaissementCheque(e.target.value);
     };
 
-
-
     const validerPanier = async () => {
         setLoadingAction(true); // Démarre le chargement
+    
         if (!modePaiement) {
             Swal.fire({
                 title: "Erreur",
-                text: "Le mode de paiement sont obligatoires.",
+                text: "Le mode de paiement est obligatoire.",
                 icon: "error",
                 confirmButtonText: "OK",
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-
+    
         // Si modePaiement est à crédit, vérifier la date limite
         if (modePaiement === 'crédit' && !dateLimiteCredit) {
             Swal.fire({
@@ -613,7 +616,7 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-
+    
         // Si modePaiement est virement bancaire ou mobile money, vérifier la référence
         if ((modePaiement === 'virement bancaire' || modePaiement === 'mobile money' || modePaiement === 'versement') && !referencePaiement) {
             Swal.fire({
@@ -624,7 +627,7 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-
+    
         // Si modePaiement est chèque, vérifier la référence et la date d'encaissement
         if (modePaiement === 'chèque' && (!referencePaiement || !dateEncaissementCheque)) {
             Swal.fire({
@@ -635,38 +638,124 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation
             return;
         }
-
-        try {
-            const response = await axios.post(`/api/achats/valider/${panierId}`, {
-                modePaiement: modePaiement,
-                dateLimiteCredit: dateLimiteCredit,
-                referencePaiement: referencePaiement,
-                dateEncaissementCheque: dateEncaissementCheque, // Envoi de la date d'encaissement pour le paiement par chèque
-            });
-
-            if (response.status !== 200) {
-                throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+    
+        // Vérifier si le fournisseur est de type "prix libre" (ajoute ta logique ici pour déterminer cela)
+        const fournisseurType = fournisseurInfo?.type || "";  // Remplace ceci par la logique réelle pour obtenir le type de fournisseur
+    
+        if (fournisseurType === "prix_libre") {
+            // Si c'est un fournisseur "prix libre", on valide directement le panier sans SweetAlert
+            try {
+                const response = await axios.post(`/api/achats/valider/${panierId}`, {
+                    modePaiement: modePaiement,
+                    dateLimiteCredit: dateLimiteCredit,
+                    referencePaiement: referencePaiement,
+                    dateEncaissementCheque: dateEncaissementCheque,
+                    utiliserRistourne: false // Pas de ristourne
+                });
+    
+                if (response.status !== 200) {
+                    throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                }
+    
+                Swal.fire({
+                    title: "Panier validé",
+                    text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                }).then(() => {
+                    setLoadingAction(false); // Arrêter le chargement après succès
+                    window.location.reload();
+                });
+            } catch (error) {
+                console.error("Erreur lors de la validation de l'achat :", error);
+                Swal.fire({
+                    title: "Erreur",
+                    text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
             }
-
-            Swal.fire({
-                title: "Panier validé",
-                text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
-                icon: "success",
-                confirmButtonText: "OK",
-            }).then(() => {
-                setLoadingAction(false); // Arrêter le chargement après succès
-                window.location.reload();
+        } else {
+            // Demander si l'utilisateur souhaite utiliser la ristourne
+            const result = await Swal.fire({
+                title: "Voulez-vous utiliser la ristourne ?",
+                text: "Cela réduira le total du panier.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Oui",
+                cancelButtonText: "Non"
             });
-        } catch (error) {
-            console.error("Erreur lors de la validation de l'achat :", error);
-            Swal.fire({
-                title: "Erreur",
-                text: error.response ? error.response.data.message : "Une erreur est survenue.",
-                icon: "error",
-                confirmButtonText: "OK",
-            }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
+    
+            // Si l'utilisateur clique sur "Oui"
+            if (result.isConfirmed) {
+                try {
+                    const response = await axios.post(`/api/achats/valider/${panierId}`, {
+                        modePaiement: modePaiement,
+                        dateLimiteCredit: dateLimiteCredit,
+                        referencePaiement: referencePaiement,
+                        dateEncaissementCheque: dateEncaissementCheque,
+                        utiliserRistourne: true // Utiliser la ristourne
+                    });
+    
+                    if (response.status !== 200) {
+                        throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                    }
+    
+                    Swal.fire({
+                        title: "Panier validé",
+                        text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    }).then(() => {
+                        setLoadingAction(false); // Arrêter le chargement après succès
+                        window.location.reload();
+                    });
+                } catch (error) {
+                    console.error("Erreur lors de la validation de l'achat :", error);
+                    Swal.fire({
+                        title: "Erreur",
+                        text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
+                }
+            } else {
+                // Si l'utilisateur clique sur "Non"
+                try {
+                    const response = await axios.post(`/api/achats/valider/${panierId}`, {
+                        modePaiement: modePaiement,
+                        dateLimiteCredit: dateLimiteCredit,
+                        referencePaiement: referencePaiement,
+                        dateEncaissementCheque: dateEncaissementCheque,
+                        utiliserRistourne: false // Ne pas utiliser la ristourne
+                    });
+    
+                    if (response.status !== 200) {
+                        throw new Error(response.data.message || "Erreur lors de la validation de l'achat");
+                    }
+    
+                    Swal.fire({
+                        title: "Panier validé",
+                        text: "Votre achat a été effectué avec succès. Les produits sont stockés dans l'entrepôt choisi.",
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    }).then(() => {
+                        setLoadingAction(false); // Arrêter le chargement après succès
+                        window.location.reload();
+                    });
+                } catch (error) {
+                    console.error("Erreur lors de la validation de l'achat :", error);
+                    Swal.fire({
+                        title: "Erreur",
+                        text: error.response ? error.response.data.message : "Une erreur est survenue.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    }).then(() => setLoadingAction(false)); // Arrêter le chargement après confirmation d'erreur
+                }
+            }
         }
     };
+    
 
     const filteredHistorique = historiqueAchats.filter((achat) => {
         const matchesFournisseur = achat.fournisseur.toLowerCase().includes(searchTerm.toLowerCase());
@@ -799,9 +888,9 @@ function AchatProduits() {
 
                                                         {quantiteNumerique > 0 && (
                                                             <>
-                                                                <p>Quantité achetée : <strong>{quantiteNumerique}</strong></p>
-                                                                <p>Produits offerts : <strong>{produitsOfferts}</strong></p>
-                                                                <p>Quantité totale : <strong>{quantiteTotale}</strong></p>
+                                                                <p>Montant total : <strong>{quantiteNumerique}</strong></p>
+                                                                <p>Montant de ristourne : <strong>{montantRistourne}</strong></p>
+                                                                <p>Montant totale avec ristourne : <strong>{montantTotale}</strong></p>
                                                             </>
                                                         )}
                                                     </>
@@ -1091,8 +1180,8 @@ function AchatProduits() {
                                                     <th className="bg-success">Quantité Initiale</th>
                                                     {fournisseurInfo?.type === "ristourne" && (
                                                         <>
-                                                            <th className="bg-success">Produits offerts</th>
-                                                            <th className="bg-success">Quantité Finale</th>
+                                                            <th className="bg-success">Montant de ristourne</th>
+                                                          
                                                         </>
                                                     )}
                                                     <th className="bg-success">Unité</th>
@@ -1107,8 +1196,8 @@ function AchatProduits() {
                                                         <td>{achat.quantite}</td>
                                                         {fournisseurInfo?.type === "ristourne" && (
                                                             <>
-                                                                <td>{achat.quantiteTotale - achat.quantite}</td>
-                                                                <td>{achat.quantiteTotale}</td>
+                                                              
+                                                                <td>{achat.montantRistourne}</td>
                                                             </>
                                                         )}
                                                         <td>{achat.unite || "Unité"}</td>

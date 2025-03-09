@@ -4,6 +4,9 @@ const Produit = require("../models/Produits");
 const Fournisseur = require("../models/Fournisseurs");
 const Panier = require("../models/Paniers");
 const { ajouterOuMettreAJourStock } = require('./stockController');
+const FondRistourne = require('../models/FondRistourne'); // Respecte la casse
+
+
 
 const Entrepot = require('../models/Entrepot'); // Respecte la casse
 
@@ -11,7 +14,7 @@ const Entrepot = require('../models/Entrepot'); // Respecte la casse
 const { ObjectId } = require('mongodb');
 exports.ajouterAchat = async (req, res) => {
     try {
-        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee, unite, entrepotId } = req.body; // Ajout de 'unite'
+        const { produit, fournisseur, quantite, prixAchat, panierId, ristourneAppliquee, unite, montantRistourne, entrepotId } = req.body; // Ajout de 'unite'
 
         // Vérification de la validité des entrées
         if (isNaN(quantite) || quantite <= 0) {
@@ -49,16 +52,16 @@ exports.ajouterAchat = async (req, res) => {
         }
 
         if (!mongoose.Types.ObjectId.isValid(entrepotId)) {
-            return res.status(400).json({ message: "L'ID de l'entrepôt est invalide" });
+            return res.status(400).json({ message: "Veuillez choisir l'entrepot" });
         }
-        
+
         console.log("ID de l'entrepôt reçu :", entrepotId);
-        
+
         const entrepot = await Entrepot.findById(entrepotId);
         if (!entrepot) {
             return res.status(404).json({ message: "Entrepôt non trouvé" });
-        }        
-        
+        }
+
 
         // Calculer le total de l'achat basé uniquement sur la quantité achetée
         const total = quantite * prixAchat;
@@ -93,6 +96,7 @@ exports.ajouterAchat = async (req, res) => {
             quantite,
             quantiteTotale,
             prixAchat,
+            montantRistourne,
             total,
             panier: panierExistant._id,
             ristourneAppliquee: (fournisseurExistant.conditions.typeRistourne === "par_produit" && produitsOfferts > 0) ? parseFloat(ristourneAppliquee) : false,
@@ -101,6 +105,8 @@ exports.ajouterAchat = async (req, res) => {
         });
 
         await nouvelAchat.save();
+
+
 
         // Ajouter l'achat au panier et mettre à jour le total général du panier
         panierExistant.achats.push(nouvelAchat._id);
@@ -142,12 +148,12 @@ function convertirUnite(quantite, uniteAchat, unitesDisponibles) {
 exports.validerPanier = async (req, res) => {
     try {
         const { panierId } = req.params;
-        const { modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque } = req.body; // Déstructuration ici
+        const { modePaiement, dateLimiteCredit, referencePaiement, dateEncaissementCheque, utiliserRistourne } = req.body;
 
         console.log("🔍 Validation du panier - ID du panier:", panierId);
 
         // Trouver le panier existant
-         const panier = await Panier.findById(panierId);
+        const panier = await Panier.findById(panierId).populate('achats');
         if (!panier) {
             return res.status(404).json({ message: "Panier non trouvé" });
         }
@@ -175,7 +181,56 @@ exports.validerPanier = async (req, res) => {
             panier.statut = "payé";
         }
 
-        await panier.save();
+        const fournisseur = panier.achats[0].fournisseur;
+        const premierAchat = await Achat.findById(panier.achats[0]);
+
+        if (!premierAchat) {
+            return res.status(400).json({ message: "Impossible de récupérer les informations du premier achat pour créer le FondRistourne." });
+        }
+
+        // Calculer le montant total de la ristourne
+        let montantTotalRistourne = panier.achats.reduce((total, achat) => {
+            return total + (achat.montantRistourne || 0);
+        }, 0);
+
+        console.log("📊 Montant total ristourne calculé :", montantTotalRistourne);
+
+        let fondRistourne = await FondRistourne.findOne({ fournisseur });
+
+        if (fondRistourne) {
+            if (utiliserRistourne) {
+                // 🟢 On utilise la ristourne existante pour réduire le total général du panier
+                const ristourneAUtiliser = Math.min(fondRistourne.montantRistourne, panier.totalGeneral);
+                panier.totalGeneral -= ristourneAUtiliser;
+        
+                console.log(`💰 Ristourne utilisée: ${ristourneAUtiliser}, Nouveau total général: ${panier.totalGeneral}`);
+        
+                // ❌ On met le FondRistourne à zéro
+                fondRistourne.montantRistourne = 0;
+        
+                // ✅ On ajoute la nouvelle ristourne du panier
+                fondRistourne.montantRistourne += montantTotalRistourne;
+                console.log(`📊 Nouveau FondRistourne après utilisation et réajout: ${fondRistourne.montantRistourne}`);
+            } else {
+                // 🔄 On n'utilise pas la ristourne, donc on l'accumule simplement
+                fondRistourne.montantRistourne += montantTotalRistourne;
+                console.log(`💼 FondRistourne mis à jour sans utilisation: ${fondRistourne.montantRistourne}`);
+            }
+            
+            await fondRistourne.save();
+        } else if (montantTotalRistourne > 0) {
+            // 🆕 Si aucun FondRistourne n'existe, on le crée
+            fondRistourne = new FondRistourne({
+                panier: panier._id,
+                fournisseur,
+                montantRistourne: montantTotalRistourne,
+                statut: 'En attente'
+            });
+            await fondRistourne.save();
+            console.log("📊 Nouveau FondRistourne créé.");
+        }
+        
+        
 
         const achats = await Achat.find({ _id: { $in: panier.achats } }).populate('produit');
         if (achats.length === 0) {
@@ -185,21 +240,23 @@ exports.validerPanier = async (req, res) => {
         for (const achat of achats) {
             const prixUnitaire = achat.prixAchat || 0;
 
-            // Conversion de la quantité avec ta fonction `convertirUnite`
+            // Conversion de la quantité
             const { quantite, unite } = convertirUnite(achat.quantiteTotale, achat.unite, achat.produit.unites);
 
             console.log(`🛒 Produit: ${achat.produit.nom}, Achat: ${achat.quantiteTotale} ${achat.unite} ➡ Stock (converti): ${quantite} ${unite}`);
 
             // Ajout ou mise à jour du stock
             await ajouterOuMettreAJourStock(achat.entrepot, achat.produit._id, quantite, prixUnitaire, unite);
-
         }
 
-        // Réponse avec les détails du panier validé
+        // Sauvegarde du panier après modification
+        await panier.save();
+
         res.status(200).json({
-            message: "Panier validé et stock mis à jour",
+            message: "✅ Panier validé avec succès",
             panier: {
                 modePaiement: panier.modePaiement,
+                totalGeneral: panier.totalGeneral,
                 dateLimiteCredit: panier.dateLimiteCredit,
                 referencePaiement: panier.referencePaiement,
                 dateEncaissementCheque: panier.dateEncaissementCheque,
@@ -216,13 +273,14 @@ exports.validerPanier = async (req, res) => {
 
 
 
+
 // Afficher tous les achats
 exports.afficherAchats = async (req, res) => {
     try {
         const achats = await Achat.find()
-        .populate('entrepot') 
-        .populate('produit')  
-        .populate('fournisseur');
+            .populate('entrepot')
+            .populate('produit')
+            .populate('fournisseur');
         res.status(200).json(achats);
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la récupération des achats", error });

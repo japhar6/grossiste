@@ -42,6 +42,7 @@ const personnelRoutes = require("./routes/personnelRoute");
 const notifRoutes = require("./routes/notificationRoute");
 const decaissementRoute = require("./routes/decaissementRoute");
 const fondCaisseRoute = require("./routes/fondCaisseRoute");
+const fondRistourneRoute = require("./routes/fondRistourneRoute");
 
 
 
@@ -78,6 +79,8 @@ app.use("/api/decaissement", decaissementRoute);
 app.use("/api/fondCaisse", fondCaisseRoute);
 
 app.use('/api/commission', commissionRoutes); 
+app.use('/api/fondRistourne', fondRistourneRoute); 
+
 // Route de test
 app.get("/", (req, res) => {
   res.send("API Grossiste en cours d'exécution...");

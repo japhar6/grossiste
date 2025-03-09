@@ -9,6 +9,7 @@ exports.creerPanier = async (req, res) => {
         const nouveauPanier = new Panier({
             achats: [], // Vous pouvez ajouter des achats ici si nécessaire
             totalGeneral: 0,  // Vous pouvez calculer ce total à partir des achats
+            totalRistourne: 0, 
             modePaiement: modePaiement || "espèce",  // Si pas précisé, valeur par défaut "espèce"
             dateLimiteCredit: modePaiement === "crédit" ? dateLimiteCredit : null, // Ajouter la date limite si crédit
             referencePaiement: (modePaiement === "virement bancaire" || modePaiement === "mobile money" || modePaiement === "versement") ? referencePaiement : null, // Ajouter la référence si virement ou mobile money

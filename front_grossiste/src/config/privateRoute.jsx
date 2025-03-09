@@ -7,7 +7,7 @@ const PrivateRoute = ({ allowedRoles }) => {
 
   // Mapping des rôles et de leurs pages autorisées
   const rolePaths = {
-    admin: ["/admin","/modifcmd", "/histodecaisse","/produit","/factureremisead","/fournisseur","/facturesansprix","/notif","/personnel","/transfertAdmin", "/FactureNormal","/factureadmin", "/histomad","/caisse", "/entrepot","/inventaire","/creerinventaire","/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande","/histocad","/histovad","/PersonnelsList","/Client","/HistoAcha","/ChiffreAffaire","/HistoComDecom"],
+    admin: ["/admin","/modifcmd", "/histodecaisse","/produit","/factureremisead","/fournisseur","/facturesansprix","/notif","/personnel","/transfertAdmin", "/FactureNormal","/factureadmin", "/histomad","/caisse", "/entrepot","/inventaire","/creerinventaire","/stock", "/commerciale", "/profil", "/commande", "/achat", "/SortieCommande","/histocad","/histovad","/PersonnelsList","/Client","/HistoAcha","/ChiffreAffaire","/HistoComDecom","/HistoRistourne"],
     vendeur: ["/vendeur", "/profilv", "/histov"],
     caissier: ["/caissier", "/profilc","/facturesansprix", "/histoc","/decaisser","/facturepaiement" ,"/PaiementCom", "/FactureNormal","/facture","/FactureRemise","/FactureRemise","/8mm","/payerCredit","/annulerFact"],
     magasinier: ["/magasinier", "/profilm", "/histom","/RetourStockCom","/stockma","/transfert"],

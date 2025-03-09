@@ -123,8 +123,14 @@ exports.countUsersByRole = async (req, res) => {
       { $sort: { _id: 1 } } 
     ]);
 
-    // Répondre avec les résultats
-    res.json(roleCounts);
+    // Appliquer la soustraction de 1 si le rôle est "admin"
+    const adjustedCounts = roleCounts.map(role => ({
+      _id: role._id,
+      count: role._id === "admin" ? Math.max(0, role.count - 1) : role.count // Empêche d'avoir un nombre négatif
+    }));
+
+    // Répondre avec les résultats ajustés
+    res.json(adjustedCounts);
   } catch (error) {
     res.status(500).json({ message: "❌ Erreur lors du comptage des utilisateurs par rôle", error });
   }

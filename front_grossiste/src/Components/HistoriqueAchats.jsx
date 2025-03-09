@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "../api/axios";
+import { Link } from "react-router-dom";
 
 const HistoriqueAchats = () => {
     const [achats, setAchats] = useState([]);
@@ -129,7 +130,10 @@ const HistoriqueAchats = () => {
                         </option>
                     ))}
                 </select>
-                <button className="btn btn-primary w-75 m-2" onClick={handlePrint}>Imprimer</button>
+                <button className="btn btn-primary m-2" onClick={handlePrint}>Imprimer</button>
+                <Link to="/HistoRistourne"><button className="btn btn-primary m-2 w-100">Ristourne</button></Link>
+
+
 
 
             </div>
