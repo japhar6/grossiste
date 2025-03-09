@@ -70,7 +70,7 @@ function HistoRistourne() {
                                             <th>Fournisseur</th>
                                             <th>Bénéfice ristourne</th>
                                             <th>Date d'achat</th>
-                                            <th>Action</th>
+                                      
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -79,10 +79,7 @@ function HistoRistourne() {
                                                 <td>{fond.fournisseur}</td>
                                                 <td>{fond.montantRistourne} Ariary</td>
                                                 <td>{new Date(fond.dateAchat).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',})}</td>
-                                                <td className="center">
-                                                <button className=" btn btn-success m-2">Prélever</button>
-                                                <button className=" btn btn-danger m-2">Supprimer</button>
-                                                </td>
+                                               
                                             </tr>
                                         ))}
                                     </tbody>
