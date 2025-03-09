@@ -1,5 +1,4 @@
 const FondRistourne = require('../models/FondRistourne');
-const Achat = require('../models/Achats'); // Assure-toi que le modèle Achat est bien importé
 
 exports.getFondRistourneDetails = async (req, res) => {
     try {
@@ -15,20 +14,12 @@ exports.getFondRistourneDetails = async (req, res) => {
 
         // Récupérer les informations des achats pour chaque fondRistourne
         const fondsDetails = await Promise.all(fondsRistourne.map(async (fond) => {
-            const achats = await Achat.find({ _id: { $in: fond.panier.achats } }).populate('produit');
-
-            const achatsDetails = achats.map(achat => ({
-                produit: achat.produit.nom,
-                quantite: achat.quantiteTotale,
-                unite: achat.unite,
-                montantRistourne: achat.montantRistourne,
-                prixUnitaire: achat.prixAchat
-            }));
+        
 
             return {
                 fournisseur: fond.fournisseur.nom,
                 montantRistourne: fond.montantRistourne,
-                achats: achatsDetails,
+             
                 statut: fond.statut,
                 dateAchat: fond.dateAchat
             };
