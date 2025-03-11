@@ -241,7 +241,8 @@ if (!fournisseur) {
 
         for (const achat of achats) {
             const prixUnitaire = achat.prixAchat || 0;
-
+            achat.valide= true;
+            await achat.save();
             // Conversion de la quantité
             const { quantite, unite } = convertirUnite(achat.quantiteTotale, achat.unite, achat.produit.unites);
 
@@ -282,7 +283,7 @@ if (!fournisseur) {
 // Afficher tous les achats
 exports.afficherAchats = async (req, res) => {
     try {
-        const achats = await Achat.find()
+        const achats = await Achat.find({ valide: "true" })
             .populate('entrepot')
             .populate('produit')
             .populate('fournisseur');

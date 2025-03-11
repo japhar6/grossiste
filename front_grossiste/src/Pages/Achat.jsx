@@ -609,6 +609,15 @@ function AchatProduits() {
             }).then(() => setLoadingAction(false));
             return;
         }
+        if (!refact) {
+            Swal.fire({
+                title: "Info",
+                text: "La reference facture est obligatoire.",
+                icon: "info",
+                confirmButtonText: "OK",
+            }).then(() => setLoadingAction(false));
+            return;
+        }
     
         if (modePaiement === "crédit" && !dateLimiteCredit) {
             Swal.fire({
@@ -1270,6 +1279,7 @@ function AchatProduits() {
                                                     <th className="bg-success">Unité</th>
                                                     <th className="bg-success">Prix d'Achat</th>
                                                     <th className="bg-success">Total</th>
+                                                    
                                                 </tr>
                                             </thead>
                                             <tbody>

@@ -14,44 +14,19 @@ router.get("/panier/:panierId", achatController.getAchatsByPanier);
 
 router.get('/totals/:periode',achatController.getTotalAchatsParPeriode);
 //// Suppression d'un achat basé sur les critères : codeProduit, nom et total
-router.delete('/supprimerAchat', async (req, res) => {
+router.delete('/supprimerAchat/:id', async (req, res) => {
     try {
-        const { codeProduit, nom, total } = req.query; // Paramètres dans l'URL
+        const { id } = req.params; // Paramètres dans l'URL
 
         // Vérification si les paramètres sont fournis
-        if (!codeProduit || !nom || !total) {
-            return res.status(400).json({ message: "Les paramètres 'codeProduit', 'nom' et 'total' sont requis" });
-        }
-console.log(req.query);
-        // Trouver le produit correspondant au codeProduit et nom
-        const produitExistant = await Produit.findOne({
-            codeProduit: codeProduit, // Chercher par codeProduit
-            nom: nom                  // Chercher par nom
-        });
 
-        if (!produitExistant) {
-            return res.status(404).json({ message: "Produit non trouvé" });
-        }
-
-        // Trouver l'achat correspondant à ces critères
-        const achatExistant = await Achat.findOne({
-            produit: produitExistant._id, // Trouver par l'ID du produit
-            total: total                  // Trouver par le total
-        });
-
-        if (!achatExistant) {
-            return res.status(404).json({ message: "Achat non trouvé" });
-        }
-
-
- 
-        // Supprimer l'achat de la base de données (pas le produit)
-        await Achat.findByIdAndDelete(achatExistant._id);
+       
+        await Achat.findByIdAndDelete(id);
 
         // Retourner une réponse de succès
         res.status(200).json({
             message: "Achat supprimé avec succès",
-            achatSupprime: achatExistant,
+         
             
         });
 

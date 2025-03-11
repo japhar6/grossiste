@@ -12,7 +12,8 @@ const achatSchema = new mongoose.Schema({
   total: { type: Number, required: true },
   panier: { type: mongoose.Schema.Types.ObjectId, ref: "Panier" },
   ristourneAppliquee: { type: Number, default: 0 },
-  unite: { type: String, required: true }
+  unite: { type: String, required: true },
+  valide :{ type:Boolean, default : false}
 });
 
 

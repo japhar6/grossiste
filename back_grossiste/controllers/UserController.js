@@ -109,6 +109,8 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: "❌ Erreur lors de la récupération des utilisateurs", error });
   }
 };
+
+
 exports.countUsersByRole = async (req, res) => {
   try {
     // Compter les utilisateurs par rôle

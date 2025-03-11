@@ -111,39 +111,6 @@ function Entrepot() {
     nomInputRef.current.focus();
   };
 
-  const handleSupprimer = async (id) => {
-    const result = await Swal.fire({
-      title: 'Êtes-vous sûr?',
-      text:   "⚠️ Avant de supprimer cet entrepôt, effectuez d'abord un transfert de tous vos stocks dans cet entrepôt. Sinon, tous les stocks associés seront perdus définitivement !"
-,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Oui, Supprimer!',
-      cancelButtonText: 'Annuler',
-    });
-
-    if (result.isConfirmed) {
-      setLoadingAction(true);
-      try {
-        await axios.delete(`/api/entrepot/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setLoadingAction(false);
-        Swal.fire('Supprimé!', 'L\'entrepôt a été supprimé.', 'success').then(() => {
-          setEntrepots((prev) => prev.filter((entrepot) => entrepot._id !== id));
-        }).then(() => {
-          window.location.reload();
-        });
-
-      } catch (error) {
-        setLoadingAction(false);
-        console.error("Erreur de suppression", error);
-        Swal.fire('Erreur', 'Une erreur s\'est produite lors de la suppression.', 'error');
-      }
-    }
-  };
 
   return (
     <main className="center">
