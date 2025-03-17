@@ -159,10 +159,17 @@ function Login() {
                                     )}
                                 </div>
                             </form>
+                        
                         </div>
                     </div>
+     
                 </div>
-            </section>
+                <div class="copyright">
+  <p>© Japhar, Antonias, Eddy <br />
+     Dev : 2025</p>
+</div>
+
+    </section>
         </main>
     );
 }

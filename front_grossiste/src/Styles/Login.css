@@ -133,3 +133,10 @@
     font-size: 0.9em; /* Ajuste la taille du texte du bouton */
   }
 }
+.copyright {
+  font-size:9px; /* Texte plus petit */
+  color: #666; /* Couleur grise pour un effet discret */
+  text-align: center; /* Centrer le texte */
+  margin-top: 20px; /* Espacement en haut */
+  font-style: italic; /* Texte en italique */
+}
