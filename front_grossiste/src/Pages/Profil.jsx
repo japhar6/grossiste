@@ -18,13 +18,13 @@ function Profil() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
   const usId = localStorage.getItem("userid");
- const [showPassword, setShowPassword] = useState(false);
- const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(prevState => !prevState);
-        console.log('Show Password:', !showPassword);
-    };
+  const togglePasswordVisibility = () => {
+    setShowPassword(prevState => !prevState);
+    console.log('Show Password:', !showPassword);
+  };
 
   const [loadingAction, setLoadingAction] = useState(false);
   useEffect(() => {
@@ -66,42 +66,51 @@ function Profil() {
     setSelectedFile(file);
   };
 
-
   const handleSave = async () => {
     setLoadingAction(true);
+  
     if (updatedUser.password && updatedUser.password !== confirmPassword) {
       Swal.fire({
         title: "Erreur!",
         text: "Les mots de passe ne correspondent pas.",
         icon: "error",
         confirmButtonText: "Réessayer",
-      });   setLoadingAction(false);
+      });
+      setLoadingAction(false);
       return;
     }
+  
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("Token non trouvé!");
         return;
       }
-
-
+  
       const formData = new FormData();
       formData.append("nom", updatedUser.nom);
       formData.append("email", updatedUser.email);
-      formData.append("password", updatedUser.password);
+  
+      // N'ajouter le mot de passe que s'il est renseigné
+      if (updatedUser.password && updatedUser.password.trim() !== "") {
+        formData.append("password", updatedUser.password);
+      }
+  
       if (selectedFile) {
         formData.append("photo", selectedFile);
       }
-
+  
       const response = await axios.put(`/api/users/${usId}`, formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
       });
-
+  
       setUser(response.data);
       setIsEditing(false);
-
       setLoadingAction(false);
+  
       Swal.fire({
         title: "Succès!",
         text: "Votre profil a été mis à jour.",
@@ -112,8 +121,7 @@ function Profil() {
       });
     } catch (error) {
       console.error("Erreur lors de la mise à jour du profil", error.response?.data || error.message);
-
-      // Affichage SweetAlert2 - Erreur
+  
       Swal.fire({
         title: "Erreur!",
         text: "Une erreur est survenue lors de la mise à jour de votre profil.",
@@ -123,6 +131,7 @@ function Profil() {
       setLoadingAction(false);
     }
   };
+  
 
   if (loading) {
     return <div className="loading-container">
@@ -145,11 +154,11 @@ function Profil() {
 
                 <div className="user-info">
                   <div className="photos-container">
-                  <img
-  src={user.photo ? `https://api.bazariko.com${user.photo}` :pardefaut}
-  alt="Photo de profil"
-  className="user-photo"
-/>
+                    <img
+                      src={user.photo ? `https://api.bazariko.com${user.photo}` : pardefaut}
+                      alt="Photo de profil"
+                      className="user-photo"
+                    />
 
                     <h2 className="gradient-text mt-5">Mon Profil</h2>
                   </div>
@@ -175,34 +184,34 @@ function Profil() {
                           />
                         </div>
                         <div className="form-group">
-                        <label>Mot de passe </label>
+                          <label>Mot de passe </label>
                           <input
                             type={showPassword ? "text" : "password"}
                             name="password"
                             value={updatedUser.password || ""}
                             onChange={handleInputChange}
                             style={{ paddingRight: '2.5rem' }}
-                              placeholder="Password"
-                                            autoComplete="off"
+                            placeholder="Password"
+                            autoComplete="off"
                           />
-                                                    
-                                         <span>
-                                          
-                                              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={() => setShowPassword(!showPassword)} />        
-                                              </span>
-                    
-                                        </div>
+
+                          <span>
+
+                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} onClick={() => setShowPassword(!showPassword)} />
+                          </span>
+
+                        </div>
 
 
-<div className="form-group">
-                        <input
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirmer le mot de passe"
-              />
-              <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
-              </div>
+                        <div className="form-group">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="Confirmer le mot de passe"
+                          />
+                          <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} onClick={() => setShowConfirmPassword(!showConfirmPassword)} />
+                        </div>
                         <div className="form-group">
                           <label>Photo</label>
                           <input
