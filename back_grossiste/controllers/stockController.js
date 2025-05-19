@@ -166,6 +166,53 @@ exports.getQuantiteProduitByIde = async (req, res) => {
   }
 };
 
+// controllers/stockController.js
+exports.getQuantiteProduitDansEntrepot = async (req, res) => {
+  const { id, entrepotId } = req.params; // id = ID du produit
+
+  try {
+    // 🧪 Vérifier que le produit existe
+    const produit = await Produit.findById(id);
+    if (!produit) {
+      return res.status(404).json({ message: "Produit non trouvé" });
+    }
+
+    // 🧪 Vérifier que l'entrepôt existe
+    const entrepot = await Entrepot.findById(entrepotId);
+    if (!entrepot) {
+      return res.status(404).json({ message: "Entrepôt non trouvé" });
+    }
+
+    // 📦 Rechercher le stock du produit dans cet entrepôt + peupler l'unité
+    const stock = await Stock.findOne({ produit: id, entrepot: entrepotId })
+      .populate({ path: "unite", select: "nom conversion" })
+      .lean();
+
+    if (!stock) {
+      return res.status(404).json({
+        message: "Aucun stock trouvé pour ce produit dans cet entrepôt.",
+      });
+    }
+
+    // 🔍 Log pour déboguer
+    console.log("Unité liée au stock :", stock.unite);
+
+    // 🧾 Réponse enrichie
+    const produitAvecStock = {
+      ...produit.toObject(),
+      quantiteDisponible: stock.quantite,
+      entrepotNom: entrepot.nom,
+      entrepotId: entrepot._id,
+      uniteNom: stock.unite || "Unité inconnue",
+      conversion: stock.unite?.conversion ?? null,
+    };
+
+    return res.json(produitAvecStock);
+  } catch (error) {
+    console.error("Erreur lors de la récupération du stock :", error);
+    return res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
 
 
 

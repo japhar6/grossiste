@@ -12,7 +12,9 @@
   margin-top: 20px;
   min-width: 600px; /* Assure un minimum pour éviter le défilement horizontal */
 }
-
+#DétailsCommandeLabel{
+  color: rgb(255, 255, 255) !important;
+}
 .entrepot-magasinier-container {
   display: flex;
   gap: 20px;

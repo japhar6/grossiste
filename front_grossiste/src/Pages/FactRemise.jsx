@@ -136,7 +136,7 @@ function convertirCentaines(nombre) {
         setTimeout(() => {
           window.print(); // Imprime après 2 secondes
           setTimeout(() => {
-           window.close(); // Ferme l'onglet après l'impression
+           //window.close(); // Ferme l'onglet après l'impression
           }, 1000); // 1 seconde après impression
         }, 2000);
       }
@@ -150,17 +150,19 @@ function convertirCentaines(nombre) {
 
  return (
      <div className="facture-container">
+     
        <div className="facture-header">
-         <img src={Logo} alt="Logo" width={150} />
-         <div className="infoCompany">
-           <h2 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h2>
-           <p>Vente de Marchandises</p>
-           <p>Tanambao II, Toamasina</p>
-           <p>034 13 881 72</p>
-           <h3>FACTURE DE REMISE</h3>
-         </div>
+               <img src={Logo} alt="Logo" width={100} />
+               <div className="infoCompany">
+                           <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
+                           <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
+                           <h5 className="fw-bold">Tanambao II, TOAMASINA</h5>
+                           <h5 className="fw-bold">+ 261 34 13 881 72</h5>
+                       </div>
+         
+           
        </div>
-       <hr />
+    
        <div className="facture-info p-3">
          <div style={{ float: "left" }}>
            <p><strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', })}</p>
@@ -171,7 +173,7 @@ function convertirCentaines(nombre) {
                      <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
            
          </div>
-         <div style={{ float: "right" }}>
+         <div style={{ float: "right" ,marginTop:"-20px"}}>
       
       
            <div className="center">
@@ -207,9 +209,8 @@ function convertirCentaines(nombre) {
  
          </div>
        </div>
-       <h1>-------------------------------</h1>
-       <div className="facture-details mt-4">
-         <table className="table table-responsive table-bordered">
+        <div className="facture-details mt-4">
+         <table className="tableZ table-responsive table-bordered">
            <thead>
              <tr>
                <th>Qté</th>

@@ -156,7 +156,7 @@ function convertirCentaines(nombre) {
                     <h5 className="fw-bold">+ 261 34 13 881 72</h5>
                 </div>
       </div>
-      <h1>-------------------------------</h1>
+    
       <div className="facture-info p-3">
         <div style={{ float: "left" }}>
           <p>
@@ -173,8 +173,8 @@ function convertirCentaines(nombre) {
             <strong>Mode de paiement :</strong> {modePaiement || "............."}
           </p>
         </div>
-        <div style={{ float: "right"}}>
-          <h3>FACTURE</h3>
+        <div style={{ float: "right" ,marginTop:"-20px"}}>
+        <h3 style={{fontSize:"15px"}}>FACTURE</h3>
           <p>
             <strong>N° :</strong> {commande.referenceFacture}
           </p>
@@ -196,9 +196,9 @@ function convertirCentaines(nombre) {
           </p>
         </div>
       </div>
-      <h1>-------------------------------</h1>
+
       <div className="facture-details mt-4">
-        <table className="table table-responsive table-bordered">
+        <table className="tableZ table-responsive table-bordered">
           <thead>
             <tr>
               <th>Qté</th>

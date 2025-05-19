@@ -24,6 +24,9 @@ router.post('/retour/:id', stockController.retournerProduits);
 router.put('/sortir/:commandeId', stockController.sortirProduitsStock);
 
 router.get('/stocks/:entrepotId', stockController.getStocksByEntrepot);
-router.get('/produits/quantite/:id', stockController.getQuantiteProduitById);
-router.get('/produits/quantita/:id', stockController.getQuantiteProduitByIde);
+/*router.get('/produits/quantite/:id', stockController.getQuantiteProduitById);
+router.get('/produits/quantita/:id', stockController.getQuantiteProduitByIde);*/
+// Dans routes/stockRoutes.js ou ton fichier de routes
+router.get('/produits/:id/entrepot/:entrepotId', stockController.getQuantiteProduitDansEntrepot);
 module.exports = router;
+

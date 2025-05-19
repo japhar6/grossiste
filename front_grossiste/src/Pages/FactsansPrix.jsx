@@ -55,7 +55,7 @@ function FactureSans() {
   return (
     <div className="facture-container">
       <div className="facture-header">
-        <img src={Logo} alt="Logo" width={150} />
+        <img src={Logo} alt="Logo" width={100} />
         <div className="infoCompany">
                     <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
                     <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
@@ -63,7 +63,7 @@ function FactureSans() {
                     <h5 className="fw-bold">+ 261 34 13 881 72</h5>
                 </div>
       </div>
-      <h1>-------------------------------</h1>
+    
       <div className="facture-info p-3">
         <div style={{ float: "left" }}>
           <p>
@@ -80,7 +80,7 @@ function FactureSans() {
             <strong>Mode de paiement :</strong> {modePaiement || "............."}
           </p>
         </div>
-        <div style={{ float: "right" }}>
+        <div style={{ float: "right" ,marginTop:"-20px"}}>
           <h3>FACTURE</h3>
           <p>
             <strong>N° :</strong> {commande.referenceFacture}
@@ -94,7 +94,7 @@ function FactureSans() {
           </p>
         </div>
       </div>
-      <h1>-------------------------------</h1>
+ 
       <div className="facture-details mt-4">
         <table className="table table-responsive table-bordered">
           <thead>

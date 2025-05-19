@@ -7,6 +7,8 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Ombre légère pour un effet moderne */
 }
 
+
+
 .client-name {
   color: #f7a600 !important; /* Couleur personnalisée */
   font-weight: bold;
@@ -24,7 +26,8 @@
 }
 
 .delete-button:hover {
-  color: darkred;
+  color: rgb(255, 255, 255) !important;
+  background-color: rgb(201, 78, 78);
 }
 
 .notifications-list {
@@ -84,7 +87,7 @@
 
 .notifications-page h2 {
   font-size: 26px;
-  color: #ffffff; /* Blanc pour le titre */
+  color: #0e0808; /* Blanc pour le titre */
   margin-bottom: 20px;
 }
 

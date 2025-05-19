@@ -23,6 +23,8 @@ function SortieStock() {
   const [loadingAction, setLoadingAction] = useState(false);
   const notificationSound = new Audio(audio);
   const [entrepots, setEntrepots] = useState([]);
+  const [nomsEntrepots, setNomsEntrepots] = useState({});
+
     const [notifications, setNotifications] = useState([]);
   const [entrepotSelectionne, setEntrepotSelectionne] = useState(null);
   const playSound = () => {
@@ -107,7 +109,50 @@ function SortieStock() {
     }
   }, [magasinierId]);
 
+  const getNomEntrepotParId = async (entrepotId) => {
+    if (!entrepotId) {
+      console.warn("ID d'entrepôt non fourni.");
+      return null;
+    }
+  
+    try {
+      const response = await axios.get(`/api/entrepot/${entrepotId}`);
+      const entrepot = response.data;
+  
+      if (entrepot && entrepot.nom) {
+        return entrepot.nom;
+      } else {
+        console.warn("Nom d'entrepôt introuvable dans la réponse.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération du nom de l'entrepôt :", error);
+      return null;
+    }
+  };
 
+  useEffect(() => {
+    const chargerNomsEntrepots = async () => {
+      const ids = commandeSelectionnee.produits.map(p => p.entrepotId);
+      const idsUniques = [...new Set(ids.filter(Boolean))];
+  
+      const noms = {};
+  
+      for (const id of idsUniques) {
+        const nom = await getNomEntrepotParId(id);
+        if (nom) {
+          noms[id] = nom;
+        }
+      }
+  
+      setNomsEntrepots(noms);
+    };
+  
+    if (commandeSelectionnee?.produits?.length > 0) {
+      chargerNomsEntrepots();
+    }
+  }, [commandeSelectionnee]);
+  
 
 
   const getDetailsCommande = (commandeId) => {
@@ -146,7 +191,7 @@ function SortieStock() {
           title: 'Stock insuffisant',
           html: `<b>${errorMessage}</b>`,
         });
-
+        setLoadingAction(false);
         // Extraire le nom du produit en rupture de stock
         const match = errorMessage.match(/"([^"]+)"/); // Récupère le nom du produit entre guillemets
         const produitNom = match ? match[1] : "Produit inconnu";
@@ -387,7 +432,7 @@ function SortieStock() {
                           <button
                             className="btn btn-danger ms-2"
                             onClick={() => handleSortieFournisseur(commande)}
-                            disabled={commande.statut !== 'payé'} // Désactive le bouton si la commande n'est pas livrée
+                            disabled={commande.statut !== 'payé'} 
                           >
                             Sortie Fournisseur
                           </button>
@@ -422,17 +467,26 @@ function SortieStock() {
                             <th className="w-20">Produit</th>
                             <th className="w-25">Quantité</th>
                             <th className="w-25">Unité</th>
+                            <th className="w-25">Entrepot</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {commandeSelectionnee.produits.map((produit, index) => (
-                            <tr key={index}>
-                              <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
-                              <td className="w-25">{produit.quantite}</td>
-                              <td className="w-25">{produit.uniteChoisie ? produit.uniteChoisie : "N/A"}</td>
-                            </tr>
-                          ))}
-                        </tbody>
+              <tbody>
+  {commandeSelectionnee.produits.map((produit, index) => (
+    <tr key={index}>
+      <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
+      <td className="w-25">{produit.quantite}</td>
+      <td className="w-25">{produit.uniteChoisie || "N/A"}</td>
+      <td className="w-25">
+  {commandeSelectionnee.modeLivraison !== "fournisseur"
+    ? (nomsEntrepots[produit.entrepotId] || "Chargement...")
+    : "Sortie fournisseur"}
+</td>
+
+
+    </tr>
+  ))}
+</tbody>
+
                       </table>
                     </>
                   ) : (

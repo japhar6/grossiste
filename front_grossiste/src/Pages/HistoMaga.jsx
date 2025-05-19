@@ -17,10 +17,52 @@ function SortieStock() {
   const [searchDate, setSearchDate] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768); // État pour mobile
   const [sortOrder, setSortOrder] = useState("desc");
-
+  const [nomsEntrepots, setNomsEntrepots] = useState({});
   const [vente, setVente] = useState(null);
-
   
+  const getNomEntrepotParId = async (entrepotId) => {
+    if (!entrepotId) {
+      console.warn("ID d'entrepôt non fourni.");
+      return null;
+    }
+  
+    try {
+      const response = await axios.get(`/api/entrepot/${entrepotId}`);
+      const entrepot = response.data;
+  
+      if (entrepot && entrepot.nom) {
+        return entrepot.nom;
+      } else {
+        console.warn("Nom d'entrepôt introuvable dans la réponse.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Erreur lors de la récupération du nom de l'entrepôt :", error);
+      return null;
+    }
+  };
+    useEffect(() => {
+      const chargerNomsEntrepots = async () => {
+        const ids = commandeSelectionnee.produits.map(p => p.entrepotId);
+        const idsUniques = [...new Set(ids.filter(Boolean))];
+    
+        const noms = {};
+    
+        for (const id of idsUniques) {
+          const nom = await getNomEntrepotParId(id);
+          if (nom) {
+            noms[id] = nom;
+          }
+        }
+    
+        setNomsEntrepots(noms);
+      };
+    
+      if (commandeSelectionnee?.produits?.length > 0) {
+        chargerNomsEntrepots();
+      }
+    }, [commandeSelectionnee]);
+    
   useEffect(() => {
     const fetchCommandes = async () => {
       try {
@@ -119,15 +161,21 @@ const handlePrint = () => {
       tr:nth-child(even) {
         background-color: #f9f9f9;
       }
+
+      /* Masquer les éléments avec la classe "no-print" lors de l'impression */
+      .no-print {
+        display: none;
+      }
     </style>
   `);
   printWindow.document.write('</head><body>');
-  printWindow.document.write('<h1>Historique de sortie de stock </h1>');
+  printWindow.document.write('<h1>Historique de sortie de stock</h1>');
   printWindow.document.write(printContent);
   printWindow.document.write('</body></html>');
   printWindow.document.close();
   printWindow.print();
 };
+
 
   return (
     <main className="center">
@@ -177,7 +225,7 @@ const handlePrint = () => {
                 <th>Mode de paiement</th>
                 <th>Statut</th>
                 <th>Date</th>
-                <th>Détails</th>
+                <th className="no-print">Détails</th>
               </tr>
             </thead>
             <tbody>
@@ -189,7 +237,7 @@ const handlePrint = () => {
                   <td>{commande.paiement ? commande.paiement.modePaiement : "à crédit"}</td>
                   <td>{commande.statut}</td>
                   <td>{commande.updatedAt ? new Date(commande.updatedAt).toLocaleDateString() : "N/A"}</td>
-                  <td>
+                  <td className="no-print">
   {isMobile ? (
     <button
       className="btn btn-info"
@@ -273,6 +321,7 @@ const handlePrint = () => {
               <th className="w-20">Produit</th>
               <th className="w-25">Quantité</th>
               <th className="w-25">Unité</th>
+              <th className="w-25">Sortie de</th>
             </tr>
           </thead>
           <tbody>
@@ -281,6 +330,12 @@ const handlePrint = () => {
                 <td className="w-50">{produit.produit ? produit.produit.nom : "N/A"}</td>
                 <td className="w-25">{produit.quantite}</td>
                 <td className="w-25">{produit.uniteChoisie ? produit.uniteChoisie : "N/A"}</td>
+                <td className="w-25">
+  {commandeSelectionnee.modeLivraison !== "fournisseur"
+    ? (nomsEntrepots[produit.entrepotId] || "Chargement...")
+    : "Sortie fournisseur"}
+</td>
+
               </tr>
             ))}
           </tbody>

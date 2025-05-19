@@ -46,7 +46,6 @@ function PriseCommande() {
   const [remisesClient, setRemisesClient] = useState(null);
   const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
   const [produitsDesactives, setProduitsDesactives] = useState({}); // {idProduit: true/false}
-  const [entrepots, setEntrepots] = useState([]);
 
   useEffect(() => {
     const fetchRemisesClient = async () => {
@@ -75,27 +74,7 @@ function PriseCommande() {
   }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
 
 
-  useEffect(() => {
-    const fetchEntrepots = async () => {
-        try {
-            const response = await axios.get("/api/entrepot");
-            const data = response.data;
 
-            if (Array.isArray(data) && data.length > 0) {
-                setEntrepots(data);
-            } 
-        } catch (error) {
-            Swal.fire({
-                title: "Erreur",
-                text: "Une erreur est survenue lors de la récupération des entrepôts.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        }
-    };
-
-    fetchEntrepots();
-}, []);
 
   const handleSelectChange = (e) => {
     const id = e.target.value;
@@ -307,115 +286,135 @@ function PriseCommande() {
     return total + quantite * prix;
   }, 0);
 
+  
+
   const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
+   
+    // Vérifier si une unité est choisie
     if (!produit.uniteChoisie) {
-      Swal.fire({ title: 'Unité non sélectionnée', text: 'Veuillez sélectionner une unité.', icon: 'warning' });
-      return;
+      Swal.fire({
+        title: 'Unité non sélectionnée',
+        text: 'Veuillez sélectionner une unité avant d\'ajouter ce produit.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+      });
+      return; // Ne rien faire si l'unité n'est pas sélectionnée
     }
-  
+
+    // Ne rien faire si la quantité demandée est inférieure ou égale à 0
     if (quantite <= 0) return;
-  
+
     try {
-      const uniteChoisieDetails = produit.unites.find(u => u.nom === produit.uniteChoisie);
-      if (!uniteChoisieDetails) {
-        Swal.fire({ title: 'Erreur', text: 'Unité invalide.', icon: 'error' });
-        return;
-      }
-  
-      const uniteLaPlusPetite = produit.unites.reduce((prev, current) =>
-        prev.conversion > current.conversion ? prev : current
-      );
-  
+       // Trouver l'unité choisie
+  // Trouver l'unité choisie dans la liste des unités du produit
+const uniteChoisieDetails = produit.unites.find(u => u.nom === produit.uniteChoisie);
+
+if (!uniteChoisieDetails) {
+  console.error("Unité choisie introuvable pour le produit :", produit.nom);
+  Swal.fire({
+    title: 'Erreur',
+    text: `L'unité sélectionnée (${produit.uniteChoisie}) n'existe pas pour ce produit.`,
+    icon: 'error',
+    confirmButtonText: 'OK',
+  });
+  return; // Sortir de la fonction pour éviter une erreur
+}
+
+
+     // Trouver l'unité avec la plus petite conversion
+    const uniteLaPlusPetite = produit.unites.reduce((prev, current) => 
+      prev.conversion > current.conversion ? prev : current
+    );
+    console.log(`Unité la plus petite : ${uniteLaPlusPetite.nom}, conversion : ${uniteLaPlusPetite.conversion}`);
+
+
+     
+      
+      // Si l'unité choisie n'est pas l'unité la plus petite, on effectue la conversion
       let quantiteConvertie = quantite;
       if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
-        quantiteConvertie = (quantite * uniteLaPlusPetite.conversion) / uniteChoisieDetails.conversion;
+        quantiteConvertie = (quantite * uniteLaPlusPetite.conversion)/uniteChoisieDetails.conversion;
+        console.log(`Quantité convertie : ${quantite}  ${produit.uniteChoisie} =   ${quantiteConvertie} ${uniteLaPlusPetite.nom}`);
+      } else {
+        console.log(`Aucune conversion nécessaire, l'unité choisie est déjà la plus petite.`);
       }
-  
-      // Trouver l'entrepôt principal
-      const entrepotPrincipal = entrepots.find(e => e.type === 'principal');
-  
-      const options = {};
-      entrepots.forEach(e => {
-        options[e._id] = e.nom;
-      });
-  
-      const result = await Swal.fire({
-        title: '🧱 Entrepôt de retrait',
-        text: "Veuillez choisir l'entrepôt d'où sera retirée la marchandise.",
-        icon: 'question',
-        input: 'select',
-        inputOptions: options,
-        inputValue: entrepotPrincipal ? entrepotPrincipal._id : '',
-        inputPlaceholder: 'Choisir un entrepôt...',
-        showCancelButton: true,
-        confirmButtonText: '✅ Valider',
-        cancelButtonText: '❌ Annuler',
-        customClass: {
-          popup: 'swal-wide',
-          confirmButton: 'btn-confirm',
-          cancelButton: 'btn-cancel',
-          input: 'swal-input-select'
-        },
-        buttonsStyling: false
-      });
-      
-  
-      if (!result.isConfirmed) return;
-  
-      const entrepotIdChoisi = result.value;
-  
-      // Vérifier la quantité dans cet entrepôt
-      let resStock;
-      try {
-        resStock = await axios.get(`/api/stocks/produits/${produit._id}/entrepot/${entrepotIdChoisi}`);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          Swal.fire({
-            title: 'Stock non trouvé',
-            text: "Aucun stock enregistré pour ce produit dans l'entrepôt sélectionné.",
-            icon: 'info'
+
+      // Récupérer la quantité disponible dans l'entrepôt principal
+      const responsePrincipal = await axios.get(`/api/stocks/produits/quantite/${produit._id}`);
+      const quantiteDisponiblePrincipal = responsePrincipal.data.quantiteDisponible;
+      const entrepotIdPrincipal = responsePrincipal.data.entrepotId;
+      const nomPrincipal = responsePrincipal.data.entrepotNom;  // Récupérer le nom de l'entrepôt principal
+      console.log("nom principal", nomPrincipal);
+      console.log(`Quantité disponible dans l'entrepôt principal : ${quantiteDisponiblePrincipal}`);
+
+      // Comparer la quantité convertie avec la quantité disponible
+      if (isChecked) {
+        if (quantiteConvertie > quantiteDisponiblePrincipal) {
+          // Si la quantité est insuffisante dans l'entrepôt principal
+          const result = await Swal.fire({
+            title: 'Quantité Insuffisante',
+            text: `Il n'en reste que (${quantiteDisponiblePrincipal}) dans l'entrepôt principal .`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Choisir un autre entrepôt',
+            customClass: {
+              confirmButton: 'btn btn-success',
+              cancelButton: 'btn btn-danger'
+            },
+            buttonsStyling: false,
           });
+
+          if (result.isDismissed) {
+            // Si l'utilisateur veut choisir un autre entrepôt, essayer l'entrepôt secondaire
+            const responseSecondaire = await axios.get(`/api/stocks/produits/quantita/${produit._id}`);
+            const quantiteDisponibleSecondaire = responseSecondaire.data.quantiteDisponible;
+            const entrepotIdSecondaire = responseSecondaire.data.entrepotId;
+            const nomSecondaire = responseSecondaire.data.entrepotsecondaireNom || " ";
+            console.log("nom secondaire", nomSecondaire);
+            console.log(`Quantité disponible dans l'entrepôt secondaire : ${quantiteDisponibleSecondaire}`);
+
+            // Vérifier la quantité dans l'entrepôt secondaire
+            if (quantiteConvertie <= quantiteDisponibleSecondaire) {
+     
+              // Ajouter le produit avec l'entrepôt secondaire
+              setCommande((prevCommande) => {
+                return [...prevCommande, {
+                  ...produit,
+                  quantite,
+                  uniteChoisie: produit.uniteChoisie,
+                  entrepotId: responseSecondaire.data.entrepotId, // Entrepôt secondaire
+                }];
+              });
+            } else {
+              // Si la quantité est insuffisante dans les deux entrepôts
+              Swal.fire({
+                title: 'Quantité Insuffisante',
+                text: `La quantité est insuffisante dans l'entrepôt secondaire aussi.`,
+                icon: 'warning',
+                confirmButtonText: 'OK',
+              });
+            }
+          }
         } else {
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Problème lors de la vérification du stock.',
-            icon: 'error'
+       
+          // Ajouter le produit avec l'entrepôt principal
+          setCommande((prevCommande) => {
+            return [...prevCommande, {
+              ...produit,
+              quantite,
+              uniteChoisie: produit.uniteChoisie,
+              entrepotId: entrepotIdPrincipal, // Entrepôt principal
+            }];
           });
         }
-        return;
       }
-  
-      const quantiteDisponible = resStock.data.quantiteDisponible;
-      const nomunite = resStock.data.uniteNom;
-
-      if (quantiteConvertie > quantiteDisponible) {
-        Swal.fire({
-          title: 'Quantité insuffisante',
-          text: `Il n'y a que ${quantiteDisponible} ${nomunite}(s) disponibles dans cet entrepôt.`,
-          icon: 'warning'
-        });
-        return;
-      }
-
-      // Ajouter à la commande
-      setCommande(prev => [
-        ...prev,
-        {
-          ...produit,
-          quantite,
-          entrepotNom: resStock.data.entrepotNom, 
-          uniteChoisie: produit.uniteChoisie,
-          entrepotId: entrepotIdChoisi,
-
-        }
-      ]);
-  
-    } catch (err) {
-      console.error(err);
-      Swal.fire({ title: 'Erreur', text: 'Problème lors de la vérification de stock.', icon: 'error' });
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la quantité disponible", error);
     }
   };
-  
+
+
   const supprimerProduit = (produitId, unite) => {
     setCommande((prevCommande) =>
       prevCommande.filter((item) => !(item._id === produitId && item.uniteChoisie === unite))
@@ -466,21 +465,9 @@ function PriseCommande() {
           produit: item._id,
           quantite: item.quantite,
           uniteChoisie: item.uniteChoisie || "Unité par défaut",
-
           entrepotId: item.entrepotId || entrepotId,
         }));
-
-      // Vérifie si le tableau est vide
-if (produitsCommande.length === 0) {
-  Swal.fire({
-    title: "Info",
-    text: "La commande est vide. Veuillez ajouter au moins un produit.",
-    icon: "info",
-    confirmButtonText: "OK",
-  });
-  setLoadingAction(false);
-  return;
-}
+    
         const commandeData = {
           typeClient,
           clientId,
@@ -820,7 +807,7 @@ if (produitsCommande.length === 0) {
                     <thead>
                       <tr>
                         <th className="bg-success text-light p-3">Nom</th>
-                        
+                        <th className="bg-success text-light p-3">Entrepot</th>
                         <th className="bg-success text-light p-3">Type</th>
                         <th className="bg-success text-light p-3">Prix</th>
                         <th className="bg-success text-light p-3">Quantité</th>
@@ -939,7 +926,6 @@ if (produitsCommande.length === 0) {
                   <thead>
                     <tr>
                       <th className="bg-success text-light">Nom</th>
-                      <th className="bg-success text-light p-3">Entrepot</th> 
                       <th className="bg-success text-light">Quantité</th>
                       <th className="bg-success text-light">Unité</th>
                       <th className="bg-success text-light">Prix Unitaire</th>
@@ -951,9 +937,7 @@ if (produitsCommande.length === 0) {
                     {commande.map((item, index) => (
                       <tr key={index}>
                         <td>{item.nom}</td>
-                        <td>{item.entrepotNom}</td>
                         <td>{item.quantite}</td>
-                   
                         <td>{item.uniteChoisie}</td>
                         <td>{item.prixdevente} Ariary</td>
                         <td>{item.quantite * item.prixdevente} Ariary</td>

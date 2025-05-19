@@ -211,7 +211,7 @@ exports.envoyerNotificationRuptureStock = async (req, res) => {
     }
 
     // Créer un message personnalisé pour la notification
-    const message = `⚠️ Rupture de stock sur le produit ${produit} a atteint un stock faible de ${quantiteRestante} unités dans l'entrepôt ${entrepot}.`;
+    const message = `⚠️ Rupture de stock sur le produit ${produit} a atteint un stock faible de ${quantiteRestante} unités dans un des entrepots.`;
 
     // Créer la notification de rupture de stock dans la base de données
     const notification = new Notification({

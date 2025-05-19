@@ -70,22 +70,30 @@ exports.createInventaire = async (req, res) => {
 
 
 
-// Récupérer tous les inventaires
 exports.getAllInventaires = async (req, res) => {
   try {
-    const inventaires = await Inventaire.find().populate('entrepot').populate('produit');
+    const inventaires = await Inventaire.find()
+      .populate('entrepot')
+      .populate({
+        path: 'produit',
+        populate: {
+          path: 'fournisseur',
+          select: 'nom' // sélectionne uniquement le nom du fournisseur
+        }
+      });
+
     res.status(200).json(inventaires);
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la récupération des inventaires', error });
   }
 };
+
 exports.getEntrepotBym = async (req, res) => {
   try {
     const { personneId } = req.params;
     const inventaires = await Inventaire.find({ personneId })
       .populate("personneId", "nom email")
-      .populate("produit"); // Ajoutez ceci pour peupler le produit
-
+      .populate("produit"); 
     if (inventaires.length === 0) {
       return res.status(404).json({ message: "❌ Aucun inventaire trouvé." });
     }

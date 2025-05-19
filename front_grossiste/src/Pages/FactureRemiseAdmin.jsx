@@ -149,7 +149,7 @@ function convertirCentaines(nombre) {
     <>
       <div className="facture-container">
         <div className="facture-header">
-                 <img src={Logo} alt="Logo" width={150} />
+                 <img src={Logo} alt="Logo" width={100} />
                  <div className="infoCompany">
                     <h3 style={{ fontWeight: "bold" }}>MAGASIN BAZARIKO</h3>
                     <h5 className="fw-bold">Distribution de Marchandises Générales</h5>
@@ -157,7 +157,7 @@ function convertirCentaines(nombre) {
                     <h5 className="fw-bold">+ 261 34 13 881 72</h5>
                 </div>
                </div>
-        <hr />
+
         <div className="facture-info p-3">
           <div style={{ float: "left" }}>
             <p>
@@ -176,8 +176,8 @@ function convertirCentaines(nombre) {
             </p>
             <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
           </div>
-          <div style={{ float: "right" }}>
-            <h3>FACTURE DE REMISE</h3>
+          <div style={{ float: "right" ,marginTop:"-20px"}}>
+          <h3 style={{fontSize:"15px"}}>FACTURE DE REMISE</h3>
             <p><strong>N° :</strong> {paiement.referenceFacture}</p>
             <p><strong>Type de remise :</strong> {
    paiement.commandeId.typeRemise === 'parProduit' 
@@ -204,9 +204,9 @@ function convertirCentaines(nombre) {
             <p><strong>Référence :</strong> {referencePaiement || "..........."}</p>
           </div>
         </div>
-        <h1>-------------------------------</h1>
+      
         <div className="facture-details mt-4">
-          <table className="table table-responsive table-bordered">
+          <table className="tableZ table-responsive table-bordered">
             <thead>
               <tr>
                 <th>Qté</th>
