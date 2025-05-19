@@ -163,7 +163,7 @@ return resultat.trim();
       setTimeout(() => {
         window.print(); 
         setTimeout(() => {
-          window.close(); // Ferme l'onglet après l'impression
+      window.close(); // Ferme l'onglet après l'impression
         }, 1000); // 1 seconde après impression
       }, 2000);
     }

@@ -160,7 +160,7 @@ function convertirCentaines(nombre) {
                     <h5 className="fw-bold">+ 261 34 13 881 72</h5>
                 </div>
             </div>
-            <h1>-------------------------------</h1>
+         
             <div className="facture-infos">
                 <div style={{ float: "left" }}>
                     <h5>
@@ -202,7 +202,7 @@ function convertirCentaines(nombre) {
                     </h5>
                 </div>
             </div>
-            <h1>-------------------------------</h1>
+        
             <div className="facture-detail mt-4">
                 <table>
                     <thead>

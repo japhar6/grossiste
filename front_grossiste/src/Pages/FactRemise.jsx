@@ -136,7 +136,7 @@ function convertirCentaines(nombre) {
         setTimeout(() => {
           window.print(); // Imprime après 2 secondes
           setTimeout(() => {
-           //window.close(); // Ferme l'onglet après l'impression
+           window.close(); // Ferme l'onglet après l'impression
           }, 1000); // 1 seconde après impression
         }, 2000);
       }
