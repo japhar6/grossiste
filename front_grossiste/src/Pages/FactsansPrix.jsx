@@ -107,10 +107,13 @@ function FactureSans() {
           <p>
             <strong>N° :</strong> {commande.referenceFacture}
           </p>
-          <p>
-            <strong>Date limite de paiement :</strong>{" "}
-            {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
-          </p>
+          {modePaiement === "a credit" && (
+    <p>
+        <strong>Date limite de paiement :</strong>{" "}
+        {new Date(dateLimiteCredit).toLocaleDateString('fr-FR', {year: 'numeric',month: 'long',day: 'numeric',}) || "..........."}
+    </p>
+)}
+
           <p>
             <strong>Référence :</strong> {referencePaiement || "..........."}
           </p>
