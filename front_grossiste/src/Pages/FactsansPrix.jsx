@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../Styles/Facture.css";
 import Logo from "../assets/logoo.png";
-
+import axios from "../api/axios";
 function FactureSans() {
   const [commande, setCommande] = useState(null);
   const [modePaiement, setModePaiement] = useState(null);
@@ -10,29 +10,51 @@ function FactureSans() {
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
 
+ 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-
-    try {
-      const commandeData = queryParams.get("commande")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
-        : null;
-      const clientData = queryParams.get("client")
-        ? JSON.parse(decodeURIComponent(queryParams.get("client")))
-        : null;
-      const commercialData = queryParams.get("commercial")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
-        : null;
-
-      setCommande(commandeData);
-      setModePaiement(queryParams.get("modePaiement"));
-      setReferencePaiement(queryParams.get("referencePaiement"));
-      setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
-      setClient(clientData);
-      setCommercial(commercialData);
-    } catch (error) {
-      console.error("Erreur lors du traitement des données de l'URL", error);
+    const commandeId = queryParams.get("commandeId");
+  
+    if (!commandeId) {
+      console.error("❌ Aucun commandeId trouvé dans l'URL");
+      return;
     }
+  
+    async function fetchPaiement(id) {
+      try {
+        let response;
+    
+        try {
+          // Première tentative : /paiement/recuperer/:id
+          response = await axios.get(`/api/commandes/recuperer/${id}`);
+          console.log("✅ Données récupérées depuis /paiement");
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+           
+            console.log("✅ Données récupérées depuis /paiementCom");
+          } else {
+            throw error; // autre erreur (réseau, 500, etc.)
+          }
+        }
+    
+        const data = response.data;
+    
+        // MàJ des états avec les données reçues
+        setCommande(data);
+        setModePaiement(queryParams.get("modePaiement"));
+            setReferencePaiement(queryParams.get("referencePaiement"));
+            setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
+            setClient(data.clientId);
+            setCommercial(data.commercialId);
+            setdatePositionnementCheque(queryParams.get("datePositionnementCheque"));
+  
+    
+      } catch (error) {
+        console.error("❌ Erreur lors de la récupération du paiement :", error);
+      }
+    }
+    
+    fetchPaiement(commandeId);
   }, []);
 
   useEffect(() => {
@@ -40,7 +62,7 @@ function FactureSans() {
       setTimeout(() => {
         window.print(); // Imprime après 2 secondes
         setTimeout(() => {
-         // window.close(); // Ferme l'onglet après l'impression
+          window.close(); // Ferme l'onglet après l'impression
         }, 1000); // 1 seconde après impression
       }, 2000);
     }

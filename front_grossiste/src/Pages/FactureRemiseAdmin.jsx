@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "../Styles/Facture.css";
 import Logo from "../assets/logoo.png";
+import axios from "../api/axios";
 
 function Facture() {
   const [paiement, setPaiement] = useState(null);
   const [modePaiement, setModePaiement] = useState(null);
   const [referencePaiement, setReferencePaiement] = useState(null);
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
-  const [client, setClient] = useState(null);
-  const [commercial, setCommercial] = useState(null);
-  const [nomEntrepot, setNomEntrepot] = useState(null);
+
 
   
   function convertirEnLettres(nombre) {
@@ -101,34 +100,51 @@ function convertirCentaines(nombre) {
 
   return resultat.trim();
 }
+
+  // Récupération des params URL et fetch des données
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
+    const paiementId = queryParams.get("paiementId");
 
-    try {
-      const paiementData = queryParams.get("paiement");
-      const clientData = queryParams.get("client");
-      const commercialData = queryParams.get("commercial");
-
-      // Vérification et conversion de paiementData
-      const paiementObjet = paiementData ? JSON.parse(paiementData) : null;
-
-      console.log("🔍 Données reçues et traitées :", {
-        paiementObjet,
-        clientData,
-        commercialData,
-      });
-
-      setPaiement(paiementObjet);
-      setModePaiement(queryParams.get("modePaiement"));
-      setReferencePaiement(queryParams.get("referencePaiement"));
-      setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
-      setClient(clientData);
-      setCommercial(commercialData);
-      console.log(paiement);
-
-    } catch (error) {
-      console.error("❌ Erreur lors du traitement des données de l'URL", error);
+    if (!paiementId) {
+      console.error("❌ Aucun paiementId trouvé dans l'URL");
+      return;
     }
+
+
+    async function fetchPaiement(id) {
+      try {
+        let response;
+    
+        try {
+          // Première tentative : /paiement/recuperer/:id
+          response = await axios.get(`/api/paiement/recuperer/${id}`);
+          console.log("✅ Données récupérées depuis /paiement");
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            console.warn("🔁 Paiement non trouvé dans /paiement, tentative via /paiementCom...");
+            // Deuxième tentative : /paiementCom/recuperer/:id
+            response = await axios.get(`/api/paiementCom/recuperer/${id}`);
+            console.log("✅ Données récupérées depuis /paiementCom");
+          } else {
+            throw error; // autre erreur (réseau, 500, etc.)
+          }
+        }
+    
+        const data = response.data;
+    
+        // MàJ des états avec les données reçues
+        setPaiement(data);
+        setModePaiement(data.modePaiement || null);
+        setReferencePaiement(data.referencePaiement || null);
+        setDateLimiteCredit(data.dateLimiteCredit || null);
+    
+      } catch (error) {
+        console.error("❌ Erreur lors de la récupération du paiement :", error);
+      }
+    }
+    
+    fetchPaiement(paiementId);
   }, []);
 
   useEffect(() => {

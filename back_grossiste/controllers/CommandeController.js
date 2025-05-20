@@ -130,15 +130,34 @@ res.status(500).json({ message: "❌ Erreur lors du comptage des commandes", err
 // Récupérer une commande par son ID
 exports.getCommandeById = async (req, res) => {
     try {
-        const commande = await Commande.findById(req.params.id);
-        if (!commande) {
-            return res.status(404).json({ message: "Commande non trouvée" });
-        }
-        res.status(200).json(commande);
+        const commande = await Commande.findById(req.params.id)
+        .populate('clientId')                
+        .populate('commercialId')            
+        .populate({
+          path: 'produits',
+          populate: [
+            {
+              path: 'produit',
+              model: 'Produit'
+            },
+            {
+              path: 'entrepotId',         // 🎯 on ajoute le populate ici
+              model: 'Entrepot',          // 🔁 Assure-toi que c’est bien le nom du modèle
+              select: 'nom'               // Optionnel : ne récupérer que le nom
+            }
+          ]
+        });
+  
+      if (!commande) {
+        return res.status(404).json({ message: "Commande non trouvée" });
+      }
+  
+      res.status(200).json(commande);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
-};
+  };
+  
 
 
 // Récupérer une commande par sou référence et statu en cours

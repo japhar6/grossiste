@@ -99,84 +99,70 @@ useEffect(() => {
   }
 }, [filteredPaiements]);
 
-
-  const handleRowClick = async (paiement) => {
-    const { value: typeFacture, isDismissed } = await Swal.fire({
-      title: "🧾 Sélectionnez le type de facture",
-      html: `
-        <div style="text-align: left;">
-          <label>
-            <input type="checkbox" name="typeFacture" value="normal" style="margin-right: 8px;"> 📜 Facture Normale
-          </label>
-          <br>
-          <label>
-            <input type="checkbox" name="typeFacture" value="remise" style="margin-right: 8px;"> 📜 Facture de Remise
-         </label>
-       
-        </div>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "✅ Valider",
-      cancelButtonText: "❌ Annuler",
-      confirmButtonColor: "#28a745",
-      cancelButtonColor: "#d33",
-      preConfirm: () => {
-        const selectedTypes = Array.from(document.querySelectorAll('input[name="typeFacture"]:checked')).map(input => input.value);
-        if (selectedTypes.length === 0) {
-          Swal.showValidationMessage("⚠️ Vous devez sélectionner au moins un type de facture !");
-          return false;
-        }
-        return selectedTypes;
+const handleRowClick = async (paiement) => {
+  const { value: typeFacture, isDismissed } = await Swal.fire({
+    title: "🧾 Sélectionnez le type de facture",
+    html: `
+      <div style="text-align: left;">
+        <label>
+          <input type="checkbox" name="typeFacture" value="normal" style="margin-right: 8px;"> 📜 Facture Normale
+        </label>
+        <br>
+        <label>
+          <input type="checkbox" name="typeFacture" value="remise" style="margin-right: 8px;"> 📜 Facture de Remise
+        </label>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: "✅ Valider",
+    cancelButtonText: "❌ Annuler",
+    confirmButtonColor: "#28a745",
+    cancelButtonColor: "#d33",
+    preConfirm: () => {
+      const selectedTypes = Array.from(document.querySelectorAll('input[name="typeFacture"]:checked')).map(input => input.value);
+      if (selectedTypes.length === 0) {
+        Swal.showValidationMessage("⚠️ Vous devez sélectionner au moins un type de facture !");
+        return false;
       }
-    });
-
-    if (isDismissed || !typeFacture) {
-      console.log("Annulation de la génération de facture.");
-      return;
+      return selectedTypes;
     }
+  });
 
-    const queryParams = new URLSearchParams();
-    if (paiement) queryParams.set("paiement", JSON.stringify(paiement));
-    if (paiement.modePaiement) queryParams.set("modePaiement", paiement.modePaiement);
-    if (paiement.referencePaiement) queryParams.set("referencePaiement", paiement.referencePaiement);
-    if (paiement.dateLimiteCredit) queryParams.set("dateLimiteCredit", paiement.dateLimiteCredit);
-    if ( paiement.commandeId.typeRemise) queryParams.set("typeRemise",  paiement.commandeId.typeRemise);
+  if (isDismissed || !typeFacture) {
+    console.log("Annulation de la génération de facture.");
+    return;
+  }
 
-    // Utilisation des valeurs paiement.clientNom et paiement.commercialNom
-    if (paiement.clientNom) {
-      queryParams.set("client", paiement.clientNom);
-    } else if (paiement.commercialNom) {
-      queryParams.set("commercial", paiement.commercialNom);
-    }
-    console.log("Données envoyées à la facture :", {
-      paiement,
-      modePaiement: paiement.modePaiement,
-      referencePaiement: paiement.referencePaiement,
-      dateLimiteCredit: paiement.dateLimiteCredit,
-      client: paiement.clientNom,
-      commercial: paiement.commercialNom,
-      typeremise : paiement.commandeId.typeRemise
-    });
+  const queryParams = new URLSearchParams();
+
+  // Ici on envoie uniquement l'ID du paiement
+  if (paiement && paiement._id) {
+    queryParams.set("paiementId", paiement._id);
+  }
 
 
-    const openInvoices = () => {
-      if (Array.isArray(typeFacture)) {
-        if (typeFacture.includes("normal")) {
-          const factureUrlNormal = `/factureadmin?${queryParams.toString()}`;
-          window.open(factureUrlNormal, "factureNormal");
-        }
+  console.log("Données envoyées à la facture :", {
+    paiementId: paiement._id,
+  
+  });
 
-        if (typeFacture.includes("remise")) {
-          const factureUrlRemise = `/factureremisead?${queryParams.toString()}`;
-          window.open(factureUrlRemise, "factureRemise");
-        }
-
-
+  const openInvoices = () => {
+    if (Array.isArray(typeFacture)) {
+      if (typeFacture.includes("normal")) {
+        const factureUrlNormal = `/factureadmin?${queryParams.toString()}`;
+        window.open(factureUrlNormal, "factureNormal");
       }
-    };
 
-    openInvoices();
+      if (typeFacture.includes("remise")) {
+        const factureUrlRemise = `/factureremisead?${queryParams.toString()}`;
+        window.open(factureUrlRemise, "factureRemise");
+      }
+    }
   };
+
+  openInvoices();
+};
+
   const handlePrint = () => {
     const printContent = document.getElementById("table-to-print").outerHTML;
     const printWindow = window.open('', '', 'height=500,width=800');

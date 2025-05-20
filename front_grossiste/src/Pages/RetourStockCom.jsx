@@ -12,7 +12,7 @@ function RetourStockCom() {
   const [ventes, setVentes] = useState([]);
   const [modalData, setModalData] = useState(null);
   const [error, setError] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // État pour la recherche
+  const [searchQuery, setSearchQuery] = useState(""); 
   const [status, setStatus] = useState(""); // État pour le statut
   const [date, setDate] = useState(""); // État pour la date
   const [loadingEntrepots, setLoadingEntrepots] = useState(false);
@@ -45,31 +45,30 @@ function RetourStockCom() {
 
 
   // Fonction pour récupérer les ventes à partir de commercialId et commandeId
-  const fetchVentesByInfo = (commercialId, commandeId) => {
+  const fetchVentesByInfo = async (commercialId, commandeId) => {
     if (!commercialId || !commandeId) {
       console.error("Le commercialId ou commandeId est undefined ou invalide.");
       return Promise.reject("Le commercialId ou commandeId est undefined ou invalide.");
     }
 
-    return axios.get(`/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`)
-      .then(response => {
-        console.log("Ventes récupérées pour le commercial et la commande:", response.data);
-        setVentes(response.data);
-        setError(""); // Réinitialiser l'erreur en cas de succès
-        return response.data;
-      })
-      .catch(error => {
-        if (error.response && error.response.status === 404) {
-          // Si l'erreur est un 404, on affiche un message spécifique
-          setError("La facture n'est pas encore payée.");
-          console.log("La facture n'est pas encore payée.");
-        } else {
-          // Autres erreurs, on gère ici normalement
-          console.error("Erreur lors de la récupération des ventes :", error);
-          setError("Erreur lors de la récupération des ventes.");
-        }
-        return Promise.reject(error);
-      });
+    try {
+      const response = await axios.get(`/api/paiementCom/performance/commercial/${commercialId}/commande/${commandeId}`);
+      console.log("Ventes récupérées pour le commercial et la commande:", response.data);
+      setVentes(response.data);
+      setError(""); // Réinitialiser l'erreur en cas de succès
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        // Si l'erreur est un 404, on affiche un message spécifique
+        setError("La facture n'est pas encore payée.");
+        console.log("La facture n'est pas encore payée.");
+      } else {
+        // Autres erreurs, on gère ici normalement
+        console.error("Erreur lors de la récupération des ventes :", error);
+        setError("Erreur lors de la récupération des ventes.");
+      }
+      return await Promise.reject(error);
+    }
   };
 
   // Ouverture du modal et récupération des ventes
@@ -265,6 +264,7 @@ function RetourStockCom() {
                             <th className="w-20">Produit</th>
                             <th className="w-25">Quantité</th>
                             <th className="w-25">Unité</th>
+                            <th className="w-25">Entrepot</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -274,6 +274,7 @@ function RetourStockCom() {
                                 <td>{produit.produitId.nom}</td>
                                 <td>{produit.quantiteRestante}</td>
                                 <td>{produit.unite}</td>
+                                <td>{produit.entrepotId}</td>
                               </tr>
                             ))
                           ) : (
@@ -291,7 +292,7 @@ function RetourStockCom() {
 
                 <div className="modal-footer center">
                   <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" >Fermer</button>
-                  {modalData && modalData.paiement.statut !== "Produits retourner" && ( // Condition pour afficher le bouton
+                  {modalData && modalData.paiement.statut !== "Produits retourner" && ( 
                     <button className="btn btn-info" onClick={handleReturnValidation} disabled={loadingAction}>
                       {loadingAction ? (
                         <>

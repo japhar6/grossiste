@@ -254,19 +254,40 @@ exports.getPaiementsCredittout = async (req, res) => {
 
 
 
-// Récupérer un paiement par son ID
 exports.getPaiementById = async (req, res) => {
     try {
-        const paiement = await Paiement.findById(req.params.id);
-        if (!paiement) {
-            return res.status(404).json({ message: "Paiement non trouvé" });
-        }
-        res.status(200).json(paiement);
+        const paiement = await Paiement.findById(req.params.id)
+        .populate({
+          path: 'commandeId',
+          populate: [
+            {
+              path: 'produits.produit',
+              model: 'Produit'
+            },
+            {
+              path: 'clientId',       // ou le nom exact dans ton schema Commande
+              model: 'Client'
+            },
+            {
+              path: 'commercialId',   // pareil, si tu as ce champ dans Commande
+              model: 'Commercial'
+            }
+          ]
+        });
+      
+        // ici on récupère les infos du client lié au paiement
+  
+      if (!paiement) {
+        return res.status(404).json({ message: "Paiement non trouvé" });
+      }
+  
+      res.status(200).json(paiement);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error.message });
     }
-};
-
+  };
+  
+  
 exports.getPaiementsParCaissier = async (req, res) => {
     try {
         const { idCaissier } = req.params;

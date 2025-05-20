@@ -350,17 +350,18 @@ function Caisse() {
 
     if (paiementValidationResult) {
       const queryParams = new URLSearchParams();
-      if (commande) queryParams.set("commande", JSON.stringify(commande));
+      if (commande?._id) queryParams.set("commandeId", commande._id);
+
       if (modePaiement) queryParams.set("modePaiement", modePaiement);
       if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
       if (dateLimiteCredit) queryParams.set("dateLimiteCredit", dateLimiteCredit);
       if (datePositionnementCheque) queryParams.set("datePositionnementCheque", datePositionnementCheque);
-      if (client) {
-        queryParams.set("client", JSON.stringify(client));
-      } else if (commercial) {
-        queryParams.set("commercial", JSON.stringify(commercial));
-      }
+     
 
+      console.log("Données envoyées à la facture :", {
+        commandeID: commande._id,
+      
+      });
       // Fonction pour ouvrir les factures selon les types sélectionnés
       const openInvoices = () => {
         if (typeFacture.includes("normal")) {

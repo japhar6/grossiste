@@ -260,6 +260,54 @@ function PaiementCom() {
   };
 
 
+  const handleTousVendus = (produitId, quantite, uniteChoisie) => {
+    if (!produitId) {
+      console.error("Produit ID manquant");
+      return;
+    }
+  
+    // Récupère la liste des unités disponibles pour ce produit
+    const unitesProduit = unitesParProduit[produitId] || [];
+  
+    // Trouve l'unité sélectionnée dans la liste des unités pour récupérer le prix
+    const selectedUnite = unitesProduit.find(unite => unite.nom === uniteChoisie);
+  
+    if (!selectedUnite) {
+      console.warn("Unité choisie non trouvée pour le produit", produitId);
+      return;
+    }
+  
+    const prixVente = selectedUnite.prixdevente;
+  
+    // Mise à jour des produits
+    setProduitsMisesAJour(prevState => {
+      const produitExist = prevState.find(p => p.produitId === produitId);
+  
+      if (produitExist) {
+        return prevState.map(p =>
+          p.produitId === produitId
+            ? {
+                ...p,
+                quantite,
+                uniteVendu: uniteChoisie,
+                prixVente,
+              }
+            : p
+        );
+      } else {
+        return [
+          ...prevState,
+          {
+            produitId,
+            quantite,
+            uniteVendu: uniteChoisie,
+            prixVente,
+          },
+        ];
+      }
+    });
+  };
+  
   const handleGenerateInvoice = async () => {
     const paiementValidationResult = await handleValidation();
 
@@ -302,8 +350,40 @@ function PaiementCom() {
      
     }
   };
+  const handleTousProduitsVendus = () => {
+    const produitsMisAJour = commande.produits.map(produit => {
+      const produitId = produit.produit._id;
+      const quantite = produit.quantite;
+      const uniteChoisie = produit.uniteChoisie;
+  
+      if (!produitId || !uniteChoisie) {
+        console.warn("Données manquantes pour le produit", produit);
+        return null;
+      }
+  
+      const unitesProduit = unitesParProduit[produitId] || [];
+      const selectedUnite = unitesProduit.find(unite => unite.nom === uniteChoisie);
+  
+      if (!selectedUnite) {
+        console.warn("Unité non trouvée pour le produit", produit);
+        return null;
+      }
+  
+      return {
+        produitId,
+        quantite,
+        uniteVendu: uniteChoisie,
+        prixVente: selectedUnite.prixdevente,
+      };
+    }).filter(Boolean); // Supprime les nulls
+  
+    setProduitsMisesAJour(produitsMisAJour);
+  };
+  
 
 
+
+  
 
 
 
@@ -362,10 +442,15 @@ function PaiementCom() {
                   </tbody>
                 </table>
               </div>
+            
+
             </div>
             {commande && (
               <div className="commandeX mt-4">
                 <h6><i className="fa fa-receipt"></i> Récapitulatif de la Commande</h6>
+                <button className="btn btn-success my-2 " onClick={handleTousProduitsVendus}>
+  Tout est vendu
+</button>
                 <div className="table-container" style={{ overflowX: "auto", overflowY: "auto" }}>
                   <table className="table tableCS table-bordered mt-2 text-center">
                     <thead>
@@ -376,6 +461,7 @@ function PaiementCom() {
                         <th>Unité dans Commande</th>
                         <th>Quantité vendu</th>
                         <th>Unité vendu</th>
+                        <th>Option</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -420,6 +506,14 @@ function PaiementCom() {
                                 )}
                               </select>
 
+                            </td>
+                            <td>
+                            <button
+      className="btn btn-info w-70"
+      onClick={() => handleTousVendus(produit.produit._id, produit.quantite, produit.uniteChoisie)}
+    >
+      Tous vendus
+    </button>
                             </td>
 
                           </tr>
