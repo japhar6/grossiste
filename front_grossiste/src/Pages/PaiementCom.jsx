@@ -309,13 +309,16 @@ function PaiementCom() {
   };
   
   const handleGenerateInvoice = async () => {
+    // 👉 Ouvrir immédiatement la fenêtre AVANT tout traitement async
+    const factureWindow = window.open("", "_blank"); // ouverture immédiate = pas bloqué
+    if (!factureWindow) {
+      alert("Veuillez autoriser les popups dans votre navigateur.");
+      return;
+    }
+  
     const paiementValidationResult = await handleValidation();
-
+  
     if (paiementValidationResult) {
-      const factureUrl = "/facturepaiement";
-      const queryParams = new URLSearchParams();
-
-      // Construire une nouvelle commande avec les produits mis à jour
       const commandeMiseAJour = {
         ...commande,
         produits: commande.produits.map(produit => {
@@ -323,9 +326,9 @@ function PaiementCom() {
           return {
             ...produit,
             quantite: miseAJour.quantite || produit.quantite,
-            prixdevente: miseAJour.prixVente || produit.prixdevente, // Prend le prix sélectionné
-            uniteChoisie: miseAJour.uniteVendu || produit.uniteChoisie, // Prend l'unité choisie
-            total: (miseAJour.quantite || produit.quantite) * (miseAJour.prixVente || produit.prixdevente) // Recalcule le total
+            prixdevente: miseAJour.prixVente || produit.prixdevente,
+            uniteChoisie: miseAJour.uniteVendu || produit.uniteChoisie,
+            total: (miseAJour.quantite || produit.quantite) * (miseAJour.prixVente || produit.prixdevente)
           };
         }),
         totalGeneral: commande.produits.reduce((total, produit) => {
@@ -335,21 +338,20 @@ function PaiementCom() {
           return total + quantite * prix;
         }, 0)
       };
-
-      queryParams.set("commande", JSON.stringify(commandeMiseAJour));
-      if (modePaiement) queryParams.set("modePaiement", modePaiement);
-      if (referencePaiement) queryParams.set("referencePaiement", referencePaiement);
-      if (commercial) queryParams.set("commercial", JSON.stringify(commercial));
-
-      const factureWindow = window.open(`${factureUrl}?${queryParams.toString()}`, "_blank");
-
-      if (factureWindow) {
-        factureWindow.focus();
-      }
+  
+      // ✅ Stocker les données dans localStorage
+      localStorage.setItem("facture_commande", JSON.stringify(commandeMiseAJour));
+      if (modePaiement) localStorage.setItem("facture_modePaiement", modePaiement);
+      if (referencePaiement) localStorage.setItem("facture_referencePaiement", referencePaiement);
+      if (commercial) localStorage.setItem("facture_commercial", JSON.stringify(commercial));
+  
+      // ✅ Rediriger manuellement la fenêtre vers la bonne page
+      factureWindow.location.href = "/facturepaiement";
     } else {
-     
+      factureWindow.close(); // ❌ validation échouée => on ferme la fenêtre
     }
   };
+  
   const handleTousProduitsVendus = () => {
     const produitsMisAJour = commande.produits.map(produit => {
       const produitId = produit.produit._id;

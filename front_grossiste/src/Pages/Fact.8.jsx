@@ -8,6 +8,7 @@ function Facture8() {
     const [referencePaiement, setReferencePaiement] = useState(null);
     const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
     const [client, setClient] = useState(null);
+      const [loading, setLoading] = useState(false);
     const [commercial, setCommercial] = useState(null);
  const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
  
@@ -105,7 +106,7 @@ function convertirCentaines(nombre) {
 useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const commandeId = queryParams.get("commandeId");
-
+    setLoading(true);
     if (!commandeId) {
       console.error("❌ Aucun commandeId trouvé dans l'URL");
       return;
@@ -129,7 +130,7 @@ useEffect(() => {
         }
     
         const data = response.data;
-    
+        setLoading(false);
         // MàJ des états avec les données reçues
         setCommande(data);
         setModePaiement(queryParams.get("modePaiement"));
@@ -141,8 +142,10 @@ useEffect(() => {
 
     
       } catch (error) {
+     
         console.error("❌ Erreur lors de la récupération du paiement :", error);
-      }
+        setLoading(false);
+    }
     }
     
     fetchPaiement(commandeId);
@@ -158,9 +161,14 @@ useEffect(() => {
         }
     }, [commande]);
 
-    if (!commande) {
-        return <div>Chargement...</div>;
-    }
+    if (!commande) return   <div
+    className="spinner-border"
+    style={{ width: '2rem', height: '2rem', marginLeft: '900px',marginTop: '400px' }}
+    role="status"
+  >
+    <span className="visually-hidden">Chargement...</span>
+  </div>
+  ;
 
     const clientOuCommercial = client || commercial;
 

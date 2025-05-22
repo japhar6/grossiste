@@ -7,7 +7,7 @@ function Facture() {
   const [modePaiement, setModePaiement] = useState(null);
   const [referencePaiement, setReferencePaiement] = useState(null);
   const [dateLimiteCredit, setDateLimiteCredit] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   // Convertir un nombre en toutes lettres (en français)
   function convertirEnLettres(nombre) {
     const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
@@ -101,7 +101,7 @@ function Facture() {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const paiementId = queryParams.get("paiementId");
-
+    setLoading(true);
     if (!paiementId) {
       console.error("❌ Aucun paiementId trouvé dans l'URL");
       return;
@@ -127,7 +127,7 @@ function Facture() {
         }
     
         const data = response.data;
-    
+        setLoading(false);
         // MàJ des états avec les données reçues
         setPaiement(data);
         setModePaiement(data.modePaiement || null);
@@ -136,13 +136,21 @@ function Facture() {
     
       } catch (error) {
         console.error("❌ Erreur lors de la récupération du paiement :", error);
+        setLoading(false);
       }
     }
     
     fetchPaiement(paiementId);
   }, []);
 
-  if (!paiement) return <div>Chargement...</div>;
+  if (!paiement) return   <div
+  className="spinner-border"
+  style={{ width: '2rem', height: '2rem', marginLeft: '900px',marginTop: '400px' }}
+  role="status"
+>
+  <span className="visually-hidden">Chargement...</span>
+</div>
+;
 
   return (
     <div className="facture-container">

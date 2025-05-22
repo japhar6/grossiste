@@ -11,12 +11,12 @@ function FactureRem() {
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
  const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
-
+      const [loading, setLoading] = useState(false);
 
  useEffect(() => {
   const queryParams = new URLSearchParams(window.location.search);
   const commandeId = queryParams.get("commandeId");
-
+  setLoading(true);
   if (!commandeId) {
     console.error("❌ Aucun commandeId trouvé dans l'URL");
     return;
@@ -25,7 +25,7 @@ function FactureRem() {
   async function fetchPaiement(id) {
     try {
       let response;
-  
+ 
       try {
         // Première tentative : /paiement/recuperer/:id
         response = await axios.get(`/api/commandes/recuperer/${id}`);
@@ -43,6 +43,7 @@ function FactureRem() {
   
       // MàJ des états avec les données reçues
       setCommande(data);
+      setLoading(false);
       setModePaiement(queryParams.get("modePaiement"));
           setReferencePaiement(queryParams.get("referencePaiement"));
           setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
@@ -53,6 +54,7 @@ function FactureRem() {
   
     } catch (error) {
       console.error("❌ Erreur lors de la récupération du paiement :", error);
+      setLoading(false);
     }
   }
   
@@ -161,7 +163,13 @@ function convertirCentaines(nombre) {
     }, [commande]);
   
     if (!commande) {
-      return <div>Chargement...</div>;
+      return <div
+      className="spinner-border"
+      style={{ width: '2rem', height: '2rem', marginLeft: '900px',marginTop: '400px' }}
+      role="status"
+    >
+      <span className="visually-hidden">Chargement...</span>
+    </div>;
     }
   
     const clientOuCommercial = client || commercial;

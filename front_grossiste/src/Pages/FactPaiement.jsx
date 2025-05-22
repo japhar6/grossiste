@@ -10,7 +10,7 @@ function Facture() {
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
   const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
-  
+    const [loading, setLoading] = useState(false);
   
   function convertirEnLettres(nombre) {
     const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
@@ -102,31 +102,24 @@ function convertirCentaines(nombre) {
   return resultat.trim();
 }
 
-  useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
+useEffect(() => {
+  try {
+    const commandeData = localStorage.getItem("facture_commande");
+    const clientData = localStorage.getItem("facture_client");
+    const commercialData = localStorage.getItem("facture_commercial");
 
-    try {
-      const commandeData = queryParams.get("commande")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commande")))
-        : null;
-      const clientData = queryParams.get("client")
-        ? JSON.parse(decodeURIComponent(queryParams.get("client")))
-        : null;
-      const commercialData = queryParams.get("commercial")
-        ? JSON.parse(decodeURIComponent(queryParams.get("commercial")))
-        : null;
+    setCommande(commandeData ? JSON.parse(commandeData) : null);
+    setModePaiement(localStorage.getItem("facture_modePaiement"));
+    setReferencePaiement(localStorage.getItem("facture_referencePaiement"));
+    setDateLimiteCredit(localStorage.getItem("facture_dateLimiteCredit"));
+    setdatePositionnementCheque(localStorage.getItem("facture_datePositionnementCheque"));
+    setClient(clientData ? JSON.parse(clientData) : null);
+    setCommercial(commercialData ? JSON.parse(commercialData) : null);
+  } catch (error) {
+    console.error("Erreur lors de la lecture des données depuis le localStorage", error);
+  }
+}, []);
 
-      setCommande(commandeData);
-      setModePaiement(queryParams.get("modePaiement"));
-      setReferencePaiement(queryParams.get("referencePaiement"));
-      setDateLimiteCredit(queryParams.get("dateLimiteCredit"));
-      setClient(clientData);
-      setCommercial(commercialData);
-      setdatePositionnementCheque(queryParams.get("datePositionnementCheque"));
-    } catch (error) {
-      console.error("Erreur lors du traitement des données de l'URL", error);
-    }
-  }, []);
 
   useEffect(() => {
     if (commande) {
@@ -140,7 +133,14 @@ function convertirCentaines(nombre) {
   }, [commande]);
 
   if (!commande) {
-    return <div>Chargement...</div>;
+    return   <div
+    className="spinner-border"
+    style={{ width: '2rem', height: '2rem', marginLeft: '900px',marginTop: '400px' }}
+    role="status"
+  >
+    <span className="visually-hidden">Chargement...</span>
+  </div>
+  ;
   }
 
   const clientOuCommercial = client || commercial;

@@ -10,7 +10,7 @@ function Facture() {
   const [client, setClient] = useState(null);
   const [commercial, setCommercial] = useState(null);
   const [datePositionnementCheque,setdatePositionnementCheque] =useState(null);
-  
+    const [loading, setLoading] = useState(false);
   function convertirEnLettres(nombre) {
     const unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf"];
     const dizaines = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
@@ -135,7 +135,7 @@ return resultat.trim();
 useEffect(() => {
   const queryParams = new URLSearchParams(window.location.search);
   const commandeId = queryParams.get("commandeId");
-
+  setLoading(true);
   if (!commandeId) {
     console.error("❌ Aucun commandeId trouvé dans l'URL");
     return;
@@ -160,7 +160,7 @@ useEffect(() => {
       }
   
       const data = response.data;
-  
+      setLoading(false);
       // MàJ des états avec les données reçues
       setCommande(data);
       setModePaiement(queryParams.get("modePaiement"));
@@ -172,6 +172,7 @@ useEffect(() => {
 
   
     } catch (error) {
+      setLoading(false);
       console.error("❌ Erreur lors de la récupération du paiement :", error);
     }
   }
@@ -191,7 +192,14 @@ useEffect(() => {
   }, [commande]);
 
   if (!commande) {
-    return <div>Chargement...</div>;
+    return  <div
+    className="spinner-border"
+    style={{ width: '2rem', height: '2rem', marginLeft: '900px',marginTop: '400px' }}
+    role="status"
+  >
+    <span className="visually-hidden">Chargement...</span>
+  </div>
+    ;
   }
 
   const clientOuCommercial = client || commercial;
