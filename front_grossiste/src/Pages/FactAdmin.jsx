@@ -128,6 +128,7 @@ function Facture() {
     
         const data = response.data;
         setLoading(false);
+        console.log(data);
         // MàJ des états avec les données reçues
         setPaiement(data);
         setModePaiement(data.modePaiement || null);
@@ -177,21 +178,13 @@ function Facture() {
             })}
           </p>
           <p>
-            <strong>Client :</strong>{" "}
-            {paiement.commercialNom === "Inconnu" && paiement.clientNom !== "Inconnu"
-              ? paiement.clientNom
-              : paiement.commercialNom === "Inconnu"
-              ? paiement.clientNom || "Non spécifié"
-              : paiement.commercialNom || "Non spécifié"}
-          </p>
-          <p>
-            <strong>Adresse :</strong>{" "}
-            {paiement.clientAdresse
-              ? paiement.clientAdresse
-              : paiement.ComAdresse
-              ? paiement.ComAdresse
-              : "..................."}
-          </p>
+      <strong>{paiement.commandeId?.clientId ? "Client" : "Commercial"} :</strong>{" "}
+      {paiement.commandeId?.clientId?.nom || paiement.commandeId.commercialId?.nom || "Non spécifié"}
+    </p>
+    <p>
+      <strong>Adresse :</strong>{" "}
+      {paiement.commandeId?.clientId?.adresse || paiement.commandeId.commercialId?.adresse || "..................."}
+    </p>
           <p>
             <strong>Mode de paiement :</strong> {modePaiement || "............."}
           </p>

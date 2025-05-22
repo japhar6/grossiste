@@ -180,16 +180,13 @@ function convertirCentaines(nombre) {
               <strong>Date :</strong> {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
             <p>
-              <strong>Client :</strong> 
-              {paiement.commercialNom === "Inconnu" && paiement.clientNom !== "Inconnu" 
-                ? paiement.clientNom 
-                : paiement.commercialNom === "Inconnu" 
-                ? paiement.clientNom || "Non spécifié" 
-                : paiement.commercialNom || "Non spécifié"}
-            </p>
-            <p>
-              <strong>Adresse :</strong> {paiement.clientAdresse || paiement.ComAdresse || "..................."}
-            </p>
+      <strong>{paiement.commandeId?.clientId ? "Client" : "Commercial"} :</strong>{" "}
+      {paiement.commandeId?.clientId?.nom || paiement.commandeId.commercialId?.nom || "Non spécifié"}
+    </p>
+    <p>
+      <strong>Adresse :</strong>{" "}
+      {paiement.commandeId?.clientId?.adresse || paiement.commandeId.commercialId?.adresse || "..................."}
+    </p>
             <p><strong>Mode de paiement :</strong> {modePaiement || "............."}</p>
           </div>
           <div style={{ float: "right" ,marginTop:"-20px"}}>
