@@ -379,7 +379,7 @@ function PriseCommande() {
           Swal.fire({
             title: 'Erreur',
             text: 'Problème lors de la vérification du stock.',
-            icon: 'error'
+            icon: 'info'
           });
         }
         return;

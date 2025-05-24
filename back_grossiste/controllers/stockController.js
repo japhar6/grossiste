@@ -382,7 +382,14 @@ exports.sortirProduitsStock = async (req, res) => {
 exports.getStocksByEntrepot = async (req, res) => {
   try {
     const { entrepotId } = req.params;
-    const stocks = await Stock.find({ entrepot: entrepotId }).populate('produit');
+
+    const stocks = await Stock.find({ entrepot: entrepotId }).populate({
+      path: 'produit',
+      populate: {
+        path: 'fournisseur',
+        model: 'Fournisseur'
+      }
+    });
 
     res.status(200).json(stocks);
   } catch (error) {
