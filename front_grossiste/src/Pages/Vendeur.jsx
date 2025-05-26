@@ -545,7 +545,7 @@ if (produitsCommande.length === 0) {
         console.log("Réponse de l'API:", response.data);
         Swal.fire({
           title: 'Succès!',
-          text: 'Demande de remise envoyée !',
+          text: 'Demande de remise envoyée !!',
           icon: 'success',
           confirmButtonText: 'OK',
         });
