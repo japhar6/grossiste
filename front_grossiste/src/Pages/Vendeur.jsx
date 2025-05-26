@@ -431,6 +431,7 @@ function PriseCommande() {
     const client = clients.find(client => client._id === id);
     return client ? client.nom : '';
     };
+    
     const creerCommande = async (statut) => {
       setLoadingAction(true);
       try {

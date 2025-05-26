@@ -143,7 +143,18 @@ function Facture() {
     
     fetchPaiement(paiementId);
   }, []);
-
+ useEffect(() => {
+    if (paiement) {
+      setTimeout(() => {
+        window.print(); // Imprime après 2 secondes
+        setTimeout(() => {
+          window.close(); // Ferme l'onglet après l'impression
+        }, 1000); // 1 seconde après impression
+      }, 2000);
+    }
+ 
+  }, [paiement]);
+  
   if (!paiement) return   <div
   className="spinner-border"
   style={{ width: '2rem', height: '2rem', marginLeft: '900px',marginTop: '400px' }}
@@ -152,6 +163,7 @@ function Facture() {
   <span className="visually-hidden">Chargement...</span>
 </div>
 ;
+
 
   return (
     <div className="facture-container">

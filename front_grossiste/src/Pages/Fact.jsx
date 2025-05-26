@@ -183,7 +183,7 @@ useEffect(() => {
   useEffect(() => {
     if (commande) {
       setTimeout(() => {
-      //  window.print(); 
+       window.print(); 
         setTimeout(() => {
       window.close(); // Ferme l'onglet après l'impression
         }, 1000); // 1 seconde après impression

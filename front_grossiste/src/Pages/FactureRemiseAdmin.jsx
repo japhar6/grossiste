@@ -150,10 +150,13 @@ function convertirCentaines(nombre) {
   useEffect(() => {
     if (paiement) {
       setTimeout(() => {
-       
-        setTimeout(() => {}, 1000); // 1 seconde après impression
+        window.print(); // Imprime après 2 secondes
+        setTimeout(() => {
+          window.close(); // Ferme l'onglet après l'impression
+        }, 1000); // 1 seconde après impression
       }, 2000);
     }
+ 
   }, [paiement]);
 
   if (!paiement) {
