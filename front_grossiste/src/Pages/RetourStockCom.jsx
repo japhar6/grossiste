@@ -99,7 +99,7 @@ function RetourStockCom() {
 
   const handleReturnValidation = () => {
     setLoadingAction(true);
-    const magasinierId = localStorage.getItem("userid"); // Récupérer magasinierId
+    const magasinierId = localStorage.getItem("userid"); 
     console.log("Magasinier ID:", magasinierId); // Vérification
 
     const venteComId = modalData?.ventes?.[0]?._id || null;
@@ -264,25 +264,28 @@ function RetourStockCom() {
                             <th className="w-20">Produit</th>
                             <th className="w-25">Quantité</th>
                             <th className="w-25">Unité</th>
-                            <th className="w-25">Entrepot</th>
+               
                           </tr>
                         </thead>
                         <tbody>
-                          {ventes.length > 0 ? (
-                            ventes[0].produitsRestants.map((produit, index) => (
-                              <tr key={index}>
-                                <td>{produit.produitId.nom}</td>
-                                <td>{produit.quantiteRestante}</td>
-                                <td>{produit.unite}</td>
-                                <td>{produit.entrepotId}</td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="3" className="text-center">Aucun produit trouvé</td>
-                            </tr>
-                          )}
-                        </tbody>
+  {ventes.length > 0 ? (
+    ventes[0].produitsRestants
+      .filter(p => p && p.produitId) // évite les éléments cassés
+      .map((produit, index) => (
+        <tr key={index}>
+          <td>{produit.produitId?.nom || 'Produit non trouvé'}</td>
+          <td>{produit.quantiteRestante}</td>
+          <td>{produit.unite}</td>
+   
+        </tr>
+      ))
+  ) : (
+    <tr>
+      <td colSpan="4" className="text-center">Aucun produit trouvé</td>
+    </tr>
+  )}
+</tbody>
+
                       </table>
                     </div>
                   ) : (

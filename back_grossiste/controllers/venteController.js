@@ -202,11 +202,9 @@ exports.validerRetourProduits = async (req, res) => {
         }
 
         // Vérifier si tous les produits de la vente ont été retournés
-        const tousLesProduitsRetournés = venteCom.produitsRestants.every(item => item.quantiteRestante > 0);
-
-        if (tousLesProduitsRetournés) {
+     
             paiementCom.statut = "Produits retourner";
-        }
+        
 
         await paiementCom.save();
 
