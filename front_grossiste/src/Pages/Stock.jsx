@@ -23,6 +23,30 @@ function Stock() {
   const [notifiedProducts, setNotifiedProducts] = useState([]); // Nouveau state pour gérer les produits notifiés
 const [nomEntrepot,setnomEntrepot]= useState([]);
   const token = localStorage.getItem("token");
+    const [filtreFournisseur, setFIltreFournisseur] = useState("");
+      const [fournisseurs, setFournisseurs] = useState([]); 
+
+
+
+  useEffect(() => {
+    fetchFournisseurs();
+  }, []);
+
+  const fetchFournisseurs = async () => {      
+    try {
+      const response = await axios.get("/api/fournisseurs/tous");
+      setFournisseurs(response.data);
+ 
+ 
+    } catch (error) {
+      console.error("Erreur lors de la récupération des fournisseurs", error);
+   
+    }
+  };
+
+
+
+
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -105,7 +129,7 @@ const [nomEntrepot,setnomEntrepot]= useState([]);
     const entrepotId = event.target.value;
     const selected = entrepots.find(e => e._id === entrepotId);
 
-console.log("itay",selected.nom);
+
 setnomEntrepot(selected?.nom || '');  // Met à jour l'état avec le nom de l'entrepôt
 
 console.log("anarana",nomEntrepot);
@@ -173,13 +197,26 @@ console.log("anarana",nomEntrepot);
     return stock.quantite < stock.produit.quantiteMinimum;
   };
 
-  const filteredStocks = stocks.filter(stock => {
-    return (
-      (search === '' || stock.produit.nom.toLowerCase().includes(search.toLowerCase())) &&
-      (selectedCategory === '' || stock.produit.categorie === selectedCategory) &&
-      (dateFilter === '' || new Date(stock.dateEntree).toISOString().split('T')[0] === dateFilter)
-    );
-  });
+const filteredStocks = stocks.filter(stock => {
+  const fournisseurMatch = filtreFournisseur
+    ? stock.produit.fournisseur.nom === filtreFournisseur
+    : true;
+
+  const searchMatch =
+    search === '' ||
+    stock.produit.nom.toLowerCase().includes(search.toLowerCase());
+
+  const categoryMatch =
+    selectedCategory === '' ||
+    stock.produit.categorie === selectedCategory;
+
+  const dateMatch =
+    dateFilter === '' ||
+    new Date(stock.dateEntree).toISOString().split('T')[0] === dateFilter;
+
+  return fournisseurMatch && searchMatch && categoryMatch && dateMatch;
+});
+
 
   const sortedStocks = [...filteredStocks]
     .filter(stock => {
@@ -198,42 +235,82 @@ console.log("anarana",nomEntrepot);
       }
       return 0;
     });
-  const handlePrint = () => {
-    const printContent = document.getElementById("table-to-print").outerHTML;
-    const printWindow = window.open('', '', 'height=500,width=800');
-    printWindow.document.write('<html><head><title>Impression des stocks</title>');
-    printWindow.document.write(`
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-          }
-          th, td {
-            padding: 8px;
-            text-align: left;
-            border: 1px solid #ddd;
-          }
-          th {
-            background-color: #f4f4f4;
-          }
-          tr:nth-child(even) {
-            background-color: #f9f9f9;
-          }
-        </style>
-      `);
-    printWindow.document.write('</head><body>');
-    printWindow.document.write('<h1>Historiques des stocks filtrés</h1>');
-    printWindow.document.write(printContent);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
+    const handlePrint = () => {
+  const generateHeader = () => {
+    const currentDate = new Date().toLocaleDateString('fr-FR');
+    const lines = [];
+
+    lines.push(`<div style="font-size:18px; font-weight:bold; margin-bottom:8px;">Rapport de stock dans l'entrepot : ${nomEntrepot}</div>`);
+    lines.push(`<div style="margin-bottom:8px;">Date d'impression : ${currentDate}</div>`);
+  
+
+    const hasFilters = search || selectedCategory || filtreFournisseur || dateFilter;
+
+    if (hasFilters) {
+      lines.push(`<div style="margin-top:10px; font-weight:bold;">Filtres appliqués :</div>`);
+      if (search) lines.push(`<div>Recherche produit : <strong>${search}</strong></div>`);
+      if (selectedCategory) lines.push(`<div>Catégorie : <strong>${selectedCategory}</strong></div>`);
+      if (filtreFournisseur) lines.push(`<div>Fournisseur : <strong>${filtreFournisseur} </strong></div>`);
+      if (dateFilter) lines.push(`<div>Date d'entrée : <strong>${new Date(dateFilter).toLocaleDateString('fr-FR')}</strong></div>`);
+    } else {
+      lines.push(`<div>Aucun filtre appliqué</div>`);
+    }
+
+    return lines.join('');
   };
+
+  const printContent = document.getElementById("table-to-print")?.outerHTML;
+  if (!printContent) {
+    alert("Le tableau à imprimer n'a pas été trouvé !");
+    return;
+  }
+
+  const printWindow = window.open('', '', 'height=800,width=1000');
+  printWindow.document.write('<html><head><title>Impression Stock</title>');
+  printWindow.document.write(`
+    <style>
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        margin: 20px;
+      }
+      h1 {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th, td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        font-size: 13px;
+        text-align: left;
+      }
+      th {
+        background-color: #e0e0e0;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    </style>
+  `);
+  printWindow.document.write('</head><body>');
+
+  printWindow.document.write(generateHeader());
+  printWindow.document.write(printContent);
+
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+
+  printWindow.onload = () => {
+    printWindow.print();
+    printWindow.close();
+  };
+};
+
 
   return (
     <>
@@ -291,6 +368,12 @@ console.log("anarana",nomEntrepot);
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
                 />
+                 <select className="form-select me-2" value={filtreFournisseur} onChange={e => setFIltreFournisseur(e.target.value)}>
+                <option value="">Filtrer par Fournisseurs</option>
+                {fournisseurs.map(entrepot => (
+                  <option key={entrepot._id} value={entrepot.nom}>{entrepot.nom}</option>
+                ))}
+              </select>
                 <select
                   className="form-control"
                   value={sortBy}

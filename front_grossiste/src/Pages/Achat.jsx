@@ -597,6 +597,31 @@ function AchatProduits() {
     const handleRefactchange = (e) => {
         setRefact(e.target.value);
     };
+  const handleDelete = async (id) => {
+  try {
+    // Appel API pour supprimer l'achat sur le serveur
+    await axios.delete(`/api/achats/supprimerAchat/${id}`);
+
+    // Mise à jour du state local seulement si succès
+    setAchats(prev => prev.filter(achat => achat._id !== id));
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Supprimé',
+      text: 'L\'élément a bien été supprimé',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  } catch (error) {
+    console.error("Erreur suppression achat :", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Erreur',
+      text: 'Impossible de supprimer cet élément.',
+    });
+  }
+};
+
     const validerPanier = async () => {
         setLoadingAction(true); // Démarrer le chargement
     
@@ -1264,43 +1289,54 @@ function AchatProduits() {
                             {panierCreer && (
                                 <div className="consultationL mt-3">
                                     <h6><i className="fa fa-shopping-basket"></i> Panier</h6>
-                                    <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
-                                        <table id="table-to-export" className="tableSo table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th className="bg-success">Total</th>
-                                                    <th className="bg-success">Quantité Initiale</th>
-                                                    {fournisseurInfo?.type === "ristourne" && (
-                                                        <>
-                                                            <th className="bg-success">Montant de ristourne</th>
-                                                          
-                                                        </>
-                                                    )}
-                                                    <th className="bg-success">Unité</th>
-                                                    <th className="bg-success">Prix d'Achat</th>
-                                                    <th className="bg-success">Total</th>
-                                                    
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {achats.map((achat) => (
-                                                    <tr key={achat._id}>
-                                                        <td>{achat.produit?.nom || "Produit inconnu"}</td>
-                                                        <td>{achat.quantite}</td>
-                                                        {fournisseurInfo?.type === "ristourne" && (
-                                                            <>
-                                                              
-                                                                <td>{achat.montantRistourne}</td>
-                                                            </>
-                                                        )}
-                                                        <td>{achat.unite || "Unité"}</td>
-                                                        <td>{achat.prixAchat} Ar</td>
-                                                        <td>{achat.total} Ar</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                   <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+  <table id="table-to-export" className="tableSo table-striped">
+    <thead>
+      <tr>
+        <th className="bg-success">Total</th>
+        <th className="bg-success">Quantité Initiale</th>
+        {fournisseurInfo?.type === "ristourne" && <th className="bg-success">Montant de ristourne</th>}
+        <th className="bg-success">Unité</th>
+        <th className="bg-success">Prix d'Achat</th>
+        <th className="bg-success">Total</th>
+        <th className="bg-success">Actions</th> {/* Nouvelle colonne pour le bouton */}
+      </tr>
+    </thead>
+    <tbody>
+      {achats.map((achat) => (
+        <tr key={achat._id}>
+          <td>{achat.produit?.nom || "Produit inconnu"}</td>
+          <td>{achat.quantite}</td>
+          {fournisseurInfo?.type === "ristourne" && <td>{achat.montantRistourne}</td>}
+          <td>{achat.unite || "Unité"}</td>
+          <td>{achat.prixAchat} Ar</td>
+          <td>{achat.total} Ar</td>
+         <td>
+  <button
+    onClick={() => handleDelete(achat._id)}
+    style={{
+      color: 'white',
+      backgroundColor: '#dc3545', // rouge bootstrap
+      border: 'none',
+      padding: '6px 12px',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      transition: 'background-color 0.3s ease',
+    }}
+    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#b02a37'}
+    onMouseLeave={e => e.currentTarget.style.backgroundColor = '#dc3545'}
+  >
+    Supprimer
+  </button>
+</td>
+
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
                                     <div className="total-validation-container">
                                         <h6 className="total-text" >Total: {achats.reduce((acc, achat) => acc + achat.total, 0)} Ar</h6>
                                         <div className="fournisseur-section">
