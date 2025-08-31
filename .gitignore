@@ -5,4 +5,4 @@ node_modules/
 .env
 
 #ignorer le dossier fichier_yml
-fichier_yml
+fichier_yml/
