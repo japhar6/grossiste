@@ -3,3 +3,6 @@ node_modules/
 
 # Environment variables
 .env
+
+#ignorer le dossier fichier_yml
+fichier_yml
