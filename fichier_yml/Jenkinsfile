@@ -1,0 +1,162 @@
+pipeline {
+    agent any
+
+    environment {
+        REGISTRY = 'docker.io'
+        BACKEND_IMAGE_NAME = 'eddyrakotonirina/inoov-t:backend'
+        FRONTEND_IMAGE_NAME = 'eddyrakotonirina/inoov-t:frontend'
+        K8S_NAMESPACE = 'innov'
+    }
+
+    stages {
+        stage('Nettoyage du workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout du code') {
+            steps {
+                script {
+                    echo '🔄 Clonage du repo GitLab...'
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: '*/master']],
+                        userRemoteConfigs: [[
+                            url: 'https://gitlab.com/eddyrakotonirina06/grossiste.git',
+                            credentialsId: 'gitLab'  // Assurez-vous que c'est le bon ID Jenkins
+                        ]],
+                        extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'CloneOption', noTags: false, shallow: false]]
+                    ])
+                }
+            }
+        }
+
+        stage('Vérification des fichiers après checkout') {
+            steps {
+                script {
+                    echo '📂 Listing des fichiers après checkout...'
+                    sh 'ls -la'
+                }
+            }
+        }
+
+        stage('Connexion à Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerHub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+            }
+        }
+
+        stage('Suppression des anciennes images sur Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerHub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                        set -e
+                        echo "🗑 Suppression des anciennes images sur Docker Hub..."
+                        curl -s -X DELETE -u "$DOCKER_USER:$DOCKER_PASS" "https://hub.docker.com/v2/repositories/eddyrakotonirina/inoov-t/tags/backend/" || true
+                        curl -s -X DELETE -u "$DOCKER_USER:$DOCKER_PASS" "https://hub.docker.com/v2/repositories/eddyrakotonirina/inoov-t/tags/frontend/" || true
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Suppression des images Docker locales') {
+            steps {
+                script {
+                    sh """
+                    set -e
+                    echo "🗑 Suppression des anciennes images locales..."
+                    docker image rm -f $BACKEND_IMAGE_NAME || true
+                    docker image rm -f $FRONTEND_IMAGE_NAME || true
+                    docker image prune -f
+                    """
+                }
+            }
+        }
+
+        stage('Construction de l’image Backend') {
+            steps {
+                dir('back') {
+                    script {
+                        sh 'docker build -t $BACKEND_IMAGE_NAME .'
+                    }
+                }
+            }
+        }
+
+        stage('Construction de l’image Frontend') {
+            steps {
+                dir('front') {
+                    script {
+                        sh 'docker build -t $FRONTEND_IMAGE_NAME .'
+                    }
+                }
+            }
+        }
+
+        stage('Push de l’image Backend') {
+            steps {
+                script {
+                    sh 'docker push $BACKEND_IMAGE_NAME'
+                }
+            }
+        }
+
+        stage('Push de l’image Frontend') {
+            steps {
+                script {
+                    sh 'docker push $FRONTEND_IMAGE_NAME'
+                }
+            }
+        }
+
+        stage('Suppression des anciens déploiements et images Kubernetes') {
+            steps {
+                script {
+                    sh """
+                    set -e
+                    echo "🗑 Suppression des anciens déploiements Kubernetes..."
+                    microk8s kubectl delete -f frontend-deployment.yml || true
+                    microk8s ctr images rm docker.io/eddyrakotonirina/inoov-t:frontend || true
+                    """
+                }
+            }
+        }
+
+        stage('Déploiement sur Kubernetes') {
+            steps {
+                script {
+                    sh """
+                    set -e
+                    echo "🚀 Déploiement sur Kubernetes..."
+                    microk8s kubectl apply -f backend-deployment.yml
+                    microk8s kubectl apply -f frontend-deployment.yml
+                    """
+                }
+            }
+        }
+
+        stage('Vérification des déploiements') {
+            steps {
+                script {
+                    sh 'microk8s kubectl get pods --namespace=$K8S_NAMESPACE'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo '✅ Pipeline exécuté avec succès !'
+        }
+        failure {
+            echo '❌ Erreur dans le pipeline ! Vérifiez les logs pour plus d’informations.'
+        }
+    }
+}

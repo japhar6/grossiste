@@ -1,0 +1,41 @@
+vercel , Render, 
+
+docker builder prune
+
+journal  de serveur : journalctl
+
+
+k set image deployment/frontend frontend=eddyrakotonirina/inoov-t:frontend -n innov
+k set image deployment/backend backend=eddyrakotonirina/inoov-t:backend -n innov
+
+
+k rollout restart deployment/frontend -n innov
+k rollout restart deployment/backend -n innov
+
+
+k get deployment frontend -n innov -o yaml | grep "image:"
+k get deployment backend -n innov -o yaml | grep "image:"
+
+
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+
+
+/etc/apt/sources.list.d/ 
+
+
+mongodb://root:adminpass123@173.212.206.241:30001/admin
+
+
+contambo : qU87gkAiU2SV
+
+microk8s.kubectl patch deployment mongodb -n innov --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/args", "value": ["--bind_ip_all"]}]'
+
+microk8s.kubectl patch deployment mongodb -n innov --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/args", "value": ["--bind_ip=127.0.0.1"]}]'
+
+
+ssh -i /home/who/.ssh/id_rsa -p 3609 eddy@173.212.206.241

@@ -1,0 +1,55 @@
+---
+- name: Installer Docker et MicroK8s avec les composants nécessaires
+  hosts: serveur  # Cible tous les serveurs de ton inventaire
+  become: yes
+  tasks:
+
+    # 1. Installer Docker
+    - name: Ajouter le dépôt Docker
+      apt_repository:
+        repo: "https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        state: present
+      become: yes
+
+    - name: Mettre à jour les paquets
+      apt:
+        update_cache: yes
+        upgrade: yes
+      become: yes
+
+    - name: Installer Docker
+      apt:
+        name: docker-ce
+        state: present
+      become: yes
+
+    - name: Activer et démarrer le service Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+      become: yes
+
+    # 2. Installer MicroK8s
+    - name: Installer MicroK8s
+      shell: |
+        snap install microk8s --classic
+        microk8s status --wait-ready
+      become: yes
+
+    - name: Ajouter l'utilisateur au groupe microk8s
+      user:
+        name: "{{ ansible_user }}"
+        groups: microk8s
+        append: yes
+      become: yes
+
+    # 3. Activer les composants MicroK8s (DNS, Ingress, Dashboard, Metrics Server, etc.)
+    - name: Activer DNS, Ingress, Dashboard et Metrics Server
+      shell: |
+        microk8s enable dns ingress dashboard metrics-server
+      become: yes
+
+    - name: Vérifier que MicroK8s est prêt et les composants activés
+      shell: microk8s kubectl get all --all-namespaces
+      become: yes
