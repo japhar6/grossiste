@@ -3,99 +3,40 @@ import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
 import "../Styles/Commade.css";
-import axios from '../api/axios';
-import Sound from "../assets/mixkit-clear-announce-tones-2861.wav"
+import axios from "../api/axios";
+
+import Sound from "../assets/mixkit-clear-announce-tones-2861.wav";
 
 function PriseCommande() {
   const [newPerson, setNewPerson] = useState({
     nom: "",
     telephone: "",
     adresse: "",
-    nif: "",
-    stat: "",
-    nifStatImage: null, // Stocke l'image
   });
-
-  const [previewImage, setPreviewImage] = useState(null); // Pour l'aperçu de l'image
-
   const playSound = () => {
     const audio = new Audio(Sound);
     audio.play();
   };
-  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
-  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
-  const [loadingAction, setLoadingAction] = useState(false);
-  const [nompricipal, setnomprincipal] = useState([]);
-  const [nomcondaire, setnomsecondaire] = useState([]);
+
   // Définir l'état pour les produits sélectionnés
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [quantiteDispo, setQuantiteDispo] = useState([]);
   const [commande, setCommande] = useState([]);
   const [typeQuantite, setTypeQuantite] = useState("");
-  const [selectedId, setSelectedId] = useState("");
+  const [modePaiement, setModePaiement] = useState("");
   const [type, setType] = useState("");
   const [isNew, setIsNew] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState("");
   const [clients, setClients] = useState([]);
   const [commerciaux, setCommerciaux] = useState([]);
   const [checkedProduits, setCheckedProduits] = useState({});
+  const [selectedId, setSelectedId] = useState("");
   const [produits, setProduits] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [entrepotId, setEntrepotId] = useState(null); // Initialisation de l'état pour l'ID de l'entrepôt
-  const [uniteChoisieDetails, setUniteChoisieDetails] = useState(null);
   const [categorie, setCategorie] = useState("");
   const [categories, setCategories] = useState([]);
-  const [remisesClient, setRemisesClient] = useState(null);
-  const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
-  const [produitsDesactives, setProduitsDesactives] = useState({}); // {idProduit: true/false}
-  const [entrepots, setEntrepots] = useState([]);
 
-  useEffect(() => {
-    const fetchRemisesClient = async () => {
-      if (selectedPerson) {
-        try {
-          const response = await axios.get(`/api/client/recuperer/${selectedPerson}`);
-
-          // Vérifie quel type de remise existe et met à jour le typeRemise
-          if (response.data.remises.remiseGlobale > 0) {
-            setTypeRemise("remiseGlobale");
-          } else if (response.data.remises.remiseFixe > 0) {
-            setTypeRemise("remiseFixe");
-          } else if (response.data.remises.remiseParProduit > 0) {
-            setTypeRemise("remiseParProduit");
-          } else {
-            setTypeRemise(null); // Aucune remise spéciale
-          }
-
-        } catch (error) {
-          console.error("Erreur lors de la récupération des remises du client", error);
-        }
-      }
-    };
-
-    fetchRemisesClient();
-  }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
-
-
-  useEffect(() => {
-    const fetchEntrepots = async () => {
-        try {
-            const response = await axios.get("/api/entrepot");
-            const data = response.data;
-
-            if (Array.isArray(data) && data.length > 0) {
-                setEntrepots(data);
-            } 
-        } catch (error) {
-            Swal.fire({
-                title: "Erreur",
-                text: "Une erreur est survenue lors de la récupération des entrepôts.",
-                icon: "error",
-                confirmButtonText: "OK",
-            });
-        }
-    };
-
-    fetchEntrepots();
-}, []);
+  const [selectedProduit, setSelectedProduit] = useState(null);
 
   const handleSelectChange = (e) => {
     const id = e.target.value;
@@ -110,13 +51,12 @@ function PriseCommande() {
     fetchCommerciaux();
   }, []);
   useEffect(() => {
-
     fetchProduits();
   }, []);
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get("/api/client/");
+      const response = await axios.get("/client");
       setClients(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des clients", error);
@@ -125,136 +65,117 @@ function PriseCommande() {
 
   const fetchCommerciaux = async () => {
     try {
-      const response = await axios.get("/api/comercial");
+      const response = await axios.get("/comercial");
       setCommerciaux(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des commerciaux", error);
     }
   };
 
+  // Créer une personne (client ou commercial)
   const creerPersonne = async () => {
-    setLoadingAction(true);
     try {
       // Vérification des données envoyées
       console.log("Données envoyées :", newPerson);
 
-      let response; // Déclare la variable response ici pour l'utiliser plus tard
-
       // Validation des champs selon le type (client ou commercial)
       if (type === "client") {
-        if (!newPerson.nom) {
-          Swal.fire("Info", "Le nom est requis pour le client", "info");
+        if (!newPerson.nom || !newPerson.telephone || !newPerson.adresse) {
+          Swal.fire(
+            "Erreur",
+            "Tous les champs nécessaires doivent être remplis pour le client",
+            "error"
+          );
           return;
-        }
-
-        // Envoi avec FormData pour le client
-        const formData = new FormData();
-        for (const key in newPerson) {
-          formData.append(key, newPerson[key]);
-        }
-
-        // Afficher les données dans le formData pour vérifier
-        for (const [key, value] of formData.entries()) {
-          console.log(key, value);
-        }
-
-        const url = "/api/client/";
-
-        response = await axios.post(url, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-
-        if (response.data) {
-          Swal.fire({
-            icon: "success",
-            title: "Succès",
-            text: "Client créé avec succès !",
-          });
-          setClients((prevClients) => [
-            ...prevClients,
-            { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
-          ]);
-          // Recharger la liste des clients
-          const updatedList = await axios.get(url);
-          setClients(updatedList.data);
         }
       } else if (type === "commercial") {
-        if (!newPerson.nom ) {
-          Swal.fire("Info", "Le nom est requis pour le commercial", "info");
+        // Vérifier que le nom, le téléphone, l'email et le type sont remplis pour un commercial
+        if (
+          !newPerson.nom ||
+          !newPerson.telephone ||
+          !newPerson.email ||
+          !newPerson.type
+        ) {
+          Swal.fire(
+            "Erreur",
+            "Tous les champs nécessaires doivent être remplis pour le commercial",
+            "error"
+          );
           return;
         }
+      }
 
-        // Envoi avec JSON pour le commercial
-        const url = "/api/comercial/";
+      // Déterminer l'URL selon le type (client ou commercial)
+      const url = type === "client" ? "/client" : "/comercial/";
 
-        response = await axios.post(url, newPerson, {
-          headers: {
-            'Content-Type': 'application/json',
-          }
+      // Envoi de la requête POST
+      const response = await axios.post(url, newPerson);
+
+      if (response.data) {
+        Swal.fire({
+          icon: "success",
+          title: "Succès",
+          text: `${
+            type === "client" ? "Client" : "Commercial"
+          } créé avec succès !`,
         });
-     
-        if (response.data) {
-          Swal.fire({
-            icon: "success",
-            title: "Succès",
-            text: "Commercial créé avec succès !",
-          });
+
+        if (type === "client") {
+          setClients((prevClients) => [
+            ...prevClients,
+            {
+              _id: response.data._id,
+              nom: response.data.nom,
+              telephone: response.data.telephone,
+            },
+          ]);
+        } else {
           setCommerciaux((prevCommerciaux) => [
             ...prevCommerciaux,
-            { _id: response.data._id, nom: response.data.nom, telephone: response.data.telephone }
+            {
+              _id: response.data._id,
+              nom: response.data.nom,
+              telephone: response.data.telephone,
+            },
           ]);
-          // Recharger la liste des commerciaux
-          const updatedList = await axios.get(url);
+        }
+
+        // Recharger la liste des clients/commerciaux après l'ajout (facultatif si tu préfères éviter un appel réseau)
+        const updatedList = await axios.get(url); // Recharger les données à partir de l'API
+        if (type === "client") {
+          setClients(updatedList.data);
+        } else {
           setCommerciaux(updatedList.data);
         }
-      }
 
-      if (response && response.data) {
+        // Sélectionner le nouvel élément
         setSelectedPerson(response.data._id);
         setIsNew(false);
+
+        setModePaiement("");
+
+        setNewPerson({
+          nom: "",
+          telephone: "",
+          adresse: "",
+          email: "",
+          type: "",
+        });
+
+        setSelectedPerson(null);
       }
-
-      // Reset les champs de saisie
-      setNewPerson({
-        nom: '',
-        telephone: '',
-        adresse: '',
-        email: '',
-        type: '',
-      });
-
-      setSelectedPerson(null);
-
     } catch (error) {
-      console.error("Erreur lors de la création du client/commercial", error.response?.data || error);
-      if (error.response && error.response.data) {
-        Swal.fire("Erreur", `Détails: ${error.response.data.message || error.response.data}`, "error");
-      } else {
-        Swal.fire("Erreur", "Une erreur s'est produite", "error");
-      }
-    } finally {
-      setLoadingAction(false); // Assurez-vous que le chargement soit désactivé dans tous les cas (réussi ou en échec)
-    }
-  };
-
-
-
-
-  const Annuler = async () => {
-
-    setIsNew(false);
-  }
-  const handleKeyDown = (produit, e) => {
-    if (e.key === "Enter") {
-      handleCheckboxChange(produit, produit.quantiteTemp || 1, typeQuantite, true);
+      console.error(
+        "Erreur lors de la création du client/commercial",
+        error.response?.data || error
+      );
+      Swal.fire("Erreur", "Une erreur s'est produite", "error");
     }
   };
 
   const fetchProduits = async () => {
     try {
-      const response = await axios.get("/api/produits/afficher");
+      const response = await axios.get("/produits/afficher");
       setProduits(response.data);
 
       // Extraire les catégories uniques
@@ -269,338 +190,269 @@ function PriseCommande() {
 
   // Filtrer les produits en fonction de la recherche et de la catégorie
   const produitsFiltres = produits.filter((p) => {
-    const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRecherche = p.nom
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesCategorie = categorie ? p.categorie === categorie : true;
     return matchesRecherche && matchesCategorie;
   });
-  const convertirQuantiteEnUniteSelectionnee = (produitId, nouvelleUnite, quantitesInitiales) => {
-    // Recherche du produit
-    const produit = stocks.find(stock => stock.produit._id === produitId);
-    if (!produit) return 0; // Si le produit n'est pas trouvé, retourne 0
 
-    // Trouver les unités
-    const uniteSelectionneeProduit = produit.produit.unites.find(unite => unite.nom === nouvelleUnite);
-    const uniteStockProduit = produit.produit.unites.find(unite => unite.nom === produit.unite);
-
-    if (!uniteSelectionneeProduit || !uniteStockProduit) return 0; // Vérifier que les unités existent
-
-    // Récupérer la quantité initiale en fonction du produit
-    const quantiteStock = quantitesInitiales[produitId];
-    if (quantiteStock === undefined || quantiteStock <= 0) return 0; // Vérifier que la quantité est valide
-
-    // Calcul de la conversion entre les unités
-    const conversion = uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
-
-    // Conversion de la quantité
-    const nouvelleQuantite = quantiteStock / conversion;
-
-    return nouvelleQuantite;
+  // Fonction pour récupérer tous les entrepôts avec stock pour un produit
+  const fetchAvailableWarehouses = async (produitId) => {
+    try {
+      const response = await axios.get(`/stocks/produits/warehouses/${produitId}`);
+      return response.data.entrepots || [];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des entrepôts:", error);
+      return [];
+    }
   };
 
-
-  const totalCommande = commande.reduce((total, item) => {
-    const quantite = Number(item.quantite) || 0;
-    const prix = Number(item.prixdevente) || 0; // Vérifie bien `prixdevente`
-
-    console.log(`Produit: ${item.nom}, Quantité: ${quantite}, Prix: ${prix}`);
-
-    return total + quantite * prix;
-  }, 0);
-
-  const handleCheckboxChange = async (produit, quantite, typeQuantite, isChecked) => {
-    if (!produit.uniteChoisie) {
-      Swal.fire({ title: 'Unité non sélectionnée', text: 'Veuillez sélectionner une unité.', icon: 'warning' });
+  // Fonction pour afficher le modal de sélection d'entrepôt
+  const showWarehouseSelectionModal = async (produit, quantite, typeQuantite) => {
+    let warehouses = await fetchAvailableWarehouses(produit._id);
+    
+    if (warehouses.length === 0) {
+      Swal.fire({
+        title: "Stock Indisponible",
+        text: "Ce produit n'est disponible dans aucun entrepôt.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
       return;
     }
-  
-    if (quantite <= 0) return;
-  
-    try {
-      const uniteChoisieDetails = produit.unites.find(u => u.nom === produit.uniteChoisie);
-      if (!uniteChoisieDetails) {
-        Swal.fire({ title: 'Erreur', text: 'Unité invalide.', icon: 'error' });
-        return;
-      }
-  
-      const uniteLaPlusPetite = produit.unites.reduce((prev, current) =>
-        prev.conversion > current.conversion ? prev : current
-      );
-  
-      let quantiteConvertie = quantite;
-      if (produit.uniteChoisie !== uniteLaPlusPetite.nom) {
-        quantiteConvertie = (quantite * uniteLaPlusPetite.conversion) / uniteChoisieDetails.conversion;
-      }
-  
-      // Trouver l'entrepôt principal
-      const entrepotPrincipal = entrepots.find(e => e.type === 'principal');
-  
-      const options = {};
-      entrepots.forEach(e => {
-        options[e._id] = e.nom;
-      });
-  
-      const result = await Swal.fire({
-        title: '🧱 Entrepôt de retrait',
-        text: "Veuillez choisir l'entrepôt d'où sera retirée la marchandise.",
-        icon: 'question',
-        input: 'select',
-        inputOptions: options,
-        inputValue: entrepotPrincipal ? entrepotPrincipal._id : '',
-        inputPlaceholder: 'Choisir un entrepôt...',
-        showCancelButton: true,
-        confirmButtonText: '✅ Valider',
-        cancelButtonText: '❌ Annuler',
-        customClass: {
-          popup: 'swal-wide',
-          confirmButton: 'btn-confirm',
-          cancelButton: 'btn-cancel',
-          input: 'swal-input-select'
-        },
-        buttonsStyling: false
-      });
+
+    // Trier les entrepôts: d'abord par type (principal d'abord), puis par quantité (décroissant)
+    warehouses.sort((a, b) => {
+      // Si l'un est principal et pas l'autre, le principal passe en premier
+      if (a.type === 'principal' && b.type !== 'principal') return -1;
+      if (a.type !== 'principal' && b.type === 'principal') return 1;
       
-  
-      if (!result.isConfirmed) return;
-  
-      const entrepotIdChoisi = result.value;
-  
-      // Vérifier la quantité dans cet entrepôt
-      let resStock;
-      try {
-        resStock = await axios.get(`/api/stocks/produits/${produit._id}/entrepot/${entrepotIdChoisi}`);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          Swal.fire({
-            title: 'Stock non trouvé',
-            text: "Aucun stock enregistré pour ce produit dans l'entrepôt sélectionné.",
-            icon: 'info'
-          });
-        } else {
-          Swal.fire({
-            title: 'Erreur',
-            text: 'Problème lors de la vérification du stock.',
-            icon: 'info'
-          });
-        }
-        return;
+      // Si même type, trier par quantité décroissante
+      return b.quantiteDisponible - a.quantiteDisponible;
+    });
+    
+    // Créer les options pour le select
+    const warehouseOptions = warehouses.map(warehouse => {
+      const stockWarning = warehouse.quantiteDisponible < quantite 
+        ? `<span style="color: red;"> (Stock insuffisant)</span>` 
+        : '';
+        
+      return `
+        <option value="${warehouse.entrepotId}" 
+                data-quantite="${warehouse.quantiteDisponible}"
+                ${warehouse.quantiteDisponible === 0 ? 'disabled' : ''}>
+          ${warehouse.nom} (${warehouse.type}) - ${warehouse.quantiteDisponible} ${produit.unite} disponibles${stockWarning}
+        </option>`;
+    }).join('');
+
+    const { value: selectedWarehouseId, isConfirmed } = await Swal.fire({
+      title: `Sélectionner un entrepôt pour ${produit.nom}`,
+      html: `
+        <div class="mb-3">
+          <p><strong>Quantité demandée:</strong> ${quantite} ${produit.unite}</p>
+          <label for="warehouse-select" class="form-label">Choisir l'entrepôt:</label>
+          <select id="warehouse-select" class="form-select">
+            ${warehouseOptions}
+          </select>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Confirmer",
+      cancelButtonText: "Annuler",
+      preConfirm: () => {
+        const select = document.getElementById('warehouse-select');
+        return select.value;
       }
-  
-      const quantiteDisponible = resStock.data.quantiteDisponible;
-      const nomunite = resStock.data.uniteNom;
+    });
 
-      if (quantiteConvertie > quantiteDisponible) {
+    if (isConfirmed && selectedWarehouseId) {
+      const selectedWarehouse = warehouses.find(w => w.entrepotId === selectedWarehouseId);
+      
+      if (quantite > selectedWarehouse.quantiteDisponible) {
         Swal.fire({
-          title: 'Quantité insuffisante',
-          text: `Il n'y a que ${quantiteDisponible} ${nomunite}(s) disponibles dans cet entrepôt.`,
-          icon: 'warning'
-        });
-        return;
-      }
-
-      // Ajouter à la commande
-      setCommande(prev => [
-        ...prev,
-        {
-          ...produit,
-          quantite,
-          entrepotNom: resStock.data.entrepotNom, 
-          uniteChoisie: produit.uniteChoisie,
-          entrepotId: entrepotIdChoisi,
-
-        }
-      ]);
-  
-    } catch (err) {
-      console.error(err);
-      Swal.fire({ title: 'Erreur', text: 'Problème lors de la vérification de stock.', icon: 'error' });
-    }
-  };
-  
-  const supprimerProduit = (produitId, unite) => {
-    setCommande((prevCommande) =>
-      prevCommande.filter((item) => !(item._id === produitId && item.uniteChoisie === unite))
-    );
-
-    setCheckedProduits((prev) => ({
-      ...prev,
-      [produitId]: false, // Décoche le produit retiré
-    }));
-  };
-
-  const getClientNom = (id) => {
-    const client = clients.find(client => client._id === id);
-    return client ? client.nom : '';
-    };
-    
-    const creerCommande = async (statut) => {
-      setLoadingAction(true);
-      try {
-        const vendeurId = localStorage.getItem("userid");
-        const selectedPersonId = selectedPerson;
-    
-        if (!selectedPersonId) {
-          Swal.fire({
-            title: "Info",
-            text: "Aucun client ou commercial sélectionné.",
-            icon: "info",
-            confirmButtonText: "OK",
-          });
-          return;
-        }
-    
-        if (!vendeurId) {
-          Swal.fire({
-            title: "Erreur",
-            text: "ID du vendeur non trouvé.",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-          setLoadingAction(false);
-          return;
-        }
-    
-        const typeClient = type === "client" ? "Client" : "Commercial";
-        const clientId = typeClient === "Client" ? selectedPersonId : null;
-        const commercialId = typeClient === "Commercial" ? selectedPersonId : null;
-    
-        const produitsCommande = commande.map((item) => ({
-          produit: item._id,
-          quantite: item.quantite,
-          uniteChoisie: item.uniteChoisie || "Unité par défaut",
-
-          entrepotId: item.entrepotId || entrepotId,
-        }));
-
-      // Vérifie si le tableau est vide
-if (produitsCommande.length === 0) {
-  Swal.fire({
-    title: "Info",
-    text: "La commande est vide. Veuillez ajouter au moins un produit.",
-    icon: "info",
-    confirmButtonText: "OK",
-  });
-  setLoadingAction(false);
-  return;
-}
-        const commandeData = {
-          typeClient,
-          clientId,
-          commercialId,
-          vendeurId,
-          produits: produitsCommande,
-          statut, // Utilisation du statut passé en paramètre
-        };
-    
-        const response = await axios.post("/api/commandes/ajouter", commandeData);
-        console.log("Commande créée avec succès:", response.data); 
-          const { _id, referenceFacture } = response.data.commande;
-          playSound();
-          Swal.fire({
-            title: "Commande créée avec succès",
-            text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
-            icon: "success",
-            confirmButtonText: "OK",
-          }).then(() => {
-            window.location.reload(); // Recharge la page après le clic sur OK
-          });
-          
-        setCommande([]);
-    
-        return { commandeId: _id, referenceFacture }; // Retourne l'ID de la commande créée
-    
-      } catch (error) {
-        console.error("Erreur lors de la création de la commande:", error);
-        Swal.fire({
-          title: "Erreur",
-          text: "Une erreur s'est produite lors de la création de la commande.",
-          icon: "error",
+          title: "Quantité Insuffisante",
+          text: `Il n'y a que ${selectedWarehouse.quantiteDisponible} ${produit.unite} disponibles dans ${selectedWarehouse.nom}.`,
+          icon: "warning",
           confirmButtonText: "OK",
         });
-        return null;
-      } finally {
-        setLoadingAction(false);
-      }
-    };
-    
-    
-    const vendeurNom = localStorage.getItem("nom");
-    
-    const handleDemandeRemise = async (commandeId, referenceFacture) => {
-      setLoadingAction(true);
-    
-      if (!vendeurNom) {
-        alert("Nom du vendeur non trouvé dans localStorage.");
         return;
       }
-    
-      const message = `Le vendeur ${vendeurNom} demande une remise pour la commande  (Facture: ${referenceFacture}) .`;
-    
+
+      // Ajouter le produit à la commande avec l'entrepôt sélectionné
+      addProductToOrder(produit, quantite, typeQuantite, selectedWarehouse);
+    }
+  };
+
+  // Fonction pour ajouter un produit à la commande
+  const addProductToOrder = (produit, quantite, typeQuantite, warehouse) => {
+    setCheckedProduits((prev) => ({ ...prev, [produit._id]: true }));
+    setCommande((prevCommande) => {
+      const existant = prevCommande.find((item) => item._id === produit._id);
+      if (existant) {
+        return prevCommande.map((item) =>
+          item._id === produit._id
+            ? {
+                ...item,
+                quantite: item.quantite + quantite,
+                typeQuantite,
+                entrepotSource: warehouse,
+              }
+            : item
+        );
+      } else {
+        return [
+          ...prevCommande,
+          {
+            ...produit,
+            quantite,
+            typeQuantite,
+            prix: produit.prixdevente,
+            entrepotSource: warehouse,
+          },
+        ];
+      }
+    });
+  };
+
+  const handleCheckboxChange = (produit, quantite, typeQuantite, isChecked) => {
+    // Ne rien faire si la quantité demandée est inférieure ou égale à 0
+    if (quantite <= 0) return;
+
+    if (!isChecked) {
+      // Si la case à cocher est désactivée, retirer le produit de la commande
+      setCommande((prevCommande) =>
+        prevCommande.filter((item) => item._id !== produit._id)
+      );
+      setCheckedProduits((prev) => ({ ...prev, [produit._id]: false }));
+      return;
+    }
+
+    const fetchQuantite = async () => {
       try {
-        const response = await axios.post("/api/notif/envoie-notifications", {
-          message: message,
-          idClient: selectedId,
-        }, {
-          headers: { "Content-Type": "application/json" },
-        });
-    
-        console.log("Réponse de l'API:", response.data);
-        Swal.fire({
-          title: 'Succès!',
-          text: 'Demande de remise envoyée !!',
-          icon: 'success',
-          confirmButtonText: 'OK',
-        });
-    
+        // Always show warehouse selection modal for manual selection
+        showWarehouseSelectionModal(produit, quantite, typeQuantite);
       } catch (error) {
-        console.error("Erreur lors de l'envoi de la notification", error);
-        alert("Une erreur est survenue. Veuillez réessayer.");
-      } finally {
-        setLoadingAction(false);
+        console.error(
+          "Erreur lors de la récupération de la quantité disponible",
+          error
+        );
+        // En cas d'erreur, afficher quand même le modal de sélection
+        showWarehouseSelectionModal(produit, quantite, typeQuantite);
       }
     };
 
-    const handleClick = async () => {
-      Swal.fire({
-        title: "Que souhaitez-vous faire ?",
-        text: "Vous pouvez enregistrer la commande seule ou notifier l'admin pour une remise.",
-        icon: "question",
-        showCancelButton: true,
-        showDenyButton: true, // Ajoute un deuxième bouton
-        confirmButtonText: "✅ Enregistrer",
-        denyButtonText: "📢 Enregistrer et Demande remise",
-        cancelButtonText: "❌ Annuler",
-        confirmButtonColor: "#28a745",
-        denyButtonColor: "#007bff",
-        cancelButtonColor: "#d33",
-      }).then(async (result) => { // Marquer cette fonction comme 'async'
-        if (result.isConfirmed) {
-          // Cas : Enregistrer la commande seule
-          const commande = await creerCommande("en cours"); // Attendre la création de la commande
-          if (commande) {
-            Swal.fire({
-              title: "Commande créée avec succès",
-              text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
-              icon: "success",
-              confirmButtonText: "OK",
-            }).then(() => {
-              window.location.reload(); // Recharge la page après le clic sur OK
-            });
-            ;playSound();
-          }
-        } else if (result.isDenied) {
-          // Cas : Enregistrer + Notifier admin
-          const commande = await creerCommande("en attente"); // Le statut devient "en attente"
-          if (commande) {
-            await handleDemandeRemise(commande.commandeId, commande.referenceFacture); // Attendre la demande de remise
-            Swal.fire("📢 Commande enregistrée et demande de remise envoyée !", "", "success");playSound();
-          }
-        }
-      });
+    fetchQuantite();
+  };
+
+  const handleKeyDown = (produit, e) => {
+    if (e.key === "Enter") {
+      handleCheckboxChange(
+        produit,
+        produit.quantiteTemp || 1,
+        typeQuantite,
+        true
+      );
+    }
+  };
+
+  const validerCommande = async () => {
+    if (!selectedPerson || commande.length === 0) {
+      Swal.fire(
+        "Erreur",
+        "Veuillez sélectionner un client/commercial et ajouter des produits",
+        "error"
+      );
+      return;
+    }
+
+    if (!modePaiement && type !== "commercial") {
+      Swal.fire("Erreur", "Veuillez choisir un mode de paiement", "error");
+      return;
+    }
+
+    const vendeurId = localStorage.getItem("userid");
+    if (!vendeurId) {
+      Swal.fire(
+        "Erreur",
+        "ID du vendeur introuvable. Veuillez vous reconnecter.",
+        "error"
+      );
+      return;
+    }
+
+    const isCommercial = type === "commercial";
+    const typeClient = isCommercial ? "Commercial" : "Client";
+
+    const produitsInvalides = commande.filter(
+      (prod) => !prod._id || prod.quantite <= 0
+    );
+    if (produitsInvalides.length > 0) {
+      Swal.fire(
+        "Erreur",
+        "Tous les produits doivent avoir un ID valide et une quantité positive.",
+        "error"
+      );
+      return;
+    }
+
+    const nouvelleCommande = {
+      typeClient,
+      commercialId: isCommercial ? selectedPerson : null,
+      clientId: !isCommercial ? selectedPerson : null,
+      vendeurId,
+      produits: commande.map((prod) => ({
+        produit: prod._id,
+        quantite: prod.quantite,
+      })),
+      modePaiement: isCommercial ? "à crédit" : modePaiement,
+      statut: "en cours",
     };
-    
-    
-    
-  
+
+    console.log("Commande prête à être envoyée :", nouvelleCommande);
+
+    try {
+      const response = await axios.post("/commandes/ajouter", nouvelleCommande);
+
+      if (response.data) {
+        const referenceFacture = response.data.commande.referenceFacture;
+        playSound();
+        Swal.fire({
+          title: "Commande validée",
+          text: `Votre commande a été enregistrée avec succès. Référence de Facture : ${referenceFacture}`,
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          setCommande([]);
+          setSelectedPerson("");
+          setModePaiement("");
+          setSearchTerm("");
+          setSelectedProducts([]);
+          setCheckedProduits({});
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Erreur lors de l'enregistrement de la commande",
+        error.response ? error.response.data : error.message
+      );
+      Swal.fire(
+        "Erreur",
+        "Une erreur s'est produite lors de l'enregistrement de la commande",
+        "error"
+      );
+    }
+  };
+
+  const handleProduitSelect = (produit) => {
+    console.log("Produit sélectionné:", produit);
+    setSelectedProduit(produit); // Mise à jour de l'état avec le produit sélectionné
+  };
+
+  const totalCommande = commande.reduce(
+    (total, item) => total + item.quantite * item.prix,
+    0
+  );
 
   return (
     <main className="center">
@@ -609,7 +461,6 @@ if (produitsCommande.length === 0) {
         <Header />
         <div className="p-3 content center">
           <div className="mini-star p-3">
-
             <h6 className="alert alert-info text-start">
               <i className="fa fa-shopping-cart"></i> Prise de Commande
             </h6>
@@ -622,7 +473,6 @@ if (produitsCommande.length === 0) {
                   setType(e.target.value);
                   setIsNew(false);
                   setSelectedPerson("");
-                  setTypeRemise(null);  // Réinitialise le type de remise à chaque changement de type
                 }}
               >
                 <option value="">Choisir un type</option>
@@ -631,31 +481,49 @@ if (produitsCommande.length === 0) {
               </select>
             </div>
 
-
             <div className="commande-container d-flex justify-content-between">
               {/* Informations Client (colonne gauche) */}
               <div className="client-info w-50 p-3">
-                <h6><i className="fa fa-user"></i> Informations Client</h6>
+                <h6>
+                  <i className="fa fa-user"></i> Informations Client
+                </h6>
                 <div className="form-group mt-3">
                   {type && (
                     <div className="form-group mt-3">
-                      <label>{type === "client" ? "Sélectionner un client" : "Sélectionner un commercial"}</label>
-                      <select className="form-control" value={selectedPerson} onChange={handleSelectChange}>
+                      <label>
+                        {type === "client"
+                          ? "Sélectionner un client"
+                          : "Sélectionner un commercial"}
+                      </label>
+                      <select
+                        className="form-control"
+                        value={selectedPerson}
+                        onChange={handleSelectChange}
+                      >
                         <option value="">Sélectionner</option>
-                        {(type === "client" ? clients : commerciaux).map((p) => (
-                          <option key={p._id} value={p._id}>
-                            {p.nom} - {p.telephone}
-                          </option>
-                        ))}
+                        {(type === "client" ? clients : commerciaux).map(
+                          (p) => (
+                            <option key={p._id} value={p._id}>
+                              {p.nom} - {p.telephone}
+                            </option>
+                          )
+                        )}
                         <option value="new">Ajouter un nouveau {type}</option>
                       </select>
-
                     </div>
                   )}
                 </div>
+
                 {/* Affichage du formulaire si "Nouveau client" est sélectionné */}
                 {isNew && (
-                  <div className="container mt-3" style={{ marginLeft: '-25px', padding: '20px', overflow: 'hidden' }}>
+                  <div
+                    className="container mt-3"
+                    style={{
+                      marginLeft: "-25px",
+                      padding: "20px",
+                      overflow: "hidden",
+                    }}
+                  >
                     <div className="form-group">
                       <div className="row">
                         <div className="col-12">
@@ -664,7 +532,12 @@ if (produitsCommande.length === 0) {
                             className="form-control"
                             placeholder={`Nom du ${type}`}
                             value={newPerson.nom}
-                            onChange={(e) => setNewPerson({ ...newPerson, nom: e.target.value })}
+                            onChange={(e) =>
+                              setNewPerson({
+                                ...newPerson,
+                                nom: e.target.value,
+                              })
+                            }
                           />
                         </div>
 
@@ -674,69 +547,30 @@ if (produitsCommande.length === 0) {
                             className="form-control"
                             placeholder="Téléphone"
                             value={newPerson.telephone}
-                            onChange={(e) => setNewPerson({ ...newPerson, telephone: e.target.value })}
+                            onChange={(e) =>
+                              setNewPerson({
+                                ...newPerson,
+                                telephone: e.target.value,
+                              })
+                            }
                           />
                         </div>
 
                         {type === "client" && (
-
-
-                          <>
-                            <div className="col-12 mt-2">
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Adresse"
-                                value={newPerson.adresse}
-                                onChange={(e) => setNewPerson({ ...newPerson, adresse: e.target.value })}
-                              />
-                            </div>
-                            <div className="col-12 mt-2">
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="NIF"
-                                value={newPerson.nif}
-                                onChange={(e) => setNewPerson({ ...newPerson, nif: e.target.value })}
-                              />
-                            </div>
-                            <div className="col-12 mt-2">
-                              <input
-                                type="text"
-                                className="form-control"
-                                placeholder="STAT"
-                                value={newPerson.stat}
-                                onChange={(e) => setNewPerson({ ...newPerson, stat: e.target.value })}
-                              />
-                            </div>
-                            <div className="col-12 mt-2">
-                              <label className="form-label">Image NIF/STAT</label>
-                              <input
-                                type="file"
-                                className="form-control"
-                                accept="image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files[0];
-                                  if (file) {
-                                    setNewPerson({ ...newPerson, nifStatImage: file });
-
-                                    // Prévisualisation de l'image
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                      setPreviewImage(reader.result);
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                              />
-                            </div>
-                            {previewImage && (
-                              <div className="col-12 mt-2">
-                                <img src={previewImage} alt="Aperçu" className="img-fluid" style={{ maxHeight: "200px" }} />
-                              </div>
-                            )}
-                          </>
-
+                          <div className="col-12 mt-2">
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="Adresse"
+                              value={newPerson.adresse}
+                              onChange={(e) =>
+                                setNewPerson({
+                                  ...newPerson,
+                                  adresse: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
                         )}
 
                         {type === "commercial" && (
@@ -747,7 +581,12 @@ if (produitsCommande.length === 0) {
                                 className="form-control"
                                 placeholder="Email"
                                 value={newPerson.email}
-                                onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                                onChange={(e) =>
+                                  setNewPerson({
+                                    ...newPerson,
+                                    email: e.target.value,
+                                  })
+                                }
                               />
                             </div>
                             <div className="col-12 mt-2">
@@ -756,7 +595,12 @@ if (produitsCommande.length === 0) {
                                 className="form-control"
                                 placeholder="Type (commercial)"
                                 value={newPerson.type}
-                                onChange={(e) => setNewPerson({ ...newPerson, type: e.target.value })}
+                                onChange={(e) =>
+                                  setNewPerson({
+                                    ...newPerson,
+                                    type: e.target.value,
+                                  })
+                                }
                               />
                             </div>
                           </>
@@ -766,33 +610,33 @@ if (produitsCommande.length === 0) {
                           <button
                             className="btn btn-success"
                             onClick={creerPersonne}
-                            disabled={loadingAction}
                           >
-                            {loadingAction ? (
-                              <>
-                                <span className="spinner-border spinner-border-sm"></span> Chargement...
-                              </>
-                            ) : (
-                              `Créer ${type === "client" ? "Client" : "Commercial"}`
-                            )}
-
-                          </button>
-                          <button
-                            className="btn btn-success"
-                            onClick={Annuler}
-                          >
-                            Annuler
+                            Créer {type === "client" ? "Client" : "Commercial"}
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
+
+                <select
+                  className="form-control mt-2"
+                  value={modePaiement}
+                  onChange={(e) => setModePaiement(e.target.value)}
+                >
+                  <option value="">Sélectionner le mode de paiement</option>
+                  <option value="espèce">Espèce</option>
+                  <option value="mobile money">Mobile Money</option>
+                  <option value=" à crédit">Crédit</option>
+                  <option value="virement bancaire">Virement bancaire</option>
+                </select>
               </div>
 
               {/* Liste des Produits (colonne droite) */}
               <div className="produits w-50 p-3">
-                <h6><i className="fa fa-box"></i> Produits Disponibles</h6>
+                <h6>
+                  <i className="fa fa-box"></i> Produits Disponibles
+                </h6>
                 <div className="d-flex">
                   <input
                     type="text"
@@ -815,90 +659,57 @@ if (produitsCommande.length === 0) {
                   </select>
                 </div>
 
-
                 <div className="table-container">
                   <table className="tablepro mt-2">
                     <thead>
                       <tr>
-                        <th className="bg-success text-light p-3">Nom</th>
-                        
-                        <th className="bg-success text-light p-3">Type</th>
-                        <th className="bg-success text-light p-3">Prix</th>
-                        <th className="bg-success text-light p-3">Quantité</th>
-                        <th className="bg-success text-light p-3">Unité</th>
-                        <th className="bg-success text-light p-3">Ajouter</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Prix</th>
+                        <th>Quantité</th>
+                        <th>Unité</th>
+                        <th>Ajouter</th>
                       </tr>
                     </thead>
                     <tbody>
-
                       {searchTerm ? (
-
                         produitsFiltres.length === 0 ? (
                           <tr>
-                            <td colSpan="6" className="text-center" style={{ marginTop: '10px !important' }}>Aucun produit trouvé</td>
+                            <td colSpan="6" className="text-center">
+                              Aucun produit trouvé
+                            </td>
                           </tr>
                         ) : (
                           produitsFiltres.map((p) => (
                             <tr key={p._id}>
                               <td className="margin-left-mobile">{p.nom}</td>
-                              <td className="margin-left-mobile">{p.categorie}</td>
-                              <td className="margin-left-mobile">{p.prixdevente} Ariary</td>
+                              <td className="margin-left-mobile">
+                                {p.categorie}
+                              </td>
+                              <td className="margin-left-mobile">
+                                {p.prixdevente} Ariary
+                              </td>
                               <td>
                                 <input
                                   type="number"
                                   min="1"
                                   className="form-control"
-                                  onChange={(e) => {
-                                    const updatedProduit = { ...p };  // Crée une copie de l'objet produit
-                                    updatedProduit.quantiteTemp = parseInt(e.target.value) || 1;
-                                    setProduits((prevProduits) =>
-                                      prevProduits.map((prod) =>
-                                        prod._id === updatedProduit._id ? updatedProduit : prod
-                                      )
-                                    );
-                                  }}
+                                  onChange={(e) =>
+                                    (p.quantiteTemp =
+                                      parseInt(e.target.value) || 1)
+                                  }
                                   onKeyDown={(e) => handleKeyDown(p, e)}
                                 />
                               </td>
                               <td>
-                                <select
+                                <input
+                                  type="text"
                                   className="form-control"
-                                  onChange={(e) => {
-                                    const selectedUnite = e.target.value;
-
-                                    if (!p.unites || p.unites.length === 0) {
-                                      console.error(`⚠️ Aucune unité trouvée pour le produit ${p.nom}`);
-                                      return;
-                                    }
-
-                                    const selectedUniteObj = p.unites.find((unite) => unite.nom === selectedUnite);
-
-                                    if (!selectedUniteObj) {
-                                      console.error(`⚠️ Unité introuvable pour le produit ${p.nom}`);
-                                      return;
-                                    }
-
-                                    const updatedProduit = {
-                                      ...p,
-                                      uniteChoisie: selectedUnite,
-                                      prixdevente: selectedUniteObj.prixdevente,
-                                    };
-
-                                    setProduits((prevProduits) =>
-                                      prevProduits.map((prod) => (prod._id === updatedProduit._id ? updatedProduit : prod))
-                                    );
-                                  }}
-                                  value={p.uniteChoisie || ""}
-                                >
-                                  <option value="">Veuillez sélectionner l'unité</option>
-                                  {p.unites?.map((unite) => (
-                                    <option key={unite.nom} value={unite.nom}>
-                                      {unite.nom}
-                                    </option>
-                                  ))}
-                                </select>
-
+                                  value={p.unite || "Non spécifiée"}
+                                  readOnly
+                                />
                               </td>
+
                               <td>
                                 <div className="input-checkbox-container">
                                   <input
@@ -922,7 +733,9 @@ if (produitsCommande.length === 0) {
                       ) : (
                         // Si searchTerm est vide, ne rien afficher
                         <tr>
-                          <td colSpan="6" className="text-center" style={{ marginTop: '10px !important' }}>Veuillez entrer un terme de recherche</td>
+                          <td colSpan="6" className="text-center">
+                            Veuillez entrer un terme de recherche
+                          </td>
                         </tr>
                       )}
                     </tbody>
@@ -933,68 +746,60 @@ if (produitsCommande.length === 0) {
 
             {/* Récapitulatif de la Commande */}
             <div className="commande mt-4">
-              <h6 className="alert alert-info"><i className="fa fa-receipt"></i> Récapitulatif Commande</h6>
+              <h6>
+                <i className="fa fa-receipt"></i> Récapitulatif Commande
+              </h6>
 
-              <div className="table-container" style={{ overflowX: 'auto', overflowY: 'auto' }}>
+              <div
+                className="table-container"
+                style={{ overflowX: "auto", overflowY: "auto" }}
+              >
                 <table className="table table-bordered mt-2">
                   <thead>
                     <tr>
-                      <th className="bg-success text-light">Nom</th>
-                      <th className="bg-success text-light p-3">Entrepot</th> 
-                      <th className="bg-success text-light">Quantité</th>
-                      <th className="bg-success text-light">Unité</th>
-                      <th className="bg-success text-light">Prix Unitaire</th>
-                      <th className="bg-success text-light">Total</th>
-                      <th className="bg-success text-light">Action</th>
+                      <th>Nom</th>
+                      <th>Quantité</th>
+                      <th>Unité</th>
+                      <th>Prix Unitaire</th>
+                      <th>Entrepôt</th>
+                      <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {commande.map((item, index) => (
                       <tr key={index}>
                         <td>{item.nom}</td>
-                        <td>{item.entrepotNom}</td>
                         <td>{item.quantite}</td>
-                   
-                        <td>{item.uniteChoisie}</td>
-                        <td>{item.prixdevente} Ariary</td>
-                        <td>{item.quantite * item.prixdevente} Ariary</td>
+                        <td>{item.unite}</td>
+                        <td>{item.prix} Ariary</td>
                         <td>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => supprimerProduit(item._id, item.uniteChoisie)}
-                          >
-                            <i className="fa fa-trash"></i>
-                          </button>
-                        </td >
-                      </tr >
-                    ))
-                    }
-                  </tbody >
-                </table >
+                          <small className="text-muted">
+                            {item.entrepotSource ? 
+                              `${item.entrepotSource.nom} (${item.entrepotSource.type})` : 
+                              'Non spécifié'
+                            }
+                          </small>
+                        </td>
+                        <td>{item.quantite * item.prix} Ariary</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-                <h5 className="total" style={{ width: 'auto' }}>Total: {totalCommande} Ariary</h5>
+              <h6 className="total">Total: {totalCommande} Ariary</h6>
 
-                <button className="btn btn-success mt-3" style={{ width: 'auto', float: 'right' }}   onClick={handleClick} disabled={loadingAction}>
-
-{loadingAction ? (
-  <>
-    <span className="spinner-border spinner-border-sm"></span> Chargement...
-  </>
-) : (
-  "  Enregistrer la Commande"
-)}
-</button>
-              </div >
-
-
-        
-             
-            </div >
-
-          </div >
-        </div >
-      </section >
-    </main >
+              <button
+                className="btn btn-success  mt-3"
+                onClick={validerCommande}
+              >
+                Enregistrer la Commande
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
 
