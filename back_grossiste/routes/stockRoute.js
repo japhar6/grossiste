@@ -28,5 +28,8 @@ router.get('/stocks/:entrepotId', stockController.getStocksByEntrepot);
 router.get('/produits/quantita/:id', stockController.getQuantiteProduitByIde);*/
 // Dans routes/stockRoutes.js ou ton fichier de routes
 router.get('/produits/:id/entrepot/:entrepotId', stockController.getQuantiteProduitDansEntrepot);
+// Nouvelle route pour obtenir tous les entrepôts avec stock pour un produit
+router.get('/produits/:id/warehouses', stockController.getAllWarehousesWithStock);
+router.get('/produits/:id/all-warehouses', stockController.getAllWarehousesForProduct);
 module.exports = router;
 

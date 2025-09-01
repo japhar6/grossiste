@@ -104,6 +104,7 @@ exports.register = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find({ email: { $ne: "superadmin@gmail.com" } }).select("-password");
+    console.log(users)
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "❌ Erreur lors de la récupération des utilisateurs", error });
@@ -113,8 +114,9 @@ exports.getAllUsers = async (req, res) => {
 
 exports.countUsersByRole = async (req, res) => {
   try {
-    // Compter les utilisateurs par rôle
+    // Compter les utilisateurs par rôle avec filtre sur le statut
     const roleCounts = await User.aggregate([
+      { $match: { status: { $ne: "licencié" } } }, // Only count non-licencié users
       { $unwind: "$role" }, 
       {
         $group: {
@@ -125,16 +127,18 @@ exports.countUsersByRole = async (req, res) => {
       { $sort: { _id: 1 } } 
     ]);
 
-    // Appliquer la soustraction de 1 si le rôle est "admin"
+    // Apply subtraction of 1 if the role is "admin"
     const adjustedCounts = roleCounts.map(role => ({
       _id: role._id,
-      count: role._id === "admin" ? Math.max(0, role.count - 1) : role.count // Empêche d'avoir un nombre négatif
+      count: role._id === "admin" ? Math.max(0, role.count - 1) : role.count // Prevents negative count
     }));
 
-    // Répondre avec les résultats ajustés
     res.json(adjustedCounts);
   } catch (error) {
-    res.status(500).json({ message: "❌ Erreur lors du comptage des utilisateurs par rôle", error });
+    res.status(500).json({ 
+      message: "❌ Erreur lors du comptage des utilisateurs par rôle", 
+      error: error.message 
+    });
   }
 };
 

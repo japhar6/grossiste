@@ -198,19 +198,134 @@ exports.getQuantiteProduitDansEntrepot = async (req, res) => {
     console.log("Unité liée au stock :", stock.unite);
 
     // 🧾 Réponse enrichie
-    const produitAvecStock = {
-      ...produit.toObject(),
+    return res.status(200).json({
       quantiteDisponible: stock.quantite,
+      uniteNom: stock.unite ? stock.unite.nom : "Unité inconnue",
       entrepotNom: entrepot.nom,
-      entrepotId: entrepot._id,
-      uniteNom: stock.unite || "Unité inconnue",
-      conversion: stock.unite?.conversion ?? null,
-    };
+      produitNom: produit.nom,
+    });
 
-    return res.json(produitAvecStock);
   } catch (error) {
-    console.error("Erreur lors de la récupération du stock :", error);
-    return res.status(500).json({ message: "Erreur interne du serveur" });
+    console.error("❌ Erreur dans getQuantiteProduitDansEntrepot:", error);
+    return res.status(500).json({
+      message: "Erreur lors de la récupération de la quantité du produit.",
+    });
+  }
+};
+
+
+
+// New endpoint: GET /api/stocks/produits/:id/all-warehouses
+exports.getAllWarehousesForProduct = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const produit = await Produit.findById(id);
+    if (!produit) {
+      return res.status(404).json({ message: "Produit non trouvé" });
+    }
+
+    // Get ALL warehouses
+    const allWarehouses = await Entrepot.find({}, 'nom type').lean();
+    
+    // Get stocks for this product in all warehouses
+    const stocks = await Stock.find({ produit: id })
+      .populate({ path: "entrepot", select: "nom type" })
+      .populate({ path: "unite", select: "nom conversion" })
+      .lean();
+
+    // Create warehouse data with stock info
+    const warehousesWithStock = allWarehouses.map(warehouse => {
+      const stock = stocks.find(s => s.entrepot._id.toString() === warehouse._id.toString());
+      
+      return {
+        entrepotId: warehouse._id,
+        nom: warehouse.nom,
+        type: warehouse.type,
+        quantiteDisponible: stock ? stock.quantite : 0,
+        unite: stock?.unite?.nom || "Unité inconnue",
+        hasProduct: !!stock,
+        conversion: stock?.unite?.conversion || 1
+      };
+    });
+
+    // Filter only warehouses that have the product (keep all with stock > 0)
+    const warehousesWithProduct = warehousesWithStock.filter(w => w.hasProduct && w.quantiteDisponible > 0);
+    
+    // Enhanced sorting for warehouses with the product:
+    // 1. Principal type first
+    // 2. Quantity descending within each type
+    warehousesWithProduct.sort((a, b) => {
+      // Priority 1: Principal type comes first
+      if (a.type === 'principal' && b.type !== 'principal') return -1;
+      if (a.type !== 'principal' && b.type === 'principal') return 1;
+      
+      // Priority 2: Sort by quantity descending within same type
+      return b.quantiteDisponible - a.quantiteDisponible;
+    });
+
+    return res.status(200).json({
+      produitNom: produit.nom,
+      warehouses: warehousesWithProduct
+    });
+
+  } catch (error) {
+    console.error("❌ Erreur:", error);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// Nouvelle fonction pour obtenir tous les entrepôts avec stock pour un produit
+exports.getAllWarehousesWithStock = async (req, res) => {
+  const { id } = req.params; // id = ID du produit
+
+  try {
+    // Vérifier que le produit existe
+    const produit = await Produit.findById(id);
+    if (!produit) {
+      return res.status(404).json({ message: "Produit non trouvé" });
+    }
+
+    // Récupérer tous les stocks pour ce produit dans tous les entrepôts
+    const stocks = await Stock.find({ produit: id })
+      .populate({ path: "entrepot", select: "nom type" })
+      .populate({ path: "unite", select: "nom conversion" })
+      .lean();
+
+    if (stocks.length === 0) {
+      return res.status(200).json({ 
+        message: "Aucun stock trouvé pour ce produit",
+        warehouses: []
+      });
+    }
+
+    // Formater les données des entrepôts avec leurs stocks
+    const warehouses = stocks.map(stock => ({
+      entrepotId: stock.entrepot._id,
+      nom: stock.entrepot.nom,
+      type: stock.entrepot.type,
+      quantiteDisponible: stock.quantite,
+      unite: stock.unite ? stock.unite.nom : "Unité inconnue",
+      conversion: stock.unite ? stock.unite.conversion : 1
+    }));
+
+    // Trier par type (principal d'abord) puis par quantité (décroissant)
+    warehouses.sort((a, b) => {
+      if (a.type === 'principal' && b.type !== 'principal') return -1;
+      if (a.type !== 'principal' && b.type === 'principal') return 1;
+      return b.quantiteDisponible - a.quantiteDisponible;
+    });
+
+    return res.status(200).json({
+      produitNom: produit.nom,
+      warehouses: warehouses
+    });
+
+  } catch (error) {
+    console.error("❌ Erreur dans getAllWarehousesWithStock:", error);
+    return res.status(500).json({
+      message: "Erreur lors de la récupération des entrepôts avec stock.",
+    });
   }
 };
 
