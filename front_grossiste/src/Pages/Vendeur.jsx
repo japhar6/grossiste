@@ -57,11 +57,11 @@ function PriseCommande() {
           );
 
           // Vérifie quel type de remise existe et met à jour le typeRemise
-          if (response.data.remises.remiseGlobale > 0) {
+          if (response.data?.remises?.remiseGlobale > 0) {
             setTypeRemise("remiseGlobale");
-          } else if (response.data.remises.remiseFixe > 0) {
+          } else if (response.data?.remises?.remiseFixe > 0) {
             setTypeRemise("remiseFixe");
-          } else if (response.data.remises.remiseParProduit > 0) {
+          } else if (response.data?.remises?.remiseParProduit > 0) {
             setTypeRemise("remiseParProduit");
           } else {
             setTypeRemise(null); // Aucune remise spéciale
@@ -88,12 +88,13 @@ function PriseCommande() {
           setEntrepots(data);
         }
       } catch (error) {
-        Swal.fire({
-          title: "Erreur",
-          text: "Une erreur est survenue lors de la récupération des entrepôts.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        // Swal.fire({
+        //   title: "Erreur",
+        //   text: "Une erreur est survenue lors de la récupération des entrepôts.",
+        //   icon: "error",
+        //   confirmButtonText: "OK",
+        // });
+        console.log('Erreur', error)
       }
     };
 
@@ -471,12 +472,11 @@ function PriseCommande() {
       }
 
       const quantiteDisponible = resStock.data.quantiteDisponible;
-      const nomunite = resStock.data.uniteNom;
 
       if (quantiteConvertie > quantiteDisponible) {
         Swal.fire({
           title: "Quantité insuffisante",
-          text: `Il n'y a que ${quantiteDisponible} ${nomunite}(s) disponibles dans cet entrepôt.`,
+          text: `Il n'y a que ${quantiteDisponible} disponibles dans cet entrepôt.`,
           icon: "warning",
         });
         return;
