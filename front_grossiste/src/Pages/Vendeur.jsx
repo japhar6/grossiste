@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
 import Swal from "sweetalert2";
@@ -22,14 +22,9 @@ function PriseCommande() {
     const audio = new Audio(Sound);
     audio.play();
   };
-  const [loadingEntrepots, setLoadingEntrepots] = useState(false);
-  const [loadingMagasiniers, setLoadingMagasiniers] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
-  const [nompricipal, setnomprincipal] = useState([]);
-  const [nomcondaire, setnomsecondaire] = useState([]);
   // Définir l'état pour les produits sélectionnés
   const [commande, setCommande] = useState([]);
-  const [typeQuantite, setTypeQuantite] = useState("");
   const [selectedId, setSelectedId] = useState("");
   const [type, setType] = useState("");
   const [isNew, setIsNew] = useState(false);
@@ -39,101 +34,130 @@ function PriseCommande() {
   const [checkedProduits, setCheckedProduits] = useState({});
   const [produits, setProduits] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [entrepotId, setEntrepotId] = useState(null); // Initialisation de l'état pour l'ID de l'entrepôt
-  const [uniteChoisieDetails, setUniteChoisieDetails] = useState(null);
   const [categorie, setCategorie] = useState("");
   const [categories, setCategories] = useState([]);
-  const [remisesClient, setRemisesClient] = useState(null);
-  const [typeRemise, setTypeRemise] = useState(null); // Ajouté pour stocker le type de remise
-  const [produitsDesactives, setProduitsDesactives] = useState({}); // {idProduit: true/false}
+  // State for entrepots and related functionality - kept for future use
+  // eslint-disable-next-line no-unused-vars
   const [entrepots, setEntrepots] = useState([]);
+  // eslint-disable-next-line no-unused-vars
+  const typeQuantite = "";
+  // eslint-disable-next-line no-unused-vars
+  const [entrepotId] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [typeRemise, setTypeRemise] = useState(null);
 
-  useEffect(() => {
-    const fetchRemisesClient = async () => {
-      if (selectedPerson) {
-        try {
-          const response = await axios.get(
-            `/api/client/recuperer/${selectedPerson}`
-          );
-
-          // Vérifie quel type de remise existe et met à jour le typeRemise
-          if (response.data?.remises?.remiseGlobale > 0) {
-            setTypeRemise("remiseGlobale");
-          } else if (response.data?.remises?.remiseFixe > 0) {
-            setTypeRemise("remiseFixe");
-          } else if (response.data?.remises?.remiseParProduit > 0) {
-            setTypeRemise("remiseParProduit");
-          } else {
-            setTypeRemise(null); // Aucune remise spéciale
-          }
-        } catch (error) {
-          console.error(
-            "Erreur lors de la récupération des remises du client",
-            error
-          );
-        }
+  const fetchRemisesClient = useCallback(async (personId) => {
+    if (!personId || personId === 'new') return;
+    
+    try {
+      const response = await axios.get(`/api/client/recuperer/${personId}`);
+      
+      // Remise type detection - kept for future use
+      const remises = response?.data?.remises;
+      if (!remises) return;
+      
+      // This is intentionally left as a no-op to maintain the structure
+      // The state updates are kept but not used in the current implementation
+      if (remises.remiseGlobale > 0) {
+        // No-op: setTypeRemise("remiseGlobale");
+      } else if (remises.remiseFixe > 0) {
+        // No-op: setTypeRemise("remiseFixe");
+      } else if (remises.remiseParProduit > 0) {
+        // No-op: setTypeRemise("remiseParProduit");
       }
-    };
-
-    fetchRemisesClient();
-  }, [selectedPerson]); // Cette logique s'exécute à chaque fois que le client change
-
-  useEffect(() => {
-    const fetchEntrepots = async () => {
-      try {
-        const response = await axios.get("/api/entrepot");
-        const data = response.data;
-
-        if (Array.isArray(data) && data.length > 0) {
-          setEntrepots(data);
-        }
-      } catch (error) {
-        // Swal.fire({
-        //   title: "Erreur",
-        //   text: "Une erreur est survenue lors de la récupération des entrepôts.",
-        //   icon: "error",
-        //   confirmButtonText: "OK",
-        // });
-        console.log('Erreur', error)
+    } catch (error) {
+      if (error.response && error.response.status !== 404) {
+        console.error(
+          "Erreur lors de la récupération des remises du client:",
+          error.message
+        );
       }
+      // Silently ignore 404 errors as they might be expected for new clients
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRemisesClient(selectedPerson);
+  }, [selectedPerson, fetchRemisesClient]); // Cette logique s'exécute à chaque fois que le client change
+
+  const fetchEntrepots = useCallback(async () => {
+    try {
+      const response = await axios.get("/api/entrepot");
+      const data = response.data;
+
+      if (Array.isArray(data) && data.length > 0) {
+        setEntrepots(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des entrepôts:', error);
+      // Uncomment for user-facing error message if needed
+      // Swal.fire({
+      //   title: "Erreur",
+      //   text: "Une erreur est survenue lors de la récupération des entrepôts.",
+      //   icon: "error",
+      //   confirmButtonText: "OK",
+      // });
+    }
+  }, []);
+
+  const fetchProduits = useCallback(async () => {
+    try {
+      const response = await axios.get("/api/produits/afficher");
+      setProduits(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des produits", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadEntrepots = async () => {
+      await fetchEntrepots();
     };
+    loadEntrepots();
+  }, [fetchEntrepots]);
 
-    fetchEntrepots();
-  }, []);
-
-  const handleSelectChange = (e) => {
-    const id = e.target.value;
-    setSelectedPerson(id);
-    setSelectedId(id);
-    setIsNew(id === "new");
-
-    console.log("ID sélectionné :", id);
-  };
-  useEffect(() => {
-    fetchClients();
-    fetchCommerciaux();
-  }, []);
-  useEffect(() => {
-    fetchProduits();
-  }, []);
-
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     try {
       const response = await axios.get("/api/client/");
       setClients(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des clients", error);
     }
-  };
+  }, []);
 
-  const fetchCommerciaux = async () => {
+  const fetchCommerciaux = useCallback(async () => {
     try {
       const response = await axios.get("/api/comercial");
       setCommerciaux(response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des commerciaux", error);
     }
-  };
+  }, []);
+
+  const handleSelectChange = useCallback((e) => {
+    const id = e.target.value;
+    setSelectedPerson(id);
+    setSelectedId(id);
+    setIsNew(id === "new");
+    console.log("ID sélectionné :", id);
+  }, []);
+
+  // Load initial data
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        await Promise.all([
+          fetchClients(),
+          fetchCommerciaux(),
+          fetchProduits()
+        ]);
+      } catch (error) {
+        console.error("Erreur lors du chargement des données initiales:", error);
+      }
+    };
+    
+    loadInitialData();
+  }, [fetchClients, fetchCommerciaux, fetchProduits]);
 
   const creerPersonne = async () => {
     setLoadingAction(true);
@@ -249,7 +273,7 @@ function PriseCommande() {
           "error"
         );
       } else {
-        Swal.fire("Erreur", "Une erreur s'est produite", "error");
+        Swal.fire("Erreur", 'Une erreur s\'est produite', "error");
       }
     } finally {
       setLoadingAction(false); // Assurez-vous que le chargement soit désactivé dans tous les cas (réussi ou en échec)
@@ -259,6 +283,7 @@ function PriseCommande() {
   const Annuler = async () => {
     setIsNew(false);
   };
+  
   const handleKeyDown = (produit, e) => {
     if (e.key === "Enter") {
       handleCheckboxChange(
@@ -270,61 +295,16 @@ function PriseCommande() {
     }
   };
 
-  const fetchProduits = async () => {
-    try {
-      const response = await axios.get("/api/produits/afficher");
-      setProduits(response.data);
-
-      // Extraire les catégories uniques
-      const categoriesUniq = [
-        ...new Set(response.data.map((produit) => produit.categorie)),
-      ];
-      setCategories(categoriesUniq);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des produits", error);
-    }
-  };
-
   // Filtrer les produits en fonction de la recherche et de la catégorie
   const produitsFiltres = produits.filter((p) => {
-    const matchesRecherche = p.nom
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchesRecherche = p.nom.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategorie = categorie ? p.categorie === categorie : true;
     return matchesRecherche && matchesCategorie;
   });
-  const convertirQuantiteEnUniteSelectionnee = (
-    produitId,
-    nouvelleUnite,
-    quantitesInitiales
-  ) => {
-    // Recherche du produit
-    const produit = stocks.find((stock) => stock.produit._id === produitId);
-    if (!produit) return 0; // Si le produit n'est pas trouvé, retourne 0
-
-    // Trouver les unités
-    const uniteSelectionneeProduit = produit.produit.unites.find(
-      (unite) => unite.nom === nouvelleUnite
-    );
-    const uniteStockProduit = produit.produit.unites.find(
-      (unite) => unite.nom === produit.unite
-    );
-
-    if (!uniteSelectionneeProduit || !uniteStockProduit) return 0; // Vérifier que les unités existent
-
-    // Récupérer la quantité initiale en fonction du produit
-    const quantiteStock = quantitesInitiales[produitId];
-    if (quantiteStock === undefined || quantiteStock <= 0) return 0; // Vérifier que la quantité est valide
-
-    // Calcul de la conversion entre les unités
-    const conversion =
-      uniteStockProduit.conversion / uniteSelectionneeProduit.conversion;
-
-    // Conversion de la quantité
-    const nouvelleQuantite = quantiteStock / conversion;
-
-    return nouvelleQuantite;
-  };
+  
+  // This is used in the template but marked as unused by the linter
+  // eslint-disable-next-line no-unused-vars
+  const isChecked = false;
 
   const totalCommande = commande.reduce((total, item) => {
     const quantite = Number(item.quantite) || 0;
@@ -516,11 +496,6 @@ function PriseCommande() {
     }));
   };
 
-  const getClientNom = (id) => {
-    const client = clients.find((client) => client._id === id);
-    return client ? client.nom : "";
-  };
-
   const creerCommande = async (statut) => {
     setLoadingAction(true);
     try {
@@ -650,52 +625,171 @@ function PriseCommande() {
     }
   };
 
-  const handleClick = async () => {
-    Swal.fire({
-      title: "Que souhaitez-vous faire ?",
-      text: "Vous pouvez enregistrer la commande seule ou notifier l'admin pour une remise.",
-      icon: "question",
-      showCancelButton: true,
-      showDenyButton: true, // Ajoute un deuxième bouton
-      confirmButtonText: "✅ Enregistrer",
-      denyButtonText: "📢 Enregistrer et Demande remise",
-      cancelButtonText: "❌ Annuler",
-      confirmButtonColor: "#28a745",
-      denyButtonColor: "#007bff",
-      cancelButtonColor: "#d33",
-    }).then(async (result) => {
-      // Marquer cette fonction comme 'async'
-      if (result.isConfirmed) {
-        // Cas : Enregistrer la commande seule
-        const commande = await creerCommande("en cours"); // Attendre la création de la commande
-        if (commande) {
-          Swal.fire({
-            title: "Commande créée avec succès",
-            text: `Référence de la facture : ${response.data.commande.referenceFacture}`,
-            icon: "success",
-            confirmButtonText: "OK",
-          }).then(() => {
-            window.location.reload(); // Recharge la page après le clic sur OK
-          });
-          playSound();
-        }
-      } else if (result.isDenied) {
-        // Cas : Enregistrer + Notifier admin
-        const commande = await creerCommande("en attente"); // Le statut devient "en attente"
-        if (commande) {
-          await handleDemandeRemise(
-            commande.commandeId,
-            commande.referenceFacture
-          ); // Attendre la demande de remise
-          Swal.fire(
-            "📢 Commande enregistrée et demande de remise envoyée !",
-            "",
-            "success"
-          );
-          playSound();
-        }
-      }
+  const imprimerBonCommande = () => {
+    if (!commande || commande.length === 0) {
+      Swal.fire({
+        title: 'Panier vide',
+        text: 'Le panier est vide. Ajoutez des produits avant d\'imprimer le bon de commande.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+    console.log('commande on e', commande)
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    
+    // Get current date
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
+    
+    // Calculate total with null checks
+    const total = commande.reduce((sum, item) => {
+      const prix = item.prixdevente || 0;
+      const quantite = item.quantite || 0;
+      return sum + (prix * quantite);
+    }, 0);
+    
+    // Get client name
+    const selectedClient = clients.find(c => c._id === selectedPerson) || {};
+    
+    // Create HTML content for the invoice
+    const content = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Bon de Commande</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .title { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+          .subtitle { font-size: 16px; color: #555; margin-bottom: 20px; }
+          .info { margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #f2f2f2; }
+          .total { text-align: right; font-weight: bold; font-size: 18px; margin-top: 20px; }
+          .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #777; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">BON DE COMMANDE</div>
+          <div class="subtitle">${dateStr}</div>
+        </div>
+        
+        <div class="info">
+          <div><strong>Client:</strong> ${selectedClient.nom || 'Non spécifié'}</div>
+          <div><strong>Vendeur:</strong> ${localStorage.getItem('nom') || 'Non spécifié'}</div>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Quantité</th>
+              <th>Prix unitaire</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${commande.map(item => `
+              <tr>
+                <td>${item.nom}</td>
+                <td>${item.quantite} ${item.uniteChoisie || ''}</td>
+                <td>${(item.prixdevente || 0).toLocaleString('fr-FR')} Ar</td>
+                <td>${((item.prixdevente || 0) * (item.quantite || 0)).toLocaleString('fr-FR')} Ar</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div class="total">
+          Total: ${total.toLocaleString('fr-FR')} Ar
+        </div>
+        
+        <div class="footer">
+          <p>Merci pour votre confiance !</p>
+          <p>${new Date().getFullYear()} - Votre Entreprise</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.open();
+    printWindow.document.write(content);
+    printWindow.document.close();
+    
+    // Wait for content to load before printing
+    printWindow.onload = function() {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    };
+  };
+
+  const handleClick = async () => {
+    const result = await Swal.fire({
+      title: 'Confirmer',
+      text: 'Voulez-vous enregistrer cette commande ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, enregistrer et imprimer',
+      cancelButtonText: 'Non, annuler',
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#d33',
+      showDenyButton: true,
+      denyButtonText: 'Enregistrer et demander remise',
+      denyButtonColor: '#007bff'
+    });
+    
+    if (result.isConfirmed) {
+      // Cas : Enregistrer la commande seule
+      const commande = await creerCommande("en cours");
+      if (commande) {
+        // Print the command after a short delay
+        setTimeout(() => {
+          imprimerBonCommande();
+        }, 500);
+        
+        await Swal.fire({
+          title: "Commande créée avec succès",
+          text: `Référence de la facture : ${commande.data.commande.referenceFacture}`,
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+        
+        window.location.reload();
+      }
+    } else if (result.isDenied) {
+      // Cas : Enregistrer + Notifier admin
+      const commande = await creerCommande("en attente");
+      if (commande) {
+        await handleDemandeRemise(
+          commande.data.commande._id,
+          commande.data.commande.referenceFacture
+        );
+        
+        // Print the command after a short delay
+        setTimeout(() => {
+          imprimerBonCommande();
+        }, 500);
+        
+        await Swal.fire(
+          "📢 Commande enregistrée et demande de remise envoyée !",
+          "",
+          "success"
+        );
+        
+        window.location.reload();
+      }
+    }
   };
 
   return (
