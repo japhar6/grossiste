@@ -15,7 +15,7 @@ function HistoC() {
   const [filtreNomClientCommercial, setFiltreNomClientCommercial] = useState("");
   const notificationSound = new Audio(audio);
   const [filtreType, setFiltreType] = useState("both");
-  const [date, setDate] = useState("");
+  const [dateOnly, setDate] = useState("");
   const [triMontant, setTriMontant] = useState("desc"); // État pour trier par montant
   const [filtreNomProduit, setFiltreNomProduit] = useState(""); // État pour le nom du produit
 
@@ -48,6 +48,7 @@ function HistoC() {
 
 
   const getFilteredPaiements = () => {
+    // Combine client and commercial payments
     const allPaiements = [
       ...paiements.clients.map(client => ({
         ...client,
@@ -58,25 +59,105 @@ function HistoC() {
         type: "commercial",
       })),
     ];
-
-    return allPaiements.filter(paiement => {
-      const matchesType = filtreType === "both" || paiement.type === filtreType;
-      const matchesNomProduit = !filtreNomProduit || paiement.commandeId.produits.some(produit =>
-        produit.produit.nom.toLowerCase().includes(filtreNomProduit.toLowerCase())
-      );
-      const matchesDate = (!dateDebut || new Date(paiement.createdAt) >= new Date(dateDebut)) &&
-        (!dateFin || new Date(paiement.createdAt) <= new Date(dateFin));
-      const matchesModePaiement = filtreModePaiement === "all" || (paiement.modePaiement == filtreModePaiement);
-      const matchStatut = statutfilter === "all" || (paiement.statut === statutfilter);
-      const matchesNomCaissier = !filtreNomCaissier || (paiement.idCaissier && paiement.idCaissier.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
-      const matchesClientOrCommercial = !filtreNomClientCommercial ||
-        (paiement.clientNom && paiement.clientNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase())) ||
-        (paiement.commercialNom && paiement.commercialNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase()));
-
-      return matchesType && matchesNomProduit && matchesClientOrCommercial && matchesDate && matchesModePaiement && matchStatut && matchesNomCaissier;
-    }).sort((a, b) =>
-      triMontant === "asc" ? a.montantPaye - b.montantPaye : b.montantPaye - a.montantPaye
-    );
+  
+    console.log("allPaiements", allPaiements);
+  
+    return allPaiements
+      .filter(paiement => {
+        // Ensure paiement has necessary fields, provide defaults if undefined
+        const {
+          type = "",
+          commandeId = {},
+          createdAt = "",
+          modePaiement = "",
+          statut = "",
+          idCaissier = { nom: "" },
+          clientNom = "",
+          commercialNom = "",
+        } = paiement;
+  
+        // Filter by type (client, commercial, or both)
+        const matchesType = filtreType === "both" || type === filtreType;
+  
+        // Filter by product name (case-insensitive)
+        const matchesNomProduit =
+          !filtreNomProduit ||
+          (commandeId.produits &&
+            Array.isArray(commandeId.produits) &&
+            commandeId.produits.some(
+              produit =>
+                produit?.produit?.nom?.toLowerCase().includes(filtreNomProduit.toLowerCase())
+            ));
+  
+        // Filter by date
+        const paiementDate = new Date(createdAt);
+        const isValidDate = !isNaN(paiementDate.getTime());
+        
+        // Format dates for comparison (YYYY-MM-DD)
+        const formatDate = (date) => {
+          if (!isValidDate) return '';
+          return date.toISOString().split('T')[0];
+        };
+        
+        // Check date conditions
+        let matchesDate = true;
+        
+        // If dateOnly is provided, match exactly this date
+        if (dateOnly) {
+          matchesDate = matchesDate && (formatDate(paiementDate) === dateOnly);
+        } 
+        // Otherwise, check date range if provided
+        else {
+          if (dateDebut) {
+            const startDate = new Date(dateDebut);
+            startDate.setHours(0, 0, 0, 0);
+            matchesDate = matchesDate && (paiementDate >= startDate);
+          }
+          
+          if (dateFin) {
+            const endDate = new Date(dateFin);
+            endDate.setHours(23, 59, 59, 999);
+            matchesDate = matchesDate && (paiementDate <= endDate);
+          }
+        }
+  
+        // Filter by payment mode
+        const matchesModePaiement =
+          filtreModePaiement === "all" || modePaiement === filtreModePaiement;
+  
+        // Filter by status (using statutfilter as in original code)
+        const matchesStatut = statutfilter === "all" || statut === statutfilter;
+  
+        // Filter by cashier name (case-insensitive)
+        const matchesNomCaissier =
+          !filtreNomCaissier ||
+          (idCaissier.nom &&
+            idCaissier.nom.toLowerCase().includes(filtreNomCaissier.toLowerCase()));
+  
+        // Filter by client or commercial name (case-insensitive)
+        const matchesClientOrCommercial =
+          !filtreNomClientCommercial ||
+          (clientNom &&
+            clientNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase())) ||
+          (commercialNom &&
+            commercialNom.toLowerCase().includes(filtreNomClientCommercial.toLowerCase()));
+  
+        return (
+          matchesType &&
+          matchesNomProduit &&
+          matchesClientOrCommercial &&
+          matchesDate &&
+          matchesModePaiement &&
+          matchesStatut &&
+          matchesNomCaissier
+        );
+      })
+      .sort((a, b) => {
+        // Ensure montantPaye is a number, default to 0 if undefined
+        const montantA = Number(a.montantPaye) || 0;
+        const montantB = Number(b.montantPaye) || 0;
+        return triMontant === "asc" ? montantA - montantB : montantB - montantA;
+      });
   };
 
 
@@ -228,7 +309,7 @@ const handleRowClick = async (paiement) => {
                     <input
                       type="date"
                       className="form-control uniform-size"
-                      value={date}
+                      value={dateOnly}
                       onChange={e => setDate(e.target.value)}
                       placeholder="Filtrer par date"
                     />
@@ -306,33 +387,37 @@ const handleRowClick = async (paiement) => {
                     />
                   </label>
                 </div>
-                {filtrerParDate && (
-                  <>
-                    <div className="flex-fill">
-                      <label className="form-label w-100">
-                        <input
-                          type="date"
-                          className="form-control uniform-size"
-                          value={dateDebut}
-                          onChange={e => setDateDebut(e.target.value)}
-                          placeholder="Filtrer par date début"
-                        />
-                      </label>
-                    </div>
+                <div className="col-md-12 mb-3">
+                  {filtrerParDate && (
+                    <>
+                      <div className="flex-fill">
+                        <label className="form-label w-100">
+                          Filtrer par date début:
+                          <input
+                            type="date"
+                            className="form-control uniform-size"
+                            value={dateDebut}
+                            onChange={e => setDateDebut(e.target.value)}
+                            placeholder="Filtrer par date début"
+                          />
+                        </label>
+                      </div>
 
-                    <div className="flex-fill">
-                      <label className="form-label w-100">
-                        <input
-                          type="date"
-                          className="form-control uniform-size"
-                          value={dateFin}
-                          onChange={e => setDateFin(e.target.value)}
-                          placeholder="Filtrer par date fin"
-                        />
-                      </label>
-                    </div>
-                  </>
-                )}
+                      <div className="flex-fill">
+                        <label className="form-label w-100">
+                          Filtrer par date fin:
+                          <input
+                            type="date"
+                            className="form-control uniform-size"
+                            value={dateFin}
+                            onChange={e => setDateFin(e.target.value)}
+                            placeholder="Filtrer par date fin"
+                          />
+                        </label>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div>
                 <Link to='/histodecaisse' >

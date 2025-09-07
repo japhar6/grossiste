@@ -281,12 +281,12 @@ function Personnels() {
               <div>
               <button
                   className="btn_lic m-2"
-                  onClick={() => setShowLicencies(!showLicencies)}
+                  // onClick={() => setShowLicencies(!showLicencies)}
                 >
                   <i className="fa fa-list"> </i>
                   {showLicencies
                     ? " Afficher les employés actifs"
-                    : " Afficher les licenciés"}
+                    : " Liste des employés actifs"}
                 </button>
 
                 <Link to="/PersonnelsList">

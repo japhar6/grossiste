@@ -278,9 +278,11 @@ function HistoV() {
                     </tr>
                   </thead>
                   <tbody>
-                  </tbody>    <tr>
-                    <td colSpan={8} style={{ textAlign: 'center' }}>Aucunne commande trouvé.</td>
-                  </tr>     </table>
+                    <tr>
+                      <td colSpan="8" style={{ textAlign: 'center' }}>Aucune commande trouvée.</td>
+                    </tr>
+                  </tbody>
+                </table>
 
               ) : (
                 <div className="scrollable-container">
