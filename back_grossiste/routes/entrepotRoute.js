@@ -19,6 +19,6 @@ router.get("/:id", entrepotController.getEntrepotById);
 router.put("/:id", authenticateJWT, authenticateMagasinier, entrepotController.updateEntrepot);
 
 // 🔹 Supprimer un entrepôt (admin uniquement)
-router.delete("/:id", authenticateJWT, authenticateAdmin, entrepotController.deleteEntrepot);
+router.delete("/:id", entrepotController.deleteEntrepot);
 
 module.exports = router;

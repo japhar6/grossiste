@@ -112,6 +112,28 @@ function Entrepot() {
   };
 
 
+  const handleSupprimer = async (entrepot) => {
+     console.log("id",entrepot._id);
+    const confirmDelete = await Swal.fire({
+      title: "Êtes-vous sûr ?",
+      text: "Cette action ne peut pas être annulée.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Oui, supprimer",
+      cancelButtonText: "Annuler",
+    });
+    if (confirmDelete.isConfirmed) {
+      try {
+        console.log()
+        await axios.delete(`/api/entrepot/${entrepot._id}`);
+        Swal.fire("Supprimé!", "L'entrepot a été supprimé avec succès.", "success");
+        
+      } catch (error) {
+        console.error("Erreur lors de la suppression du entrepot", error);
+        Swal.fire("Erreur", "Une erreur est survenue lors de la suppression du entrepot.", "error");
+      }
+    }
+  };
   return (
     <main className="center">
       <Sidebar />
@@ -148,6 +170,7 @@ function Entrepot() {
                           <td>{entrepot.nom}</td>
                           <td>{entrepot.localisation}</td>
                           <td>{entrepot.type}</td>
+                               
                           <td>{entrepot.magasinier ? entrepot.magasinier.nom : "Aucun magasinier assigné"}</td>
                           <td>{new Date(entrepot.dateCreation).toLocaleDateString('fr-FR', {
                         year: 'numeric',
@@ -159,8 +182,11 @@ function Entrepot() {
 
                               <i className="fas fa-pencil-alt"></i>
                             </button>
-                            <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot._id)}>
-                              <i className="fas fa-times"></i>
+                            <button className="btn1 btn-danger ms-2" onClick={() => handleSupprimer(entrepot)}>
+                              <i className="fas fa-times"
+                              onClick={() => handleSupprimer(entrepot)}
+                                  title="Supprimer"
+                              ></i>
                             </button>
                           </td>
                         </tr>

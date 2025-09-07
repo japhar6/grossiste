@@ -306,7 +306,7 @@ function ChiffreAffaire() {
                                     <div className="card text-center shadow-sm">
                                         <div className="card-body">
                                             <h5 className="card-title">🗒️ Nombre inventaire</h5>
-                                            <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.nombreOperations)} Ariary</p>
+                                            <p className="display-6 text-dark fw-bold">{formatCurrency(chiffreAffaire.nombreOperations)} </p>
                                         </div>
                                     </div>
                                 </div>
