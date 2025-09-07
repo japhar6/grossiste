@@ -127,7 +127,7 @@ function Entrepot() {
         console.log()
         await axios.delete(`/api/entrepot/${entrepot._id}`);
         Swal.fire("Supprimé!", "L'entrepot a été supprimé avec succès.", "success");
-        
+        window.location.reload();        
       } catch (error) {
         console.error("Erreur lors de la suppression du entrepot", error);
         Swal.fire("Erreur", "Une erreur est survenue lors de la suppression du entrepot.", "error");
