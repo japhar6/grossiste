@@ -39,9 +39,9 @@ function PriseCommande() {
   // State for entrepots and related functionality - kept for future use
   // eslint-disable-next-line no-unused-vars
   const [entrepots, setEntrepots] = useState([]);
-  // eslint-disable-next-line no-unused-vars
+   
   const typeQuantite = "";
-  // eslint-disable-next-line no-unused-vars
+   
   const [entrepotId] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [typeRemise, setTypeRemise] = useState(null);
