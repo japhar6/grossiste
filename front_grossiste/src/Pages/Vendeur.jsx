@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../Components/SidebarVendeur";
 import Header from "../Components/NavbarV";
@@ -46,24 +47,43 @@ function PriseCommande() {
   // eslint-disable-next-line no-unused-vars
   const [typeRemise, setTypeRemise] = useState(null);
 
-  const fetchRemisesClient = useCallback(async (personId) => {
-    if (!personId || personId === 'new') return;
+
+  const handleTypeChange = (e) => {
+    console.log('type', e.target.value)
+    setType(e.target.value);
+    setIsNew(false);
+    setSelectedPerson("");
+    setTypeRemise(null); // Réinitialise le type de remise à chaque changement de type
+  }
+
+  const fetchRemisesClient = useCallback(async (personId, typeParam = type) => {
+    if (!personId || personId === 'new' || !typeParam) return;
     
     try {
-      const response = await axios.get(`/api/client/recuperer/${personId}`);
+      console.log('Fetching remises for type:', typeParam);
+      
+      const endpoint = typeParam === "client" 
+        ? `/api/client/recuperer/${personId}`
+        : `/api/comercial/${personId}`;
+        
+      const response = await axios.get(endpoint);
       
       // Remise type detection - kept for future use
       const remises = response?.data?.remises;
-      if (!remises) return;
+      if (!remises) {
+        console.log('No remises found in response');
+        return;
+      }
       
-      // This is intentionally left as a no-op to maintain the structure
-      // The state updates are kept but not used in the current implementation
+      console.log('Remises found:', remises);
+      
+      // Update the type remise based on the response
       if (remises.remiseGlobale > 0) {
-        // No-op: setTypeRemise("remiseGlobale");
+        setTypeRemise("remiseGlobale");
       } else if (remises.remiseFixe > 0) {
-        // No-op: setTypeRemise("remiseFixe");
+        setTypeRemise("remiseFixe");
       } else if (remises.remiseParProduit > 0) {
-        // No-op: setTypeRemise("remiseParProduit");
+        setTypeRemise("remiseParProduit");
       }
     } catch (error) {
       if (error.response && error.response.status !== 404) {
@@ -77,8 +97,11 @@ function PriseCommande() {
   }, []);
 
   useEffect(() => {
-    fetchRemisesClient(selectedPerson);
-  }, [selectedPerson, fetchRemisesClient]); // Cette logique s'exécute à chaque fois que le client change
+    if (selectedPerson && type) {
+      console.log('Selected person changed, type is:', type);
+      fetchRemisesClient(selectedPerson, type);
+    }
+  }, [selectedPerson, type, fetchRemisesClient]);
 
   const fetchEntrepots = useCallback(async () => {
     try {
@@ -807,12 +830,9 @@ function PriseCommande() {
               <select
                 className="form-control"
                 value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setIsNew(false);
-                  setSelectedPerson("");
-                  setTypeRemise(null); // Réinitialise le type de remise à chaque changement de type
-                }}
+                onChange={(e) => 
+                  handleTypeChange(e)
+                }
               >
                 <option value="">Choisir un type</option>
                 <option value="client">Client</option>
