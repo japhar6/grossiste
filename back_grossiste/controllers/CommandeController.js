@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Commande = require("../models/Commandes");
 const Produit = require("../models/Produits");
 const Client = require("../models/Client");
@@ -7,7 +8,33 @@ const Stock = require('../models/Stock');
 const Vente = require('../models/Ventes');
 const PaiementCommerciale = require("../models/PaimentCommerciale");
 const Paiement = require("../models/Paiement");
-const pusher = require('../config/pusher');  
+const pusher = require('../config/pusher');
+
+// Helper function to update stock when a command is created or updated
+/*const updateStockForCommand = async (produits) => {
+  for (const item of produits) {
+    const { produit, quantite, entrepotId } = item;
+    
+    // Find the stock for this product in the specified warehouse
+    const stock = await Stock.findOne({ 
+      produit: produit._id || produit, 
+      entrepot: entrepotId 
+    });
+
+    if (!stock) {
+      throw new Error(`Stock not found for product ${produit._id || produit} in warehouse ${entrepotId}`);
+    }
+
+    // Check if there's enough stock
+    if (stock.quantite < quantite) {
+      throw new Error(`Insufficient stock for product ${produit.nom || produit}. Available: ${stock.quantite}, Requested: ${quantite}`);
+    }
+
+    // Update the stock quantity
+    stock.quantite -= quantite;
+    await stock.save();
+  }
+};*/
 
 exports.ajouterCommande = async (req, res) => {
     try {
@@ -48,10 +75,28 @@ exports.ajouterCommande = async (req, res) => {
                 console.error(`Unité introuvable pour le produit ${produit.nom}`);
                 throw new Error(`Unité introuvable pour le produit ${produit.nom}`);
             }
+            
+            const entrepotIdToUse = produitData.entrepotId || entrepotId;
+            /*// Vérifier le stock avant de créer la commande
+            const stock = await Stock.findOne({ 
+                produit: produit._id, 
+                entrepot: entrepotIdToUse 
+            });
+            
+            if (!stock) {
+                throw new Error(`Aucun stock trouvé pour le produit ${produit.nom} dans l'entrepôt spécifié`);
+            }
+            
+            if (stock.quantite < produitData.quantite) {
+                throw new Error(`Stock insuffisant pour le produit ${produit.nom}. Quantité disponible: ${stock.quantite}, Quantité demandée: ${produitData.quantite}`);
+            }
+            
+            // Mettre à jour le stock
+            stock.quantite -= produitData.quantite;
+            await stock.save();*/
         
             const prixdevente = uniteChoisie.prixdevente;
             const totalProduit = prixdevente * produitData.quantite;
-        
         
             // Retourner les détails de chaque produit avec le champ entrepotId
             return {
@@ -59,8 +104,7 @@ exports.ajouterCommande = async (req, res) => {
                 quantite: produitData.quantite,
                 prixdevente,
                 total: totalProduit,
-               
-                entrepotId: produitData.entrepotId || entrepotId,  // Assurez-vous de prendre l'entrepotId spécifique pour chaque produit
+                entrepotId: entrepotIdToUse,
                 uniteChoisie: uniteChoisie.nom
             };
         }));
@@ -85,23 +129,23 @@ exports.ajouterCommande = async (req, res) => {
 
         console.log("Commande créée avec succès :", nouvelleCommande);
 
-
         pusher.trigger('caissier-channel', 'nouveau-comande', {
             message: 'Nouvelle commande reçue.',
-            commandeId: nouvelleCommande._id,  // Envoie l'ID de la commande
-            totalGeneral: nouvelleCommande.totalGeneral, // Ajoute d'autres données si nécessaire
-            produits: produitsDetails, // Tu peux aussi envoyer les détails des produits
+            commandeId: nouvelleCommande._id,
+            totalGeneral: nouvelleCommande.totalGeneral,
+            produits: produitsDetails,
         });
-        
         
         res.status(201).json({
             message: "Commande créée avec succès.",
             commande: nouvelleCommande
-        });        
+        });
 
     } catch (error) {
         console.error("Erreur lors de l'ajout de la commande :", error);
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ 
+            message: error.message || "Erreur lors de la création de la commande" 
+        });
     }
 };
 
@@ -313,27 +357,87 @@ exports.updateCommande = async (req, res) => {
     try {
         const commande = await Commande.findById(req.params.id);
         if (!commande) {
+            await session.abortTransaction();
+            session.endSession();
             return res.status(404).json({ message: "Commande non trouvée" });
         }
 
         const { produits } = req.body;
         let totalGeneral = 0;
-        const produitsAvecTotal = produits.map(item => {
-            const totalProduit = item.prixUnitaire * item.quantite;
+        
+        // Restore old quantities to stock first
+        for (const oldItem of commande.produits) {
+            const stock = await Stock.findOne({
+                produit: oldItem.produit,
+                entrepot: oldItem.entrepotId
+            });
+            
+            if (stock) {
+                stock.quantite += oldItem.quantite;
+                await stock.save();
+            }
+        }
+        
+        // Process new quantities
+        const produitsAvecTotal = [];
+        
+        for (const item of produits) {
+            const produit = await Produit.findById(item.produit);
+            if (!produit) {
+                throw new Error(`Produit introuvable avec l'ID ${item.produit}`);
+            }
+            
+            const uniteChoisie = produit.unites.find(u => u.nom === item.uniteChoisie);
+            if (!uniteChoisie) {
+                throw new Error(`Unité introuvable pour le produit ${produit.nom}`);
+            }
+            
+            // Check stock for new quantities
+            const entrepotId = item.entrepotId || commande.entrepotId;
+            const stock = await Stock.findOne({
+                produit: item.produit,
+                entrepot: entrepotId
+            });
+            
+            if (!stock) {
+                throw new Error(`Aucun stock trouvé pour le produit ${produit.nom} dans l'entrepôt spécifié`);
+            }
+            
+            if (stock.quantite < item.quantite) {
+                throw new Error(`Stock insuffisant pour le produit ${produit.nom}. Quantité disponible: ${stock.quantite}, Quantité demandée: ${item.quantite}`);
+            }
+            
+            // Update stock with new quantities
+            stock.quantite -= item.quantite;
+            await stock.save({ session });
+            
+            const totalProduit = uniteChoisie.prixdevente * item.quantite;
             totalGeneral += totalProduit;
-            return {
+            
+            produitsAvecTotal.push({
                 ...item,
-                total: totalProduit
-            };
-        });
+                total: totalProduit,
+                prixdevente: uniteChoisie.prixdevente,
+                entrepotId
+            });
+        }
 
+        // Update command with new data
         commande.produits = produitsAvecTotal;
         commande.totalGeneral = totalGeneral;
-
+        commande.updatedAt = new Date();
+        
         await commande.save();
-        res.status(200).json({ message: "Commande mise à jour avec succès", commande });
+        
+        res.status(200).json({ 
+            message: "Commande mise à jour avec succès", 
+            commande 
+        });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Erreur lors de la mise à jour de la commande :", error);
+        res.status(400).json({ 
+            message: error.message || "Erreur lors de la mise à jour de la commande"
+        });
     }
 };
 
